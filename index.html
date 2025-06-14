@@ -1156,6 +1156,16 @@
             });
     });
 
+    // Fonction pour fermer une popup si on clique en dehors de son contenu
+    document.querySelectorAll('.modal').forEach(modal => {
+        modal.addEventListener('click', (event) => {
+            const modalContent = modal.querySelector('.modal-content');
+            if (!modalContent.contains(event.target)) {
+                modal.classList.add('hidden');
+            }
+        });
+    });
+
     // Modifier la fonction showPasswordModal pour gérer la wishlist
     function showPasswordModal(context, raceId = null) {
         passwordModal.dataset.context = context;
