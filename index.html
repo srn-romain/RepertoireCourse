@@ -604,6 +604,8 @@
         const inputHash = await sha256(passwordInput.value);
 
         if (inputHash === passwordHash) {
+            sessionStorage.setItem('authenticated', 'true');
+
             passwordModal.classList.add('hidden');
             passwordInput.value = '';
             passwordError.classList.add('hidden');
@@ -792,6 +794,43 @@
 
     // Fonction pour afficher le modal de mot de passe avec différents contextes
     function showPasswordModal(context, raceId = null) {
+        if (sessionStorage.getItem('authenticated') === 'true') {
+            // Déjà authentifié, exécuter directement l'action
+            if (context === 'add') {
+                modalTitle.textContent = 'Ajouter une course';
+                raceForm.reset();
+                document.getElementById('raceId').value = '';
+                photoData = null;
+                photoPreview.classList.add('hidden');
+                raceModal.classList.remove('hidden');
+                document.getElementById('raceName').focus();
+            } else if (context === 'edit') {
+                modalTitle.textContent = 'Modifier la course';
+                populateEditForm(raceId);
+                raceModal.classList.remove('hidden');
+                document.getElementById('raceName').focus();
+            } else if (context === 'delete' && raceId) {
+                showConfirmDeleteModal(raceId);
+            } else if (context === 'wishlist-edit') {
+                wishlistCollection.doc(WISHLIST_ID).get()
+                    .then((doc) => {
+                        if (doc.exists && doc.data().items) {
+                            wishlistTextarea.value = doc.data().items.join('\n');
+                        } else {
+                            wishlistTextarea.value = '';
+                        }
+                        wishlistDisplay.classList.add('hidden');
+                        wishlistEditForm.classList.remove('hidden');
+                        wishlistTextarea.focus();
+                    })
+                    .catch((error) => {
+                        console.error("Erreur lors du chargement de la wishlist:", error);
+                        alert('Une erreur est survenue lors du chargement de votre wishlist.');
+                    });
+            }
+            return;
+        }
+        // Sinon, demander le mot de passe
         passwordModal.dataset.context = context;
         if (raceId) {
             passwordModal.dataset.raceId = raceId;
@@ -1168,86 +1207,6 @@
                 modal.classList.add('hidden');
             }
         });
-    });
-
-    // Modifier la fonction showPasswordModal pour gérer la wishlist
-    function showPasswordModal(context, raceId = null) {
-        passwordModal.dataset.context = context;
-        if (raceId) {
-            passwordModal.dataset.raceId = raceId;
-        } else {
-            passwordModal.dataset.raceId = '';
-        }
-        passwordModal.classList.remove('hidden');
-        passwordInput.value = '';
-        passwordError.classList.add('hidden');
-        passwordInput.focus();
-    }
-
-    // Modifier la gestion du mot de passe pour inclure la wishlist
-    confirmPassword.addEventListener('click', async function () {
-        const inputHash = await sha256(passwordInput.value);
-
-        if (inputHash === passwordHash) {
-            passwordModal.classList.add('hidden');
-            passwordInput.value = '';
-            passwordError.classList.add('hidden');
-
-            // Récupérer le contexte et l'ID de la course si applicable
-            const context = passwordModal.dataset.context;
-            const raceId = passwordModal.dataset.raceId;
-
-            // Selon le contexte, ouvrir le bon modal
-            if (context === 'add') {
-                // Afficher le modal d'ajout de course
-                modalTitle.textContent = 'Ajouter une course';
-                raceForm.reset();
-                document.getElementById('raceId').value = '';
-
-                // Réinitialiser l'état de la photo
-                photoData = null;
-                photoPreview.classList.add('hidden');
-
-                raceModal.classList.remove('hidden');
-                document.getElementById('raceName').focus();
-            }
-            else if (context === 'edit') {
-                // Préparer le formulaire pour l'édition
-                modalTitle.textContent = 'Modifier la course';
-
-                // Appeler la fonction de remplissage de formulaire
-                populateEditForm(raceId);
-
-                raceModal.classList.remove('hidden');
-                document.getElementById('raceName').focus();
-            }
-            else if (context === 'delete' && raceId) {
-                showConfirmDeleteModal(raceId);
-            }
-            else if (context === 'wishlist-edit') {
-                // Charger le contenu actuel dans le textarea
-                wishlistCollection.doc(WISHLIST_ID).get()
-                    .then((doc) => {
-                        if (doc.exists && doc.data().items) {
-                            wishlistTextarea.value = doc.data().items.join('\n');
-                        } else {
-                            wishlistTextarea.value = '';
-                        }
-
-                        wishlistDisplay.classList.add('hidden');
-                        wishlistEditForm.classList.remove('hidden');
-                        wishlistTextarea.focus();
-                    })
-                    .catch((error) => {
-                        console.error("Erreur lors du chargement de la wishlist:", error);
-                        alert('Une erreur est survenue lors du chargement de votre wishlist.');
-                    });
-            }
-        } else {
-            // Mot de passe incorrect
-            passwordError.classList.remove('hidden');
-            passwordInput.focus();
-        }
     });
 
     // Initialiser
