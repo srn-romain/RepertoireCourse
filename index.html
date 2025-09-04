@@ -422,6 +422,7 @@
         let totalDistance = 0;
         let totalElevation = 0;
         let totalSeconds = 0;
+        let totalPrice = 0;
         const totalRaces = racesData.length;
 
         // Calculer les totaux
@@ -439,6 +440,10 @@
                     totalSeconds += hours * 3600 + minutes * 60 + seconds;
                 }
             }
+            // Additionner le prix si renseigné
+            if (race.price !== undefined && race.price !== null && race.price !== '') {
+                totalPrice += parseFloat(race.price) || 0;
+            }
         });
 
         // Formater le temps total en heures et minutes
@@ -447,6 +452,8 @@
 
         // Arrondir la distance à 1 décimale
         totalDistance = Math.round(totalDistance * 10) / 10;
+        // Arrondir le prix à 2 décimales
+        totalPrice = Math.round(totalPrice * 100) / 100;
 
         // Mettre à jour le texte des statistiques
         const statsElement = document.getElementById('statsText');
@@ -454,7 +461,8 @@
         <span class="font-semibold">${totalRaces}</span> courses |
         <span class="font-semibold">${totalDistance}</span> km parcourus |
         <span class="font-semibold">${totalElevation}</span> m de dénivelé |
-        <span class="font-semibold">${totalHours}h${remainingMinutes}</span> de course
+        <span class="font-semibold">${totalHours}h${remainingMinutes}</span> de course |
+        <span class="font-semibold">${totalPrice.toLocaleString('fr-FR', {minimumFractionDigits: 2, maximumFractionDigits: 2})} €</span> dépensés
     `;
     }
 
