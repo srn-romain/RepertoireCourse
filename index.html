@@ -341,7 +341,7 @@
             </div>
 
             <div id="wishlistDisplay" class="mb-4">
-                <ul id="wishlistItems" class="list-disc pl-5 space-y-2 text-gray-700">
+                <ul id="wishlistItems" class="list-disc pl-5 space-y-0.1 text-gray-700">
                     <!-- Les éléments de la liste seront ajoutés ici -->
                 </ul>
                 <p id="emptyWishlist" class="text-center text-gray-500 italic py-4 hidden">Aucune course dans votre
@@ -1141,18 +1141,59 @@
     // Identifiant unique pour la wishlist (nous n'en utilisons qu'une seule)
     const WISHLIST_ID = 'main-wishlist';
 
+    // Ouvrir le modal wishlist au clic sur le bouton
+    wishlistBtn.addEventListener('click', () => {
+        wishlistModal.classList.remove('hidden');
+        wishlistDisplay.classList.remove('hidden');
+        wishlistEditForm.classList.add('hidden');
+        loadWishlist();
+    });
+
+    // Fermer le modal wishlist
+    closeWishlistBtn.addEventListener('click', () => {
+        wishlistModal.classList.add('hidden');
+    });
+
+    // Ouvrir le formulaire d'édition de la wishlist
+    editWishlistBtn.addEventListener('click', () => {
+        wishlistCollection.doc(WISHLIST_ID).get()
+            .then((doc) => {
+                let items = [];
+                if (doc.exists && doc.data().items) {
+                    items = doc.data().items;
+                }
+                // Remplir le textarea avec les noms des courses
+                wishlistTextarea.value = items.map(item => typeof item === 'string' ? item : item.name).join('\n');
+                wishlistDisplay.classList.add('hidden');
+                wishlistEditForm.classList.remove('hidden');
+                wishlistTextarea.focus();
+            })
+            .catch((error) => {
+                console.error("Erreur lors du chargement de la wishlist:", error);
+                alert('Une erreur est survenue lors du chargement de votre wishlist.');
+            });
+    });
+
+    // Annuler l'édition de la wishlist
+    cancelWishlistEdit.addEventListener('click', () => {
+        wishlistEditForm.classList.add('hidden');
+        wishlistDisplay.classList.remove('hidden');
+    });
+
     // Charger la wishlist depuis Firebase
     function loadWishlist() {
         wishlistItems.innerHTML = '<li class="text-gray-400">Chargement...</li>';
 
         wishlistCollection.doc(WISHLIST_ID).get()
             .then((doc) => {
+                let items = [];
                 if (doc.exists && doc.data().items && doc.data().items.length > 0) {
-                    const items = doc.data().items;
-                    renderWishlistItems(items);
+                    items = doc.data().items;
+                }
+                renderWishlistItems(items);
+                if (items.length > 0) {
                     emptyWishlist.classList.add('hidden');
                 } else {
-                    wishlistItems.innerHTML = '';
                     emptyWishlist.classList.remove('hidden');
                 }
             })
@@ -1166,46 +1207,102 @@
     function renderWishlistItems(items) {
         wishlistItems.innerHTML = '';
 
-        items.forEach((item) => {
-            if (item.trim() !== '') {
-                const li = document.createElement('li');
-                li.className = 'py-1';
-                li.textContent = item;
-                wishlistItems.appendChild(li);
+        // Migration : transformer les anciennes entrées (string) en objets
+        items = items.map(item => {
+            if (typeof item === 'string') {
+                return { name: item, favorite: false };
             }
+            // Si déjà objet, garder tel quel
+            return item;
+        });
+
+        // Séparer favoris et non favoris
+        const favorites = items.filter(item => item.favorite);
+        const others = items.filter(item => !item.favorite);
+
+        // Fonction pour créer un élément de liste avec étoile
+        function createWishlistLi(item, index) {
+            const li = document.createElement('li');
+            li.className = 'py-1 flex items-center';
+            // Étoile cliquable
+            const star = document.createElement('span');
+            star.className = 'cursor-pointer mr-2';
+            star.innerHTML = item.favorite
+                ? '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.966a1 1 0 00.95.69h4.175c.969 0 1.371 1.24.588 1.81l-3.38 2.455a1 1 0 00-.364 1.118l1.287 3.966c.3.921-.755 1.688-1.54 1.118l-3.38-2.455a1 1 0 00-1.175 0l-3.38 2.455c-.784.57-1.838-.197-1.539-1.118l1.287-3.966a1 1 0 00-.364-1.118L2.049 9.393c-.783-.57-.38-1.81.588-1.81h4.175a1 1 0 00.95-.69l1.286-3.966z"/></svg>'
+                : '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-300" fill="none" viewBox="0 0 20 20" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.966a1 1 0 00.95.69h4.175c.969 0 1.371 1.24.588 1.81l-3.38 2.455a1 1 0 00-.364 1.118l1.287 3.966c.3.921-.755 1.688-1.54 1.118l-3.38-2.455a1 1 0 00-1.175 0l-3.38 2.455c-.784.57-1.838-.197-1.539-1.118l1.287-3.966a1 1 0 00-.364-1.118L2.049 9.393c-.783-.57-.38-1.81.588-1.81h4.175a1 1 0 00.95-.69l1.286-3.966z"/></svg>';
+            star.addEventListener('click', function(e) {
+                e.stopPropagation();
+                // Toggle favori
+                item.favorite = !item.favorite;
+                // Sauvegarder la wishlist modifiée
+                saveWishlistItems([...favorites, ...others]);
+            });
+            li.appendChild(star);
+            // Nom de la course
+            const nameSpan = document.createElement('span');
+            nameSpan.textContent = item.name;
+            li.appendChild(nameSpan);
+            return li;
+        }
+
+        // Afficher les favoris en haut
+        favorites.forEach((item, i) => {
+            wishlistItems.appendChild(createWishlistLi(item, i));
+        });
+        // Puis les autres
+        others.forEach((item, i) => {
+            wishlistItems.appendChild(createWishlistLi(item, i + favorites.length));
         });
     }
 
-    // Ouvrir le modal wishlist
-    wishlistBtn.addEventListener('click', () => {
-        loadWishlist();
-        wishlistModal.classList.remove('hidden');
-        wishlistDisplay.classList.remove('hidden');
-        wishlistEditForm.classList.add('hidden');
-    });
+    // Nouvelle fonction pour sauvegarder la wishlist (utilisée lors du toggle favori)
+    function saveWishlistItems(items) {
+        wishlistCollection.doc(WISHLIST_ID).set({
+            items: items,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true })
+            .then(() => {
+                renderWishlistItems(items);
+                if (items.length > 0) {
+                    emptyWishlist.classList.add('hidden');
+                } else {
+                    emptyWishlist.classList.remove('hidden');
+                }
+            })
+            .catch((error) => {
+                console.error("Erreur lors de la sauvegarde de la wishlist:", error);
+                alert('Une erreur est survenue lors de la sauvegarde de votre wishlist.');
+            });
+    }
 
-    // Fermer le modal wishlist
-    closeWishlistBtn.addEventListener('click', () => {
-        wishlistModal.classList.add('hidden');
-    });
+    // Adapter la récupération et la sauvegarde dans loadWishlist et saveWishlistBtn
+    function loadWishlist() {
+        wishlistItems.innerHTML = '<li class="text-gray-400">Chargement...</li>';
 
-    // Modifier la wishlist
-    editWishlistBtn.addEventListener('click', () => {
-        showPasswordModal('wishlist-edit');
-    });
+        wishlistCollection.doc(WISHLIST_ID).get()
+            .then((doc) => {
+                let items = [];
+                if (doc.exists && doc.data().items && doc.data().items.length > 0) {
+                    items = doc.data().items;
+                }
+                renderWishlistItems(items);
+                if (items.length > 0) {
+                    emptyWishlist.classList.add('hidden');
+                } else {
+                    emptyWishlist.classList.remove('hidden');
+                }
+            })
+            .catch((error) => {
+                console.error("Erreur lors du chargement de la wishlist:", error);
+                wishlistItems.innerHTML = '<li class="text-red-500">Erreur lors du chargement</li>';
+            });
+    }
 
-    // Annuler la modification
-    cancelWishlistEdit.addEventListener('click', () => {
-        wishlistDisplay.classList.remove('hidden');
-        wishlistEditForm.classList.add('hidden');
-    });
-
-    // Sauvegarder les modifications
     saveWishlistBtn.addEventListener('click', () => {
         const text = wishlistTextarea.value;
-        const items = text.split('\n').filter(item => item.trim() !== '');
+        // Nouvelle structure : chaque ligne devient un objet { name, favorite }
+        const items = text.split('\n').filter(item => item.trim() !== '').map(item => ({ name: item.trim(), favorite: false }));
 
-        // Afficher un indicateur de chargement
         saveWishlistBtn.disabled = true;
         saveWishlistBtn.innerHTML = '<svg class="animate-spin h-5 w-5 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>';
 
