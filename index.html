@@ -1197,13 +1197,13 @@
                 querySnapshot.forEach((doc) => {
                     items.push({ id: doc.id, ...doc.data() });
                 });
-                // Mettre à jour le total à côté du titre
+                // Mettre à jour le total à côté du titre principal
                 const wishlistTitle = document.querySelector('#wishlistModal h3');
                 if (wishlistTitle) {
                     let totalSpan = wishlistTitle.querySelector('.wishlist-total');
                     if (!totalSpan) {
                         totalSpan = document.createElement('span');
-                        totalSpan.className = 'wishlist-total text-xs text-gray-500 ml-2 align-top';
+                        totalSpan.className = 'wishlist-total text-m text-green-700 ml-2 align-top font-bold';
                         wishlistTitle.appendChild(totalSpan);
                     }
                     totalSpan.textContent = `(${items.length})`;
