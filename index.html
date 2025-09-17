@@ -359,7 +359,7 @@
                 <div id="radioGroupContainer" class="flex justify-center gap-6 my-2">
                     <!-- Les boutons radio seront insérés ici -->
                 </div>
-                <p class="text-sm text-gray-500 mb-4">Cliquez sur l'étoile pour mettre en favori. La date d'ajout est enregistrée automatiquement.</p>
+                <p class="text-sm text-gray-500 mb-4">Cliquez sur l'étoile pour mettre en favori. <br> La date d'ajout est enregistrée automatiquement.</p>
                 <div class="flex justify-end space-x-3">
                     <button id="cancelWishlistEdit" class="px-4 py-2 text-gray-600 hover:text-gray-800 transition">Annuler</button>
                     <button id="saveWishlistBtn" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">Enregistrer</button>
@@ -371,24 +371,24 @@
 
 <!-- Modal d'alerte favoris max -->
 <div id="favoriteAlertModal" class="fixed inset-0 flex items-center justify-center z-50 hidden">
-    <div class="absolute inset-0 bg-black bg-opacity-50 blur-bg"></div>
-    <div class="relative bg-white rounded-xl shadow-xl w-full max-w-xs mx-4 z-10 p-6 flex flex-col items-center">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-yellow-400 mb-2" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.966a1 1 0 00.95.69h4.175c.969 0 1.371 1.24.588 1.81l-3.38 2.455a1 1 0 00-.364 1.118l1.287 3.966c.3.921-.755 1.688-1.54 1.118l-3.38-2.455a1 1 0 00-1.175 0l-3.38 2.455c-.784.57-1.838-.197-1.539-1.118l1.287-3.966a1 1 0 00-.364-1.118L2.049 9.393c-.783-.57-.38-1.81.588-1.81h4.175a1 1 0 00.95-.69l1.286-3.966z"/></svg>
-        <h2 class="text-lg font-bold text-yellow-600 mb-2 text-center">Limite de favoris atteinte</h2>
-        <p class="text-gray-700 text-center mb-4">Vous ne pouvez avoir que <span class="font-bold text-yellow-700">3 courses</span> en favori dans votre wishlist.</p>
-        <button id="closeFavoriteAlertBtn" class="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition">OK</button>
-    </div>
+  <div class="absolute inset-0 bg-black bg-opacity-50 blur-bg"></div>
+  <div class="relative bg-white rounded-xl shadow-xl w-full max-w-xs mx-4 z-10 p-6 flex flex-col items-center">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-yellow-400 mb-2" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.966a1 1 0 00.95.69h4.175c.969 0 1.371 1.24.588 1.81l-3.38 2.455a1 1 0 00-.364 1.118l1.287 3.966c.3.921-.755 1.688-1.54 1.118l-3.38-2.455a1 1 0 00-1.175 0l-3.38 2.455c-.784.57-1.838-.197-1.539-1.118l1.287-3.966a1 1 0 00-.364-1.118L2.049 9.393c-.783-.57-.38-1.81.588-1.81h4.175a1 1 0 00.95-.69l1.286-3.966z"/></svg>
+    <h2 class="text-lg font-bold text-yellow-600 mb-2 text-center">Limite de favoris atteinte</h2>
+    <p class="text-gray-700 text-center mb-4">Vous ne pouvez avoir que <span class="font-bold text-yellow-700">3 courses</span> en favori dans votre wishlist.</p>
+    <button id="closeFavoriteAlertBtn" class="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition">OK</button>
+  </div>
 </div>
 
 <!-- Modal d'alerte catégorie non sélectionnée -->
 <div id="categoryAlertModal" class="fixed inset-0 flex items-center justify-center z-50 hidden">
-    <div class="absolute inset-0 bg-black bg-opacity-50 blur-bg"></div>
-    <div class="relative bg-white rounded-xl shadow-xl w-full max-w-xs mx-4 z-10 p-6 flex flex-col items-center">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-red-400 mb-2" fill="currentColor" viewBox="0 0 20 20"><path d="M18 10c0 4.418-3.582 8-8 8s-8-3.582-8-8 3.582-8 8-8 8 3.582 8 8zm-8 4a1 1 0 100-2 1 1 0 000 2zm1-7V9a1 1 0 11-2 0v2a1 1 0 102 0V7z"/></svg>
-        <h2 class="text-lg font-bold text-red-600 mb-2 text-center">Catégorie obligatoire</h2>
-        <p class="text-gray-700 text-center mb-4">Veuillez sélectionner une catégorie (Course, Trail ou Triathlon) avant d'ajouter la course.</p>
-        <button id="closeCategoryAlertBtn" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition">OK</button>
-    </div>
+  <div class="absolute inset-0 bg-black bg-opacity-50 blur-bg"></div>
+  <div class="relative bg-white rounded-xl shadow-xl w-full max-w-xs mx-4 z-10 p-6 flex flex-col items-center">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-red-400 mb-2" fill="currentColor" viewBox="0 0 20 20"><path d="M18 10c0 4.418-3.582 8-8 8s-8-3.582-8-8 3.582-8 8-8 8 3.582 8 8zm-8 4a1 1 0 100-2 1 1 0 000 2zm1-7V9a1 1 0 11-2 0v2a1 1 0 102 0V7z"/></svg>
+    <h2 class="text-lg font-bold text-red-600 mb-2 text-center">Catégorie obligatoire</h2>
+    <p class="text-gray-700 text-center mb-4">Veuillez sélectionner une catégorie (Course, Trail ou Triathlon) avant d'ajouter la course.</p>
+    <button id="closeCategoryAlertBtn" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition">OK</button>
+  </div>
 </div>
 
 <script>
@@ -1165,6 +1165,7 @@
         wishlistModal.classList.remove('hidden');
         wishlistDisplay.classList.remove('hidden');
         wishlistEditForm.classList.add('hidden');
+        editWishlistBtn.classList.remove('hidden');
         loadWishlist();
     });
 
@@ -1182,6 +1183,17 @@
                 querySnapshot.forEach((doc) => {
                     items.push({ id: doc.id, ...doc.data() });
                 });
+                // Mettre à jour le total à côté du titre
+                const wishlistTitle = document.querySelector('#wishlistModal h3');
+                if (wishlistTitle) {
+                    let totalSpan = wishlistTitle.querySelector('.wishlist-total');
+                    if (!totalSpan) {
+                        totalSpan = document.createElement('span');
+                        totalSpan.className = 'wishlist-total text-xs text-gray-500 ml-2 align-top';
+                        wishlistTitle.appendChild(totalSpan);
+                    }
+                    totalSpan.textContent = `(${items.length})`;
+                }
                 renderWishlistItems(items);
                 if (items.length > 0) {
                     emptyWishlist.classList.add('hidden');
@@ -1203,12 +1215,14 @@
         categories.forEach(cat => {
             const catItems = items.filter(item => item.category === cat);
             if (catItems.length === 0) return;
+            // Favoris en premier, puis le reste
+            const sortedCatItems = [...catItems].sort((a, b) => (b.favorite === a.favorite) ? 0 : a.favorite ? -1 : 1);
             // Titre centré et coloré avec compteur
             const title = document.createElement('h4');
             title.className = 'text-xl font-bold text-green-700 text-center my-4';
             title.textContent = `${cat.charAt(0).toUpperCase() + cat.slice(1)} (${catItems.length})`;
             wishlistItems.appendChild(title);
-            catItems.forEach(item => {
+            sortedCatItems.forEach(item => {
                 const li = document.createElement('li');
                 li.className = 'py-1 flex items-center cursor-pointer';
                 if (item.favorite) {
@@ -1241,6 +1255,7 @@
                 renderWishlistEditList(wishlistEditItems);
                 wishlistDisplay.classList.add('hidden');
                 wishlistEditForm.classList.remove('hidden');
+                editWishlistBtn.classList.add('hidden');
                 newWishlistItemInput.value = '';
             })
             .catch((error) => {
@@ -1253,6 +1268,7 @@
     cancelWishlistEdit.addEventListener('click', () => {
         wishlistEditForm.classList.add('hidden');
         wishlistDisplay.classList.remove('hidden');
+        editWishlistBtn.classList.remove('hidden');
     });
 
     // Afficher la liste éditable
@@ -1348,28 +1364,28 @@
 
     // Fermer la modale favoris max
     setTimeout(() => {
-        const closeFavBtn = document.getElementById('closeFavoriteAlertBtn');
-        if (closeFavBtn) {
-            closeFavBtn.onclick = function() {
-                document.getElementById('favoriteAlertModal').classList.add('hidden');
-            };
-        }
-        const closeCatBtn = document.getElementById('closeCategoryAlertBtn');
-        if (closeCatBtn) {
-            closeCatBtn.onclick = function() {
-                document.getElementById('categoryAlertModal').classList.add('hidden');
-            };
-        }
-    }, 500);
+  const closeFavBtn = document.getElementById('closeFavoriteAlertBtn');
+  if (closeFavBtn) {
+    closeFavBtn.onclick = function() {
+      document.getElementById('favoriteAlertModal').classList.add('hidden');
+    };
+  }
+  const closeCatBtn = document.getElementById('closeCategoryAlertBtn');
+  if (closeCatBtn) {
+    closeCatBtn.onclick = function() {
+      document.getElementById('categoryAlertModal').classList.add('hidden');
+    };
+  }
+}, 500);
 
-    // Ajout du groupe radio pour l'ajout d'une course à la wishlist
-    let radioGroup = null;
-    let radioErrorMsg = null;
-    function ensureRadioGroup() {
-        if (!radioGroup) {
-            radioGroup = document.createElement('div');
-            radioGroup.className = 'flex flex-row justify-center gap-6';
-            radioGroup.innerHTML = `
+// Ajout du groupe radio pour l'ajout d'une course à la wishlist
+let radioGroup = null;
+let radioErrorMsg = null;
+function ensureRadioGroup() {
+    if (!radioGroup) {
+        radioGroup = document.createElement('div');
+        radioGroup.className = 'flex flex-row justify-center gap-6';
+        radioGroup.innerHTML = `
           <label class="flex items-center gap-1">
             <input type="radio" name="wishlistCategory" value="course" class="wishlist-category-radio">
             <span>Course</span>
@@ -1383,68 +1399,68 @@
             <span>Triathlon</span>
           </label>
         `;
-            radioErrorMsg = document.createElement('div');
-            radioErrorMsg.className = 'text-red-500 text-sm mb-2 hidden w-full text-center';
-            radioErrorMsg.textContent = 'Veuillez sélectionner une catégorie.';
-            radioGroup.appendChild(radioErrorMsg);
-            radioGroupContainer.appendChild(radioGroup);
-        }
+        radioErrorMsg = document.createElement('div');
+        radioErrorMsg.className = 'text-red-500 text-sm mb-2 hidden w-full text-center';
+        radioErrorMsg.textContent = 'Veuillez sélectionner une catégorie.';
+        radioGroup.appendChild(radioErrorMsg);
+        radioGroupContainer.appendChild(radioGroup);
     }
+}
+ensureRadioGroup();
+
+addWishlistItemBtn.onclick = function() {
     ensureRadioGroup();
+    const name = newWishlistItemInput.value.trim();
+    const category = document.querySelector('input[name="wishlistCategory"]:checked');
+    if (!category) {
+        // Afficher la modale d'alerte catégorie
+        document.getElementById('categoryAlertModal').classList.remove('hidden');
+        return;
+    }
+    if (name) {
+        const newItem = {
+            name,
+            favorite: false,
+            category: category.value,
+            addedAt: new Date().toISOString()
+        };
+        wishlistCollection.add(newItem).then((docRef) => {
+            newItem.id = docRef.id;
+            wishlistEditItems.push(newItem);
+            renderWishlistEditList(wishlistEditItems);
+            newWishlistItemInput.value = '';
+            document.querySelectorAll('input[name="wishlistCategory"]').forEach(r => r.checked = false);
+        });
+    }
+};
 
-    addWishlistItemBtn.onclick = function() {
-        ensureRadioGroup();
-        const name = newWishlistItemInput.value.trim();
-        const category = document.querySelector('input[name="wishlistCategory"]:checked');
-        if (!category) {
-            // Afficher la modale d'alerte catégorie
-            document.getElementById('categoryAlertModal').classList.remove('hidden');
-            return;
+// Correction du bouton Enregistrer de la modale d'édition de la wishlist
+saveWishlistBtn.onclick = function() {
+    // Vérifier que chaque item a une catégorie
+    let hasError = false;
+    wishlistEditItems.forEach(item => {
+        if (!item.category || !['course','trail','triathlon'].includes(item.category)) {
+            hasError = true;
         }
-        if (name) {
-            const newItem = {
-                name,
-                favorite: false,
-                category: category.value,
-                addedAt: new Date().toISOString()
-            };
-            wishlistCollection.add(newItem).then((docRef) => {
-                newItem.id = docRef.id;
-                wishlistEditItems.push(newItem);
-                renderWishlistEditList(wishlistEditItems);
-                newWishlistItemInput.value = '';
-                document.querySelectorAll('input[name="wishlistCategory"]').forEach(r => r.checked = false);
-            });
+    });
+    if (hasError) {
+        alert('Chaque course doit avoir une catégorie (Course, Trail ou Triathlon).');
+        return;
+    }
+    // Sauvegarder chaque item sur Firebase
+    const promises = wishlistEditItems.map(item => {
+        if (item.id) {
+            return wishlistCollection.doc(item.id).set(item);
+        } else {
+            return wishlistCollection.add(item);
         }
-    };
-
-    // Correction du bouton Enregistrer de la modale d'édition de la wishlist
-    saveWishlistBtn.onclick = function() {
-        // Vérifier que chaque item a une catégorie
-        let hasError = false;
-        wishlistEditItems.forEach(item => {
-            if (!item.category || !['course','trail','triathlon'].includes(item.category)) {
-                hasError = true;
-            }
-        });
-        if (hasError) {
-            alert('Chaque course doit avoir une catégorie (Course, Trail ou Triathlon).');
-            return;
-        }
-        // Sauvegarder chaque item sur Firebase
-        const promises = wishlistEditItems.map(item => {
-            if (item.id) {
-                return wishlistCollection.doc(item.id).set(item);
-            } else {
-                return wishlistCollection.add(item);
-            }
-        });
-        Promise.all(promises).then(() => {
-            wishlistEditForm.classList.add('hidden');
-            wishlistDisplay.classList.remove('hidden');
-            loadWishlist();
-        });
-    };
+    });
+    Promise.all(promises).then(() => {
+        wishlistEditForm.classList.add('hidden');
+        wishlistDisplay.classList.remove('hidden');
+        loadWishlist();
+    });
+};
 </script>
 </body>
 </html>
