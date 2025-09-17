@@ -1458,6 +1458,7 @@ saveWishlistBtn.onclick = function() {
     Promise.all(promises).then(() => {
         wishlistEditForm.classList.add('hidden');
         wishlistDisplay.classList.remove('hidden');
+        editWishlistBtn.classList.remove('hidden');
         loadWishlist();
     });
 };
