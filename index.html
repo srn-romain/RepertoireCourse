@@ -936,6 +936,7 @@
         document.getElementById('raceTime').value = race.time;
         document.getElementById('raceLocation').value = race.location;
         document.getElementById('raceNotes').value = race.notes || '';
+        document.getElementById('racePrice').value = (race.price !== undefined && race.price !== null) ? race.price : '';
 
         // Réinitialiser d'abord la gestion de photos
         photoData = null;
