@@ -700,6 +700,26 @@
                 document.getElementById('raceName').focus();
             } else if (context === 'delete' && raceId) {
                 showConfirmDeleteModal(raceId);
+            } else if (context === 'wishlist-edit') {
+                wishlistCollection.get()
+                    .then((querySnapshot) => {
+                        let items = [];
+                        querySnapshot.forEach((doc) => {
+                            items.push({ id: doc.id, ...doc.data() });
+                        });
+                        wishlistEditItems = items;
+                        renderWishlistEditList(wishlistEditItems);
+                        wishlistDisplay.classList.add('hidden');
+                        wishlistEditForm.classList.remove('hidden');
+                        editWishlistBtn.classList.add('hidden');
+                        newWishlistItemInput.value = '';
+                    })
+                    .catch((error) => {
+                        console.error("Erreur lors du chargement de la wishlist:", error);
+                        alert('Une erreur est survenue lors du chargement de votre wishlist.');
+                    });
+            } else if (context === 'details' && raceId) {
+                showRaceDetails(raceId);
             }
         } else {
             // Mot de passe incorrect
@@ -823,8 +843,12 @@
         });
     }
 
-    // Modifier la fonction showRaceDetails pour afficher la photo
+    // Afficher les détails d'une course avec authentification
     function showRaceDetails(id) {
+        if (sessionStorage.getItem('authenticated') !== 'true') {
+            showPasswordModal('details', id);
+            return;
+        }
         const race = races.find(r => r.id === id);
         if (!race) return;
 
@@ -901,21 +925,25 @@
             } else if (context === 'delete' && raceId) {
                 showConfirmDeleteModal(raceId);
             } else if (context === 'wishlist-edit') {
-                wishlistCollection.doc(WISHLIST_ID).get()
-                    .then((doc) => {
-                        if (doc.exists && doc.data().items) {
-                            wishlistTextarea.value = doc.data().items.join('\n');
-                        } else {
-                            wishlistTextarea.value = '';
-                        }
+                wishlistCollection.get()
+                    .then((querySnapshot) => {
+                        let items = [];
+                        querySnapshot.forEach((doc) => {
+                            items.push({ id: doc.id, ...doc.data() });
+                        });
+                        wishlistEditItems = items;
+                        renderWishlistEditList(wishlistEditItems);
                         wishlistDisplay.classList.add('hidden');
                         wishlistEditForm.classList.remove('hidden');
-                        wishlistTextarea.focus();
+                        editWishlistBtn.classList.add('hidden');
+                        newWishlistItemInput.value = '';
                     })
                     .catch((error) => {
                         console.error("Erreur lors du chargement de la wishlist:", error);
                         alert('Une erreur est survenue lors du chargement de votre wishlist.');
                     });
+            } else if (context === 'details' && raceId) {
+                showRaceDetails(raceId);
             }
             return;
         }
@@ -1286,23 +1314,7 @@
 
     // Ouvrir le formulaire d'édition de la wishlist
     editWishlistBtn.addEventListener('click', () => {
-        wishlistCollection.get()
-            .then((querySnapshot) => {
-                let items = [];
-                querySnapshot.forEach((doc) => {
-                    items.push({ id: doc.id, ...doc.data() });
-                });
-                wishlistEditItems = items;
-                renderWishlistEditList(wishlistEditItems);
-                wishlistDisplay.classList.add('hidden');
-                wishlistEditForm.classList.remove('hidden');
-                editWishlistBtn.classList.add('hidden');
-                newWishlistItemInput.value = '';
-            })
-            .catch((error) => {
-                console.error("Erreur lors du chargement de la wishlist:", error);
-                alert('Une erreur est survenue lors du chargement de votre wishlist.');
-            });
+        showPasswordModal('wishlist-edit');
     });
 
     // Annuler l'édition de la wishlist
