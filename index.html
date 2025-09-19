@@ -1512,12 +1512,23 @@ function ensureRadioGroup() {
 }
 ensureRadioGroup();
 
+addWishlistItemBtn.disabled = true;
+addWishlistItemBtn.classList.add('opacity-50', 'cursor-not-allowed');
+newWishlistItemInput.addEventListener('input', function() {
+    const isDisabled = newWishlistItemInput.value.trim().length < 1;
+    addWishlistItemBtn.disabled = isDisabled;
+    if (isDisabled) {
+        addWishlistItemBtn.classList.add('opacity-50', 'cursor-not-allowed');
+    } else {
+        addWishlistItemBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+    }
+});
+
 addWishlistItemBtn.onclick = function() {
     ensureRadioGroup();
     const name = newWishlistItemInput.value.trim();
     const category = document.querySelector('input[name="wishlistCategory"]:checked');
     if (!category) {
-        // Afficher la modale d'alerte catégorie
         document.getElementById('categoryAlertModal').classList.remove('hidden');
         return;
     }
@@ -1533,6 +1544,8 @@ addWishlistItemBtn.onclick = function() {
             wishlistEditItems.push(newItem);
             renderWishlistEditList(wishlistEditItems);
             newWishlistItemInput.value = '';
+            addWishlistItemBtn.disabled = true;
+            addWishlistItemBtn.classList.add('opacity-50', 'cursor-not-allowed');
             document.querySelectorAll('input[name="wishlistCategory"]').forEach(r => r.checked = false);
         });
     }
