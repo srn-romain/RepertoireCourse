@@ -1331,24 +1331,50 @@ function displayRaces(racesToDisplay) {
     // Séparer par catégorie
     const categories = ['course', 'trail', 'triathlon'];
     categories.forEach(cat => {
+        // Filtrer les éléments par catégorie
         const catItems = items.filter(item => item.category === cat);
         if (catItems.length === 0) return;
-        // Favoris en premier, puis le reste
-        const sortedCatItems = [...catItems].sort((a, b) => (b.favorite === a.favorite) ? 0 : a.favorite ? -1 : 1);
+        // Trier par date croissante (plus ancienne en premier)
+        const sortedCatItems = [...catItems].sort((a, b) => {
+            const dateA = new Date(a.addedAt || 0);
+            const dateB = new Date(b.addedAt || 0);
+            return dateA - dateB;
+        });
+        // Séparer favoris et non favoris
+        const favItems = sortedCatItems.filter(item => item.favorite);
+        const nonFavItems = sortedCatItems.filter(item => !item.favorite);
         // Titre centré et coloré avec compteur
         const title = document.createElement('h4');
         title.className = 'text-xl font-bold text-green-700 text-center my-4';
         title.textContent = `${cat.charAt(0).toUpperCase() + cat.slice(1)} (${catItems.length})`;
         wishlistItems.appendChild(title);
-        sortedCatItems.forEach(item => {
+        // Afficher les favoris
+        favItems.forEach(item => {
             const li = document.createElement('li');
             li.className = 'py-1 flex items-center cursor-pointer';
-            if (item.favorite) {
-                const star = document.createElement('span');
-                star.className = 'mr-2';
-                star.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.966a1 1 0 00.95.69h4.175c.969 0 1.371 1.24.588 1.81l-3.38 2.455a1 1 0 00-.364 1.118l1.287 3.966c.3.921-.755 1.688-1.54 1.118l-3.38-2.455a1 1 0 00-1.175 0l-3.38 2.455c-.784.57-1.838-.197-1.539-1.118l1.287-3.966a1 1 0 00-.364-1.118L2.049 9.393c-.783-.57-.38-1.81.588-1.81h4.175a1 1 0 00.95-.69l1.286-3.966z"/></svg>';
-                li.appendChild(star);
-            }
+            const star = document.createElement('span');
+            star.className = 'mr-2';
+            star.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.966a1 1 0 00.95.69h4.175c.969 0 1.371 1.24.588 1.81l-3.38 2.455a1 1 0 00-.364 1.118l1.287 3.966c.3.921-.755 1.688-1.54 1.118l-3.38-2.455a1 1 0 00-1.175 0l-3.38 2.455c-.784.57-1.838-.197-1.539-1.118l1.287-3.966a1 1 0 00-.364-1.118L2.049 9.393c-.783-.57-.38-1.81.588-1.81h4.175a1 1 0 00.95-.69l1.286-3.966z"/></svg>';
+            li.appendChild(star);
+            const nameSpan = document.createElement('span');
+            nameSpan.textContent = item.name;
+            li.appendChild(nameSpan);
+            const dateSpan = document.createElement('span');
+            dateSpan.className = 'text-xs text-gray-400 ml-2';
+            dateSpan.textContent = item.addedAt ? new Date(item.addedAt).toLocaleDateString('fr-FR') : '';
+            li.appendChild(dateSpan);
+            wishlistItems.appendChild(li);
+        });
+        // Si il y a des favoris ET des non favoris, ajouter un trait fin
+        if (favItems.length > 0 && nonFavItems.length > 0) {
+            const separator = document.createElement('hr');
+            separator.className = 'border-t border-gray-200 my-2';
+            wishlistItems.appendChild(separator);
+        }
+        // Afficher le reste
+        nonFavItems.forEach(item => {
+            const li = document.createElement('li');
+            li.className = 'py-1 flex items-center cursor-pointer';
             const nameSpan = document.createElement('span');
             nameSpan.textContent = item.name;
             li.appendChild(nameSpan);
@@ -1386,70 +1412,64 @@ function displayRaces(racesToDisplay) {
             star.className = 'cursor-pointer';
             if (item.favorite) {
                 star.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.966a1 1 0 00.95.69h4.175c.969 0 1.371 1.24.588 1.81l-3.38 2.455a1 1 0 00-.364 1.118l1.287 3.966c.3.921-.755 1.688-1.54 1.118l-3.38-2.455a1 1 0 00-1.175 0l-3.38 2.455c-.784.57-1.838-.197-1.539-1.118l1.287-3.966a1 1 0 00-.364-1.118L2.049 9.393c-.783-.57-.38-1.81.588-1.81h4.175a1 1 0 00.95-.69l1.286-3.966z"/></svg>';
-            // Permettre de retirer le favori
-            star.onclick = function(e) {
-                e.stopPropagation();
-                item.favorite = false;
-                renderWishlistEditList(items);
-            };
+                li.appendChild(star);
+            } else {
+                star.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-300" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.966a1 1 0 00.95.69h4.175c.969 0 1.371 1.24.588 1.81l-3.38 2.455a1 1 0 00-.364 1.118l1.287 3.966c.3.921-.755 1.688-1.54 1.118l-3.38-2.455a1 1 0 00-1.175 0l-3.38 2.455c-.784.57-1.838-.197-1.539-1.118l1.287-3.966a1 1 0 00-.364-1.118L2.049 9.393c-.783-.57-.38-1.81.588-1.81h4.175a1 1 0 00.95-.69l1.286-3.966z"/></svg>';
+                star.onclick = function(e) {
+                    e.stopPropagation();
+                    if (favoriteCount >= 3) {
+                        document.getElementById('favoriteAlertModal').classList.remove('hidden');
+                        return;
+                    }
+                    item.favorite = true;
+                    renderWishlistEditList(items);
+                };
+            }
             li.appendChild(star);
-        } else {
-            star.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-300" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.966a1 1 0 00.95.69h4.175c.969 0 1.371 1.24.588 1.81l-3.38 2.455a1 1 0 00-.364 1.118l1.287 3.966c.3.921-.755 1.688-1.54 1.118l-3.38-2.455a1 1 0 00-1.175 0l-3.38 2.455c-.784.57-1.838-.197-1.539-1.118l1.287-3.966a1 1 0 00-.364-1.118L2.049 9.393c-.783-.57-.38-1.81.588-1.81h4.175a1 1 0 00.95-.69l1.286-3.966z"/></svg>';
-            star.onclick = function(e) {
-                e.stopPropagation();
-                if (favoriteCount >= 3) {
-                    document.getElementById('favoriteAlertModal').classList.remove('hidden');
-                    return;
-                }
-                item.favorite = true;
-                renderWishlistEditList(items);
+            // Champ nom éditable
+            const nameInput = document.createElement('input');
+            nameInput.type = 'text';
+            nameInput.value = item.name;
+            nameInput.className = 'px-2 py-1 border border-green-200 rounded focus:outline-none focus:ring-2 focus:ring-green-400 max-w-[150px] sm:max-w-[160px] md:max-w-none transition';
+            nameInput.onchange = function() {
+                item.name = nameInput.value;
             };
-            li.appendChild(star);
-        }
-        // Champ nom éditable
-        const nameInput = document.createElement('input');
-        nameInput.type = 'text';
-        nameInput.value = item.name;
-        nameInput.className = 'px-2 py-1 border border-green-200 rounded focus:outline-none focus:ring-2 focus:ring-green-400 max-w-[150px] sm:max-w-[160px] md:max-w-none transition';
-        nameInput.onchange = function() {
-            item.name = nameInput.value;
-        };
-        li.appendChild(nameInput);
-        // Sélecteur de catégorie
-        const categorySelect = document.createElement('select');
-        categorySelect.className = 'px-2 py-1 border border-green-200 rounded focus:outline-none focus:ring-2 focus:ring-green-400';
-        ['course','trail','triathlon'].forEach(cat => {
-            const opt = document.createElement('option');
-            opt.value = cat;
-            opt.textContent = cat.charAt(0).toUpperCase() + cat.slice(1);
-            if (item.category === cat) opt.selected = true;
-            categorySelect.appendChild(opt);
-        });
-        categorySelect.value = item.category || '';
-        categorySelect.onchange = function() {
-            item.category = categorySelect.value;
-        };
-        li.appendChild(categorySelect);
-        // Bouton supprimer (icône poubelle)
-        const delBtn = document.createElement('button');
-        delBtn.className = 'ml-2 p-1 rounded hover:bg-red-100';
-        delBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>';
-        delBtn.title = 'Supprimer';
-        delBtn.onclick = function(e) {
-            e.stopPropagation();
-            if (item.id) {
-                wishlistCollection.doc(item.id).delete().then(() => {
+            li.appendChild(nameInput);
+            // Sélecteur de catégorie
+            const categorySelect = document.createElement('select');
+            categorySelect.className = 'px-2 py-1 border border-green-200 rounded focus:outline-none focus:ring-2 focus:ring-green-400';
+            ['course','trail','triathlon'].forEach(cat => {
+                const opt = document.createElement('option');
+                opt.value = cat;
+                opt.textContent = cat.charAt(0).toUpperCase() + cat.slice(1);
+                if (item.category === cat) opt.selected = true;
+                categorySelect.appendChild(opt);
+            });
+            categorySelect.value = item.category || '';
+            categorySelect.onchange = function() {
+                item.category = categorySelect.value;
+            };
+            li.appendChild(categorySelect);
+            // Bouton supprimer (icône poubelle)
+            const delBtn = document.createElement('button');
+            delBtn.className = 'ml-2 p-1 rounded hover:bg-red-100';
+            delBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>';
+            delBtn.title = 'Supprimer';
+            delBtn.onclick = function(e) {
+                e.stopPropagation();
+                if (item.id) {
+                    wishlistCollection.doc(item.id).delete().then(() => {
+                        items.splice(idx, 1);
+                        renderWishlistEditList(items);
+                    });
+                } else {
                     items.splice(idx, 1);
                     renderWishlistEditList(items);
-                });
-            } else {
-                items.splice(idx, 1);
-                renderWishlistEditList(items);
-            }
-        };
-        li.appendChild(delBtn);
-        wishlistEditList.appendChild(li);
-    });
+                }
+            };
+            li.appendChild(delBtn);
+            wishlistEditList.appendChild(li);
+        });
 }
 
 
