@@ -391,6 +391,17 @@
   </div>
 </div>
 
+<!-- Modal d'alerte ajout non validé wishlist -->
+<div id="wishlistUnsavedAlertModal" class="fixed inset-0 flex items-center justify-center z-[70] hidden">
+  <div class="absolute inset-0 bg-black bg-opacity-50 blur-bg"></div>
+  <div class="relative bg-white rounded-xl shadow-xl w-full max-w-xs mx-4 z-10 p-6 flex flex-col items-center">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-blue-400 mb-2" fill="currentColor" viewBox="0 0 20 20"><path d="M18 10c0 4.418-3.582 8-8 8s-8-3.582-8-8 3.582-8 8-8 8 3.582 8 8zm-8 4a1 1 0 100-2 1 1 0 000 2zm1-7V9a1 1 0 11-2 0v2a1 1 0 102 0V7z"/></svg>
+    <h2 class="text-lg font-bold text-blue-600 mb-2 text-center">Ajout non validé</h2>
+    <p class="text-gray-700 text-center mb-4">Vous avez saisi une course mais ne l'avez pas ajoutée.<br>Veuillez cliquer sur "Ajouter" ou vider le champ avant de quitter.</p>
+    <button id="closeWishlistUnsavedAlertBtn" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition">OK</button>
+  </div>
+</div>
+
 <script>
     // Firebase configuration
     const firebaseConfig = {
@@ -1393,7 +1404,15 @@ function displayRaces(racesToDisplay) {
     });
 
     // Annuler l'édition de la wishlist
-    cancelWishlistEdit.addEventListener('click', () => {
+    cancelWishlistEdit.addEventListener('click', (e) => {
+        // Empêche la propagation pour éviter la fermeture immédiate par le click-outside
+        if (newWishlistItemInput.value.trim().length > 0) {
+            e.preventDefault();
+            e.stopPropagation();
+            document.getElementById('wishlistUnsavedAlertModal').style.zIndex = '70';
+            document.getElementById('wishlistUnsavedAlertModal').classList.remove('hidden');
+            return;
+        }
         wishlistEditForm.classList.add('hidden');
         wishlistDisplay.classList.remove('hidden');
         editWishlistBtn.classList.remove('hidden');
@@ -1584,6 +1603,13 @@ saveWishlistBtn.onclick = function() {
         alert('Chaque course doit avoir une catégorie (Course, Trail ou Triathlon).');
         return;
     }
+    // Vérifier si l'input d'ajout est non vide avant de fermer
+    if (newWishlistItemInput.value.trim().length > 0) {
+        document.getElementById('wishlistUnsavedAlertModal').style.zIndex = '70';
+        document.getElementById('wishlistUnsavedAlertModal').classList.remove('hidden');
+        newWishlistItemInput.focus();
+        return;
+    }
     // Sauvegarder chaque item sur Firebase
     const promises = wishlistEditItems.map(item => {
         if (item.id) {
@@ -1598,6 +1624,50 @@ saveWishlistBtn.onclick = function() {
         editWishlistBtn.classList.remove('hidden');
         loadWishlist();
     });
+};
+
+// Ajout de la gestion de la modale d'alerte pour ajout non validé dans l'édition de la wishlist
+function tryCloseWishlistEditModal(e) {
+    if (newWishlistItemInput.value.trim().length > 0) {
+        if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        document.getElementById('wishlistUnsavedAlertModal').style.zIndex = '70';
+        document.getElementById('wishlistUnsavedAlertModal').classList.remove('hidden');
+        return false;
+    }
+    wishlistEditForm.classList.add('hidden');
+    wishlistDisplay.classList.remove('hidden');
+    editWishlistBtn.classList.remove('hidden');
+    return true;
+}
+
+cancelWishlistEdit.addEventListener('click', tryCloseWishlistEditModal);
+
+// Empêche la fermeture par click-outside si input non vide
+wishlistModal.addEventListener('click', function(event) {
+    if (!wishlistEditForm.classList.contains('hidden')) {
+        const modalContent = wishlistModal.querySelector('.modal-content');
+        if (!modalContent.contains(event.target)) {
+            if (!tryCloseWishlistEditModal(event)) {
+                // Empêche la fermeture
+                return;
+            }
+            wishlistModal.classList.add('hidden');
+        }
+    } else {
+        const modalContent = wishlistModal.querySelector('.modal-content');
+        if (!modalContent.contains(event.target)) {
+            wishlistModal.classList.add('hidden');
+        }
+    }
+});
+
+document.getElementById('closeWishlistUnsavedAlertBtn').onclick = function() {
+    document.getElementById('wishlistUnsavedAlertModal').classList.add('hidden');
+    // Focus sur l'input pour que l'utilisateur puisse corriger
+    newWishlistItemInput.focus();
 };
 </script>
 </body>
