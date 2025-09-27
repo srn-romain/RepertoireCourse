@@ -191,9 +191,9 @@
                               class="w-full px-3 py-2 border border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"></textarea>
                 </div>
                 <div class="mb-4">
-                    <label for="racePhoto" class="block text-green-700 mb-2">Photo</label>
+                    <label for="racePhoto" class="block text-green-700 mb-2">Photo <span class="text-red-500">*</span></label>
                     <div class="border-2 border-dashed border-green-300 rounded-lg p-4 text-center hover:border-green-500 transition">
-                        <input type="file" id="racePhoto" accept="image/*" class="hidden" required>
+                        <input type="file" id="racePhoto" accept="image/*" class="hidden">
                         <label for="racePhoto" class="cursor-pointer">
                             <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-12 w-12 text-green-400" fill="none"
                                  viewBox="0 0 24 24" stroke="currentColor">
@@ -211,9 +211,9 @@
                     </div>
                 </div>
                 <div class="mb-4">
-                    <label for="raceParcours" class="block text-green-700 mb-2">Parcours</label>
+                    <label for="raceParcours" class="block text-green-700 mb-2">Parcours <span class="text-red-500">*</span></label>
                     <div class="border-2 border-dashed border-green-300 rounded-lg p-4 text-center hover:border-green-500 transition">
-                        <input type="file" id="raceParcours" accept="image/*" class="hidden" required>
+                        <input type="file" id="raceParcours" accept="image/*" class="hidden">
                         <label for="raceParcours" class="cursor-pointer">
                             <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-12 w-12 text-green-400" fill="none"
                                  viewBox="0 0 24 24" stroke="currentColor">
@@ -417,7 +417,11 @@
 <div id="categoryAlertModal" class="fixed inset-0 flex items-center justify-center z-50 hidden">
     <div class="absolute inset-0 bg-black bg-opacity-50 blur-bg"></div>
     <div class="relative bg-white rounded-xl shadow-xl w-full max-w-xs mx-4 z-10 p-6 flex flex-col items-center">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-red-400 mb-2" fill="currentColor" viewBox="0 0 20 20"><path d="M18 10c0 4.418-3.582 8-8 8s-8-3.582-8-8 3.582-8 8-8 8 3.582 8 8zm-8 4a1 1 0 100-2 1 1 0 000 2zm1-7V9a1 1 0 11-2 0v2a1 1 0 102 0V7z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-red-400 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"/>
+            <line x1="12" y1="7" x2="12" y2="13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <circle cx="12" cy="17" r="0.8" fill="currentColor"/>
+        </svg>
         <h2 class="text-lg font-bold text-red-600 mb-2 text-center">Catégorie obligatoire</h2>
         <p class="text-gray-700 text-center mb-4">Veuillez sélectionner une catégorie (Course, Trail ou Triathlon) avant d'ajouter la course.</p>
         <button id="closeCategoryAlertBtn" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition">OK</button>
@@ -428,11 +432,29 @@
 <div id="wishlistUnsavedAlertModal" class="fixed inset-0 flex items-center justify-center z-[70] hidden">
     <div class="absolute inset-0 bg-black bg-opacity-50 blur-bg"></div>
     <div class="relative bg-white rounded-xl shadow-xl w-full max-w-xs mx-4 z-10 p-6 flex flex-col items-center">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-blue-400 mb-2" fill="currentColor" viewBox="0 0 20 20"><path d="M18 10c0 4.418-3.582 8-8 8s-8-3.582-8-8 3.582-8 8-8 8 3.582 8 8zm-8 4a1 1 0 100-2 1 1 0 000 2zm1-7V9a1 1 0 11-2 0v2a1 1 0 102 0V7z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-blue-400 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"/>
+            <line x1="12" y1="7" x2="12" y2="13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <circle cx="12" cy="17" r="0.8" fill="currentColor"/>
+        </svg>
         <h2 class="text-lg font-bold text-blue-600 mb-2 text-center">Ajout non validé</h2>
         <p class="text-gray-700 text-center mb-4">Vous avez saisi une course mais ne l'avez pas ajoutée.<br>Veuillez cliquer sur "Ajouter" ou vider le champ avant de quitter.</p>
         <button id="closeWishlistUnsavedAlertBtn" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition">OK</button>
     </div>
+</div>
+
+<!-- Modal d'alerte image manquante ou trop grande -->
+<div id="imageAlertModal" class="fixed inset-0 flex items-center justify-center z-50 hidden">
+    <div class="absolute inset-0 bg-black bg-opacity-50 blur-bg"></div>
+    <div class="relative bg-white rounded-xl shadow-xl w-full max-w-xs mx-4 z-10 p-6 flex flex-col items-center">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-red-400 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"/>
+            <line x1="12" y1="7" x2="12" y2="13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <circle cx="12" cy="17" r="0.8" fill="currentColor"/>
+        </svg>
+        <h2 id="imageAlertTitle" class="text-lg font-bold text-red-600 mb-2 text-center"></h2>
+        <p id="imageAlertText" class="text-gray-700 text-center mb-4"></p>
+        <button id="closeImageAlertBtn" onclick="document.getElementById('imageAlertModal').classList.add('hidden');" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition">OK</button>    </div>
 </div>
 
 <script>
@@ -1157,6 +1179,20 @@
         const notes = document.getElementById('raceNotes').value;
         const price = document.getElementById('racePrice').value;
 
+        // Affiche la modale d'alerte si la donnée est manquante
+        if (!photoData) {
+            document.getElementById('imageAlertTitle').textContent = 'Photo manquante';
+            document.getElementById('imageAlertText').textContent = 'Veuillez ajouter une photo de la course.';
+            document.getElementById('imageAlertModal').classList.remove('hidden');
+            return;
+        }
+        if (!parcoursData) {
+            document.getElementById('imageAlertTitle').textContent = 'Parcours manquant';
+            document.getElementById('imageAlertText').textContent = 'Veuillez ajouter une image du parcours.';
+            document.getElementById('imageAlertModal').classList.remove('hidden');
+            return;
+        }
+
         if (!name || !date || isNaN(distance) || isNaN(elevation) || !time || !location || price === '' || isNaN(price)) {
             alert('Veuillez remplir tous les champs obligatoires.');
             return;
@@ -1247,11 +1283,17 @@
     const previewImage = document.getElementById('previewImage');
     const removePhoto = document.getElementById('removePhoto');
     let photoData = null;
+    const MAX_IMAGE_SIZE = 2 * 1024 * 1024; // 2 Mo
 
     // Gestionnaire d'événement pour l'upload de photo
     racePhoto.addEventListener('change', function () {
         const file = this.files[0];
         if (file) {
+            if (file.size > MAX_IMAGE_SIZE) {
+                showImageAlert('Image trop grande', 'La photo de la course ne doit pas dépasser 2 Mo.');
+                racePhoto.value = '';
+                return;
+            }
             const reader = new FileReader();
             reader.onload = function (e) {
                 photoData = e.target.result; // Stocker les données de l'image
@@ -1292,6 +1334,13 @@
     raceParcours.addEventListener('change', function () {
         const file = this.files[0];
         if (file) {
+            if (file.size > MAX_IMAGE_SIZE) {
+                document.getElementById('imageAlertTitle').textContent = 'Image trop grande';
+                document.getElementById('imageAlertText').textContent = "L'image du parcours ne doit pas dépasser 2 Mo.";
+                document.getElementById('imageAlertModal').classList.remove('hidden');
+                raceParcours.value = '';
+                return;
+            }
             const reader = new FileReader();
             reader.onload = function (e) {
                 parcoursData = e.target.result;
