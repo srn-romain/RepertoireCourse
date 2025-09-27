@@ -73,6 +73,15 @@
         #detailsNotes {
             white-space: pre-wrap;
         }
+
+        #detailsPhoto, #detailsParcours {
+            cursor: pointer;
+            transition: box-shadow 0.2s, filter 0.2s;
+        }
+        #detailsPhoto:hover, #detailsParcours:hover {
+            box-shadow: 0 0 0 1px #34d399, 0 10px 20px rgba(0,0,0,0.15);
+            filter: brightness(0.95) saturate(1.1);
+        }
     </style>
 </head>
 <body class="min-h-screen bg-green-50 bg-opacity-90">
