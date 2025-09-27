@@ -1320,15 +1320,17 @@
     const previewImage = document.getElementById('previewImage');
     const removePhoto = document.getElementById('removePhoto');
     let photoData = null;
-    const MAX_IMAGE_SIZE = 2 * 1024 * 1024; // 2 Mo
+    const MAX_IMAGE_SIZE = 1048486; // 2 Mo
 
     // Gestionnaire d'événement pour l'upload de photo
     racePhoto.addEventListener('change', function () {
         const file = this.files[0];
         if (file) {
             if (file.size > MAX_IMAGE_SIZE) {
-                showImageAlert('Image trop grande', 'La photo de la course ne doit pas dépasser 2 Mo.');
-                racePhoto.value = '';
+                document.getElementById('imageAlertTitle').textContent = 'Image trop grande';
+                document.getElementById('imageAlertText').textContent = 'La taille de l\'image ne doit pas dépasser 2 Mo.';
+                document.getElementById('imageAlertModal').classList.remove('hidden');
+                this.value = '';
                 return;
             }
             const reader = new FileReader();
@@ -1410,6 +1412,12 @@
             const dt = e.dataTransfer;
             const file = dt.files[0];
             if (file && file.type.startsWith('image/')) {
+                if (file.size > MAX_IMAGE_SIZE) {
+                    document.getElementById('imageAlertTitle').textContent = 'Image trop grande';
+                    document.getElementById('imageAlertText').textContent = "L'image du parcours ne doit pas dépasser 2 Mo.";
+                    document.getElementById('imageAlertModal').classList.remove('hidden');
+                    return;
+                }
                 raceParcours.files = dt.files;
                 const reader = new FileReader();
                 reader.onload = function (e) {
