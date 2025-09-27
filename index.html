@@ -494,22 +494,18 @@
 
         // Mettre à jour le texte des statistiques
         const statsElement = document.getElementById('statsText');
-        let statsHtml = `
-            <span class="font-semibold">${totalRaces}</span> courses |
-            <span class="font-semibold">${totalDistance}</span> km parcourus |
-            <span class="font-semibold">${totalElevation}</span> m de dénivelé |
-            <span class="font-semibold">${totalHours}h${remainingMinutes}</span> de course
-        `;
+        let statsHtml = '';
+        // Affichage du contexte du filtre année
+        if (typeof currentYearFilter !== 'undefined' && currentYearFilter !== 'all' && currentYearFilter !== null) {
+            statsHtml += '<span class="italic text-green-700 mr-2">Année ' + currentYearFilter + '</span> : ';
+        }
+        statsHtml += '<span class="font-semibold">' + totalRaces + '</span> course' + (totalRaces > 1 ? 's' : '') + ' | ' +
+            '<span class="font-semibold">' + totalDistance + '</span> km parcourus | ' +
+            '<span class="font-semibold">' + totalElevation + '</span> m de dénivelé | ' +
+            '<span class="font-semibold">' + totalHours + 'h' + remainingMinutes + '</span> de course';
         // Affichage du prix
         if (sessionStorage.getItem('authenticated') === 'true') {
-            statsHtml += ` |
-                <span id="totalPriceStat" class="font-semibold group relative cursor-pointer">
-                    <span class="opacity-40">Prix total</span>
-                    <span class="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-2 py-1 bg-green-700 text-white text-xs rounded shadow-lg hidden group-hover:block z-50">
-                        ${totalPrice.toLocaleString('fr-FR', {minimumFractionDigits: 2, maximumFractionDigits: 2})} € dépensés
-                    </span>
-                </span>
-            `;
+            statsHtml += ' |\n                <span id="totalPriceStat" class="font-semibold group relative cursor-pointer">\n                    <span class="opacity-40">Prix total</span>\n                    <span class="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-2 py-1 bg-green-700 text-white text-xs rounded shadow-lg hidden group-hover:block z-50">\n                        ' + totalPrice.toLocaleString('fr-FR', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' € dépensés\n                    </span>\n                </span>';
         }
         statsElement.innerHTML = statsHtml;
         // Ajout du hover JS si besoin (pour compatibilité)
@@ -526,33 +522,25 @@
         }
     }
 
-    // Modifier la fonction filterRacesByYear pour mettre à jour les statistiques
+    // Correction : garder la référence du filtre actif et appliquer updateStats sur le bon tableau
+    let currentYearFilter = 'all';
+
+    // Filtrer par année, mettre à jour currentYearFilter, stats et affichage
     function filterRacesByYear(year) {
+        currentYearFilter = year;
+        let filteredRaces;
         if (year === 'all') {
-            updateStats(races);
-            displayRaces(races);
-            return;
+            filteredRaces = races;
+        } else {
+            filteredRaces = races.filter(race => {
+                const raceDate = new Date(race.date);
+                return raceDate.getFullYear().toString() === year;
+            });
         }
-
-        const filteredRaces = races.filter(race => {
-            const raceDate = new Date(race.date);
-            return raceDate.getFullYear().toString() === year;
-        });
-
         updateStats(filteredRaces);
         displayRaces(filteredRaces);
     }
 
-    // Modifier la fonction searchRaces pour mettre à jour les statistiques
-    function searchRaces(query) {
-        const filteredRaces = races.filter(race =>
-            race.name.toLowerCase().includes(query.toLowerCase()) ||
-            race.location.toLowerCase().includes(query.toLowerCase())
-        );
-
-        updateStats(filteredRaces);
-        displayRaces(filteredRaces);
-    }
 
     function generateYearFilters(races) {
         const yearFiltersContainer = document.getElementById('yearFilters');
@@ -1227,28 +1215,22 @@ function displayRaces(racesToDisplay) {
         }
     }
 
-    // Modifier la fonction filterRacesByYear
-    function filterRacesByYear(year) {
-        if (year === 'all') {
-            displayRaces(races);
-            return;
-        }
-
-        const filteredRaces = races.filter(race => {
-            const raceDate = new Date(race.date);
-            return raceDate.getFullYear().toString() === year;
-        });
-
-        displayRaces(filteredRaces);
-    }
-
-    // Modifier la fonction searchRaces
+    // Rechercher dans les courses en respectant le filtre d'année courant
     function searchRaces(query) {
-        const filteredRaces = races.filter(race =>
-            race.name.toLowerCase().includes(query.toLowerCase()) ||
-            race.location.toLowerCase().includes(query.toLowerCase())
+        const q = (query || '').toLowerCase();
+        let filteredRaces = races.filter(race =>
+            (race.name || '').toLowerCase().includes(q) ||
+            (race.location || '').toLowerCase().includes(q)
         );
 
+        if (currentYearFilter && currentYearFilter !== 'all') {
+            filteredRaces = filteredRaces.filter(race => {
+                const raceDate = new Date(race.date);
+                return raceDate.getFullYear().toString() === currentYearFilter;
+            });
+        }
+
+        updateStats(filteredRaces);
         displayRaces(filteredRaces);
     }
 
