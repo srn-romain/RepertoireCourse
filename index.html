@@ -144,54 +144,54 @@
             <form id="raceForm">
                 <input type="hidden" id="raceId">
                 <div class="mb-4">
-                    <label for="raceName" class="block text-green-700 mb-2">Nom de la course</label>
+                    <label for="raceName" class="block text-green-700 mb-2">Nom de la course <span class="text-red-500">*</span></label>
                     <input type="text" id="raceName"
                            class="w-full px-3 py-2 border border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                           required>
+                           required placeholder="Nom course">
                 </div>
                 <div class="mb-4">
-                    <label for="raceDate" class="block text-green-700 mb-2">Date</label>
+                    <label for="raceDate" class="block text-green-700 mb-2">Date <span class="text-red-500">*</span></label>
                     <input type="date" id="raceDate"
                            class="w-full px-3 py-2 border border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
                            required>
                 </div>
                 <div class="mb-4">
-                    <label for="raceDistance" class="block text-green-700 mb-2">Distance (km)</label>
+                    <label for="raceDistance" class="block text-green-700 mb-2">Distance (km) <span class="text-red-500">*</span></label>
                     <input type="number" id="raceDistance"
                            class="w-full px-3 py-2 border border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                           step="0.0001" required>
+                           step="0.0001"  placeholder="00" required>
                 </div>
                 <div class="mb-4">
-                    <label for="raceElevation" class="block text-green-700 mb-2">Dénivelé (m)</label>
+                    <label for="raceElevation" class="block text-green-700 mb-2">Dénivelé (m) <span class="text-red-500">*</span></label>
                     <input type="number" id="raceElevation"
                            class="w-full px-3 py-2 border border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                           step="0.0001" required>
+                           step="0.0001"  placeholder="000" required>
                 </div>
                 <div class="mb-4">
-                    <label for="raceTime" class="block text-green-700 mb-2">Temps (hh:mm:ss)</label>
+                    <label for="raceTime" class="block text-green-700 mb-2">Temps (hh:mm:ss) <span class="text-red-500">*</span></label>
                     <input type="text" id="raceTime"
                            class="w-full px-3 py-2 border border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                           placeholder="02:30:45" required>
+                           placeholder="00:00:00" required>
                 </div>
                 <div class="mb-4">
-                    <label for="raceLocation" class="block text-green-700 mb-2">Lieu</label>
+                    <label for="raceLocation" class="block text-green-700 mb-2">Lieu <span class="text-red-500">*</span></label>
                     <input type="text" id="raceLocation"
                            class="w-full px-3 py-2 border border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                           required>
+                           placeholder="Lieu course" required>
                 </div>
                 <div class="mb-4">
-                    <label for="racePrice" class="block text-green-700 mb-2">Prix (xx,xx €)</label>
+                    <label for="racePrice" class="block text-green-700 mb-2">Prix <span class="text-red-500">*</span></label>
                     <input type="number" id="racePrice" name="racePrice"
                            class="w-full px-3 py-2 border border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                           step="0.01" min="0" placeholder="Ex: 25.00">
+                           step="0.01" min="0" placeholder="xx,xx €" required>
                 </div>
                 <div class="mb-4">
                     <label for="raceNotes" class="block text-green-700 mb-2">Notes</label>
-                    <textarea id="raceNotes" rows="3"
+                    <textarea id="raceNotes" rows="3" placeholder="Note course"
                               class="w-full px-3 py-2 border border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"></textarea>
                 </div>
                 <div class="mb-4">
-                    <label for="racePhoto" class="block text-green-700 mb-2">Photo (optionnelle)</label>
+                    <label for="racePhoto" class="block text-green-700 mb-2">Photo</label>
                     <div class="border-2 border-dashed border-green-300 rounded-lg p-4 text-center hover:border-green-500 transition">
                         <input type="file" id="racePhoto" accept="image/*" class="hidden">
                         <label for="racePhoto" class="cursor-pointer">
@@ -254,6 +254,10 @@
                 <div class="bg-green-50 p-3 rounded-lg">
                     <p class="text-sm text-green-600">Lieu</p>
                     <p id="detailsLocation" class="font-semibold text-green-800"></p>
+                </div>
+                <div class="bg-green-50 p-3 rounded-lg" id="detailsPriceContainer">
+                    <p class="text-sm text-green-600">Prix</p>
+                    <p id="detailsPrice" class="font-semibold text-green-800"></p>
                 </div>
             </div>
 
@@ -936,19 +940,14 @@ function displayRaces(racesToDisplay) {
         }
 
         // Gérer l'affichage du prix
-        let priceElement = document.getElementById('detailsPrice');
-        if (!priceElement) {
-            priceElement = document.createElement('p');
-            priceElement.id = 'detailsPrice';
-            priceElement.className = 'text-green-700 mb-2';
-            notesSection.parentNode.insertBefore(priceElement, notesSection);
-        }
+        const priceContainer = document.getElementById('detailsPriceContainer');
+        const priceElement = document.getElementById('detailsPrice');
         if (race.price !== undefined && race.price !== null && race.price !== '') {
-            priceElement.textContent = `Prix : ${parseFloat(race.price).toFixed(2)} €`;
-            priceElement.style.display = '';
+            priceElement.textContent = `${parseFloat(race.price).toFixed(2)} €`;
+            priceContainer.style.display = '';
         } else {
             priceElement.textContent = '';
-            priceElement.style.display = 'none';
+            priceContainer.style.display = 'none';
         }
 
         // Gérer l'affichage de la photo
@@ -1078,13 +1077,13 @@ function displayRaces(racesToDisplay) {
         const time = document.getElementById('raceTime').value;
         const location = document.getElementById('raceLocation').value;
         const notes = document.getElementById('raceNotes').value;
+        const price = document.getElementById('racePrice').value;
 
-        if (!name || !date || isNaN(distance) || isNaN(elevation) || !time || !location) {
-            alert('Veuillez remplir tous les champs obligatoires');
+        if (!name || !date || isNaN(distance) || isNaN(elevation) || !time || !location || price === '' || isNaN(price)) {
+            alert('Veuillez remplir tous les champs obligatoires.');
             return;
         }
 
-        const price = document.getElementById('racePrice').value;
         const raceData = {
             name,
             date,
@@ -1092,7 +1091,8 @@ function displayRaces(racesToDisplay) {
             elevation,
             time,
             location,
-            notes
+            notes,
+            price: parseFloat(price)
         };
 
         // Ajouter la photo seulement si elle existe
@@ -1101,10 +1101,6 @@ function displayRaces(racesToDisplay) {
         }
 
         // Afficher un indicateur de chargement dans le bouton
-        // Ajout du prix si renseigné
-        if (price !== '' && !isNaN(price)) {
-            raceData.price = parseFloat(price);
-        }
         const submitBtn = raceForm.querySelector('button[type="submit"]');
         const originalText = submitBtn.innerHTML;
         submitBtn.disabled = true;
