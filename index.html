@@ -289,7 +289,7 @@
                     <p id="detailsPrice" class="font-semibold text-green-800"></p>
                 </div>
                 <div class="bg-green-50 p-3 rounded-lg" id="ImageButton">
-                    <p class="text-sm text-green-600">Image / Parcours</p>
+                    <p id="DetailImageTitle" class="text-sm text-green-600"></p>
                     <p id="DetailImageButton" class="font-semibold text-green-800"></p>
                     <button id="voirParcoursBtn" class="mt-2 px-2 py-1 bg-blue-100 text-blue-800 rounded hover:bg-blue-200 text-xs hidden">Voir le parcours</button>
                 </div>
@@ -1019,6 +1019,7 @@
         const parcoursImg = document.getElementById('detailsParcours');
         const parcoursContainer = document.getElementById('detailsParcoursContainer');
         const photoImg = document.getElementById('detailsPhoto');
+        const detailImageTitle = document.getElementById('DetailImageTitle');
         let showParcours = false;
         // Ajout : ouvrir l'image en plein écran dans un nouvel onglet au clic
         function openImageInNewTab(src) {
@@ -1049,6 +1050,7 @@
             photoContainer.classList.remove('hidden');
             parcoursContainer.classList.add('hidden');
             parcoursBtn.classList.remove('hidden');
+            detailImageTitle.textContent = 'Parcours';
             parcoursBtn.textContent = 'Voir le parcours';
             parcoursBtn.onclick = function() {
                 showParcours = !showParcours;
@@ -1056,10 +1058,12 @@
                     photoContainer.classList.add('hidden');
                     parcoursContainer.classList.remove('hidden');
                     parcoursBtn.textContent = 'Voir image course';
+                    detailImageTitle.textContent = 'Image';
                 } else {
                     photoContainer.classList.remove('hidden');
                     parcoursContainer.classList.add('hidden');
                     parcoursBtn.textContent = 'Voir le parcours';
+                    detailImageTitle.textContent = 'Parcours';
                 }
             };
             // Charger les images
@@ -1842,6 +1846,24 @@
         // Focus sur l'input pour que l'utilisateur puisse corriger
         newWishlistItemInput.focus();
     };
+
+    // --- Auto-format pour le champ temps (hh:mm:ss) ---
+    const raceTimeInput = document.getElementById('raceTime');
+    raceTimeInput.addEventListener('input', function(e) {
+        let value = raceTimeInput.value.replace(/[^0-9]/g, ''); // Garde uniquement les chiffres
+        if (value.length > 6) value = value.slice(0, 6);
+        let formatted = '';
+        if (value.length > 0) {
+            formatted = value.substring(0, 2);
+        }
+        if (value.length > 2) {
+            formatted += ':' + value.substring(2, 4);
+        }
+        if (value.length > 4) {
+            formatted += ':' + value.substring(4, 6);
+        }
+        raceTimeInput.value = formatted;
+    });
 </script>
 </body>
 </html>
