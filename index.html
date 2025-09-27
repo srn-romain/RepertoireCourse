@@ -962,12 +962,13 @@
         const raceDate = new Date(race.date);
 
         document.getElementById('detailsTitle').textContent = race.name;
-        document.getElementById('detailsDate').textContent = raceDate.toLocaleDateString('fr-FR', {
-            weekday: 'long',
-            day: 'numeric',
-            month: 'long',
-            year: 'numeric'
-        });
+        document.getElementById('detailsDate').textContent =
+    raceDate.toLocaleDateString('fr-FR', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+    }).replace(/^\w/, c => c.toUpperCase());
         document.getElementById('detailsDistance').textContent = `${race.distance} km`;
         document.getElementById('detailsElevation').textContent = `${race.elevation} m D+`;
         document.getElementById('detailsTime').textContent = race.time;
@@ -1010,6 +1011,29 @@
         const parcoursContainer = document.getElementById('detailsParcoursContainer');
         const photoImg = document.getElementById('detailsPhoto');
         let showParcours = false;
+        // Ajout : ouvrir l'image en plein écran dans un nouvel onglet au clic
+        function openImageInNewTab(src) {
+            if (src) {
+                // Si c'est un data URL, il faut ouvrir dans un document HTML pour l'afficher correctement
+                if (src.startsWith('data:image/')) {
+                    const win = window.open();
+                    if (win) {
+                        win.document.write('<html><head><title>Image</title></head><body style="margin:0"><img src="' + src.replace(/'/g, '\'') + '" style="display:block;margin:auto;" /></body></html>');
+                        win.document.close();
+                    }
+                } else {
+                    window.open(src, '_blank');
+                }
+            }
+        }
+        photoImg.onclick = function(e) {
+            e.stopPropagation();
+            if (photoImg.src) openImageInNewTab(photoImg.src);
+        };
+        parcoursImg.onclick = function(e) {
+            e.stopPropagation();
+            if (parcoursImg.src) openImageInNewTab(parcoursImg.src);
+        };
         if (race.parcours && race.photo) {
             // Les deux existent, on affiche la photo par défaut
             showParcours = false;
