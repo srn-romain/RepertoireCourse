@@ -1347,7 +1347,7 @@
     const previewImage = document.getElementById('previewImage');
     const removePhoto = document.getElementById('removePhoto');
     let photoData = null;
-    const MAX_IMAGE_SIZE = 1048486; // 2 Mo
+    const MAX_IMAGE_SIZE = 716800; // 700 KB
 
     // Gestionnaire d'événement pour l'upload de photo
     racePhoto.addEventListener('change', function () {
@@ -1355,7 +1355,7 @@
         if (file) {
             if (file.size > MAX_IMAGE_SIZE) {
                 document.getElementById('imageAlertTitle').textContent = 'Image trop grande';
-                document.getElementById('imageAlertText').textContent = 'La taille de l\'image ne doit pas dépasser 2 Mo.';
+                document.getElementById('imageAlertText').textContent = 'La taille de l\'image encodée ne doit pas dépasser 1 Mo.';
                 document.getElementById('imageAlertModal').classList.remove('hidden');
                 this.value = '';
                 return;
@@ -1402,7 +1402,7 @@
         if (file) {
             if (file.size > MAX_IMAGE_SIZE) {
                 document.getElementById('imageAlertTitle').textContent = 'Image trop grande';
-                document.getElementById('imageAlertText').textContent = "L'image du parcours ne doit pas dépasser 2 Mo.";
+                document.getElementById('imageAlertText').textContent = "L\'image encodée du parcours ne doit pas dépasser 1 Mo.";
                 document.getElementById('imageAlertModal').classList.remove('hidden');
                 raceParcours.value = '';
                 return;
@@ -1441,7 +1441,7 @@
             if (file && file.type.startsWith('image/')) {
                 if (file.size > MAX_IMAGE_SIZE) {
                     document.getElementById('imageAlertTitle').textContent = 'Image trop grande';
-                    document.getElementById('imageAlertText').textContent = "L'image du parcours ne doit pas dépasser 2 Mo.";
+                    document.getElementById('imageAlertText').textContent = "L\'image encodée du parcours ne doit pas dépasser 1 Mo.";
                     document.getElementById('imageAlertModal').classList.remove('hidden');
                     return;
                 }
