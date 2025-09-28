@@ -882,13 +882,18 @@
             if (locationDisplay && locationDisplay.length > 10) {
                 locationDisplay = locationDisplay.substring(0, 6) + '...';
             }
+            // Déterminer si la course est à venir
+            const today = new Date();
+            today.setHours(0,0,0,0); // On ignore l'heure
+            const isUpcoming = raceDate >= today;
+            const badgeAvenir = isUpcoming ? `<span class="ml-2 px-2 py-1 bg-yellow-200 text-yellow-800 text-xs rounded-full animate-pulse">À venir</span>` : '';
             const raceCard = document.createElement('div');
             raceCard.className = 'bg-white rounded-xl overflow-hidden shadow-md card-hover relative group cursor-pointer';
             raceCard.innerHTML = `
             <div class="p-6 relative">
                 <div class="flex justify-between items-start">
                     <div>
-                        <h3 class="text-xl font-bold text-green-800 mb-1">${race.name}</h3>
+                        <h3 class="text-xl font-bold text-green-800 mb-1">${race.name} ${badgeAvenir}</h3>
                         <p class="text-green-600">${raceDate.toLocaleDateString('fr-FR', {
                 day: 'numeric',
                 month: 'long',
