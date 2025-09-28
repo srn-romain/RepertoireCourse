@@ -1057,18 +1057,18 @@
             parcoursContainer.classList.add('hidden');
             parcoursBtn.classList.remove('hidden');
             detailImageTitle.textContent = 'Parcours';
-            parcoursBtn.textContent = 'Voir le parcours';
+            parcoursBtn.textContent = 'Image parcours';
             parcoursBtn.onclick = function() {
                 showParcours = !showParcours;
                 if (showParcours) {
                     photoContainer.classList.add('hidden');
                     parcoursContainer.classList.remove('hidden');
-                    parcoursBtn.textContent = 'Voir image course';
+                    parcoursBtn.textContent = 'Image course';
                     detailImageTitle.textContent = 'Image';
                 } else {
                     photoContainer.classList.remove('hidden');
                     parcoursContainer.classList.add('hidden');
-                    parcoursBtn.textContent = 'Voir le parcours';
+                    parcoursBtn.textContent = 'Image parcours';
                     detailImageTitle.textContent = 'Parcours';
                 }
             };
