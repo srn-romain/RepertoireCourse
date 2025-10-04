@@ -981,14 +981,20 @@
 
         const raceDate = new Date(race.date);
 
+        // Ajout badge "À venir" dans la modale de détail
+        const today = new Date();
+        today.setHours(0,0,0,0);
+        const isUpcoming = raceDate >= today;
+        let badgeAvenir = isUpcoming ? '<span class="ml-2 px-2 py-1 bg-yellow-200 text-yellow-800 text-xs rounded-full animate-pulse">À venir</span>' : '';
+
         document.getElementById('detailsTitle').textContent = race.name;
-        document.getElementById('detailsDate').textContent =
+        document.getElementById('detailsDate').innerHTML =
     raceDate.toLocaleDateString('fr-FR', {
         weekday: 'long',
         day: 'numeric',
         month: 'long',
         year: 'numeric'
-    }).replace(/^\w/, c => c.toUpperCase());
+    }).replace(/^\w/, c => c.toUpperCase()) + badgeAvenir;
         document.getElementById('detailsDistance').textContent = `${race.distance} km`;
         document.getElementById('detailsElevation').textContent = `${race.elevation} m D+`;
         document.getElementById('detailsTime').textContent = race.time;
