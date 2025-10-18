@@ -430,8 +430,7 @@
                 </div>
                 <p class="text-sm text-gray-500 mb-4">Cliquez sur l'étoile pour mettre en favori. <br> La date d'ajout est enregistrée automatiquement.</p>
                 <div class="flex justify-end space-x-3">
-                    <button id="cancelWishlistEdit" class="px-4 py-2 text-gray-600 hover:text-gray-800 transition">Annuler</button>
-                    <button id="saveWishlistBtn" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">Enregistrer</button>
+                    <button id="saveWishlistBtn" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">Terminé</button>
                 </div>
             </div>
         </div>
@@ -1542,7 +1541,6 @@
     const editWishlistBtn = document.getElementById('editWishlistBtn');
     const wishlistDisplay = document.getElementById('wishlistDisplay');
     const wishlistEditForm = document.getElementById('wishlistEditForm');
-    const cancelWishlistEdit = document.getElementById('cancelWishlistEdit');
     const saveWishlistBtn = document.getElementById('saveWishlistBtn');
     const wishlistItems = document.getElementById('wishlistItems');
     const emptyWishlist = document.getElementById('emptyWishlist');
@@ -1663,14 +1661,6 @@
     // Ouvrir le formulaire d'édition de la wishlist
     editWishlistBtn.addEventListener('click', () => {
         showPasswordModal('wishlist-edit');
-    });
-
-    // Annuler l'édition de la wishlist
-    cancelWishlistEdit.addEventListener('click', function(e) {
-        // Si l'utilisateur clique sur Annuler, on ferme sans vérifier l'input (pas d'alerte)
-        wishlistEditForm.classList.add('hidden');
-        wishlistDisplay.classList.remove('hidden');
-        editWishlistBtn.classList.remove('hidden');
     });
 
     // Afficher la liste éditable
