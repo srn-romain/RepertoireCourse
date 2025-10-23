@@ -1035,6 +1035,7 @@
 
         // Make location clickable to open Google Maps
         document.getElementById('detailsLocation').style.cursor = 'pointer';
+        document.getElementById('detailsLocation').className = 'font-semibold text-green-800 hover:text-yellow-600 hover:underline cursor-pointer';
         document.getElementById('detailsLocation').onclick = function() {
             const query = encodeURIComponent(race.location);
             window.open(`https://www.google.com/maps/search/?api=1&query=${query}`, '_blank');
