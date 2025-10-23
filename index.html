@@ -327,7 +327,7 @@
                     <button id="voirParcoursBtn" class="mt-2 px-2 py-1 bg-blue-100 text-blue-800 rounded hover:bg-blue-200 text-xs hidden">Voir le parcours</button>
                 </div>
             </div>
-
+            <div id="averageSpeedInfo" class="mb-2 text-green-700 font-semibold"></div>
             <div class="mb-4">
                 <p class="text-sm text-green-600 mb-1">Notes</p>
                 <p id="detailsNotes" class="text-gray-700"></p>
@@ -1033,6 +1033,31 @@
         document.getElementById('detailsElevation').textContent = `${race.elevation} m D+`;
         document.getElementById('detailsTime').textContent = race.time;
         document.getElementById('detailsLocation').textContent = race.location;
+
+        // Calculate average speed
+        const distance = parseFloat(race.distance);
+        const timeStr = race.time;
+        if (isNaN(distance) || !timeStr) {
+            document.getElementById('averageSpeedInfo').textContent = '';
+        } else {
+            const parts = timeStr.split(':');
+            let hours = 0;
+            if (parts.length === 3) {
+                hours = parseInt(parts[0]) + parseInt(parts[1]) / 60 + parseInt(parts[2]) / 3600;
+            } else if (parts.length === 2) {
+                hours = parseInt(parts[0]) + parseInt(parts[1]) / 60;
+            } else {
+                hours = parseInt(parts[0]);
+            }
+            if (hours === 0) {
+                document.getElementById('averageSpeedInfo').textContent = '';
+            } else {
+                const speed = distance / hours;
+                const timePerKm = 60 / speed;
+                document.getElementById('averageSpeedInfo').innerHTML =
+                    `Vitesse moyenne : ${speed.toFixed(2)} km/h<br>Temps moyen au km : ${timePerKm.toFixed(2)} min/km`;
+            }
+        }
 
         // Make location clickable to open Google Maps
         document.getElementById('detailsLocation').style.cursor = 'pointer';
