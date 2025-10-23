@@ -1033,6 +1033,13 @@
         }
         document.getElementById('detailsLocation').textContent = race.location;
 
+        // Make location clickable to open Google Maps
+        document.getElementById('detailsLocation').style.cursor = 'pointer';
+        document.getElementById('detailsLocation').onclick = function() {
+            const query = encodeURIComponent(race.location);
+            window.open(`https://www.google.com/maps/search/?api=1&query=${query}`, '_blank');
+        };
+
         // Gérer l'affichage des notes
         const notesSection = document.querySelector('#detailsModal .mb-4:has(#detailsNotes)');
         if (race.notes && race.notes.trim() !== '') {
