@@ -1024,7 +1024,13 @@
             heureHtml + badgeAvenir;
         document.getElementById('detailsDistance').textContent = `${race.distance} km`;
         document.getElementById('detailsElevation').textContent = `${race.elevation} m D+`;
-        document.getElementById('detailsTime').textContent = race.time;
+        const detailsTimeEl = document.getElementById('detailsTime');
+        // Si la course est à venir, afficher un message court plutôt que le temps
+        if (isUpcoming) {
+            detailsTimeEl.innerHTML = '<span class="ml-2 px-2 py-1 bg-yellow-200 text-yellow-800 text-xs rounded-full">À venir</span>';
+        } else {
+            detailsTimeEl.textContent = race.time || '';
+        }
         document.getElementById('detailsLocation').textContent = race.location;
 
         // Gérer l'affichage des notes
@@ -1102,7 +1108,7 @@
                     photoContainer.classList.add('hidden');
                     parcoursContainer.classList.remove('hidden');
                     parcoursBtn.textContent = 'Image course';
-                    detailImageTitle.textContent = 'Image';
+                    detailImageTitle.textContent = 'Course';
                 } else {
                     photoContainer.classList.remove('hidden');
                     parcoursContainer.classList.add('hidden');
