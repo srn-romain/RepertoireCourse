@@ -904,8 +904,8 @@
             }
             // Déterminer si la course est à venir
             const today = new Date();
-            today.setHours(0,0,0,0);
-            const isUpcoming = raceDate > today; // badge seulement si futur
+            today.setHours(0,0,0,0); // On ignore l'heure
+            const isUpcoming = raceDate >= today;
             const badgeAvenir = isUpcoming ? `<span class="ml-2 px-2 py-1 bg-yellow-200 text-yellow-800 text-xs rounded-full animate-pulse">À venir</span>` : '';
             const raceCard = document.createElement('div');
             raceCard.className = 'bg-white rounded-xl overflow-hidden shadow-md card-hover relative group cursor-pointer';
@@ -1022,15 +1022,10 @@
                 year: 'numeric'
             }).replace(/^[a-z]/, c => c.toUpperCase()) +
             heureHtml + badgeAvenir;
+
         document.getElementById('detailsDistance').textContent = `${race.distance} km`;
         document.getElementById('detailsElevation').textContent = `${race.elevation} m D+`;
-        const detailsTimeEl = document.getElementById('detailsTime');
-        // Si la course est à venir, afficher un message court plutôt que le temps
-        if (isUpcoming) {
-            detailsTimeEl.innerHTML = '<span class="font-semibold text-green-800">À venir</span>';
-        } else {
-            detailsTimeEl.textContent = race.time || '';
-        }
+        document.getElementById('detailsTime').textContent = race.time;
         document.getElementById('detailsLocation').textContent = race.location;
 
         // Make location clickable to open Google Maps
