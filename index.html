@@ -719,6 +719,13 @@
         raceIdToDelete = null;
     });
 
+    passwordInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' || e.keyCode === 13) {
+            e.preventDefault();
+            confirmPassword.click();
+        }
+    });
+
     // Gestionnaire pour confirmer la suppression
     confirmDelete.addEventListener('click', () => {
         if (raceIdToDelete) {
@@ -1067,7 +1074,7 @@
 
         // Make location clickable to open Google Maps
         document.getElementById('detailsLocation').style.cursor = 'pointer';
-        document.getElementById('detailsLocation').className = 'font-semibold text-green-800 hover:text-yellow-600 hover:underline cursor-pointer';
+        document.getElementById('detailsLocation').className = 'font-semibold underline text-green-800 hover:text-yellow-600 hover:underline cursor-pointer';
         document.getElementById('detailsLocation').onclick = function() {
             const query = encodeURIComponent(race.location);
             window.open(`https://www.google.com/maps/search/?api=1&query=${query}`, '_blank');
@@ -1195,15 +1202,21 @@
 
         // Ajouter le lien GPX si présent
         let gpxLink = document.getElementById('gpxLink');
+        const avgInfoEl = document.getElementById('averageSpeedInfo');
+
         if (!gpxLink) {
             gpxLink = document.createElement('div');
             gpxLink.id = 'gpxLink';
-            gpxLink.className = 'mb-4 text-center';
-            const photoContainer = document.getElementById('detailsPhotoContainer');
-            detailsModal.querySelector('.modal-content').insertBefore(gpxLink, photoContainer);
+            gpxLink.className = 'mt-2 text-left'; // non centré, aligné à gauche
+            if (avgInfoEl && avgInfoEl.parentNode) {
+                avgInfoEl.parentNode.insertBefore(gpxLink, avgInfoEl.nextSibling);
+            } else {
+                detailsModal.querySelector('.modal-content').appendChild(gpxLink);
+            }
         }
+
         if (race.gpxUrl) {
-            gpxLink.innerHTML = `<a href="${race.gpxUrl}" target="_blank" class="underline text-blue-600 hover:text-blue-800 font-semibold">Voir le gpx</a>`;
+            gpxLink.innerHTML = `<a href="${race.gpxUrl}" target="_blank" rel="noopener" class="mb-2 text-green-700 font-semibold underline hover:text-yellow-600 hover:underline cursor-pointer">Voir le gpx</a>`;
             gpxLink.classList.remove('hidden');
         } else {
             gpxLink.classList.add('hidden');
