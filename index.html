@@ -1840,6 +1840,9 @@
         } else {
             parcoursPreview.classList.add('hidden');
         }
+        
+        // Mettre à jour l'état du champ temps selon la date
+        updateTimeFieldState();
     }
 
     // Sauvegarder une course
@@ -2202,6 +2205,9 @@
         raceModal.classList.add('hidden');
         // Réinitialiser le formulaire
         raceForm.reset();
+        // Réinitialiser l'état du champ temps
+        raceTimeInput.disabled = false;
+        raceTimeInput.classList.remove('bg-gray-100', 'cursor-not-allowed');
     });
 
     // Event listeners
@@ -2645,7 +2651,13 @@
 
     // --- Auto-format pour le champ temps (hh:mm:ss) ---
     const raceTimeInput = document.getElementById('raceTime');
+    const raceDateInput = document.getElementById('raceDate');
+    
+    // Gérer le formatage automatique du temps
     raceTimeInput.addEventListener('input', function(e) {
+        // Ne pas formater si le champ est désactivé
+        if (raceTimeInput.disabled) return;
+        
         let value = raceTimeInput.value.replace(/[^0-9]/g, ''); // Garde uniquement les chiffres
         if (value.length > 6) value = value.slice(0, 6);
         let formatted = '';
@@ -2660,6 +2672,39 @@
         }
         raceTimeInput.value = formatted;
     });
+    
+    // Fonction pour gérer l'état du champ temps selon la date
+    function updateTimeFieldState() {
+        if (!raceDateInput.value) {
+            // Pas de date sélectionnée : réactiver le champ
+            raceTimeInput.disabled = false;
+            raceTimeInput.classList.remove('bg-gray-100', 'cursor-not-allowed');
+            return;
+        }
+        
+        const selectedDate = new Date(raceDateInput.value);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        selectedDate.setHours(0, 0, 0, 0);
+        
+        if (selectedDate > today) {
+            // Date dans le futur : remplir avec 00:00:00 et désactiver
+            raceTimeInput.value = '00:00:00';
+            raceTimeInput.disabled = true;
+            raceTimeInput.classList.add('bg-gray-100', 'cursor-not-allowed');
+        } else {
+            // Date dans le passé ou aujourd'hui : réactiver le champ
+            raceTimeInput.disabled = false;
+            raceTimeInput.classList.remove('bg-gray-100', 'cursor-not-allowed');
+            // Si le champ était à 00:00:00 et qu'on change pour une date passée, le vider seulement si on est en mode ajout
+            if (raceTimeInput.value === '00:00:00' && !document.getElementById('raceId').value) {
+                raceTimeInput.value = '';
+            }
+        }
+    }
+    
+    // Gérer l'état du champ temps selon la date
+    raceDateInput.addEventListener('change', updateTimeFieldState);
 </script>
 </body>
 </html>
