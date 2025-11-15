@@ -276,6 +276,16 @@
 <!-- Modal de détails -->
 <div id="detailsModal" class="fixed inset-0 flex items-center justify-center z-50 hidden modal">
     <div class="absolute inset-0 bg-black bg-opacity-50 blur-bg"></div>
+    <button id="prevRaceBtn" class="absolute top-1/2 left-4 md:left-1/2 md:-translate-x-[280px] transform -translate-y-1/2 text-gray-700 hover:text-gray-900 bg-white rounded-full p-3 shadow-xl hover:bg-gray-50 transition-all disabled:opacity-30 disabled:cursor-not-allowed z-[60]" title="Course précédente">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+        </svg>
+    </button>
+    <button id="nextRaceBtn" class="absolute top-1/2 right-4 md:right-1/2 md:translate-x-[280px] transform -translate-y-1/2 text-gray-700 hover:text-gray-900 bg-white rounded-full p-3 shadow-xl hover:bg-gray-50 transition-all disabled:opacity-30 disabled:cursor-not-allowed z-[60]" title="Course suivante">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+        </svg>
+    </button>
     <div class="relative bg-white rounded-xl shadow-xl w-full max-w-md mx-4 z-10">
         <div class="p-6 modal-content">
             <button id="closeDetailsBtn" class="absolute top-4 right-4 text-gray-500 hover:text-gray-700">
@@ -691,6 +701,8 @@
     const modalTitle = document.getElementById('modalTitle');
     const cancelBtn = document.getElementById('cancelBtn');
     const closeDetailsBtn = document.getElementById('closeDetailsBtn');
+    const prevRaceBtn = document.getElementById('prevRaceBtn');
+    const nextRaceBtn = document.getElementById('nextRaceBtn');
     const passwordModal = document.getElementById('passwordModal');
     const closePasswordModal = document.getElementById('closePasswordModal');
     const confirmPassword = document.getElementById('confirmPassword');
@@ -701,6 +713,7 @@
     const cancelDelete = document.getElementById('cancelDelete');
     const confirmDelete = document.getElementById('confirmDelete');
     let raceIdToDelete = null;
+    let currentKeyNavigationHandler = null;
 
     // Gérer l'événement de clic sur le bouton d'ajout
     addRaceBtn.addEventListener('click', () => {
@@ -1221,6 +1234,81 @@
         } else {
             gpxLink.classList.add('hidden');
         }
+
+        // Navigation entre les courses
+        // Trier les courses de la même manière que dans displayRaces (par date décroissante)
+        const sortedRaces = [...races].sort((a, b) => {
+            const dateA = new Date(a.date);
+            const dateB = new Date(b.date);
+            return dateB - dateA;
+        });
+
+        // Trouver l'index de la course actuelle
+        const currentIndex = sortedRaces.findIndex(r => r.id === id);
+
+        // Fonction pour naviguer vers la course précédente
+        function navigateToPrev() {
+            if (currentIndex > 0) {
+                const prevRace = sortedRaces[currentIndex - 1];
+                if (prevRace) {
+                    showRaceDetails(prevRace.id);
+                }
+            }
+        }
+
+        // Fonction pour naviguer vers la course suivante
+        function navigateToNext() {
+            if (currentIndex < sortedRaces.length - 1) {
+                const nextRace = sortedRaces[currentIndex + 1];
+                if (nextRace) {
+                    showRaceDetails(nextRace.id);
+                }
+            }
+        }
+
+        // Mettre à jour l'état des boutons de navigation
+        if (currentIndex > 0) {
+            prevRaceBtn.disabled = false;
+            prevRaceBtn.onclick = function(e) {
+                e.stopPropagation();
+                navigateToPrev();
+            };
+        } else {
+            prevRaceBtn.disabled = true;
+            prevRaceBtn.onclick = null;
+        }
+
+        if (currentIndex < sortedRaces.length - 1) {
+            nextRaceBtn.disabled = false;
+            nextRaceBtn.onclick = function(e) {
+                e.stopPropagation();
+                navigateToNext();
+            };
+        } else {
+            nextRaceBtn.disabled = true;
+            nextRaceBtn.onclick = null;
+        }
+
+        // Navigation au clavier (flèches gauche/droite)
+        // Retirer l'ancien écouteur s'il existe
+        if (currentKeyNavigationHandler) {
+            document.removeEventListener('keydown', currentKeyNavigationHandler);
+        }
+
+        function handleKeyNavigation(e) {
+            if (!detailsModal.classList.contains('hidden')) {
+                if (e.key === 'ArrowLeft' && !prevRaceBtn.disabled) {
+                    navigateToPrev();
+                } else if (e.key === 'ArrowRight' && !nextRaceBtn.disabled) {
+                    navigateToNext();
+                }
+            }
+        }
+
+        // Ajouter l'écouteur d'événement pour la navigation au clavier
+        currentKeyNavigationHandler = handleKeyNavigation;
+        document.addEventListener('keydown', handleKeyNavigation);
+
         detailsModal.classList.remove('hidden');
     }
 
@@ -1604,7 +1692,14 @@
     });
 
     // Event listeners
-    closeDetailsBtn.addEventListener('click', () => detailsModal.classList.add('hidden'));
+    closeDetailsBtn.addEventListener('click', () => {
+        detailsModal.classList.add('hidden');
+        // Retirer l'écouteur de navigation au clavier quand la modale est fermée
+        if (currentKeyNavigationHandler) {
+            document.removeEventListener('keydown', currentKeyNavigationHandler);
+            currentKeyNavigationHandler = null;
+        }
+    });
     raceForm.addEventListener('submit', saveRace);
 
     searchInput.addEventListener('input', (e) => {
