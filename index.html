@@ -835,6 +835,9 @@
             passwordInput.value = '';
             passwordError.classList.add('hidden');
             passwordInput.disabled = false;
+            
+            // Activer le champ de recherche
+            updateSearchInputState();
 
             // Recharger les statistiques et l'affichage sans recharger la page
             updateStats(races);
@@ -1669,6 +1672,9 @@
                     });
             } else if (context === 'details' && raceId) {
                 showRaceDetails(raceId);
+            } else if (context === 'search') {
+                // Pour la recherche, on active juste le champ après authentification
+                updateSearchInputState();
             }
             return;
         }
@@ -1982,12 +1988,108 @@
 
     // Rechercher dans les courses en respectant le filtre d'année courant
     function searchRaces(query) {
-        const q = (query || '').toLowerCase();
-        let filteredRaces = races.filter(race =>
-            (race.name || '').toLowerCase().includes(q) ||
-            (race.location || '').toLowerCase().includes(q)
-        );
+        const q = (query || '').toLowerCase().trim();
+        const isAuthenticated = sessionStorage.getItem('authenticated') === 'true';
+        
+        // Si la recherche est vide, afficher toutes les courses (filtrées par année si nécessaire)
+        if (!q) {
+            let filteredRaces = races;
+            if (currentYearFilter && currentYearFilter !== 'all') {
+                filteredRaces = filteredRaces.filter(race => {
+                    const raceDate = new Date(race.date);
+                    return raceDate.getFullYear().toString() === currentYearFilter;
+                });
+            }
+            updateStats(filteredRaces);
+            displayRaces(filteredRaces);
+            return;
+        }
 
+        let filteredRaces;
+
+        if (!isAuthenticated) {
+            // Si non authentifié, rechercher uniquement dans le nom
+            filteredRaces = races.filter(race => {
+                const nameMatch = (race.name || '').toLowerCase().includes(q);
+                return nameMatch;
+            });
+        } else {
+            // Si authentifié, rechercher dans tous les champs possibles
+            filteredRaces = races.filter(race => {
+                // Nom de la course
+                const nameMatch = (race.name || '').toLowerCase().includes(q);
+                
+                // Lieu
+                const locationMatch = (race.location || '').toLowerCase().includes(q);
+                
+                // Notes
+                const notesMatch = (race.notes || '').toLowerCase().includes(q);
+                
+                // Site web
+                const websiteMatch = (race.website || '').toLowerCase().includes(q);
+                
+                // URL GPX
+                const gpxUrlMatch = (race.gpxUrl || '').toLowerCase().includes(q);
+                
+                // Distance (recherche numérique et texte)
+                const distanceNum = parseFloat(race.distance) || 0;
+                const distanceStr = String(race.distance || '');
+                const distanceMatch = distanceNum.toString().includes(q) || 
+                                     distanceStr.toLowerCase().includes(q);
+                
+                // Dénivelé (recherche numérique et texte)
+                const elevationNum = parseInt(race.elevation) || 0;
+                const elevationStr = String(race.elevation || '');
+                const elevationMatch = elevationNum.toString().includes(q) || 
+                                      elevationStr.toLowerCase().includes(q);
+                
+                // Temps
+                const timeMatch = String(race.time || '').toLowerCase().includes(q);
+                
+                // Prix (recherche numérique et texte)
+                const priceNum = parseFloat(race.price) || 0;
+                const priceStr = String(race.price || '');
+                const priceMatch = priceNum.toString().includes(q) || 
+                                 priceStr.toLowerCase().includes(q);
+                
+                // Heure
+                const hourMatch = (race.hour || '').toLowerCase().includes(q);
+                
+                // Date (format français et ISO)
+                let dateMatch = false;
+                if (race.date) {
+                    const raceDate = new Date(race.date);
+                    const dateFr = raceDate.toLocaleDateString('fr-FR', {
+                        day: 'numeric',
+                        month: 'long',
+                        year: 'numeric'
+                    }).toLowerCase();
+                    const dateFrShort = raceDate.toLocaleDateString('fr-FR', {
+                        day: 'numeric',
+                        month: 'numeric',
+                        year: 'numeric'
+                    }).toLowerCase();
+                    const dateISO = raceDate.toISOString().split('T')[0];
+                    const year = raceDate.getFullYear().toString();
+                    const month = (raceDate.getMonth() + 1).toString();
+                    const day = raceDate.getDate().toString();
+                    
+                    dateMatch = dateFr.includes(q) || 
+                               dateFrShort.includes(q) || 
+                               dateISO.includes(q) ||
+                               year.includes(q) ||
+                               month.includes(q) ||
+                               day.includes(q);
+                }
+                
+                // Retourner true si au moins un champ correspond
+                return nameMatch || locationMatch || notesMatch || websiteMatch || 
+                       gpxUrlMatch || distanceMatch || elevationMatch || timeMatch || 
+                       priceMatch || hourMatch || dateMatch;
+            });
+        }
+
+        // Appliquer le filtre d'année si nécessaire
         if (currentYearFilter && currentYearFilter !== 'all') {
             filteredRaces = filteredRaces.filter(race => {
                 const raceDate = new Date(race.date);
@@ -2041,6 +2143,20 @@
 
     raceForm.addEventListener('submit', saveRace);
 
+    // Fonction pour mettre à jour le placeholder selon l'authentification
+    function updateSearchInputState() {
+        const isAuthenticated = sessionStorage.getItem('authenticated') === 'true';
+        if (isAuthenticated) {
+            searchInput.placeholder = 'Rechercher une course... (nom, lieu, date, distance, dénivelé, temps, notes, prix, etc.)';
+        } else {
+            searchInput.placeholder = 'Rechercher une course...';
+        }
+    }
+
+    // Vérifier l'état d'authentification au chargement
+    updateSearchInputState();
+
+    // Recherche en temps réel
     searchInput.addEventListener('input', (e) => {
         searchRaces(e.target.value);
     });
