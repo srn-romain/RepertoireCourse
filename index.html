@@ -357,13 +357,13 @@
                 <img id="detailsParcours" class="w-full h-auto rounded-lg shadow-md" alt="Parcours de la course">
             </div>
             <div class="flex gap-3 mt-6 pt-4 border-t border-gray-200">
-                <button id="editFromDetailsBtn" class="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center gap-2">
+                <button id="editFromDetailsBtn" class="flex-1 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors flex items-center justify-center gap-2">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                         <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/>
                     </svg>
                     Modifier
                 </button>
-                <button id="generatePdfBtn" class="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center gap-2">
+                <button id="generatePdfBtn" class="flex-1 px-4 py-2 bg-green-700 text-white rounded-lg hover:bg-green-800 transition-colors flex items-center justify-center gap-2">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                         <path fill-rule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm5 6a1 1 0 10-2 0v3.586l-1.293-1.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V8z" clip-rule="evenodd"/>
                     </svg>
@@ -1144,12 +1144,32 @@
             elevationElement.textContent = elevationText;
         }
         
-        // Temps avec surlignage si correspond
+        // Temps avec surlignage si correspond et gestion selon la date
         const timeElement = document.getElementById('detailsTime');
-        if (fieldMatchesSearch(race.time, searchQuery)) {
-            timeElement.innerHTML = highlightSearchMatch(race.time, searchQuery);
+        const todayForTime = new Date();
+        todayForTime.setHours(0, 0, 0, 0);
+        const raceDateOnly = new Date(raceDate);
+        raceDateOnly.setHours(0, 0, 0, 0);
+        
+        let timeDisplay = '';
+        if (raceDateOnly > todayForTime) {
+            // Course dans le futur : afficher "À venir"
+            timeDisplay = 'À venir';
+            timeElement.className = 'font-semibold text-yellow-600';
+        } else if (raceDateOnly.getTime() === todayForTime.getTime()) {
+            // Course aujourd'hui : afficher "En cours..."
+            timeDisplay = 'En cours...';
+            timeElement.className = 'font-semibold text-green-600';
         } else {
-            timeElement.textContent = race.time;
+            // Course passée : afficher le temps normal
+            timeDisplay = race.time;
+            timeElement.className = 'font-semibold text-green-800';
+        }
+        
+        if (fieldMatchesSearch(timeDisplay, searchQuery)) {
+            timeElement.innerHTML = highlightSearchMatch(timeDisplay, searchQuery);
+        } else {
+            timeElement.textContent = timeDisplay;
         }
         
         // Lieu avec surlignage si correspond
@@ -1160,10 +1180,13 @@
             locationElement.textContent = race.location;
         }
 
-        // Calculate average speed
+        // Calculate average speed (seulement pour les courses passées)
         const distance = parseFloat(race.distance);
         const timeStr = race.time;
-        if (isNaN(distance) || !timeStr) {
+        if (raceDateOnly > todayForTime || raceDateOnly.getTime() === todayForTime.getTime()) {
+            // Course à venir ou en cours : ne pas afficher les statistiques
+            document.getElementById('averageSpeedInfo').textContent = '';
+        } else if (isNaN(distance) || !timeStr) {
             document.getElementById('averageSpeedInfo').textContent = '';
         } else {
             const parts = timeStr.split(':');
