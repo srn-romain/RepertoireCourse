@@ -732,6 +732,7 @@
     const confirmDelete = document.getElementById('confirmDelete');
     let raceIdToDelete = null;
     let currentKeyNavigationHandler = null;
+    let currentSearchQuery = '';
 
     // Gérer l'événement de clic sur le bouton d'ajout
     addRaceBtn.addEventListener('click', () => {
@@ -1043,6 +1044,21 @@
         });
     }
 
+    // Fonction pour surligner le texte correspondant à la recherche
+    function highlightSearchMatch(text, searchQuery) {
+        if (!searchQuery || !text) return text;
+        
+        const searchLower = searchQuery.toLowerCase();
+        const textStr = String(text);
+        const textLower = textStr.toLowerCase();
+        
+        if (!textLower.includes(searchLower)) return textStr;
+        
+        // Trouver toutes les occurrences (insensible à la casse)
+        const regex = new RegExp(`(${searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+        return textStr.replace(regex, '<mark class="bg-yellow-200 text-yellow-800 rounded px-1">$1</mark>');
+    }
+
     // Afficher les détails d'une course avec authentification
     function showRaceDetails(id) {
         if (sessionStorage.getItem('authenticated') !== 'true') {
@@ -1063,26 +1079,86 @@
         const isUpcoming = raceDate >= today;
         let badgeAvenir = isUpcoming ? '<span class="ml-2 px-2 py-1 bg-yellow-200 text-yellow-800 text-xs rounded-full animate-pulse">À venir</span>' : '';
 
-        document.getElementById('detailsTitle').textContent = race.name;
+        // Vérifier quels champs correspondent à la recherche pour les surligner
+        const searchQuery = currentSearchQuery;
+        const isAuthenticated = sessionStorage.getItem('authenticated') === 'true';
+        
+        // Fonction pour vérifier si un champ correspond à la recherche
+        function fieldMatchesSearch(value, searchQ) {
+            if (!searchQ || !isAuthenticated) return false;
+            if (!value) return false;
+            const valueStr = String(value).toLowerCase();
+            const searchLower = searchQ.toLowerCase();
+            return valueStr.includes(searchLower);
+        }
+        
+        // Titre avec surlignage si correspond
+        const titleElement = document.getElementById('detailsTitle');
+        if (fieldMatchesSearch(race.name, searchQuery)) {
+            titleElement.innerHTML = highlightSearchMatch(race.name, searchQuery);
+        } else {
+            titleElement.textContent = race.name;
+        }
+        
         // Ajout de l'heure juste après la date
         let heureHtml = '';
         if (race.hour) {
             // Formatage heure (ex: 14:30)
-            heureHtml = `<span class="ml-2 px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">${race.hour}</span>`;
+            const hourDisplay = fieldMatchesSearch(race.hour, searchQuery) 
+                ? highlightSearchMatch(race.hour, searchQuery) 
+                : race.hour;
+            heureHtml = `<span class="ml-2 px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">${hourDisplay}</span>`;
         }
-        document.getElementById('detailsDate').innerHTML =
-            raceDate.toLocaleDateString('fr-FR', {
-                weekday: 'long',
-                day: 'numeric',
-                month: 'long',
-                year: 'numeric'
-            }).replace(/^[a-z]/, c => c.toUpperCase()) +
-            heureHtml + badgeAvenir;
+        
+        // Date avec surlignage si correspond
+        const dateStr = raceDate.toLocaleDateString('fr-FR', {
+            weekday: 'long',
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+        }).replace(/^[a-z]/, c => c.toUpperCase());
+        const dateDisplay = fieldMatchesSearch(dateStr, searchQuery) || 
+                           fieldMatchesSearch(raceDate.getFullYear().toString(), searchQuery) ||
+                           fieldMatchesSearch((raceDate.getMonth() + 1).toString(), searchQuery) ||
+                           fieldMatchesSearch(raceDate.getDate().toString(), searchQuery)
+            ? highlightSearchMatch(dateStr, searchQuery)
+            : dateStr;
+        
+        document.getElementById('detailsDate').innerHTML = dateDisplay + heureHtml + badgeAvenir;
 
-        document.getElementById('detailsDistance').textContent = `${race.distance} km`;
-        document.getElementById('detailsElevation').textContent = `${race.elevation} m D+`;
-        document.getElementById('detailsTime').textContent = race.time;
-        document.getElementById('detailsLocation').textContent = race.location;
+        // Distance avec surlignage si correspond
+        const distanceElement = document.getElementById('detailsDistance');
+        const distanceText = `${race.distance} km`;
+        if (fieldMatchesSearch(race.distance, searchQuery) || fieldMatchesSearch('km', searchQuery)) {
+            distanceElement.innerHTML = highlightSearchMatch(distanceText, searchQuery);
+        } else {
+            distanceElement.textContent = distanceText;
+        }
+        
+        // Dénivelé avec surlignage si correspond
+        const elevationElement = document.getElementById('detailsElevation');
+        const elevationText = `${race.elevation} m D+`;
+        if (fieldMatchesSearch(race.elevation, searchQuery) || fieldMatchesSearch('m', searchQuery) || fieldMatchesSearch('d+', searchQuery)) {
+            elevationElement.innerHTML = highlightSearchMatch(elevationText, searchQuery);
+        } else {
+            elevationElement.textContent = elevationText;
+        }
+        
+        // Temps avec surlignage si correspond
+        const timeElement = document.getElementById('detailsTime');
+        if (fieldMatchesSearch(race.time, searchQuery)) {
+            timeElement.innerHTML = highlightSearchMatch(race.time, searchQuery);
+        } else {
+            timeElement.textContent = race.time;
+        }
+        
+        // Lieu avec surlignage si correspond
+        const locationElement = document.getElementById('detailsLocation');
+        if (fieldMatchesSearch(race.location, searchQuery)) {
+            locationElement.innerHTML = highlightSearchMatch(race.location, searchQuery);
+        } else {
+            locationElement.textContent = race.location;
+        }
 
         // Calculate average speed
         const distance = parseFloat(race.distance);
@@ -1117,20 +1193,30 @@
             window.open(`https://www.google.com/maps/search/?api=1&query=${query}`, '_blank');
         };
 
-        // Gérer l'affichage des notes
+        // Gérer l'affichage des notes avec surlignage si correspond
         const notesSection = document.querySelector('#detailsModal .mb-4:has(#detailsNotes)');
+        const notesElement = document.getElementById('detailsNotes');
         if (race.notes && race.notes.trim() !== '') {
             notesSection.classList.remove('hidden');
-            document.getElementById('detailsNotes').textContent = race.notes;
+            if (fieldMatchesSearch(race.notes, searchQuery)) {
+                notesElement.innerHTML = highlightSearchMatch(race.notes, searchQuery);
+            } else {
+                notesElement.textContent = race.notes;
+            }
         } else {
             notesSection.classList.add('hidden');
         }
 
-        // Gérer l'affichage du prix
+        // Gérer l'affichage du prix avec surlignage si correspond
         const priceContainer = document.getElementById('detailsPriceContainer');
         const priceElement = document.getElementById('detailsPrice');
         if (race.price !== undefined && race.price !== null && race.price !== '') {
-            priceElement.textContent = `${parseFloat(race.price).toFixed(2)} €`;
+            const priceText = `${parseFloat(race.price).toFixed(2)} €`;
+            if (fieldMatchesSearch(race.price, searchQuery) || fieldMatchesSearch('€', searchQuery)) {
+                priceElement.innerHTML = highlightSearchMatch(priceText, searchQuery);
+            } else {
+                priceElement.textContent = priceText;
+            }
             priceContainer.style.display = '';
         } else {
             priceElement.textContent = '';
@@ -1222,7 +1308,7 @@
             photoContainer.classList.add('hidden');
         }
 
-        // Gérer l’affichage du lien site web
+        // Gérer l'affichage du lien site web avec surlignage si correspond
         let detailsWebsite = document.getElementById('detailsWebsite');
         if (!detailsWebsite) {
             detailsWebsite = document.createElement('div');
@@ -1231,13 +1317,17 @@
             detailsModal.querySelector('.modal-content').appendChild(detailsWebsite);
         }
         if (race.website) {
-            detailsWebsite.innerHTML = `<a href="${race.website}" target="_blank" rel="noopener" class="underline text-blue-600 hover:text-blue-800 font-semibold">Lien vers le site de la course</a>`;
+            const websiteText = 'Lien vers le site de la course';
+            const websiteLinkText = fieldMatchesSearch(race.website, searchQuery) || fieldMatchesSearch(websiteText, searchQuery)
+                ? highlightSearchMatch(websiteText, searchQuery)
+                : websiteText;
+            detailsWebsite.innerHTML = `<a href="${race.website}" target="_blank" rel="noopener" class="underline text-blue-600 hover:text-blue-800 font-semibold">${websiteLinkText}</a>`;
             detailsWebsite.classList.remove('hidden');
         } else {
             detailsWebsite.classList.add('hidden');
         }
 
-        // Ajouter le lien GPX si présent
+        // Ajouter le lien GPX si présent avec surlignage si correspond
         let gpxLink = document.getElementById('gpxLink');
         const avgInfoEl = document.getElementById('averageSpeedInfo');
 
@@ -1253,7 +1343,11 @@
         }
 
         if (race.gpxUrl) {
-            gpxLink.innerHTML = `<a href="${race.gpxUrl}" target="_blank" rel="noopener" class="mb-2 text-green-700 font-semibold underline hover:text-yellow-600 hover:underline cursor-pointer">Voir le gpx</a>`;
+            const gpxText = 'Voir le gpx';
+            const gpxLinkText = fieldMatchesSearch(race.gpxUrl, searchQuery) || fieldMatchesSearch('gpx', searchQuery)
+                ? highlightSearchMatch(gpxText, searchQuery)
+                : gpxText;
+            gpxLink.innerHTML = `<a href="${race.gpxUrl}" target="_blank" rel="noopener" class="mb-2 text-green-700 font-semibold underline hover:text-yellow-600 hover:underline cursor-pointer">${gpxLinkText}</a>`;
             gpxLink.classList.remove('hidden');
         } else {
             gpxLink.classList.add('hidden');
@@ -1989,6 +2083,7 @@
     // Rechercher dans les courses en respectant le filtre d'année courant
     function searchRaces(query) {
         const q = (query || '').toLowerCase().trim();
+        currentSearchQuery = q; // Stocker la requête de recherche actuelle
         const isAuthenticated = sessionStorage.getItem('authenticated') === 'true';
         
         // Si la recherche est vide, afficher toutes les courses (filtrées par année si nécessaire)
