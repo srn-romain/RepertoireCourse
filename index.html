@@ -98,7 +98,7 @@
                 <button id="connectBtn" class="px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-sm rounded-full transition hidden">
                     Se connecter
                 </button>
-                <button id="disconnectBtn" class="px-3 py-1 bg-red-600 hover:bg-red-700 text-white text-sm rounded-full transition hidden">
+                <button id="disconnectBtn" class="px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-sm rounded-full transition hidden">
                     Se déconnecter
                 </button>
             </div>
@@ -140,7 +140,7 @@
     <!-- Search and Filter -->
     <div class="mb-8">
         <div class="relative mb-4">
-            <input type="text" id="searchInput" placeholder="Rechercher une course..."
+            <input type="text" id="searchInput" placeholder="Rechercher une course par nom..."
                    class="w-full px-4 py-2 rounded-full border border-green-300 focus:outline-none focus:ring-2 focus:ring-green-500">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 absolute right-3 top-2.5 text-green-400"
                  viewBox="0 0 20 20" fill="currentColor">
@@ -148,6 +148,68 @@
                       d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
                       clip-rule="evenodd"/>
             </svg>
+        </div>
+        
+        <!-- Panneau de filtres avancés (visible uniquement si connecté) -->
+        <div id="advancedFiltersPanel" class="bg-white rounded-lg shadow-md mb-4 hidden">
+            <button id="toggleFiltersBtn" class="w-full flex items-center justify-between p-4 text-left hover:bg-green-50 transition-colors rounded-t-lg">
+                <h3 class="text-lg font-semibold text-green-800">Filtres avancés</h3>
+                <svg id="toggleFiltersIcon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-600 transform transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                </svg>
+            </button>
+            <div id="filtersContent" class="p-4 pt-0 hidden">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                <div>
+                    <label class="block text-sm font-medium text-green-700 mb-2">Lieu</label>
+                    <select id="filterLocation" class="w-full px-3 py-2 border border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
+                        <option value="">Tous les lieux</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-green-700 mb-2">Fourchette de prix</label>
+                    <select id="filterPrice" class="w-full px-3 py-2 border border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
+                        <option value="">Toutes les fourchettes</option>
+                        <option value="0-20">0-20 €</option>
+                        <option value="20-40">20-40 €</option>
+                        <option value="40-60">40-60 €</option>
+                        <option value="60-80">60-80 €</option>
+                        <option value="80+">+80 €</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-green-700 mb-2">Fourchette de dénivelé (m)</label>
+                    <select id="filterElevation" class="w-full px-3 py-2 border border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
+                        <option value="">Toutes les fourchettes</option>
+                        <option value="0-500">0-500 m</option>
+                        <option value="500-1000">500-1000 m</option>
+                        <option value="1000-1500">1000-1500 m</option>
+                        <option value="1500-2000">1500-2000 m</option>
+                        <option value="2000+">+2000 m</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-green-700 mb-2">Fourchette de distance (km)</label>
+                    <select id="filterDistance" class="w-full px-3 py-2 border border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
+                        <option value="">Toutes les fourchettes</option>
+                        <option value="0-10">0-10 km</option>
+                        <option value="10-20">10-20 km</option>
+                        <option value="20-30">20-30 km</option>
+                        <option value="30-40">30-40 km</option>
+                        <option value="40-50">40-50 km</option>
+                        <option value="50+">+50 km</option>
+                    </select>
+                </div>
+            </div>
+            <div class="flex gap-3 justify-end">
+                <button id="resetFiltersBtn" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition-colors">
+                    Réinitialiser les filtres
+                </button>
+                <button id="applyFiltersBtn" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors">
+                    Rechercher
+                </button>
+            </div>
+            </div>
         </div>
         <div id="yearFilters" class="flex flex-wrap gap-2">
             <button class="year-filter px-3 py-1 rounded-full bg-green-100 text-green-800 hover:bg-green-200 transition"
@@ -624,6 +686,9 @@
 
             // Afficher toutes les courses
             displayRaces(races);
+            
+            // Mettre à jour la liste des lieux pour les filtres avancés
+            updateLocationFilter();
         }).catch((error) => {
             console.error("Erreur lors du chargement des courses:", error);
             racesContainer.innerHTML = '<div class="col-span-3 text-center py-12"><p class="text-red-600">Erreur lors du chargement des courses. Veuillez rafraîchir la page.</p></div>';
@@ -2333,11 +2398,11 @@
         }, false);
     }
 
-    // Rechercher dans les courses en respectant le filtre d'année courant
+    // Rechercher dans les courses (par nom uniquement si non connecté, tous les champs si connecté)
     function searchRaces(query) {
         const q = (query || '').toLowerCase().trim();
         currentSearchQuery = q; // Stocker la requête de recherche actuelle
-        const isAuthenticated = sessionStorage.getItem('authenticated') === 'true';
+        const userIsAuthenticated = isAuthenticated();
         
         // Si la recherche est vide, afficher toutes les courses (filtrées par année si nécessaire)
         if (!q) {
@@ -2459,6 +2524,119 @@
         updateStats(filteredRaces);
         displayRaces(filteredRaces);
     }
+    
+    // Recherche avancée avec filtres (uniquement pour les utilisateurs connectés)
+    function applyAdvancedFilters() {
+        if (!isAuthenticated()) {
+            return;
+        }
+        
+        const locationFilter = document.getElementById('filterLocation').value;
+        const priceFilter = document.getElementById('filterPrice').value;
+        const elevationFilter = document.getElementById('filterElevation').value;
+        const distanceFilter = document.getElementById('filterDistance').value;
+        const nameQuery = (searchInput.value || '').toLowerCase().trim();
+        
+        let filteredRaces = races;
+        
+        // Filtrer par nom si une recherche est en cours
+        if (nameQuery) {
+            filteredRaces = filteredRaces.filter(race => {
+                return (race.name || '').toLowerCase().includes(nameQuery);
+            });
+        }
+        
+        // Filtrer par lieu
+        if (locationFilter) {
+            filteredRaces = filteredRaces.filter(race => {
+                return (race.location || '') === locationFilter;
+            });
+        }
+        
+        // Filtrer par fourchette de prix
+        if (priceFilter) {
+            filteredRaces = filteredRaces.filter(race => {
+                const price = parseFloat(race.price) || 0;
+                if (priceFilter === '0-20') return price < 20;
+                if (priceFilter === '20-40') return price >= 20 && price < 40;
+                if (priceFilter === '40-60') return price >= 40 && price < 60;
+                if (priceFilter === '60-80') return price >= 60 && price < 80;
+                if (priceFilter === '80+') return price >= 80;
+                return true;
+            });
+        }
+        
+        // Filtrer par fourchette de dénivelé
+        if (elevationFilter) {
+            filteredRaces = filteredRaces.filter(race => {
+                const elevation = parseInt(race.elevation) || 0;
+                if (elevationFilter === '0-500') return elevation < 500;
+                if (elevationFilter === '500-1000') return elevation >= 500 && elevation < 1000;
+                if (elevationFilter === '1000-1500') return elevation >= 1000 && elevation < 1500;
+                if (elevationFilter === '1500-2000') return elevation >= 1500 && elevation < 2000;
+                if (elevationFilter === '2000+') return elevation >= 2000;
+                return true;
+            });
+        }
+        
+        // Filtrer par fourchette de distance
+        if (distanceFilter) {
+            filteredRaces = filteredRaces.filter(race => {
+                const distance = parseFloat(race.distance) || 0;
+                if (distanceFilter === '0-10') return distance < 10;
+                if (distanceFilter === '10-20') return distance >= 10 && distance < 20;
+                if (distanceFilter === '20-30') return distance >= 20 && distance < 30;
+                if (distanceFilter === '30-40') return distance >= 30 && distance < 40;
+                if (distanceFilter === '40-50') return distance >= 40 && distance < 50;
+                if (distanceFilter === '50+') return distance >= 50;
+                return true;
+            });
+        }
+        
+        // Appliquer le filtre d'année si nécessaire
+        if (currentYearFilter && currentYearFilter !== 'all') {
+            filteredRaces = filteredRaces.filter(race => {
+                const raceDate = new Date(race.date);
+                return raceDate.getFullYear().toString() === currentYearFilter;
+            });
+        }
+        
+        updateStats(filteredRaces);
+        displayRaces(filteredRaces);
+    }
+    
+    // Fonction pour réinitialiser les filtres
+    function resetAdvancedFilters() {
+        document.getElementById('filterLocation').value = '';
+        document.getElementById('filterPrice').value = '';
+        document.getElementById('filterElevation').value = '';
+        document.getElementById('filterDistance').value = '';
+        searchInput.value = '';
+        searchRaces('');
+    }
+    
+    // Fonction pour mettre à jour la liste des lieux
+    function updateLocationFilter() {
+        const locationSelect = document.getElementById('filterLocation');
+        const currentValue = locationSelect.value;
+        
+        // Extraire les lieux uniques
+        const locations = [...new Set(races.map(race => race.location).filter(loc => loc && loc.trim() !== ''))].sort();
+        
+        // Vider et remplir la liste
+        locationSelect.innerHTML = '<option value="">Tous les lieux</option>';
+        locations.forEach(location => {
+            const option = document.createElement('option');
+            option.value = location;
+            option.textContent = location;
+            locationSelect.appendChild(option);
+        });
+        
+        // Restaurer la valeur précédente si elle existe
+        if (currentValue && locations.includes(currentValue)) {
+            locationSelect.value = currentValue;
+        }
+    }
 
     // Écouteur pour le bouton Annuler
     cancelBtn.addEventListener('click', () => {
@@ -2509,9 +2687,11 @@
 
     raceForm.addEventListener('submit', saveRace);
 
-    // Fonction pour mettre à jour le placeholder selon l'authentification
+    // Fonction pour mettre à jour le placeholder et l'affichage des filtres
     function updateSearchInputState() {
         const userIsAuthenticated = isAuthenticated();
+        const advancedFiltersPanel = document.getElementById('advancedFiltersPanel');
+        
         if (userIsAuthenticated) {
             if (isAdmin()) {
                 searchInput.placeholder = 'Rechercher une course... (nom, lieu, date, distance, dénivelé, temps, notes, prix, etc.)';
@@ -2519,8 +2699,11 @@
                 // Pour les invités, on ne mentionne pas le prix
                 searchInput.placeholder = 'Rechercher une course... (nom, lieu, date, distance, dénivelé, temps, notes, etc.)';
             }
+            advancedFiltersPanel.classList.remove('hidden');
+            updateLocationFilter();
         } else {
-            searchInput.placeholder = 'Rechercher une course...';
+            searchInput.placeholder = 'Rechercher une course par nom...';
+            advancedFiltersPanel.classList.add('hidden');
         }
     }
     
@@ -2563,21 +2746,43 @@
     // Vérifier l'état d'authentification au chargement
     updateSearchInputState();
 
-    // Recherche en temps réel
+    // Recherche en temps réel (par nom si non connecté, tous les champs si connecté)
     searchInput.addEventListener('input', (e) => {
         searchRaces(e.target.value);
     });
     
-    // Gérer la touche Entrée dans la recherche
-    searchInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-            if (!isAuthenticated()) {
-                showPermissionDeniedModal('effectuer une recherche avancée');
-                return;
+    // Gérer les boutons de filtres avancés
+    const applyFiltersBtn = document.getElementById('applyFiltersBtn');
+    const resetFiltersBtn = document.getElementById('resetFiltersBtn');
+    
+    if (applyFiltersBtn) {
+        applyFiltersBtn.addEventListener('click', () => {
+            applyAdvancedFilters();
+        });
+    }
+    
+    if (resetFiltersBtn) {
+        resetFiltersBtn.addEventListener('click', () => {
+            resetAdvancedFilters();
+        });
+    }
+    
+    // Gérer le repliement/dépliement du panneau de filtres
+    const toggleFiltersBtn = document.getElementById('toggleFiltersBtn');
+    const filtersContent = document.getElementById('filtersContent');
+    const toggleFiltersIcon = document.getElementById('toggleFiltersIcon');
+    
+    if (toggleFiltersBtn) {
+        toggleFiltersBtn.addEventListener('click', () => {
+            if (filtersContent.classList.contains('hidden')) {
+                filtersContent.classList.remove('hidden');
+                toggleFiltersIcon.classList.add('rotate-180');
+            } else {
+                filtersContent.classList.add('hidden');
+                toggleFiltersIcon.classList.remove('rotate-180');
             }
-            searchRaces(e.target.value);
-        }
-    });
+        });
+    }
 
     // Gestion de la Wishlist
     const wishlistCollection = db.collection('wishlist');
