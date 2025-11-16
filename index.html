@@ -151,10 +151,10 @@
         </div>
         
         <!-- Panneau de filtres avancés (visible uniquement si connecté) -->
-        <div id="advancedFiltersPanel" class="bg-white rounded-lg shadow-md mb-4 hidden">
-            <button id="toggleFiltersBtn" class="w-full flex items-center justify-between p-4 text-left hover:bg-green-50 transition-colors rounded-t-lg">
-                <h3 class="text-lg font-semibold text-green-800">Filtres avancés</h3>
-                <svg id="toggleFiltersIcon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-600 transform transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div id="advancedFiltersPanel" class="bg-white rounded-lg shadow-md mb-2 hidden">
+            <button id="toggleFiltersBtn" class="w-full flex items-center justify-between py-2 px-3 text-left hover:bg-green-50 transition-colors rounded-lg">
+                <h3 class="text-sm font-semibold text-green-800">Filtres avancés</h3>
+                <svg id="toggleFiltersIcon" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-600 transform transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                 </svg>
             </button>
@@ -1179,11 +1179,28 @@
             if (locationDisplay && locationDisplay.length > maxLength) {
                 locationDisplay = locationDisplay.substring(0, maxLength - 3) + '...';
             }
-            // Déterminer si la course est à venir
+            // Déterminer le badge selon la date et le temps
             const today = new Date();
             today.setHours(0,0,0,0); // On ignore l'heure
+            const raceDateOnly = new Date(raceDate);
+            raceDateOnly.setHours(0,0,0,0);
+            const isToday = raceDateOnly.getTime() === today.getTime();
             const isUpcoming = raceDate >= today;
-            const badgeAvenir = isUpcoming ? `<span class="ml-2 px-2 py-1 bg-yellow-200 text-yellow-800 text-xs rounded-full animate-pulse">À venir</span>` : '';
+            
+            let badgeAvenir = '';
+            if (isToday) {
+                // Si c'est aujourd'hui
+                if (race.time && race.time !== '00:00:00' && race.time.trim() !== '') {
+                    // Temps complété : afficher "New !"
+                    badgeAvenir = `<span class="ml-2 px-2 py-1 bg-green-200 text-green-800 text-xs rounded-full animate-pulse">New !</span>`;
+                } else {
+                    // Temps non complété : afficher "En cours"
+                    badgeAvenir = `<span class="ml-2 px-2 py-1 bg-yellow-200 text-yellow-800 text-xs rounded-full animate-pulse">En cours</span>`;
+                }
+            } else if (isUpcoming) {
+                // Course à venir : afficher "À venir"
+                badgeAvenir = `<span class="ml-2 px-2 py-1 bg-yellow-200 text-yellow-800 text-xs rounded-full animate-pulse">À venir</span>`;
+            }
             const raceCard = document.createElement('div');
             raceCard.className = 'bg-white rounded-xl overflow-hidden shadow-md card-hover relative group cursor-pointer';
             raceCard.innerHTML = `
@@ -1314,11 +1331,24 @@
 
         const raceDate = new Date(race.date);
 
-        // Ajout badge "À venir" dans la modale de détail
+        // Ajout badge "À venir" ou "Jour J" dans la modale de détail
         const today = new Date();
         today.setHours(0,0,0,0);
+        const raceDateOnly = new Date(raceDate);
+        raceDateOnly.setHours(0,0,0,0);
+        const isToday = raceDateOnly.getTime() === today.getTime();
         const isUpcoming = raceDate >= today;
-        let badgeAvenir = isUpcoming ? '<span class="ml-2 px-2 py-1 bg-yellow-200 text-yellow-800 text-xs rounded-full animate-pulse">À venir</span>' : '';
+        
+        let badgeAvenir = '';
+        if (isToday) {
+            // Si c'est aujourd'hui : afficher "Jour J"
+            badgeAvenir = '<span class="ml-2 px-2 py-1 bg-yellow-200 text-yellow-800 text-xs rounded-full animate-pulse">Jour J</span>';
+        } else if (isUpcoming) {
+            // Si c'est dans le futur : calculer le nombre de jours
+            const diffTime = raceDateOnly.getTime() - today.getTime();
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            badgeAvenir = `<span class="ml-2 px-2 py-1 bg-yellow-200 text-yellow-800 text-xs rounded-full animate-pulse">À venir J-${diffDays}</span>`;
+        }
 
         // Vérifier quels champs correspondent à la recherche pour les surligner
         const searchQuery = currentSearchQuery;
@@ -1389,21 +1419,28 @@
         const timeElement = document.getElementById('detailsTime');
         const todayForTime = new Date();
         todayForTime.setHours(0, 0, 0, 0);
-        const raceDateOnly = new Date(raceDate);
-        raceDateOnly.setHours(0, 0, 0, 0);
+        const raceDateOnlyForTime = new Date(raceDate);
+        raceDateOnlyForTime.setHours(0, 0, 0, 0);
         
         let timeDisplay = '';
-        if (raceDateOnly > todayForTime) {
+        if (raceDateOnlyForTime > todayForTime) {
             // Course dans le futur : afficher "À venir"
             timeDisplay = 'À venir';
             timeElement.className = 'font-semibold text-yellow-600';
-        } else if (raceDateOnly.getTime() === todayForTime.getTime()) {
-            // Course aujourd'hui : afficher "En cours..."
-            timeDisplay = 'En cours...';
-            timeElement.className = 'font-semibold text-green-600';
+        } else if (raceDateOnlyForTime.getTime() === todayForTime.getTime()) {
+            // Course aujourd'hui : vérifier si le temps est complété
+            if (race.time && race.time !== '00:00:00' && race.time.trim() !== '') {
+                // Temps complété : afficher le temps réel
+                timeDisplay = race.time;
+                timeElement.className = 'font-semibold text-green-800';
+            } else {
+                // Temps non complété : afficher "En cours"
+                timeDisplay = 'En cours';
+                timeElement.className = 'font-semibold text-green-600';
+            }
         } else {
             // Course passée : afficher le temps normal
-            timeDisplay = race.time;
+            timeDisplay = race.time || '';
             timeElement.className = 'font-semibold text-green-800';
         }
         
