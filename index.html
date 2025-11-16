@@ -65,6 +65,10 @@
         #passwordModal, #confirmDeleteModal {
             z-index: 60;
         }
+        
+        #permissionDeniedModal {
+            z-index: 100;
+        }
 
         .modal {
             transition: opacity 0.3s ease;
@@ -350,13 +354,25 @@
                 <p id="detailsNotes" class="text-gray-700"></p>
             </div>
             <div id="detailsPhotoContainer" class="mb-4 hidden">
+                <div class="flex items-center gap-2 mb-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                    </svg>
+                    <p class="text-sm font-semibold text-green-700" id="detailsPhotoLabel">Photo</p>
+                </div>
                 <img id="detailsPhoto" class="w-full h-auto rounded-lg shadow-md" alt="Photo de la course">
             </div>
             <!-- Nouveau conteneur pour le parcours -->
             <div id="detailsParcoursContainer" class="mb-4 hidden">
+                <div class="flex items-center gap-2 mb-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>
+                    </svg>
+                    <p class="text-sm font-semibold text-green-700" id="detailsParcoursLabel">Parcours</p>
+                </div>
                 <img id="detailsParcours" class="w-full h-auto rounded-lg shadow-md" alt="Parcours de la course">
             </div>
-            <div class="flex gap-3 mt-6 pt-4 border-t border-gray-200">
+            <div id="detailsActionsContainer" class="flex gap-3 mt-6 pt-4 border-t border-gray-200">
                 <button id="editFromDetailsBtn" class="flex-1 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors flex items-center justify-center gap-2">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                         <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/>
@@ -384,9 +400,18 @@
             </button>
         </div>
         <p class="text-gray-600 mb-4">Veuillez entrer le mot de passe pour continuer</p>
-        <div class="mb-4">
-            <input type="password" id="passwordInput" class="w-full px-4 py-2 border rounded-lg"
+        <div class="mb-4 relative">
+            <input type="password" id="passwordInput" class="w-full px-4 py-2 pr-10 border rounded-lg"
                    placeholder="Mot de passe">
+            <button type="button" id="togglePasswordVisibility" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none">
+                <svg id="eyeIcon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.522 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.478 0-8.268-2.943-9.542-7z"/>
+                </svg>
+                <svg id="eyeSlashIcon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/>
+                </svg>
+            </button>
         </div>
         <p id="passwordError" class="text-red-500 text-sm mb-4 hidden">Mot de passe incorrect</p>
         <div class="flex justify-end space-x-3">
@@ -397,6 +422,33 @@
             <button id="confirmPassword"
                     class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors">
                 Confirmer
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Permissions refusées -->
+<div id="permissionDeniedModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden" style="z-index: 100;">
+    <div class="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-xl font-semibold text-green-600">Permissions insuffisantes</h3>
+            <button id="closePermissionDeniedModal" class="text-gray-500 hover:text-gray-700">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+        <div class="mb-6">
+            <div class="flex items-center justify-center mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                </svg>
+            </div>
+            <p id="permissionDeniedMessage" class="text-gray-700 text-center"></p>
+        </div>
+        <div class="flex justify-end">
+            <button id="closePermissionDeniedBtn" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg transition-colors">
+                Compris
             </button>
         </div>
     </div>
@@ -626,8 +678,8 @@
             '<span class="font-semibold">' + totalDistance + '</span> km parcourus | ' +
             '<span class="font-semibold">' + totalElevation + '</span> m de dénivelé | ' +
             '<span class="font-semibold">' + totalHours + 'h' + remainingMinutes + '</span> de course';
-        // Affichage du prix
-        if (sessionStorage.getItem('authenticated') === 'true') {
+        // Affichage du prix (seulement pour les admins)
+        if (isAdmin()) {
             statsHtml += ' |\n                <span id="totalPriceStat" class="font-semibold group relative cursor-pointer">\n                    <span class="opacity-40">Prix total</span>\n                    <span class="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-2 py-1 bg-green-700 text-white text-xs rounded shadow-lg hidden group-hover:block z-50">\n                        ' + totalPrice.toLocaleString('fr-FR', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' € dépensés\n                    </span>\n                </span>';
         }
         statsElement.innerHTML = statsHtml;
@@ -726,18 +778,81 @@
     const confirmPassword = document.getElementById('confirmPassword');
     const passwordInput = document.getElementById('passwordInput');
     const passwordError = document.getElementById('passwordError');
-    const passwordHash = '7cfae86dbdef5b6712ca464daaa4a65fb1c528cc45d4473360b8e9b344c0d67e';
+    const passwordHash = '7cfae86dbdef5b6712ca464daaa4a65fb1c528cc45d4473360b8e9b344c0d67e'; // Admin
+    const invitePasswordHash = '5014f9af3a684fdd64a775c1c4c532ee66b1b96cb56b1d02170d2249b6764f75'; // Invite
+    
+    // Fonctions helper pour vérifier le niveau d'authentification
+    function isAuthenticated() {
+        return sessionStorage.getItem('authenticated') === 'true' || sessionStorage.getItem('authLevel') === 'invite';
+    }
+    
+    function isAdmin() {
+        return sessionStorage.getItem('authLevel') === 'admin';
+    }
+    
+    function isInvite() {
+        return sessionStorage.getItem('authLevel') === 'invite';
+    }
     const confirmDeleteModal = document.getElementById('confirmDeleteModal');
     const cancelDelete = document.getElementById('cancelDelete');
     const confirmDelete = document.getElementById('confirmDelete');
+    const permissionDeniedModal = document.getElementById('permissionDeniedModal');
+    const closePermissionDeniedModal = document.getElementById('closePermissionDeniedModal');
+    const closePermissionDeniedBtn = document.getElementById('closePermissionDeniedBtn');
     let raceIdToDelete = null;
     let currentKeyNavigationHandler = null;
     let currentSearchQuery = '';
+    
+    // Fonction pour afficher la modale de permissions refusées
+    function showPermissionDeniedModal(action) {
+        const messageElement = document.getElementById('permissionDeniedMessage');
+        messageElement.textContent = `Vous n'avez pas les permissions nécessaires pour ${action}. Veuillez vous connecter avec un compte administrateur.`;
+        permissionDeniedModal.classList.remove('hidden');
+    }
+    
+    // Fermer la modale de permissions refusées
+    closePermissionDeniedModal.addEventListener('click', () => {
+        permissionDeniedModal.classList.add('hidden');
+    });
+    
+    closePermissionDeniedBtn.addEventListener('click', () => {
+        permissionDeniedModal.classList.add('hidden');
+    });
 
     // Gérer l'événement de clic sur le bouton d'ajout
     addRaceBtn.addEventListener('click', () => {
+        if (isInvite()) {
+            showPermissionDeniedModal('ajouter une course');
+            return;
+        }
         showPasswordModal('add');
     });
+    
+    // Toggle visibilité du mot de passe
+    const togglePasswordVisibility = document.getElementById('togglePasswordVisibility');
+    const eyeIcon = document.getElementById('eyeIcon');
+    const eyeSlashIcon = document.getElementById('eyeSlashIcon');
+    
+    togglePasswordVisibility.addEventListener('click', () => {
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            eyeIcon.classList.add('hidden');
+            eyeSlashIcon.classList.remove('hidden');
+        } else {
+            passwordInput.type = 'password';
+            eyeIcon.classList.remove('hidden');
+            eyeSlashIcon.classList.add('hidden');
+        }
+    });
+    
+    // Le bouton "Ajouter une course" reste visible pour tous (la modale de permissions s'affichera si invité)
+    function updateAddButtonVisibility() {
+        // Le bouton reste toujours visible
+        addRaceBtn.classList.remove('hidden');
+    }
+    
+    // Appeler la fonction au chargement et après authentification
+    updateAddButtonVisibility();
 
     // Fonction pour afficher le modal de confirmation de suppression
     function showConfirmDeleteModal(raceId) {
@@ -828,9 +943,19 @@
             return;
         }
         const inputHash = await sha256(passwordInput.value);
+        let authLevel = null;
 
         if (inputHash === passwordHash) {
+            // Mot de passe admin
+            authLevel = 'admin';
+        } else if (inputHash === invitePasswordHash) {
+            // Mot de passe invite
+            authLevel = 'invite';
+        }
+
+        if (authLevel) {
             sessionStorage.setItem('authenticated', 'true');
+            sessionStorage.setItem('authLevel', authLevel);
             failedAttempts = 0;
             passwordModal.classList.add('hidden');
             passwordInput.value = '';
@@ -839,6 +964,9 @@
             
             // Activer le champ de recherche
             updateSearchInputState();
+            
+            // Mettre à jour la visibilité du bouton "Ajouter une course"
+            updateAddButtonVisibility();
 
             // Recharger les statistiques et l'affichage sans recharger la page
             updateStats(races);
@@ -849,52 +977,71 @@
 
             // Selon le contexte, ouvrir le bon modal
             if (context === 'add') {
-                // Afficher le modal d'ajout de course
-                modalTitle.textContent = 'Ajouter une course';
-                raceForm.reset();
-                document.getElementById('raceId').value = '';
+                // Seul l'admin peut ajouter
+                if (isAdmin()) {
+                    modalTitle.textContent = 'Ajouter une course';
+                    raceForm.reset();
+                    document.getElementById('raceId').value = '';
 
-                // Réinitialiser l'état de la photo
-                photoData = null;
-                photoPreview.classList.add('hidden');
+                    // Réinitialiser l'état de la photo
+                    photoData = null;
+                    photoPreview.classList.add('hidden');
 
-                // Réinitialiser l'état du parcours
-                parcoursData = null;
-                parcoursPreview.classList.add('hidden');
+                    // Réinitialiser l'état du parcours
+                    parcoursData = null;
+                    parcoursPreview.classList.add('hidden');
 
-                raceModal.classList.remove('hidden');
-                document.getElementById('raceName').focus();
+                    raceModal.classList.remove('hidden');
+                    document.getElementById('raceName').focus();
+                } else {
+                    showPermissionDeniedModal('ajouter une course');
+                }
             } else if (context === 'edit') {
-                // Préparer le formulaire pour l'édition
-                modalTitle.textContent = 'Modifier la course';
-
-                // Appeler la fonction de remplissage de formulaire
-                populateEditForm(raceId);
-
-                raceModal.classList.remove('hidden');
-                document.getElementById('raceName').focus();
+                // Seul l'admin peut modifier
+                if (isAdmin()) {
+                    modalTitle.textContent = 'Modifier la course';
+                    populateEditForm(raceId);
+                    raceModal.classList.remove('hidden');
+                    document.getElementById('raceName').focus();
+                } else {
+                    showPermissionDeniedModal('modifier une course');
+                }
             } else if (context === 'delete' && raceId) {
-                showConfirmDeleteModal(raceId);
+                // Seul l'admin peut supprimer
+                if (isAdmin()) {
+                    showConfirmDeleteModal(raceId);
+                } else {
+                    showPermissionDeniedModal('supprimer une course');
+                }
             } else if (context === 'wishlist-edit') {
-                wishlistCollection.get()
-                    .then((querySnapshot) => {
-                        let items = [];
-                        querySnapshot.forEach((doc) => {
-                            items.push({ id: doc.id, ...doc.data() });
+                // Seul l'admin peut éditer la wishlist
+                if (isAdmin()) {
+                    wishlistCollection.get()
+                        .then((querySnapshot) => {
+                            let items = [];
+                            querySnapshot.forEach((doc) => {
+                                items.push({ id: doc.id, ...doc.data() });
+                            });
+                            wishlistEditItems = items;
+                            renderWishlistEditList(wishlistEditItems);
+                            wishlistDisplay.classList.add('hidden');
+                            wishlistEditForm.classList.remove('hidden');
+                            editWishlistBtn.classList.add('hidden');
+                            newWishlistItemInput.value = '';
+                        })
+                        .catch((error) => {
+                            console.error("Erreur lors du chargement de la wishlist:", error);
+                            alert('Une erreur est survenue lors du chargement de votre wishlist.');
                         });
-                        wishlistEditItems = items;
-                        renderWishlistEditList(wishlistEditItems);
-                        wishlistDisplay.classList.add('hidden');
-                        wishlistEditForm.classList.remove('hidden');
-                        editWishlistBtn.classList.add('hidden');
-                        newWishlistItemInput.value = '';
-                    })
-                    .catch((error) => {
-                        console.error("Erreur lors du chargement de la wishlist:", error);
-                        alert('Une erreur est survenue lors du chargement de votre wishlist.');
-                    });
+                } else {
+                    showPermissionDeniedModal('éditer la wishlist');
+                }
             } else if (context === 'details' && raceId) {
+                // Invités et admins peuvent voir les détails
                 showRaceDetails(raceId);
+            } else if (context === 'search') {
+                // Pour la recherche, on active juste le champ après authentification
+                updateSearchInputState();
             }
         } else {
             failedAttempts++;
@@ -952,9 +1099,11 @@
         sortedRaces.forEach(race => {
             const raceDate = new Date(race.date);
             const year = raceDate.getFullYear();
-            let locationDisplay = race.location;
-            if (locationDisplay && locationDisplay.length > 10) {
-                locationDisplay = locationDisplay.substring(0, 6) + '...';
+            let locationDisplay = race.location || '';
+            // Ajuster la longueur du lieu pour éviter qu'il passe derrière l'image
+            const maxLength = race.photo ? 15 : 20; // Plus court si une photo est présente
+            if (locationDisplay && locationDisplay.length > maxLength) {
+                locationDisplay = locationDisplay.substring(0, maxLength - 3) + '...';
             }
             // Déterminer si la course est à venir
             const today = new Date();
@@ -1034,11 +1183,19 @@
 
             editBtn.addEventListener('click', (e) => {
                 e.stopPropagation(); // Empêche le déclenchement du clic sur la carte
+                if (!isAdmin()) {
+                    showPermissionDeniedModal('modifier une course');
+                    return;
+                }
                 showPasswordModal('edit', race.id);
             });
 
             deleteBtn.addEventListener('click', (e) => {
                 e.stopPropagation(); // Empêche le déclenchement du clic sur la carte
+                if (!isAdmin()) {
+                    showPermissionDeniedModal('supprimer une course');
+                    return;
+                }
                 showPasswordModal('delete', race.id);
             });
         });
@@ -1061,7 +1218,7 @@
 
     // Afficher les détails d'une course avec authentification
     function showRaceDetails(id) {
-        if (sessionStorage.getItem('authenticated') !== 'true') {
+        if (!isAuthenticated()) {
             showPasswordModal('details', id);
             return;
         }
@@ -1070,6 +1227,16 @@
         
         // Stocker l'ID de la course actuellement affichée
         currentRaceIdInDetails = id;
+        
+        // Masquer/afficher les boutons selon le niveau d'authentification
+        const detailsActionsContainer = document.getElementById('detailsActionsContainer');
+        if (isInvite()) {
+            // Masquer les boutons pour les invités
+            detailsActionsContainer.classList.add('hidden');
+        } else {
+            // Afficher les boutons pour les admins
+            detailsActionsContainer.classList.remove('hidden');
+        }
 
         const raceDate = new Date(race.date);
 
@@ -1081,11 +1248,11 @@
 
         // Vérifier quels champs correspondent à la recherche pour les surligner
         const searchQuery = currentSearchQuery;
-        const isAuthenticated = sessionStorage.getItem('authenticated') === 'true';
+        const userIsAuthenticated = isAuthenticated();
         
         // Fonction pour vérifier si un champ correspond à la recherche
         function fieldMatchesSearch(value, searchQ) {
-            if (!searchQ || !isAuthenticated) return false;
+            if (!searchQ || !userIsAuthenticated) return false;
             if (!value) return false;
             const valueStr = String(value).toLowerCase();
             const searchLower = searchQ.toLowerCase();
@@ -1233,7 +1400,29 @@
         // Gérer l'affichage du prix avec surlignage si correspond
         const priceContainer = document.getElementById('detailsPriceContainer');
         const priceElement = document.getElementById('detailsPrice');
-        if (race.price !== undefined && race.price !== null && race.price !== '') {
+        if (isInvite()) {
+            // Pour les invités, afficher une fourchette de prix
+            if (race.price !== undefined && race.price !== null && race.price !== '') {
+                const price = parseFloat(race.price);
+                let priceRange = '';
+                if (price < 20) {
+                    priceRange = '0-20 €';
+                } else if (price < 40) {
+                    priceRange = '20-40 €';
+                } else if (price < 60) {
+                    priceRange = '40-60 €';
+                } else if (price < 80) {
+                    priceRange = '60-80 €';
+                } else {
+                    priceRange = '+80 €';
+                }
+                priceElement.textContent = priceRange;
+                priceContainer.style.display = '';
+            } else {
+                priceElement.textContent = '';
+                priceContainer.style.display = 'none';
+            }
+        } else if (race.price !== undefined && race.price !== null && race.price !== '') {
             const priceText = `${parseFloat(race.price).toFixed(2)} €`;
             if (fieldMatchesSearch(race.price, searchQuery) || fieldMatchesSearch('€', searchQuery)) {
                 priceElement.innerHTML = highlightSearchMatch(priceText, searchQuery);
@@ -1249,6 +1438,10 @@
         // Gérer l'affichage de la photo
         const photoContainer = document.getElementById('detailsPhotoContainer');
         const photo = document.getElementById('detailsPhoto');
+        
+        // Mettre à jour les labels dynamiques
+        const detailsPhotoLabel = document.getElementById('detailsPhotoLabel');
+        const detailsParcoursLabel = document.getElementById('detailsParcoursLabel');
 
         if (race.photo) {
             photo.src = race.photo;
@@ -1257,7 +1450,7 @@
             photoContainer.classList.add('hidden');
         }
 
-        // Gérer l’affichage du parcours ET de la photo dans le même carré avec un seul bouton qui alterne
+        // Gérer l'affichage du parcours ET de la photo dans le même carré avec un seul bouton qui alterne
         const parcoursBtn = document.getElementById('voirParcoursBtn');
         const parcoursImg = document.getElementById('detailsParcours');
         const parcoursContainer = document.getElementById('detailsParcoursContainer');
@@ -1295,6 +1488,8 @@
             parcoursBtn.classList.remove('hidden');
             detailImageTitle.textContent = 'Parcours';
             parcoursBtn.textContent = 'Image parcours';
+            if (detailsPhotoLabel) detailsPhotoLabel.textContent = 'Photo';
+            if (detailsParcoursLabel) detailsParcoursLabel.textContent = 'Parcours';
             parcoursBtn.onclick = function() {
                 showParcours = !showParcours;
                 if (showParcours) {
@@ -1302,11 +1497,15 @@
                     parcoursContainer.classList.remove('hidden');
                     parcoursBtn.textContent = 'Image course';
                     detailImageTitle.textContent = 'Course';
+                    if (detailsPhotoLabel) detailsPhotoLabel.textContent = 'Photo';
+                    if (detailsParcoursLabel) detailsParcoursLabel.textContent = 'Course';
                 } else {
                     photoContainer.classList.remove('hidden');
                     parcoursContainer.classList.add('hidden');
                     parcoursBtn.textContent = 'Image parcours';
                     detailImageTitle.textContent = 'Parcours';
+                    if (detailsPhotoLabel) detailsPhotoLabel.textContent = 'Photo';
+                    if (detailsParcoursLabel) detailsParcoursLabel.textContent = 'Parcours';
                 }
             };
             // Charger les images
@@ -1318,12 +1517,14 @@
             photoContainer.classList.add('hidden');
             parcoursContainer.classList.remove('hidden');
             parcoursImg.src = race.parcours;
+            if (detailsParcoursLabel) detailsParcoursLabel.textContent = 'Parcours';
         } else if (race.photo) {
             // Seulement la photo
             parcoursBtn.classList.add('hidden');
             parcoursContainer.classList.add('hidden');
             photoContainer.classList.remove('hidden');
             photoImg.src = race.photo;
+            if (detailsPhotoLabel) detailsPhotoLabel.textContent = 'Photo';
         } else {
             // Rien à afficher
             parcoursBtn.classList.add('hidden');
@@ -1750,26 +1951,43 @@
 
     // Fonction pour afficher le modal de mot de passe avec différents contextes
     function showPasswordModal(context, raceId = null) {
-        if (sessionStorage.getItem('authenticated') === 'true') {
+        if (isAuthenticated()) {
             // Déjà authentifié, exécuter directement l'action
             if (context === 'add') {
-                modalTitle.textContent = 'Ajouter une course';
-                raceForm.reset();
-                document.getElementById('raceId').value = '';
-                photoData = null;
-                photoPreview.classList.add('hidden');
-                parcoursData = null;
-                parcoursPreview.classList.add('hidden');
-                raceModal.classList.remove('hidden');
-                document.getElementById('raceName').focus();
+                // Seul l'admin peut ajouter
+                if (isAdmin()) {
+                    modalTitle.textContent = 'Ajouter une course';
+                    raceForm.reset();
+                    document.getElementById('raceId').value = '';
+                    photoData = null;
+                    photoPreview.classList.add('hidden');
+                    parcoursData = null;
+                    parcoursPreview.classList.add('hidden');
+                    raceModal.classList.remove('hidden');
+                    document.getElementById('raceName').focus();
+                } else {
+                    showPermissionDeniedModal('ajouter une course');
+                }
             } else if (context === 'edit') {
-                modalTitle.textContent = 'Modifier la course';
-                populateEditForm(raceId);
-                raceModal.classList.remove('hidden');
-                document.getElementById('raceName').focus();
+                // Seul l'admin peut modifier
+                if (isAdmin()) {
+                    modalTitle.textContent = 'Modifier la course';
+                    populateEditForm(raceId);
+                    raceModal.classList.remove('hidden');
+                    document.getElementById('raceName').focus();
+                } else {
+                    showPermissionDeniedModal('modifier une course');
+                }
             } else if (context === 'delete' && raceId) {
-                showConfirmDeleteModal(raceId);
+                // Seul l'admin peut supprimer
+                if (isAdmin()) {
+                    showConfirmDeleteModal(raceId);
+                } else {
+                    showPermissionDeniedModal('supprimer une course');
+                }
             } else if (context === 'wishlist-edit') {
+                // Seul l'admin peut éditer la wishlist
+                if (isAdmin()) {
                 wishlistCollection.get()
                     .then((querySnapshot) => {
                         let items = [];
@@ -1787,6 +2005,9 @@
                         console.error("Erreur lors du chargement de la wishlist:", error);
                         alert('Une erreur est survenue lors du chargement de votre wishlist.');
                     });
+                } else {
+                    showPermissionDeniedModal('éditer la wishlist');
+                }
             } else if (context === 'details' && raceId) {
                 showRaceDetails(raceId);
             } else if (context === 'search') {
@@ -2128,7 +2349,7 @@
 
         let filteredRaces;
 
-        if (!isAuthenticated) {
+        if (!userIsAuthenticated) {
             // Si non authentifié, rechercher uniquement dans le nom
             filteredRaces = races.filter(race => {
                 const nameMatch = (race.name || '').toLowerCase().includes(q);
@@ -2167,11 +2388,14 @@
                 // Temps
                 const timeMatch = String(race.time || '').toLowerCase().includes(q);
                 
-                // Prix (recherche numérique et texte)
-                const priceNum = parseFloat(race.price) || 0;
-                const priceStr = String(race.price || '');
-                const priceMatch = priceNum.toString().includes(q) || 
+                // Prix (recherche numérique et texte) - seulement pour les admins
+                let priceMatch = false;
+                if (isAdmin()) {
+                    const priceNum = parseFloat(race.price) || 0;
+                    const priceStr = String(race.price || '');
+                    priceMatch = priceNum.toString().includes(q) || 
                                  priceStr.toLowerCase().includes(q);
+                }
                 
                 // Heure
                 const hourMatch = (race.hour || '').toLowerCase().includes(q);
@@ -2204,9 +2428,17 @@
                 }
                 
                 // Retourner true si au moins un champ correspond
-                return nameMatch || locationMatch || notesMatch || websiteMatch || 
-                       gpxUrlMatch || distanceMatch || elevationMatch || timeMatch || 
-                       priceMatch || hourMatch || dateMatch;
+                // Pour les invités, on exclut le prix de la recherche
+                if (isAdmin()) {
+                    return nameMatch || locationMatch || notesMatch || websiteMatch || 
+                           gpxUrlMatch || distanceMatch || elevationMatch || timeMatch || 
+                           priceMatch || hourMatch || dateMatch;
+                } else {
+                    // Pour les invités, recherche sans le prix
+                    return nameMatch || locationMatch || notesMatch || websiteMatch || 
+                           gpxUrlMatch || distanceMatch || elevationMatch || timeMatch || 
+                           hourMatch || dateMatch;
+                }
             });
         }
 
@@ -2245,6 +2477,10 @@
 
     // Bouton Modifier depuis la modale de détails
     editFromDetailsBtn.addEventListener('click', () => {
+        if (!isAdmin()) {
+            showPermissionDeniedModal('modifier une course');
+            return;
+        }
         if (currentRaceIdInDetails) {
             // Fermer la modale de détails
             detailsModal.classList.add('hidden');
@@ -2283,6 +2519,17 @@
     // Recherche en temps réel
     searchInput.addEventListener('input', (e) => {
         searchRaces(e.target.value);
+    });
+    
+    // Gérer la touche Entrée dans la recherche
+    searchInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            if (!isAuthenticated()) {
+                showPermissionDeniedModal('effectuer une recherche avancée');
+                return;
+            }
+            searchRaces(e.target.value);
+        }
     });
 
     // Gestion de la Wishlist
