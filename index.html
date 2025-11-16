@@ -90,6 +90,20 @@
     </style>
 </head>
 <body class="min-h-screen bg-green-50 bg-opacity-90">
+    <!-- Barre d'information de connexion -->
+    <div id="authStatusBar" class="bg-green-50 border-b border-green-200 py-2 px-4 hidden">
+        <div class="container mx-auto flex justify-between items-center">
+            <p id="authStatusText" class="text-sm text-green-800"></p>
+            <div class="flex gap-2">
+                <button id="connectBtn" class="px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-sm rounded-full transition hidden">
+                    Se connecter
+                </button>
+                <button id="disconnectBtn" class="px-3 py-1 bg-red-600 hover:bg-red-700 text-white text-sm rounded-full transition hidden">
+                    Se déconnecter
+                </button>
+            </div>
+        </div>
+    </div>
 <div class="container mx-auto px-4 py-8">
     <!-- Header -->
     <header class="flex flex-col md:flex-row justify-between items-center mb-8">
@@ -354,22 +368,10 @@
                 <p id="detailsNotes" class="text-gray-700"></p>
             </div>
             <div id="detailsPhotoContainer" class="mb-4 hidden">
-                <div class="flex items-center gap-2 mb-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                    </svg>
-                    <p class="text-sm font-semibold text-green-700" id="detailsPhotoLabel">Photo</p>
-                </div>
                 <img id="detailsPhoto" class="w-full h-auto rounded-lg shadow-md" alt="Photo de la course">
             </div>
             <!-- Nouveau conteneur pour le parcours -->
             <div id="detailsParcoursContainer" class="mb-4 hidden">
-                <div class="flex items-center gap-2 mb-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>
-                    </svg>
-                    <p class="text-sm font-semibold text-green-700" id="detailsParcoursLabel">Parcours</p>
-                </div>
                 <img id="detailsParcours" class="w-full h-auto rounded-lg shadow-md" alt="Parcours de la course">
             </div>
             <div id="detailsActionsContainer" class="flex gap-3 mt-6 pt-4 border-t border-gray-200">
@@ -773,6 +775,10 @@
     const editFromDetailsBtn = document.getElementById('editFromDetailsBtn');
     const generatePdfBtn = document.getElementById('generatePdfBtn');
     const passwordModal = document.getElementById('passwordModal');
+    const authStatusBar = document.getElementById('authStatusBar');
+    const authStatusText = document.getElementById('authStatusText');
+    const connectBtn = document.getElementById('connectBtn');
+    const disconnectBtn = document.getElementById('disconnectBtn');
     let currentRaceIdInDetails = null;
     const closePasswordModal = document.getElementById('closePasswordModal');
     const confirmPassword = document.getElementById('confirmPassword');
@@ -967,6 +973,9 @@
             
             // Mettre à jour la visibilité du bouton "Ajouter une course"
             updateAddButtonVisibility();
+            
+            // Mettre à jour la barre d'information de connexion
+            updateAuthStatusBar();
 
             // Recharger les statistiques et l'affichage sans recharger la page
             updateStats(races);
@@ -1486,26 +1495,20 @@
             photoContainer.classList.remove('hidden');
             parcoursContainer.classList.add('hidden');
             parcoursBtn.classList.remove('hidden');
-            detailImageTitle.textContent = 'Parcours';
+            detailImageTitle.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg> Parcours';
             parcoursBtn.textContent = 'Image parcours';
-            if (detailsPhotoLabel) detailsPhotoLabel.textContent = 'Photo';
-            if (detailsParcoursLabel) detailsParcoursLabel.textContent = 'Parcours';
             parcoursBtn.onclick = function() {
                 showParcours = !showParcours;
                 if (showParcours) {
                     photoContainer.classList.add('hidden');
                     parcoursContainer.classList.remove('hidden');
                     parcoursBtn.textContent = 'Image course';
-                    detailImageTitle.textContent = 'Course';
-                    if (detailsPhotoLabel) detailsPhotoLabel.textContent = 'Photo';
-                    if (detailsParcoursLabel) detailsParcoursLabel.textContent = 'Course';
+                    detailImageTitle.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg> Course';
                 } else {
                     photoContainer.classList.remove('hidden');
                     parcoursContainer.classList.add('hidden');
                     parcoursBtn.textContent = 'Image parcours';
-                    detailImageTitle.textContent = 'Parcours';
-                    if (detailsPhotoLabel) detailsPhotoLabel.textContent = 'Photo';
-                    if (detailsParcoursLabel) detailsParcoursLabel.textContent = 'Parcours';
+                    detailImageTitle.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg> Parcours';
                 }
             };
             // Charger les images
@@ -1517,14 +1520,14 @@
             photoContainer.classList.add('hidden');
             parcoursContainer.classList.remove('hidden');
             parcoursImg.src = race.parcours;
-            if (detailsParcoursLabel) detailsParcoursLabel.textContent = 'Parcours';
+            detailImageTitle.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg> Parcours';
         } else if (race.photo) {
             // Seulement la photo
             parcoursBtn.classList.add('hidden');
             parcoursContainer.classList.add('hidden');
             photoContainer.classList.remove('hidden');
             photoImg.src = race.photo;
-            if (detailsPhotoLabel) detailsPhotoLabel.textContent = 'Photo';
+            detailImageTitle.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg> Course';
         } else {
             // Rien à afficher
             parcoursBtn.classList.add('hidden');
@@ -2031,6 +2034,9 @@
 
     // Référence au bouton d'annulation d'authentification
     const cancelAuthModal = document.getElementById('cancelAuthModal');
+    
+    // Mettre à jour la barre d'information au chargement
+    updateAuthStatusBar();
 
     // Gestionnaire d'événements pour annuler l'authentification
     cancelAuthModal.addEventListener('click', function () {
@@ -2505,13 +2511,54 @@
 
     // Fonction pour mettre à jour le placeholder selon l'authentification
     function updateSearchInputState() {
-        const isAuthenticated = sessionStorage.getItem('authenticated') === 'true';
-        if (isAuthenticated) {
-            searchInput.placeholder = 'Rechercher une course... (nom, lieu, date, distance, dénivelé, temps, notes, prix, etc.)';
+        const userIsAuthenticated = isAuthenticated();
+        if (userIsAuthenticated) {
+            if (isAdmin()) {
+                searchInput.placeholder = 'Rechercher une course... (nom, lieu, date, distance, dénivelé, temps, notes, prix, etc.)';
+            } else {
+                // Pour les invités, on ne mentionne pas le prix
+                searchInput.placeholder = 'Rechercher une course... (nom, lieu, date, distance, dénivelé, temps, notes, etc.)';
+            }
         } else {
             searchInput.placeholder = 'Rechercher une course...';
         }
     }
+    
+    // Fonction pour mettre à jour la barre d'information de connexion
+    function updateAuthStatusBar() {
+        const userIsAuthenticated = isAuthenticated();
+        if (userIsAuthenticated) {
+            authStatusBar.classList.remove('hidden');
+            if (isAdmin()) {
+                authStatusText.textContent = 'Vous êtes connecté en tant qu\'administrateur';
+            } else if (isInvite()) {
+                authStatusText.textContent = 'Vous êtes connecté en tant qu\'invité';
+            }
+            connectBtn.classList.add('hidden');
+            disconnectBtn.classList.remove('hidden');
+        } else {
+            authStatusBar.classList.remove('hidden');
+            authStatusText.textContent = 'Vous n\'êtes pas connecté';
+            connectBtn.classList.remove('hidden');
+            disconnectBtn.classList.add('hidden');
+        }
+    }
+    
+    // Gérer la déconnexion
+    disconnectBtn.addEventListener('click', () => {
+        sessionStorage.removeItem('authenticated');
+        sessionStorage.removeItem('authLevel');
+        updateAuthStatusBar();
+        updateSearchInputState();
+        updateAddButtonVisibility();
+        updateStats(races);
+        displayRaces(races);
+    });
+    
+    // Gérer la connexion
+    connectBtn.addEventListener('click', () => {
+        showPasswordModal('search');
+    });
 
     // Vérifier l'état d'authentification au chargement
     updateSearchInputState();
