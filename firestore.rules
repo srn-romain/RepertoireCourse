@@ -1,0 +1,73 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ─── FUNCTIONS ────────────────────────────────────────────────
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Fonction pour obtenir le rôle depuis la collection users
+    function getUserRole() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && getUserRole() == 'admin';
+    }
+
+    function isInvite() {
+      return isAuthenticated() && getUserRole() == 'invite';
+    }
+
+    function isAuthenticatedUser() {
+      return isAdmin() || isInvite();
+    }
+
+    // ─── COLLECTION RACES ──────────────────────────────────────────
+    match /races/{raceId} {
+      // Lecture publique : seulement les champs non sensibles (sans price)
+      allow read: if true;
+      
+      // Pour les requêtes de lecture, on filtre les champs sensibles côté client
+      // Les règles Firestore ne peuvent pas filtrer les champs individuels dans read
+      // Donc on autorise la lecture complète mais on masquera le prix côté client pour les non-authentifiés
+      
+      // Lecture complète pour utilisateurs authentifiés (invite et admin)
+      // Note: Firestore ne permet pas de filtrer les champs dans read, donc on autorise tout
+      // Le masquage du prix se fera côté client pour les invités
+      
+      // Écriture (create, update, delete) : admin uniquement
+      allow create: if isAdmin();
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // ─── COLLECTION WISHLIST ───────────────────────────────────────
+    match /wishlist/{wishlistId} {
+      // Lecture : utilisateurs authentifiés uniquement
+      allow read: if isAuthenticatedUser();
+      
+      // Écriture : admin uniquement
+      allow create: if isAdmin();
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // ─── COLLECTION USERS (pour stocker les rôles si nécessaire) ──
+    match /users/{userId} {
+      // L'utilisateur peut lire ses propres données
+      allow read: if isAuthenticated() && request.auth.uid == userId;
+      
+      // Seul l'admin peut modifier les rôles
+      allow write: if isAdmin();
+    }
+
+    // ─── BLOQUER TOUT LE RESTE ────────────────────────────────────
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
+

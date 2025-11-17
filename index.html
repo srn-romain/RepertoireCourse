@@ -10,8 +10,11 @@
     <script src="https://unpkg.com/heroicons@2.0.18/dist/24/outline/index.js"></script>
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- Backend - Code sensible (Authentification, Gestion des rôles) -->
+    <script src="backend.js"></script>
     <style>
         body {
             font-family: 'Montserrat', sans-serif;
@@ -463,10 +466,14 @@
                 <i class="fas fa-times"></i>
             </button>
         </div>
-        <p class="text-gray-600 mb-4">Veuillez entrer le mot de passe pour continuer</p>
+        <p class="text-gray-600 mb-4">Veuillez entrer vos identifiants pour continuer</p>
+        <div class="mb-4">
+            <input type="email" id="emailInput" class="w-full px-4 py-2 border rounded-lg"
+                   placeholder="Email" required>
+        </div>
         <div class="mb-4 relative">
             <input type="password" id="passwordInput" class="w-full px-4 py-2 pr-10 border rounded-lg"
-                   placeholder="Mot de passe">
+                   placeholder="Mot de passe" required>
             <button type="button" id="togglePasswordVisibility" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none">
                 <svg id="eyeIcon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
@@ -646,21 +653,9 @@
 </div>
 
 <script>
-    // Firebase configuration
-    const firebaseConfig = {
-        apiKey: "AIzaSyAQl3f8x9uafRTFIDvf6WtZPbjZtPbzU9M",
-        authDomain: "macollectiondecourses.firebaseapp.com",
-        projectId: "macollectiondecourses",
-        storageBucket: "macollectiondecourses.firebasestorage.app",
-        messagingSenderId: "749698169073",
-        appId: "1:749698169073:web:a3e784c97af0151eb49150"
-    };
-
-    // Initialiser Firebase
-    firebase.initializeApp(firebaseConfig);
-
-    // Référence à Firestore
-    const db = firebase.firestore();
+    // Utiliser les références depuis le backend
+    const auth = BackendAPI.getAuth();
+    const db = BackendAPI.getDb();
     const racesCollection = db.collection('races');
 
     // Charger les courses depuis Firebase
@@ -847,23 +842,16 @@
     let currentRaceIdInDetails = null;
     const closePasswordModal = document.getElementById('closePasswordModal');
     const confirmPassword = document.getElementById('confirmPassword');
+    const emailInput = document.getElementById('emailInput');
     const passwordInput = document.getElementById('passwordInput');
     const passwordError = document.getElementById('passwordError');
-    const passwordHash = '7cfae86dbdef5b6712ca464daaa4a65fb1c528cc45d4473360b8e9b344c0d67e'; // Admin
-    const invitePasswordHash = '5014f9af3a684fdd64a775c1c4c532ee66b1b96cb56b1d02170d2249b6764f75'; // Invite
     
-    // Fonctions helper pour vérifier le niveau d'authentification
-    function isAuthenticated() {
-        return sessionStorage.getItem('authenticated') === 'true' || sessionStorage.getItem('authLevel') === 'invite';
-    }
-    
-    function isAdmin() {
-        return sessionStorage.getItem('authLevel') === 'admin';
-    }
-    
-    function isInvite() {
-        return sessionStorage.getItem('authLevel') === 'invite';
-    }
+    // Utiliser les fonctions du backend
+    const isAuthenticated = () => BackendAPI.isAuthenticated();
+    const isAdmin = () => BackendAPI.isAdmin();
+    const isAdminAsync = () => BackendAPI.isAdminAsync();
+    const isInvite = () => BackendAPI.isInvite();
+    const isInviteAsync = () => BackendAPI.isInviteAsync();
     const confirmDeleteModal = document.getElementById('confirmDeleteModal');
     const cancelDelete = document.getElementById('cancelDelete');
     const confirmDelete = document.getElementById('confirmDelete');
@@ -1004,34 +992,35 @@
         return false;
     }
 
-    // Confirmer le mot de passe
+    // Confirmer la connexion avec Firebase Auth
     confirmPassword.addEventListener('click', async function () {
-        if (isBlocked()) {
-            passwordError.textContent = 'Trop de tentatives. Réessayez plus tard.';
+        const email = emailInput.value.trim();
+        const password = passwordInput.value;
+
+        if (!email || !password) {
+            passwordError.textContent = 'Veuillez remplir tous les champs.';
             passwordError.classList.remove('hidden');
-            passwordInput.value = '';
-            passwordInput.disabled = true;
             return;
         }
-        const inputHash = await sha256(passwordInput.value);
-        let authLevel = null;
 
-        if (inputHash === passwordHash) {
-            // Mot de passe admin
-            authLevel = 'admin';
-        } else if (inputHash === invitePasswordHash) {
-            // Mot de passe invite
-            authLevel = 'invite';
-        }
+        // Désactiver le bouton pendant la connexion
+        confirmPassword.disabled = true;
+        confirmPassword.textContent = 'Connexion...';
+        passwordError.classList.add('hidden');
 
-        if (authLevel) {
-            sessionStorage.setItem('authenticated', 'true');
-            sessionStorage.setItem('authLevel', authLevel);
+        try {
+            // Connexion via le backend
+            const result = await BackendAPI.signIn(email, password);
+            
+            if (!result.success) {
+                throw result.error;
+            }
+
             failedAttempts = 0;
             passwordModal.classList.add('hidden');
+            emailInput.value = '';
             passwordInput.value = '';
             passwordError.classList.add('hidden');
-            passwordInput.disabled = false;
             
             // Activer le champ de recherche
             updateSearchInputState();
@@ -1040,7 +1029,7 @@
             updateAddButtonVisibility();
             
             // Mettre à jour la barre d'information de connexion
-            updateAuthStatusBar();
+            await updateAuthStatusBar();
 
             // Recharger les statistiques et l'affichage sans recharger la page
             updateStats(races);
@@ -1052,7 +1041,7 @@
             // Selon le contexte, ouvrir le bon modal
             if (context === 'add') {
                 // Seul l'admin peut ajouter
-                if (isAdmin()) {
+                if (await isAdminAsync()) {
                     modalTitle.textContent = 'Ajouter une course';
                     raceForm.reset();
                     document.getElementById('raceId').value = '';
@@ -1072,7 +1061,7 @@
                 }
             } else if (context === 'edit') {
                 // Seul l'admin peut modifier
-                if (isAdmin()) {
+                if (await isAdminAsync()) {
                     modalTitle.textContent = 'Modifier la course';
                     populateEditForm(raceId);
                     raceModal.classList.remove('hidden');
@@ -1082,14 +1071,14 @@
                 }
             } else if (context === 'delete' && raceId) {
                 // Seul l'admin peut supprimer
-                if (isAdmin()) {
+                if (await isAdminAsync()) {
                     showConfirmDeleteModal(raceId);
                 } else {
                     showPermissionDeniedModal('supprimer une course');
                 }
             } else if (context === 'wishlist-edit') {
                 // Seul l'admin peut éditer la wishlist
-                if (isAdmin()) {
+                if (await isAdminAsync()) {
                     wishlistCollection.get()
                         .then((querySnapshot) => {
                             let items = [];
@@ -1117,18 +1106,35 @@
                 // Pour la recherche, on active juste le champ après authentification
                 updateSearchInputState();
             }
-        } else {
+        } catch (error) {
+            console.error('Erreur de connexion:', error);
             failedAttempts++;
-            passwordError.textContent = 'Mot de passe incorrect';
+            
+            let errorMessage = 'Erreur de connexion. ';
+            if (error.code === 'auth/user-not-found') {
+                errorMessage += 'Aucun compte trouvé avec cet email.';
+            } else if (error.code === 'auth/wrong-password') {
+                errorMessage += 'Mot de passe incorrect.';
+            } else if (error.code === 'auth/invalid-email') {
+                errorMessage += 'Email invalide.';
+            } else if (error.code === 'auth/user-disabled') {
+                errorMessage += 'Ce compte a été désactivé.';
+            } else {
+                errorMessage += 'Veuillez réessayer.';
+            }
+            
+            passwordError.textContent = errorMessage;
             passwordError.classList.remove('hidden');
-            passwordInput.focus();
+            
             if (failedAttempts >= MAX_ATTEMPTS) {
-                const blockUntil = Date.now() + BLOCK_DURATION_MS;
-                sessionStorage.setItem('blockedUntil', blockUntil.toString());
-                passwordError.textContent = 'Trop de tentatives. Réessayez plus tard.';
-                passwordInput.value = '';
+                const blockedUntil = Date.now() + BLOCK_DURATION_MS;
+                sessionStorage.setItem('blockedUntil', blockedUntil.toString());
+                passwordError.textContent = 'Trop de tentatives. Réessayez dans 1 heure.';
                 passwordInput.disabled = true;
             }
+        } finally {
+            confirmPassword.disabled = false;
+            confirmPassword.textContent = 'Se connecter';
         }
     });
 
@@ -2745,14 +2751,16 @@
     }
     
     // Fonction pour mettre à jour la barre d'information de connexion
-    function updateAuthStatusBar() {
+    async function updateAuthStatusBar() {
         const userIsAuthenticated = isAuthenticated();
         if (userIsAuthenticated) {
             authStatusBar.classList.remove('hidden');
-            if (isAdmin()) {
+            if (await isAdminAsync()) {
                 authStatusText.textContent = 'Vous êtes connecté en tant qu\'administrateur';
-            } else if (isInvite()) {
+            } else if (await isInviteAsync()) {
                 authStatusText.textContent = 'Vous êtes connecté en tant qu\'invité';
+            } else {
+                authStatusText.textContent = 'Vous êtes connecté';
             }
             connectBtn.classList.add('hidden');
             disconnectBtn.classList.remove('hidden');
@@ -2764,11 +2772,31 @@
         }
     }
     
+    // Callback appelé par le backend lors des changements d'état d'authentification
+    window.onAuthStateChanged = async (user) => {
+        await updateAuthStatusBar();
+        updateSearchInputState();
+        updateAddButtonVisibility();
+    };
+    
+    // Callback appelé par le backend lors de la déconnexion automatique pour inactivité
+    window.onAutoLogout = async () => {
+        await updateAuthStatusBar();
+        updateSearchInputState();
+        updateAddButtonVisibility();
+        updateStats(races);
+        displayRaces(races);
+    };
+    
+    // Fonction pour afficher la notification d'inactivité
+    window.showInactivityNotification = () => {
+        showPermissionDeniedModal('Vous avez été déconnecté automatiquement après 15 minutes d\'inactivité. Veuillez vous reconnecter.');
+    };
+    
     // Gérer la déconnexion
-    disconnectBtn.addEventListener('click', () => {
-        sessionStorage.removeItem('authenticated');
-        sessionStorage.removeItem('authLevel');
-        updateAuthStatusBar();
+    disconnectBtn.addEventListener('click', async () => {
+        await BackendAPI.signOut();
+        await updateAuthStatusBar();
         updateSearchInputState();
         updateAddButtonVisibility();
         updateStats(races);
@@ -2839,6 +2867,12 @@
 
     // Ouvrir le modal wishlist au clic sur le bouton
     wishlistBtn.addEventListener('click', () => {
+        // Vérifier les permissions
+        if (!BackendAPI.isAuthenticated()) {
+            showPermissionDeniedModal('accéder à la wishlist. Veuillez vous connecter.');
+            return;
+        }
+        
         wishlistModal.classList.remove('hidden');
         wishlistDisplay.classList.remove('hidden');
         wishlistEditForm.classList.add('hidden');
