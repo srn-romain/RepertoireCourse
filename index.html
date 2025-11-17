@@ -1563,6 +1563,10 @@
 
             editBtn.addEventListener('click', (e) => {
                 e.stopPropagation(); // Empêche le déclenchement du clic sur la carte
+                if (!isAuthenticated()) {
+                    showPasswordModal('edit', race.id);
+                    return;
+                }
                 if (!isAdmin()) {
                     showPermissionDeniedModal('modifier une course');
                     return;
@@ -1572,6 +1576,10 @@
 
             deleteBtn.addEventListener('click', (e) => {
                 e.stopPropagation(); // Empêche le déclenchement du clic sur la carte
+                if (!isAuthenticated()) {
+                    showPasswordModal('delete', race.id);
+                    return;
+                }
                 if (!isAdmin()) {
                     showPermissionDeniedModal('supprimer une course');
                     return;
@@ -3150,9 +3158,8 @@
 
     // Ouvrir le modal wishlist au clic sur le bouton
     wishlistBtn.addEventListener('click', () => {
-        // Vérifier les permissions
         if (!BackendAPI.isAuthenticated()) {
-            showPermissionDeniedModal('accéder à la wishlist. Veuillez vous connecter.');
+            showPasswordModal('wishlist');
             return;
         }
         
