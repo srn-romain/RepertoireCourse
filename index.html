@@ -1147,7 +1147,12 @@
     // Fonction pour afficher la modale de permissions refusées
     function showPermissionDeniedModal(action) {
         const messageElement = document.getElementById('permissionDeniedMessage');
-        messageElement.textContent = `Vous n'avez pas les permissions nécessaires pour ${action}. Veuillez vous connecter avec un compte administrateur.`;
+        // Si le message contient déjà "Vous avez été déconnecté", utiliser le message tel quel
+        if (action && action.includes('Vous avez été déconnecté')) {
+            messageElement.textContent = action;
+        } else {
+            messageElement.textContent = `Vous n'avez pas les permissions nécessaires pour ${action}. Veuillez vous connecter avec un compte administrateur.`;
+        }
         permissionDeniedModal.classList.remove('hidden');
     }
     
