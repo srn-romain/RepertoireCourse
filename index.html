@@ -1644,17 +1644,17 @@
         let badgeAvenir = '';
         if (isToday) {
             // Si c'est aujourd'hui : afficher "Jour J"
-            badgeAvenir = '<span class="ml-2 px-2 py-1 bg-yellow-200 text-yellow-800 text-xs rounded-full animate-pulse">Jour J</span>';
+            badgeAvenir = '<span class="block w-fit md:inline-block mt-2 md:mt-0 md:ml-2 px-2 py-1 bg-yellow-200 text-yellow-800 text-xs rounded-full animate-pulse">Jour J</span>';
         } else if (isUpcoming) {
             // Si c'est dans le futur : calculer le nombre de jours
             const diffTime = raceDateOnly.getTime() - today.getTime();
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-            badgeAvenir = `<span class="ml-2 px-2 py-1 bg-yellow-200 text-yellow-800 text-xs rounded-full animate-pulse">À venir J-${diffDays}</span>`;
+            badgeAvenir = `<span class="block w-fit md:inline-block mt-2 md:mt-0 md:ml-2 px-2 py-1 bg-yellow-200 text-yellow-800 text-xs rounded-full animate-pulse">À venir J-${diffDays}</span>`;
         } else if (isPast) {
             // Si c'est dans le passé : calculer le nombre de jours depuis la course
             const diffTime = today.getTime() - raceDateOnly.getTime();
             const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-            badgeAvenir = `<span class="ml-2 px-2 py-1 bg-yellow-200 text-yellow-800 text-xs rounded-full">J+${diffDays}</span>`;
+            badgeAvenir = `<span class="block w-fit md:inline-block mt-2 md:mt-0 md:ml-2 px-2 py-1 bg-yellow-200 text-yellow-800 text-xs rounded-full">J+${diffDays}</span>`;
         }
 
         // Vérifier quels champs correspondent à la recherche pour les surligner
