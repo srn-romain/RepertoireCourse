@@ -1760,11 +1760,16 @@
             locationElement.textContent = race.location;
         }
 
-        // Calculate average speed (seulement pour les courses passées)
+        // Calculate average speed (pour les courses passées ou le jour J si le temps est complété)
         const distance = parseFloat(race.distance);
         const timeStr = race.time;
-        if (raceDateOnly > todayForTime || raceDateOnly.getTime() === todayForTime.getTime()) {
-            // Course à venir ou en cours : ne pas afficher les statistiques
+        const isTodayForSpeed = raceDateOnly.getTime() === todayForTime.getTime();
+        const isUpcomingForSpeed = raceDateOnly > todayForTime;
+        const hasCompletedTime = timeStr && timeStr !== '00:00:00' && timeStr.trim() !== '';
+        
+        // Ne pas afficher les stats si : course à venir OU (c'est aujourd'hui ET temps non complété)
+        if (isUpcomingForSpeed || (isTodayForSpeed && !hasCompletedTime)) {
+            // Course à venir ou en cours sans temps complété : ne pas afficher les statistiques
             document.getElementById('averageSpeedInfo').textContent = '';
         } else if (isNaN(distance) || !timeStr) {
             document.getElementById('averageSpeedInfo').textContent = '';
