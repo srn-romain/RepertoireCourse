@@ -39,6 +39,12 @@
             backdrop-filter: blur(5px);
         }
 
+        .blur-text {
+            filter: blur(5px);
+            user-select: none;
+            pointer-events: none;
+        }
+
         .modal-content {
             max-height: 80vh;
             overflow-y: auto;
@@ -974,15 +980,26 @@
 
     // Nouvelle fonction pour calculer et afficher les statistiques
     function updateStats(racesData) {
+        // Filtrer les courses futures (ne pas les compter dans les stats)
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); // On ignore l'heure pour comparer seulement les dates
+        
+        const pastRaces = racesData.filter(race => {
+            if (!race.date) return false;
+            const raceDate = new Date(race.date);
+            raceDate.setHours(0, 0, 0, 0);
+            return raceDate < today; // Seulement les courses passées
+        });
+
         // Initialiser les statistiques
         let totalDistance = 0;
         let totalElevation = 0;
         let totalSeconds = 0;
         let totalPrice = 0;
-        const totalRaces = racesData.length;
+        const totalRaces = pastRaces.length;
 
         // Calculer les totaux
-        racesData.forEach(race => {
+        pastRaces.forEach(race => {
             totalDistance += parseFloat(race.distance) || 0;
             totalElevation += parseInt(race.elevation) || 0;
 
@@ -1015,13 +1032,20 @@
         const statsElement = document.getElementById('statsText');
         let statsHtml = '';
         // Affichage du contexte du filtre année
-        if (typeof currentYearFilter !== 'undefined' && currentYearFilter !== 'all' && currentYearFilter !== null) {
+        const isYearFilter = typeof currentYearFilter !== 'undefined' && currentYearFilter !== 'all' && currentYearFilter !== null;
+        if (isYearFilter) {
             statsHtml += '<span class="italic text-green-700 mr-2">Année ' + currentYearFilter + '</span> : ';
         }
+        
+        // Déterminer si on doit flouter le temps total (une seule course dans un filtre par année ET utilisateur non connecté)
+        const isUserAuthenticated = typeof BackendAPI !== 'undefined' && BackendAPI.isAuthenticated();
+        const shouldBlurTime = isYearFilter && totalRaces === 1 && !isUserAuthenticated;
+        const timeClass = shouldBlurTime ? 'font-semibold blur-text' : 'font-semibold';
+        
         statsHtml += '<span class="font-semibold">' + totalRaces + '</span> course' + (totalRaces > 1 ? 's' : '') + ' | ' +
             '<span class="font-semibold">' + totalDistance + '</span> km parcourus | ' +
             '<span class="font-semibold">' + totalElevation + '</span> m de dénivelé | ' +
-            '<span class="font-semibold">' + totalHours + 'h' + remainingMinutes + '</span> de course';
+            '<span class="' + timeClass + '">' + totalHours + 'h' + remainingMinutes + '</span> de course';
         // Affichage du prix (seulement pour les admins)
         if (isAdmin()) {
             statsHtml += ' |\n                <span id="totalPriceStat" class="font-semibold group relative cursor-pointer">\n                    <span class="opacity-40">Prix total</span>\n                    <span class="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-2 py-1 bg-green-700 text-white text-xs rounded shadow-lg hidden group-hover:block z-50">\n                        ' + totalPrice.toLocaleString('fr-FR', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' € dépensés\n                    </span>\n                </span>';
