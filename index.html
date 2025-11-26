@@ -471,7 +471,7 @@
         </div>
         <p class="text-gray-600 mb-4">Veuillez entrer vos identifiants pour continuer</p>
         <div class="mb-4">
-            <input type="email" id="emailInput" class="w-full px-4 py-2 border rounded-lg"
+            <input type="text" id="emailInput" class="w-full px-4 py-2 border rounded-lg"
                    placeholder="Email" required>
         </div>
         <div class="mb-4 relative">
@@ -1305,7 +1305,15 @@
 
     // Confirmer la connexion avec Firebase Auth
     confirmPassword.addEventListener('click', async function () {
-        const email = emailInput.value.trim();
+        // Ajouter automatiquement @gmail.com si l'utilisateur a saisi "invite" (en arrière-plan)
+        let emailValue = emailInput.value.trim();
+        const emailValueLower = emailValue.toLowerCase();
+        if (emailValueLower === 'invite' && !emailValue.includes('@')) {
+            emailValue = 'invite@gmail.com';
+            emailInput.value = emailValue; // Mise à jour silencieuse
+        }
+        
+        const email = emailValue;
         const password = passwordInput.value;
 
         if (!email || !password) {
