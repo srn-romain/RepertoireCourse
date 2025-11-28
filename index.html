@@ -1990,144 +1990,95 @@
         // Toujours afficher le bouton "voir le parcours"
         parcoursBtn.classList.remove('hidden');
         
-        if (race.parcours && race.photo) {
-            // Les deux existent, on affiche la photo par défaut
-            showParcours = false;
-            photoContainer.classList.remove('hidden');
-            parcoursContainer.classList.add('hidden');
-            detailImageTitle.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg> Parcours';
-            parcoursBtn.textContent = 'Image parcours';
-            parcoursBtn.onclick = function() {
-                showParcours = !showParcours;
-                if (showParcours) {
-                    photoContainer.classList.add('hidden');
-                    parcoursContainer.classList.remove('hidden');
-                    parcoursBtn.textContent = 'Image course';
-                    detailImageTitle.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg> Course';
-                } else {
-                    photoContainer.classList.remove('hidden');
-                    parcoursContainer.classList.add('hidden');
-                    parcoursBtn.textContent = 'Image parcours';
-                    detailImageTitle.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg> Parcours';
-                }
-            };
-            // Charger les images
-            photoImg.src = race.photo;
-            parcoursImg.src = race.parcours;
-        } else if (race.parcours) {
-            // Seulement le parcours
-            photoContainer.classList.add('hidden');
-            parcoursContainer.classList.remove('hidden');
-            parcoursImg.src = race.parcours;
-            detailImageTitle.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg> Parcours';
-            parcoursBtn.textContent = 'Image parcours';
-            parcoursBtn.onclick = null;
-        } else if (race.photo) {
-            // Seulement la photo, mais on affiche quand même le bouton pour voir le parcours (vide)
-            parcoursContainer.classList.add('hidden');
-            photoContainer.classList.remove('hidden');
-            photoImg.src = race.photo;
-            detailImageTitle.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg> Course';
-            parcoursBtn.textContent = 'Image parcours';
-            showParcours = false;
-            parcoursBtn.onclick = function() {
-                showParcours = !showParcours;
-                if (showParcours) {
-                    photoContainer.classList.add('hidden');
-                    parcoursContainer.classList.remove('hidden');
-                    parcoursBtn.textContent = 'Image course';
-                    detailImageTitle.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg> Course';
-                } else {
-                    photoContainer.classList.remove('hidden');
-                    parcoursContainer.classList.add('hidden');
-                    parcoursBtn.textContent = 'Image parcours';
-                    detailImageTitle.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg> Course';
-                }
-            };
-        } else {
-            // Rien à afficher, mais on affiche quand même le bouton
-            photoContainer.classList.add('hidden');
-            parcoursContainer.classList.remove('hidden');
-            detailImageTitle.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg> Parcours';
-            parcoursBtn.textContent = 'Image parcours';
-            showParcours = false;
-            parcoursBtn.onclick = function() {
-                showParcours = !showParcours;
-                if (showParcours) {
-                    // Afficher la photo (vide)
-                    photoContainer.classList.remove('hidden');
-                    parcoursContainer.classList.add('hidden');
-                    parcoursBtn.textContent = 'Image parcours';
-                    detailImageTitle.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg> Course';
-                } else {
-                    // Afficher le parcours (vide)
-                    photoContainer.classList.add('hidden');
-                    parcoursContainer.classList.remove('hidden');
-                    parcoursBtn.textContent = 'Image course';
-                    detailImageTitle.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg> Parcours';
-                }
-            };
-        }
-        
-        // Gérer l'affichage des placeholders
+        // Créer les placeholders s'ils n'existent pas
         let parcoursPlaceholder = document.getElementById('detailsParcoursPlaceholder');
+        if (!parcoursPlaceholder) {
+            parcoursPlaceholder = document.createElement('div');
+            parcoursPlaceholder.id = 'detailsParcoursPlaceholder';
+            parcoursPlaceholder.className = 'mb-4 flex flex-col items-center justify-center py-8 bg-gray-50 rounded-lg border border-gray-200';
+            parcoursPlaceholder.innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
+                <p class="mt-2 text-sm text-gray-400">Aucune image sélectionnée</p>
+            `;
+            parcoursContainer.appendChild(parcoursPlaceholder);
+        }
+        
         let photoPlaceholder = document.getElementById('detailsPhotoPlaceholder');
-        
-        // Placeholder pour le parcours
-        if (!race.parcours) {
-            if (!parcoursPlaceholder) {
-                parcoursPlaceholder = document.createElement('div');
-                parcoursPlaceholder.id = 'detailsParcoursPlaceholder';
-                parcoursPlaceholder.className = 'mb-4 flex flex-col items-center justify-center py-8 bg-gray-50 rounded-lg border border-gray-200';
-                parcoursPlaceholder.innerHTML = `
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                    </svg>
-                    <p class="mt-2 text-sm text-gray-400">Aucune image sélectionnée</p>
-                `;
-                parcoursContainer.appendChild(parcoursPlaceholder);
-            }
-            // Afficher le placeholder seulement si le conteneur du parcours est visible
-            if (!parcoursContainer.classList.contains('hidden')) {
-                parcoursPlaceholder.classList.remove('hidden');
-            } else {
-                parcoursPlaceholder.classList.add('hidden');
-            }
-            parcoursImg.classList.add('hidden');
-        } else {
-            if (parcoursPlaceholder) {
-                parcoursPlaceholder.classList.add('hidden');
-            }
-            parcoursImg.classList.remove('hidden');
+        if (!photoPlaceholder) {
+            photoPlaceholder = document.createElement('div');
+            photoPlaceholder.id = 'detailsPhotoPlaceholder';
+            photoPlaceholder.className = 'mb-4 flex flex-col items-center justify-center py-8 bg-gray-50 rounded-lg border border-gray-200';
+            photoPlaceholder.innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
+                <p class="mt-2 text-sm text-gray-400">Aucune image sélectionnée</p>
+            `;
+            photoContainer.appendChild(photoPlaceholder);
         }
         
-        // Placeholder pour la photo
-        if (!race.photo) {
-            if (!photoPlaceholder) {
-                photoPlaceholder = document.createElement('div');
-                photoPlaceholder.id = 'detailsPhotoPlaceholder';
-                photoPlaceholder.className = 'mb-4 flex flex-col items-center justify-center py-8 bg-gray-50 rounded-lg border border-gray-200';
-                photoPlaceholder.innerHTML = `
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                    </svg>
-                    <p class="mt-2 text-sm text-gray-400">Aucune image sélectionnée</p>
-                `;
-                photoContainer.appendChild(photoPlaceholder);
-            }
-            // Afficher le placeholder seulement si le conteneur de la photo est visible
-            if (!photoContainer.classList.contains('hidden')) {
-                photoPlaceholder.classList.remove('hidden');
+        // Fonction pour mettre à jour l'affichage
+        function updateImageDisplay() {
+            if (showParcours) {
+                // Afficher le parcours
+                photoContainer.classList.add('hidden');
+                parcoursContainer.classList.remove('hidden');
+                parcoursBtn.textContent = 'Image course';
+                detailImageTitle.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg> Course';
+                
+                // Afficher l'image du parcours ou le placeholder
+                if (race.parcours) {
+                    parcoursImg.src = race.parcours;
+                    parcoursImg.classList.remove('hidden');
+                    parcoursPlaceholder.classList.add('hidden');
+                } else {
+                    parcoursImg.classList.add('hidden');
+                    parcoursPlaceholder.classList.remove('hidden');
+                }
             } else {
-                photoPlaceholder.classList.add('hidden');
+                // Afficher la photo
+                photoContainer.classList.remove('hidden');
+                parcoursContainer.classList.add('hidden');
+                parcoursBtn.textContent = 'Image parcours';
+                detailImageTitle.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg> Parcours';
+                
+                // Afficher l'image de la photo ou le placeholder
+                if (race.photo) {
+                    photoImg.src = race.photo;
+                    photo.classList.remove('hidden');
+                    photoPlaceholder.classList.add('hidden');
+                } else {
+                    photo.classList.add('hidden');
+                    photoPlaceholder.classList.remove('hidden');
+                }
             }
-            photo.classList.add('hidden');
-        } else {
-            if (photoPlaceholder) {
-                photoPlaceholder.classList.add('hidden');
-            }
-            photo.classList.remove('hidden');
         }
+        
+        // Initialiser l'affichage (commencer par la photo si elle existe, sinon le parcours)
+        if (race.photo) {
+            showParcours = false;
+        } else {
+            showParcours = true; // Commencer par le parcours si pas de photo
+        }
+        
+        // Charger les images si elles existent
+        if (race.photo) {
+            photoImg.src = race.photo;
+        }
+        if (race.parcours) {
+            parcoursImg.src = race.parcours;
+        }
+        
+        // Mettre à jour l'affichage initial
+        updateImageDisplay();
+        
+        // Gestionnaire de clic sur le bouton
+        parcoursBtn.onclick = function() {
+            showParcours = !showParcours;
+            updateImageDisplay();
+        };
 
         // Gérer l'affichage du lien site web avec surlignage si correspond
         let detailsWebsite = document.getElementById('detailsWebsite');
