@@ -1572,10 +1572,15 @@
             const isToday = raceDateOnly.getTime() === today.getTime();
             const isUpcoming = raceDate >= today;
             
+            // Calculer le nombre de jours depuis la date de la course
+            const daysSinceRace = Math.floor((today.getTime() - raceDateOnly.getTime()) / (1000 * 60 * 60 * 24));
+            const isWithin10Days = daysSinceRace >= 0 && daysSinceRace <= 10;
+            const hasCompletedTime = race.time && race.time !== '00:00:00' && race.time.trim() !== '';
+            
             let badgeAvenir = '';
             if (isToday) {
                 // Si c'est aujourd'hui
-                if (race.time && race.time !== '00:00:00' && race.time.trim() !== '') {
+                if (hasCompletedTime) {
                     // Temps complété : afficher "New !"
                     badgeAvenir = `<span class="ml-2 px-2 py-1 bg-green-200 text-green-800 text-xs rounded-full animate-pulse">New !</span>`;
                 } else {
@@ -1585,6 +1590,9 @@
             } else if (isUpcoming) {
                 // Course à venir : afficher "À venir"
                 badgeAvenir = `<span class="ml-2 px-2 py-1 bg-yellow-200 text-yellow-800 text-xs rounded-full animate-pulse">À venir</span>`;
+            } else if (!isUpcoming && hasCompletedTime && isWithin10Days) {
+                // Course passée avec temps complété et dans les 10 derniers jours : afficher "New !"
+                badgeAvenir = `<span class="ml-2 px-2 py-1 bg-green-200 text-green-800 text-xs rounded-full animate-pulse">New !</span>`;
             }
             const raceCard = document.createElement('div');
             raceCard.className = 'bg-white rounded-xl overflow-hidden shadow-md card-hover relative group cursor-pointer';
