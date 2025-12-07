@@ -217,11 +217,20 @@
             </div>
             </div>
         </div>
-        <div id="yearFilters" class="flex flex-wrap gap-2">
-            <button class="year-filter px-3 py-1 rounded-full bg-green-100 text-green-800 hover:bg-green-200 transition"
-                    data-year="all">Toutes
+        <div class="flex flex-wrap gap-2 items-center">
+            <div id="yearFilters" class="flex flex-wrap gap-2">
+                <button class="year-filter px-3 py-1 rounded-full bg-green-100 text-green-800 hover:bg-green-200 transition"
+                        data-year="all">Toutes
+                </button>
+                <!-- Les filtres seront générés dynamiquement ici -->
+            </div>
+            <button id="favoritesFilterBtn" class="px-3 py-1 rounded-full bg-yellow-100 text-yellow-800 hover:bg-yellow-200 transition flex items-center gap-1"
+                    data-filter="favorites">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                </svg>
+                Favoris
             </button>
-            <!-- Les filtres seront générés dynamiquement ici -->
         </div>
     </div>
 
@@ -306,6 +315,13 @@
                     <label for="raceNotes" class="block text-green-700 mb-2">Notes</label>
                     <textarea id="raceNotes" rows="3" placeholder="Note course"
                               class="w-full px-3 py-2 border border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"></textarea>
+                </div>
+                <div class="mb-4">
+                    <label class="flex items-center cursor-pointer">
+                        <input type="checkbox" id="raceFavorite" 
+                               class="w-5 h-5 text-green-600 border-green-300 rounded focus:ring-green-500 focus:ring-2">
+                        <span class="ml-2 text-green-700">Marquer comme favori</span>
+                    </label>
                 </div>
                 <div class="mb-4">
                     <label for="racePhoto" class="block text-green-700 mb-2">Photo</label>
@@ -974,8 +990,8 @@
             // Générer les filtres d'années basés sur les données
             generateYearFilters(races);
 
-            // Afficher toutes les courses
-            displayRaces(races);
+            // Appliquer les filtres (année et favoris)
+            applyFilters();
             
             // Mettre à jour la liste des lieux pour les filtres avancés
             updateLocationFilter();
@@ -1074,19 +1090,35 @@
 
     // Correction : garder la référence du filtre actif et appliquer updateStats sur le bon tableau
     let currentYearFilter = 'all';
+    let currentFavoritesFilter = false;
 
     // Filtrer par année, mettre à jour currentYearFilter, stats et affichage
     function filterRacesByYear(year) {
         currentYearFilter = year;
-        let filteredRaces;
-        if (year === 'all') {
-            filteredRaces = races;
-        } else {
-            filteredRaces = races.filter(race => {
+        applyFilters();
+    }
+    
+    function filterRacesByFavorites(showFavorites) {
+        currentFavoritesFilter = showFavorites;
+        applyFilters();
+    }
+    
+    function applyFilters() {
+        let filteredRaces = races;
+        
+        // Filtre par année
+        if (currentYearFilter !== 'all') {
+            filteredRaces = filteredRaces.filter(race => {
                 const raceDate = new Date(race.date);
-                return raceDate.getFullYear().toString() === year;
+                return raceDate.getFullYear().toString() === currentYearFilter;
             });
         }
+        
+        // Filtre par favoris
+        if (currentFavoritesFilter) {
+            filteredRaces = filteredRaces.filter(race => race.favorite === true);
+        }
+        
         updateStats(filteredRaces);
         displayRaces(filteredRaces);
     }
@@ -1130,6 +1162,22 @@
                 button.classList.add('bg-green-600', 'text-white');
                 filterRacesByYear(button.dataset.year);
             });
+        });
+    }
+    
+    // Event listener pour le filtre favoris
+    const favoritesFilterBtn = document.getElementById('favoritesFilterBtn');
+    if (favoritesFilterBtn) {
+        favoritesFilterBtn.addEventListener('click', () => {
+            currentFavoritesFilter = !currentFavoritesFilter;
+            if (currentFavoritesFilter) {
+                favoritesFilterBtn.classList.add('bg-yellow-600', 'text-white');
+                favoritesFilterBtn.classList.remove('bg-yellow-100', 'text-yellow-800');
+            } else {
+                favoritesFilterBtn.classList.remove('bg-yellow-600', 'text-white');
+                favoritesFilterBtn.classList.add('bg-yellow-100', 'text-yellow-800');
+            }
+            applyFilters();
         });
     }
 
@@ -1544,7 +1592,10 @@
             <div class="p-6 relative">
                 <div class="flex justify-between items-start">
                     <div>
-                        <h3 class="text-xl font-bold text-green-800 mb-1">${race.name} ${badgeAvenir}</h3>
+                        <h3 class="text-xl font-bold text-green-800 mb-1 flex items-center gap-2">
+                            ${race.favorite ? '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-500" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>' : ''}
+                            ${race.name} ${badgeAvenir}
+                        </h3>
                         <p class="text-green-600">${raceDate.toLocaleDateString('fr-FR', {
                 day: 'numeric',
                 month: 'long',
@@ -2619,6 +2670,7 @@
         document.getElementById('racePrice').value = (race.price !== undefined && race.price !== null) ? race.price : '';
         document.getElementById('raceWebsite').value = race.website || '';
         document.getElementById('raceGpxUrl').value = race.gpxUrl || '';
+        document.getElementById('raceFavorite').checked = race.favorite || false;
 
         // Réinitialiser d'abord la gestion de photos
         photoData = null;
@@ -2692,6 +2744,8 @@
             return;
         }
 
+        const favorite = document.getElementById('raceFavorite').checked;
+        
         const raceData = {
             name,
             date,
@@ -2703,7 +2757,8 @@
             notes,
             price: parseFloat(price),
             website,
-            gpxUrl
+            gpxUrl,
+            favorite: favorite || false
         };
         // Ajouter la photo seulement si elle existe
         if (photoData) {
@@ -2909,17 +2964,9 @@
         currentSearchQuery = q; // Stocker la requête de recherche actuelle
         const userIsAuthenticated = isAuthenticated();
         
-        // Si la recherche est vide, afficher toutes les courses (filtrées par année si nécessaire)
+        // Si la recherche est vide, appliquer les filtres
         if (!q) {
-            let filteredRaces = races;
-            if (currentYearFilter && currentYearFilter !== 'all') {
-                filteredRaces = filteredRaces.filter(race => {
-                    const raceDate = new Date(race.date);
-                    return raceDate.getFullYear().toString() === currentYearFilter;
-                });
-            }
-            updateStats(filteredRaces);
-            displayRaces(filteredRaces);
+            applyFilters();
             return;
         }
 
@@ -3018,12 +3065,16 @@
             });
         }
 
-        // Appliquer le filtre d'année si nécessaire
+        // Appliquer les filtres (année et favoris)
         if (currentYearFilter && currentYearFilter !== 'all') {
             filteredRaces = filteredRaces.filter(race => {
                 const raceDate = new Date(race.date);
                 return raceDate.getFullYear().toString() === currentYearFilter;
             });
+        }
+        
+        if (currentFavoritesFilter) {
+            filteredRaces = filteredRaces.filter(race => race.favorite === true);
         }
 
         updateStats(filteredRaces);
