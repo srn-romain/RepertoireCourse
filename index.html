@@ -7,6 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="favicon.png" rel="icon">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://unpkg.com/heroicons@2.0.18/dist/24/outline/index.js"></script>
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -94,6 +95,49 @@
             box-shadow: 0 0 0 1px #34d399, 0 10px 20px rgba(0,0,0,0.15);
             filter: brightness(0.95) saturate(1.1);
         }
+        
+        /* Styles pour le graphique des statistiques */
+        @media (max-width: 640px) {
+            #top10RacesList {
+                max-height: 500px !important;
+                padding: 0.5rem;
+            }
+
+            .chart-item {
+                flex-direction: column !important;
+                align-items: flex-start !important;
+                gap: 0.5rem !important;
+                padding: 0.75rem;
+                background: rgba(0, 0, 0, 0.02);
+                border-radius: 8px;
+                margin-bottom: 0.75rem;
+            }
+
+            .chart-item > span:first-child {
+                order: 1;
+                font-size: 0.875rem !important;
+                font-weight: 600;
+                width: 100% !important;
+            }
+
+            .chart-item > div:last-child {
+                order: 2;
+                width: 100% !important;
+                height: 32px !important;
+                margin-top: 0.25rem;
+            }
+
+            .chart-item > div:last-child > div {
+                height: 32px !important;
+                font-size: 0.75rem !important;
+            }
+        }
+
+        #top10RacesList {
+            overflow-x: auto;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
     </style>
 </head>
 <body class="min-h-screen bg-green-50 bg-opacity-90">
@@ -120,6 +164,9 @@
         </div>
         <div class="mt-4 md:mt-0">
             <div class="flex space-x-3">
+                <button id="statsBtn" class="hidden bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-full flex items-center justify-center transition-colors w-full sm:w-auto whitespace-nowrap">
+                    <i class="fas fa-chart-bar mr-2"></i> <span class="hidden sm:inline">Statistiques</span><span class="sm:hidden">Stats</span>
+                </button>
                 <button id="wishlistBtn"
                         class="flex items-center bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-full transition">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20"
@@ -479,6 +526,22 @@
                     PDF
                 </button>
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics Modal -->
+<div id="statsModal"
+     class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden modal" style="z-index: 10002;">
+    <div class="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] p-6 fade-in relative flex flex-col overflow-hidden">
+        <div class="flex justify-between items-center mb-4 flex-shrink-0">
+            <h3 class="text-2xl font-semibold text-green-800">Statistiques</h3>
+            <button id="closeStatsModal" class="text-emerald-500 hover:text-green-800 text-2xl">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="overflow-y-auto flex-1" id="statsContent">
+            <!-- Le contenu sera généré dynamiquement -->
         </div>
     </div>
 </div>
@@ -1276,8 +1339,21 @@
         addRaceBtn.classList.remove('hidden');
     }
     
+    // Fonction pour afficher/masquer le bouton statistiques
+    function updateStatsButtonVisibility() {
+        const statsBtn = document.getElementById('statsBtn');
+        if (statsBtn) {
+            if (BackendAPI.isAuthenticated()) {
+                statsBtn.classList.remove('hidden');
+            } else {
+                statsBtn.classList.add('hidden');
+            }
+        }
+    }
+    
     // Appeler la fonction au chargement et après authentification
     updateAddButtonVisibility();
+    updateStatsButtonVisibility();
 
     // Fonction pour afficher le modal de confirmation de suppression
     function showConfirmDeleteModal(raceId) {
@@ -3299,6 +3375,7 @@
         await updateAuthStatusBar();
         updateSearchInputState();
         updateAddButtonVisibility();
+        updateStatsButtonVisibility();
     };
     
     // Callback appelé par le backend lors de la déconnexion automatique pour inactivité
@@ -3858,6 +3935,565 @@
             raceDateError.classList.add('hidden');
         }
     });
+    
+    // ===================================================================
+    // STATISTIQUES DES COURSES
+    // ===================================================================
+    
+    const statsModal = document.getElementById('statsModal');
+    const statsBtn = document.getElementById('statsBtn');
+    const closeStatsModal = document.getElementById('closeStatsModal');
+    const statsContent = document.getElementById('statsContent');
+    
+    // Fonction pour convertir le temps (hh:mm:ss) en secondes
+    function timeToSeconds(timeStr) {
+        if (!timeStr || timeStr === '00:00:00' || timeStr.trim() === '') return null;
+        const parts = timeStr.split(':');
+        if (parts.length !== 3) return null;
+        const hours = parseInt(parts[0]) || 0;
+        const minutes = parseInt(parts[1]) || 0;
+        const seconds = parseInt(parts[2]) || 0;
+        return hours * 3600 + minutes * 60 + seconds;
+    }
+    
+    // Fonction pour formater les secondes en hh:mm:ss
+    function secondsToTime(seconds) {
+        if (seconds === null || seconds === undefined) return '00:00:00';
+        const hours = Math.floor(seconds / 3600);
+        const minutes = Math.floor((seconds % 3600) / 60);
+        const secs = seconds % 60;
+        return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    }
+    
+    // Fonction pour calculer les statistiques des courses
+    function calculateRaceStats() {
+        if (!races || races.length === 0) return null;
+        
+        // Filtrer les courses passées (ne pas compter les futures)
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const pastRaces = races.filter(race => {
+            if (!race.date) return false;
+            const raceDate = new Date(race.date);
+            raceDate.setHours(0, 0, 0, 0);
+            return raceDate < today;
+        });
+        
+        if (pastRaces.length === 0) return null;
+        
+        // Extraire les valeurs valides pour chaque métrique
+        const distances = pastRaces
+            .map(r => parseFloat(r.distance))
+            .filter(d => !isNaN(d) && d > 0);
+        
+        const prices = pastRaces
+            .map(r => parseFloat(r.price))
+            .filter(p => !isNaN(p) && p > 0);
+        
+        const elevations = pastRaces
+            .map(r => parseFloat(r.elevation))
+            .filter(e => !isNaN(e) && e > 0);
+        
+        const times = pastRaces
+            .map(r => timeToSeconds(r.time))
+            .filter(t => t !== null && t > 0);
+        
+        // Trouver les records
+        let longestDistanceRace = null;
+        let maxDistance = 0;
+        pastRaces.forEach(race => {
+            const dist = parseFloat(race.distance);
+            if (!isNaN(dist) && dist > maxDistance) {
+                maxDistance = dist;
+                longestDistanceRace = race;
+            }
+        });
+        
+        let highestPriceRace = null;
+        let maxPrice = 0;
+        pastRaces.forEach(race => {
+            const price = parseFloat(race.price);
+            if (!isNaN(price) && price > maxPrice) {
+                maxPrice = price;
+                highestPriceRace = race;
+            }
+        });
+        
+        let highestElevationRace = null;
+        let maxElevation = 0;
+        pastRaces.forEach(race => {
+            const elev = parseFloat(race.elevation);
+            if (!isNaN(elev) && elev > maxElevation) {
+                maxElevation = elev;
+                highestElevationRace = race;
+            }
+        });
+        
+        let longestTimeRace = null;
+        let maxTime = 0;
+        pastRaces.forEach(race => {
+            const time = timeToSeconds(race.time);
+            if (time !== null && time > maxTime) {
+                maxTime = time;
+                longestTimeRace = race;
+            }
+        });
+        
+        // Calculer les statistiques pour les distances
+        let distanceStats = {};
+        if (distances.length > 0) {
+            const sortedDistances = [...distances].sort((a, b) => a - b);
+            const mean = distances.reduce((a, b) => a + b, 0) / distances.length;
+            const min = Math.min(...distances);
+            const max = Math.max(...distances);
+            const range = max - min;
+            const median = sortedDistances.length % 2 === 0
+                ? (sortedDistances[sortedDistances.length / 2 - 1] + sortedDistances[sortedDistances.length / 2]) / 2
+                : sortedDistances[Math.floor(sortedDistances.length / 2)];
+            const variance = distances.reduce((sum, d) => sum + Math.pow(d - mean, 2), 0) / distances.length;
+            const standardDeviation = Math.sqrt(variance);
+            
+            distanceStats = {
+                mean: Math.round(mean * 100) / 100,
+                range: Math.round(range * 100) / 100,
+                standardDeviation: Math.round(standardDeviation * 100) / 100,
+                median: Math.round(median * 100) / 100,
+                min: min,
+                max: max
+            };
+        }
+        
+        // Calculer les statistiques pour les prix
+        let priceStats = {};
+        if (prices.length > 0) {
+            const sortedPrices = [...prices].sort((a, b) => a - b);
+            const mean = prices.reduce((a, b) => a + b, 0) / prices.length;
+            const min = Math.min(...prices);
+            const max = Math.max(...prices);
+            const range = max - min;
+            const median = sortedPrices.length % 2 === 0
+                ? (sortedPrices[sortedPrices.length / 2 - 1] + sortedPrices[sortedPrices.length / 2]) / 2
+                : sortedPrices[Math.floor(sortedPrices.length / 2)];
+            const variance = prices.reduce((sum, p) => sum + Math.pow(p - mean, 2), 0) / prices.length;
+            const standardDeviation = Math.sqrt(variance);
+            
+            priceStats = {
+                mean: Math.round(mean * 100) / 100,
+                range: Math.round(range * 100) / 100,
+                standardDeviation: Math.round(standardDeviation * 100) / 100,
+                median: Math.round(median * 100) / 100,
+                min: min,
+                max: max
+            };
+        }
+        
+        // Calculer les statistiques pour les dénivelés
+        let elevationStats = {};
+        if (elevations.length > 0) {
+            const sortedElevations = [...elevations].sort((a, b) => a - b);
+            const mean = elevations.reduce((a, b) => a + b, 0) / elevations.length;
+            const min = Math.min(...elevations);
+            const max = Math.max(...elevations);
+            const range = max - min;
+            const median = sortedElevations.length % 2 === 0
+                ? (sortedElevations[sortedElevations.length / 2 - 1] + sortedElevations[sortedElevations.length / 2]) / 2
+                : sortedElevations[Math.floor(sortedElevations.length / 2)];
+            const variance = elevations.reduce((sum, e) => sum + Math.pow(e - mean, 2), 0) / elevations.length;
+            const standardDeviation = Math.sqrt(variance);
+            
+            elevationStats = {
+                mean: Math.round(mean),
+                range: Math.round(range),
+                standardDeviation: Math.round(standardDeviation),
+                median: Math.round(median),
+                min: min,
+                max: max
+            };
+        }
+        
+        // Calculer les statistiques pour les temps
+        let timeStats = {};
+        if (times.length > 0) {
+            const sortedTimes = [...times].sort((a, b) => a - b);
+            const mean = times.reduce((a, b) => a + b, 0) / times.length;
+            const min = Math.min(...times);
+            const max = Math.max(...times);
+            const range = max - min;
+            const median = sortedTimes.length % 2 === 0
+                ? (sortedTimes[sortedTimes.length / 2 - 1] + sortedTimes[sortedTimes.length / 2]) / 2
+                : sortedTimes[Math.floor(sortedTimes.length / 2)];
+            const variance = times.reduce((sum, t) => sum + Math.pow(t - mean, 2), 0) / times.length;
+            const standardDeviation = Math.sqrt(variance);
+            
+            timeStats = {
+                mean: Math.round(mean),
+                range: Math.round(range),
+                standardDeviation: Math.round(standardDeviation),
+                median: Math.round(median),
+                min: min,
+                max: max
+            };
+        }
+        
+        // Préparer les données pour le graphique des distances
+        const racesWithDistance = pastRaces
+            .map(race => ({
+                race: race,
+                distance: parseFloat(race.distance) || 0
+            }))
+            .filter(r => r.distance > 0)
+            .sort((a, b) => b.distance - a.distance);
+        
+        return {
+            totalRaces: pastRaces.length,
+            longestDistanceRace,
+            highestPriceRace,
+            highestElevationRace,
+            longestTimeRace,
+            distanceStats,
+            priceStats,
+            elevationStats,
+            timeStats,
+            racesWithDistance
+        };
+    }
+    
+    // Fonction pour afficher les statistiques
+    function displayRaceStats() {
+        const stats = calculateRaceStats();
+        if (!stats) {
+            statsContent.innerHTML = `<p class="text-green-500 text-center py-8">Aucune statistique disponible</p>`;
+            return;
+        }
+        
+        let html = '';
+        
+        // Statistiques générales et Records
+        html += `<div class="bg-green-50 p-4 rounded-lg mb-6"><h4 class="font-bold text-green-800 mb-3">Statistiques générales et Records</h4>`;
+        html += `<ul class="list-disc list-inside space-y-2">`;
+        html += `<li><strong>Nombre total de courses :</strong> ${stats.totalRaces}</li>`;
+        
+        if (stats.longestDistanceRace) {
+            html += `<li><strong>Course avec la plus longue distance :</strong> ${stats.longestDistanceRace.name} (${stats.longestDistanceRace.distance} km)</li>`;
+        }
+        
+        if (stats.highestPriceRace) {
+            html += `<li><strong>Prix le plus haut :</strong> ${stats.highestPriceRace.name} (${stats.highestPriceRace.price} €)</li>`;
+        }
+        
+        if (stats.highestElevationRace) {
+            html += `<li><strong>Plus de dénivelé :</strong> ${stats.highestElevationRace.name} (${stats.highestElevationRace.elevation} m D+)</li>`;
+        }
+        
+        if (stats.longestTimeRace) {
+            html += `<li><strong>Temps max :</strong> ${stats.longestTimeRace.name} (${stats.longestTimeRace.time})</li>`;
+        }
+        
+        html += `</ul></div>`;
+        
+        // Statistiques détaillées
+        html += '<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">';
+        
+        // Statistiques sur les distances
+        if (stats.distanceStats && Object.keys(stats.distanceStats).length > 0) {
+            const ds = stats.distanceStats;
+            html += `<div class="bg-green-100 p-4 rounded-lg"><h4 class="font-bold text-green-800 mb-3">Statistiques sur les distances</h4>`;
+            html += `<ul class="list-disc list-inside space-y-2">`;
+            html += `<li><strong>Moyenne :</strong> <span class="text-green-600 font-semibold">${ds.mean} km</span></li>`;
+            html += `<li><strong>Médiane :</strong> <span class="text-green-600 font-semibold">${ds.median} km</span></li>`;
+            html += `<li><strong>Étendue :</strong> <span class="text-green-600 font-semibold">${ds.range} km</span></li>`;
+            html += `<li><strong>Écart-type :</strong> <span class="text-green-600 font-semibold">${ds.standardDeviation.toFixed(2)} km</span></li>`;
+            html += `</ul></div>`;
+        }
+        
+        // Statistiques sur les prix
+        if (stats.priceStats && Object.keys(stats.priceStats).length > 0) {
+            const ps = stats.priceStats;
+            html += `<div class="bg-green-100 p-4 rounded-lg"><h4 class="font-bold text-green-800 mb-3">Statistiques sur les prix</h4>`;
+            html += `<ul class="list-disc list-inside space-y-2">`;
+            html += `<li><strong>Moyenne :</strong> <span class="text-green-600 font-semibold">${ps.mean} €</span></li>`;
+            html += `<li><strong>Médiane :</strong> <span class="text-green-600 font-semibold">${ps.median} €</span></li>`;
+            html += `<li><strong>Étendue :</strong> <span class="text-green-600 font-semibold">${ps.range} €</span></li>`;
+            html += `<li><strong>Écart-type :</strong> <span class="text-green-600 font-semibold">${ps.standardDeviation.toFixed(2)} €</span></li>`;
+            html += `</ul></div>`;
+        }
+        
+        // Statistiques sur les dénivelés
+        if (stats.elevationStats && Object.keys(stats.elevationStats).length > 0) {
+            const es = stats.elevationStats;
+            html += `<div class="bg-green-100 p-4 rounded-lg"><h4 class="font-bold text-green-800 mb-3">Statistiques sur les dénivelés</h4>`;
+            html += `<ul class="list-disc list-inside space-y-2">`;
+            html += `<li><strong>Moyenne :</strong> <span class="text-green-600 font-semibold">${es.mean} m</span></li>`;
+            html += `<li><strong>Médiane :</strong> <span class="text-green-600 font-semibold">${es.median} m</span></li>`;
+            html += `<li><strong>Étendue :</strong> <span class="text-green-600 font-semibold">${es.range} m</span></li>`;
+            html += `<li><strong>Écart-type :</strong> <span class="text-green-600 font-semibold">${es.standardDeviation} m</span></li>`;
+            html += `</ul></div>`;
+        }
+        
+        // Statistiques sur les temps
+        if (stats.timeStats && Object.keys(stats.timeStats).length > 0) {
+            const ts = stats.timeStats;
+            html += `<div class="bg-green-100 p-4 rounded-lg"><h4 class="font-bold text-green-800 mb-3">Statistiques sur les temps</h4>`;
+            html += `<ul class="list-disc list-inside space-y-2">`;
+            html += `<li><strong>Moyenne :</strong> <span class="text-green-600 font-semibold">${secondsToTime(ts.mean)}</span></li>`;
+            html += `<li><strong>Médiane :</strong> <span class="text-green-600 font-semibold">${secondsToTime(ts.median)}</span></li>`;
+            html += `<li><strong>Étendue :</strong> <span class="text-green-600 font-semibold">${secondsToTime(ts.range)}</span></li>`;
+            html += `<li><strong>Écart-type :</strong> <span class="text-green-600 font-semibold">${secondsToTime(ts.standardDeviation)}</span></li>`;
+            html += `</ul></div>`;
+        }
+        
+        html += '</div>';
+        
+        // Graphique des distances
+        if (stats.racesWithDistance && stats.racesWithDistance.length > 0) {
+            html += `<div class="bg-green-50 p-4 rounded-lg mb-6">`;
+            html += `<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3">`;
+            html += `<h4 class="font-bold text-green-800">Top 10 des distances</h4>`;
+            html += `<div class="flex items-center gap-3">`;
+            html += `<label class="flex items-center gap-2 cursor-pointer">`;
+            html += `<input type="radio" name="chartSortOrder" value="desc" checked class="w-4 h-4 text-green-600 focus:ring-green-500">`;
+            html += `<span class="text-sm text-green-800">Décroissant</span>`;
+            html += `</label>`;
+            html += `<label class="flex items-center gap-2 cursor-pointer">`;
+            html += `<input type="radio" name="chartSortOrder" value="asc" class="w-4 h-4 text-green-600 focus:ring-green-500">`;
+            html += `<span class="text-sm text-green-800">Croissant</span>`;
+            html += `</label>`;
+            html += `</div>`;
+            html += `</div>`;
+            html += `<div class="relative">`;
+            html += `<div class="space-y-2" id="top10RacesList" style="max-height: 400px; overflow-y: auto;"></div>`;
+            html += `<div id="chartRacesCount" class="text-xs text-green-600 mt-2 text-right"></div>`;
+            html += `</div>`;
+            html += `<div id="chartButtonsContainer" class="flex justify-center mt-4"></div>`;
+            html += `</div>`;
+        }
+        
+        statsContent.innerHTML = html;
+        
+        // Initialiser le graphique
+        if (stats.racesWithDistance && stats.racesWithDistance.length > 0) {
+            updateChart('desc', 10);
+            
+            // Gérer les changements de tri
+            const sortOrderRadios = document.querySelectorAll('input[name="chartSortOrder"]');
+            sortOrderRadios.forEach(radio => {
+                radio.addEventListener('change', function() {
+                    const currentLimit = parseInt(document.getElementById('chartButtonsContainer').dataset.currentLimit) || 10;
+                    updateChart(this.value, currentLimit);
+                });
+            });
+        }
+    }
+    
+    // Fonction pour mettre à jour le graphique
+    function updateChart(sortOrder = 'desc', limit = 10) {
+        const stats = calculateRaceStats();
+        if (!stats || !stats.racesWithDistance || stats.racesWithDistance.length === 0) return;
+        
+        const chartContainer = document.getElementById('top10RacesList');
+        const chartButtonsContainer = document.getElementById('chartButtonsContainer');
+        if (!chartContainer || !chartButtonsContainer) return;
+        
+        chartContainer.innerHTML = '';
+        
+        // Trier selon l'ordre sélectionné
+        let sortedRaces = [...stats.racesWithDistance];
+        if (sortOrder === 'asc') {
+            sortedRaces.sort((a, b) => a.distance - b.distance);
+        } else {
+            sortedRaces.sort((a, b) => b.distance - a.distance);
+        }
+        
+        // Sauvegarder la liste complète
+        const fullSortedRaces = [...sortedRaces];
+        const totalItems = sortedRaces.length;
+        
+        // Limiter selon le paramètre limit
+        let itemsToShow = limit;
+        const distinctRanks = new Set();
+        itemsToShow = 0;
+        for (let i = 0; i < sortedRaces.length; i++) {
+            const currentValue = sortedRaces[i].distance;
+            if (!distinctRanks.has(currentValue)) {
+                distinctRanks.add(currentValue);
+            }
+            itemsToShow = i + 1;
+            if (distinctRanks.size >= limit) {
+                for (let j = i + 1; j < sortedRaces.length; j++) {
+                    if (sortedRaces[j].distance === currentValue) {
+                        itemsToShow = j + 1;
+                    } else {
+                        break;
+                    }
+                }
+                break;
+            }
+        }
+        itemsToShow = Math.min(itemsToShow, totalItems);
+        
+        sortedRaces = sortedRaces.slice(0, itemsToShow);
+        
+        // Calculer le nombre maximum de rangs distincts disponibles
+        const maxDistinctRanks = new Set();
+        for (let i = 0; i < fullSortedRaces.length; i++) {
+            maxDistinctRanks.add(fullSortedRaces[i].distance);
+        }
+        const totalDistinctRanks = maxDistinctRanks.size;
+        
+        // Gérer les boutons
+        chartButtonsContainer.innerHTML = '';
+        chartButtonsContainer.dataset.currentLimit = limit;
+        let buttonsHtml = '';
+        
+        let previousLimit = null;
+        let nextLimit = null;
+        
+        const normalizedLimit = Math.floor(limit);
+        
+        if (normalizedLimit === 10) {
+            previousLimit = null;
+        } else if (normalizedLimit === 50) {
+            previousLimit = 10;
+        } else if (normalizedLimit === 100) {
+            previousLimit = 50;
+        } else if (normalizedLimit > 100) {
+            const currentTier = Math.floor(normalizedLimit / 50) * 50;
+            previousLimit = currentTier - 50;
+        }
+        
+        if (normalizedLimit === 10) {
+            if (totalDistinctRanks >= 50 || totalItems > itemsToShow) {
+                nextLimit = 50;
+            }
+        } else if (normalizedLimit === 50) {
+            if (totalDistinctRanks >= 100 || totalItems > itemsToShow) {
+                nextLimit = 100;
+            }
+        } else if (normalizedLimit === 100) {
+            if (totalDistinctRanks > 100) {
+                nextLimit = 150;
+            }
+        } else if (normalizedLimit > 100) {
+            if (totalDistinctRanks > normalizedLimit) {
+                const currentTier = Math.floor(normalizedLimit / 50) * 50;
+                nextLimit = currentTier + 50;
+            }
+        }
+        
+        if (previousLimit !== null) {
+            const topText = previousLimit === 10 ? 'top 10' : previousLimit === 50 ? 'top 50' : `top ${previousLimit}`;
+            buttonsHtml += `<button id="showLessBtn" class="text-green-600 hover:text-green-800 text-sm underline cursor-pointer transition-colors mr-4" data-previous-limit="${previousLimit}">- voir moins (${topText})</button>`;
+        }
+        
+        if (nextLimit !== null && totalItems > itemsToShow) {
+            const distinctRanksForNext = new Set();
+            for (let i = 0; i < Math.min(fullSortedRaces.length, nextLimit * 5); i++) {
+                distinctRanksForNext.add(fullSortedRaces[i].distance);
+                if (distinctRanksForNext.size >= nextLimit) {
+                    break;
+                }
+            }
+            if (distinctRanksForNext.size >= nextLimit || totalItems > itemsToShow) {
+                buttonsHtml += `<button id="showMoreBtn" class="text-green-600 hover:text-green-800 text-sm underline cursor-pointer transition-colors" data-next-limit="${nextLimit}">+ voir le top ${nextLimit}</button>`;
+            }
+        }
+        
+        chartButtonsContainer.innerHTML = buttonsHtml;
+        
+        // Attacher les événements
+        const showLessBtn = document.getElementById('showLessBtn');
+        if (showLessBtn) {
+            const prevLimit = parseInt(showLessBtn.dataset.previousLimit);
+            showLessBtn.addEventListener('click', function() {
+                updateChart(sortOrder, prevLimit);
+            });
+        }
+        
+        const showMoreBtn = document.getElementById('showMoreBtn');
+        if (showMoreBtn) {
+            const nextLimitValue = parseInt(showMoreBtn.dataset.nextLimit);
+            showMoreBtn.addEventListener('click', function() {
+                updateChart(sortOrder, nextLimitValue);
+            });
+        }
+        
+        // Afficher le nombre de courses
+        const chartRacesCount = document.getElementById('chartRacesCount');
+        if (chartRacesCount) {
+            chartRacesCount.textContent = `${itemsToShow} course${itemsToShow > 1 ? 's' : ''} affichée${itemsToShow > 1 ? 's' : ''}`;
+        }
+        
+        // Calculer la distance maximale pour l'échelle
+        const maxDistance = sortedRaces.length > 0 ? Math.max(...sortedRaces.map(r => r.distance)) : 0;
+        
+        // Calculer les classements en gérant les égalités avec numérotation continue
+        // Si deux courses ont la même distance, elles ont le même rang
+        const rankings = [];
+        let currentRank = 1;
+        for (let i = 0; i < sortedRaces.length; i++) {
+            if (i > 0 && sortedRaces[i].distance !== sortedRaces[i - 1].distance) {
+                // Si la valeur est différente de la précédente, incrémenter le rang
+                currentRank++;
+            }
+            rankings.push(currentRank);
+        }
+        
+        // Afficher les courses
+        sortedRaces.forEach((item, index) => {
+            const percentage = maxDistance > 0 ? (item.distance / maxDistance) * 100 : 0;
+            const race = item.race;
+            const rank = rankings[index];
+            
+            // Afficher le numéro seulement si c'est le premier élément avec ce rang
+            const showRank = index === 0 || rankings[index] !== rankings[index - 1];
+            const rankDisplay = showRank ? rank : '';
+            
+            const chartItem = document.createElement('div');
+            chartItem.className = 'chart-item flex items-center gap-2 p-2 hover:bg-green-100 rounded transition-colors';
+            chartItem.style.cursor = 'pointer';
+            
+            chartItem.innerHTML = `
+                <span class="text-xs text-green-600 w-6 text-center flex-shrink-0">${rankDisplay}</span>
+                <span class="text-sm text-green-800 font-medium w-32 truncate" title="${race.name}">${race.name}</span>
+                <div class="flex-1 bg-green-200 rounded-full h-6 relative overflow-hidden">
+                    <div class="bg-green-600 h-full rounded-full transition-all duration-300 flex items-center justify-end pr-2" style="width: ${percentage}%">
+                        <span class="text-xs text-white whitespace-nowrap">${item.distance} km</span>
+                    </div>
+                </div>
+            `;
+            
+            chartItem.addEventListener('click', function() {
+                statsModal.classList.add('hidden');
+                showRaceDetails(race.id);
+            });
+            
+            chartContainer.appendChild(chartItem);
+        });
+    }
+    
+    // Event listeners pour la modale de statistiques
+    if (statsBtn) {
+        statsBtn.addEventListener('click', function() {
+            displayRaceStats();
+            statsModal.classList.remove('hidden');
+        });
+    }
+    
+    if (closeStatsModal) {
+        closeStatsModal.addEventListener('click', function() {
+            statsModal.classList.add('hidden');
+        });
+    }
+    
+    // Fermer la modale en cliquant en dehors
+    if (statsModal) {
+        statsModal.addEventListener('click', function(e) {
+            if (e.target === statsModal) {
+                statsModal.classList.add('hidden');
+            }
+        });
+    }
+    
 </script>
 </body>
 </html>
