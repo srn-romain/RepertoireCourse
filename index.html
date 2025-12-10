@@ -535,12 +535,33 @@
      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden modal" style="z-index: 10002;">
     <div class="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] p-6 fade-in relative flex flex-col overflow-hidden">
         <div class="flex justify-between items-center mb-4 flex-shrink-0">
-            <h3 class="text-2xl font-semibold text-green-800">Statistiques</h3>
+            <div class="flex items-center gap-2">
+                <h3 class="text-2xl font-semibold text-green-800">Statistiques</h3>
+                <button id="statsSettingsBtn" class="hidden text-gray-400 hover:text-green-800 text-xl cursor-pointer transition-colors" title="Paramètres des statistiques">
+                    <i class="fas fa-cog"></i>
+                </button>
+            </div>
             <button id="closeStatsModal" class="text-emerald-500 hover:text-green-800 text-2xl">
                 <i class="fas fa-times"></i>
             </button>
         </div>
         <div class="overflow-y-auto flex-1" id="statsContent">
+            <!-- Le contenu sera généré dynamiquement -->
+        </div>
+    </div>
+</div>
+
+<!-- Stats Settings Modal -->
+<div id="statsSettingsModal"
+     class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden modal" style="z-index: 10003;">
+    <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] p-6 fade-in relative flex flex-col overflow-hidden">
+        <div class="flex justify-between items-center mb-4 flex-shrink-0">
+            <h3 class="text-2xl font-semibold text-green-800">Paramètres des statistiques</h3>
+            <button id="closeStatsSettingsModal" class="text-emerald-500 hover:text-green-800 text-2xl">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="overflow-y-auto flex-1" id="statsSettingsContent">
             <!-- Le contenu sera généré dynamiquement -->
         </div>
     </div>
@@ -3945,6 +3966,43 @@
     const closeStatsModal = document.getElementById('closeStatsModal');
     const statsContent = document.getElementById('statsContent');
     
+    // Variable globale pour stocker le mode d'affichage des stats
+    // Restaurer depuis localStorage ou utiliser false par défaut
+    window.statsIncludeFuture = localStorage.getItem('statsIncludeFuture') === 'true';
+    
+    // Fonction pour détecter les courses futures
+    function getFutureRacesInfo() {
+        if (!races || races.length === 0) return { totalFutureRaces: 0, futureRaces: [] };
+        
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        const futureRaces = [];
+        races.forEach(race => {
+            if (!race.date) return;
+            const raceDate = new Date(race.date);
+            raceDate.setHours(0, 0, 0, 0);
+            if (raceDate >= today) {
+                futureRaces.push({
+                    name: race.name,
+                    date: race.date
+                });
+            }
+        });
+        
+        // Trier par date puis par nom
+        futureRaces.sort((a, b) => {
+            const dateA = new Date(a.date);
+            const dateB = new Date(b.date);
+            if (dateA.getTime() !== dateB.getTime()) {
+                return dateA - dateB;
+            }
+            return a.name.localeCompare(b.name);
+        });
+        
+        return { totalFutureRaces: futureRaces.length, futureRaces };
+    }
+    
     // Fonction pour convertir le temps (hh:mm:ss) en secondes
     function timeToSeconds(timeStr) {
         if (!timeStr || timeStr === '00:00:00' || timeStr.trim() === '') return null;
@@ -3966,17 +4024,19 @@
     }
     
     // Fonction pour calculer les statistiques des courses
-    function calculateRaceStats() {
+    function calculateRaceStats(includeFuture = false) {
         if (!races || races.length === 0) return null;
         
-        // Filtrer les courses passées (ne pas compter les futures)
+        // Filtrer les courses selon le paramètre includeFuture
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         const pastRaces = races.filter(race => {
             if (!race.date) return false;
             const raceDate = new Date(race.date);
             raceDate.setHours(0, 0, 0, 0);
-            return raceDate < today;
+            // Si includeFuture est false, ne prendre que les courses passées
+            // Si includeFuture est true, prendre toutes les courses
+            return includeFuture || raceDate < today;
         });
         
         if (pastRaces.length === 0) return null;
@@ -4160,7 +4220,7 @@
     
     // Fonction pour afficher les statistiques
     function displayRaceStats() {
-        const stats = calculateRaceStats();
+        const stats = calculateRaceStats(window.statsIncludeFuture);
         if (!stats) {
             statsContent.innerHTML = `<p class="text-green-500 text-center py-8">Aucune statistique disponible</p>`;
             return;
@@ -4270,6 +4330,15 @@
         
         statsContent.innerHTML = html;
         
+        // Vérifier s'il y a des courses futures et afficher l'engrenage si nécessaire
+        const statsSettingsBtn = document.getElementById('statsSettingsBtn');
+        const futureInfo = getFutureRacesInfo();
+        if (futureInfo.totalFutureRaces > 0 && statsSettingsBtn) {
+            statsSettingsBtn.classList.remove('hidden');
+        } else if (statsSettingsBtn) {
+            statsSettingsBtn.classList.add('hidden');
+        }
+        
         // Initialiser le graphique
         if (stats.racesWithDistance && stats.racesWithDistance.length > 0) {
             updateChart('desc', 10);
@@ -4287,7 +4356,7 @@
     
     // Fonction pour mettre à jour le graphique
     function updateChart(sortOrder = 'desc', limit = 10) {
-        const stats = calculateRaceStats();
+        const stats = calculateRaceStats(window.statsIncludeFuture);
         if (!stats || !stats.racesWithDistance || stats.racesWithDistance.length === 0) return;
         
         const chartContainer = document.getElementById('top10RacesList');
@@ -4490,6 +4559,76 @@
         statsModal.addEventListener('click', function(e) {
             if (e.target === statsModal) {
                 statsModal.classList.add('hidden');
+            }
+        });
+    }
+    
+    // Gestion de la modale de paramètres des statistiques
+    const statsSettingsModal = document.getElementById('statsSettingsModal');
+    const statsSettingsBtn = document.getElementById('statsSettingsBtn');
+    const closeStatsSettingsModal = document.getElementById('closeStatsSettingsModal');
+    const statsSettingsContent = document.getElementById('statsSettingsContent');
+    
+    if (statsSettingsBtn) {
+        statsSettingsBtn.addEventListener('click', function() {
+            const futureInfo = getFutureRacesInfo();
+            
+            let settingsHtml = `<div class="mb-4">`;
+            settingsHtml += `<p class="text-green-800 mb-4">Attention, vous avez <strong>${futureInfo.totalFutureRaces}</strong> course${futureInfo.totalFutureRaces > 1 ? 's' : ''} qui ne ${futureInfo.totalFutureRaces > 1 ? 'sont' : 'est'} pas comptée${futureInfo.totalFutureRaces > 1 ? 's' : ''} dans les stats car ${futureInfo.totalFutureRaces > 1 ? 'elles sont' : 'elle est'} dans le futur.</p>`;
+            
+            if (futureInfo.futureRaces.length > 0) {
+                settingsHtml += `<div class="mb-4">`;
+                settingsHtml += `<h4 class="font-semibold text-green-800 mb-2">Courses concernées :</h4>`;
+                settingsHtml += `<ul class="list-disc list-inside space-y-1 text-green-600 max-h-60 overflow-y-auto">`;
+                futureInfo.futureRaces.forEach(race => {
+                    const raceDate = new Date(race.date);
+                    const dateStr = raceDate.toLocaleDateString('fr-FR', {
+                        day: 'numeric',
+                        month: 'long',
+                        year: 'numeric'
+                    });
+                    settingsHtml += `<li><strong>${race.name}</strong> : ${dateStr}</li>`;
+                });
+                settingsHtml += `</ul></div>`;
+            }
+            
+            settingsHtml += `<div class="mb-4">`;
+            settingsHtml += `<label class="flex items-center cursor-pointer">`;
+            settingsHtml += `<input type="checkbox" id="includeFutureCheckbox" ${window.statsIncludeFuture ? 'checked' : ''} class="mr-2 w-4 h-4 text-green-600 focus:ring-green-500">`;
+            settingsHtml += `<span class="text-green-800">Je veux voir les stats même sur des courses dans le futur</span>`;
+            settingsHtml += `</label>`;
+            settingsHtml += `</div>`;
+            
+            settingsHtml += `</div>`;
+            statsSettingsContent.innerHTML = settingsHtml;
+            
+            // Gérer le changement de la checkbox
+            const includeFutureCheckbox = document.getElementById('includeFutureCheckbox');
+            if (includeFutureCheckbox) {
+                includeFutureCheckbox.addEventListener('change', function() {
+                    window.statsIncludeFuture = this.checked;
+                    // Sauvegarder dans localStorage
+                    localStorage.setItem('statsIncludeFuture', this.checked.toString());
+                    displayRaceStats();
+                    statsSettingsModal.classList.add('hidden');
+                });
+            }
+            
+            statsSettingsModal.classList.remove('hidden');
+        });
+    }
+    
+    if (closeStatsSettingsModal) {
+        closeStatsSettingsModal.addEventListener('click', function() {
+            statsSettingsModal.classList.add('hidden');
+        });
+    }
+    
+    // Fermer la modale de paramètres en cliquant en dehors
+    if (statsSettingsModal) {
+        statsSettingsModal.addEventListener('click', function(e) {
+            if (e.target === statsSettingsModal) {
+                statsSettingsModal.classList.add('hidden');
             }
         });
     }
