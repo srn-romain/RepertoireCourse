@@ -4521,13 +4521,18 @@
             chartItem.className = 'chart-item flex items-center gap-2 p-2 hover:bg-green-100 rounded transition-colors';
             chartItem.style.cursor = 'pointer';
             
+            // Afficher la valeur à l'extérieur si la barre est trop petite (< 20%)
+            // Sinon, l'afficher à l'intérieur de la barre
+            const showValueOutside = percentage < 20;
+            
             chartItem.innerHTML = `
                 <span class="text-xs text-green-600 w-6 text-center flex-shrink-0">${rankDisplay}</span>
                 <span class="text-sm text-green-800 font-medium w-32 truncate" title="${race.name}">${race.name}</span>
-                <div class="flex-1 bg-green-200 rounded-full h-6 relative overflow-hidden">
-                    <div class="bg-green-600 h-full rounded-full transition-all duration-300 flex items-center justify-end pr-2" style="width: ${percentage}%">
-                        <span class="text-xs text-white whitespace-nowrap">${item.distance} km</span>
+                <div class="flex-1 bg-green-200 rounded-full h-6 relative flex items-center" style="min-width: 0;">
+                    <div class="bg-green-600 h-full rounded-full transition-all duration-300 ${showValueOutside ? '' : 'flex items-center justify-end pr-2'}" style="width: ${percentage}%; min-width: ${showValueOutside ? '0' : 'fit-content'};">
+                        ${showValueOutside ? '' : `<span class="text-xs text-white whitespace-nowrap">${item.distance} km</span>`}
                     </div>
+                    ${showValueOutside ? `<span class="absolute text-xs text-green-800 font-semibold whitespace-nowrap" style="left: ${Math.max(percentage + 2, 0)}%;">${item.distance} km</span>` : ''}
                 </div>
             `;
             
