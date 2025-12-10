@@ -4221,10 +4221,40 @@
         const racesWithDistance = pastRaces
             .map(race => ({
                 race: race,
-                distance: parseFloat(race.distance) || 0
+                value: parseFloat(race.distance) || 0
             }))
-            .filter(r => r.distance > 0)
-            .sort((a, b) => b.distance - a.distance);
+            .filter(r => r.value > 0)
+            .sort((a, b) => b.value - a.value);
+        
+        // Préparer les données pour le graphique des prix
+        const racesWithPrice = pastRaces
+            .map(race => ({
+                race: race,
+                value: parseFloat(race.price) || 0
+            }))
+            .filter(r => r.value > 0)
+            .sort((a, b) => b.value - a.value);
+        
+        // Préparer les données pour le graphique des temps
+        const racesWithTime = pastRaces
+            .map(race => {
+                const time = timeToSeconds(race.time);
+                return {
+                    race: race,
+                    value: time || 0
+                };
+            })
+            .filter(r => r.value > 0)
+            .sort((a, b) => b.value - a.value);
+        
+        // Préparer les données pour le graphique des dénivelés
+        const racesWithElevation = pastRaces
+            .map(race => ({
+                race: race,
+                value: parseFloat(race.elevation) || 0
+            }))
+            .filter(r => r.value > 0)
+            .sort((a, b) => b.value - a.value);
         
         return {
             totalRaces: pastRaces.length,
@@ -4236,7 +4266,10 @@
             priceStats,
             elevationStats,
             timeStats,
-            racesWithDistance
+            racesWithDistance,
+            racesWithPrice,
+            racesWithTime,
+            racesWithElevation
         };
     }
     
@@ -4326,11 +4359,30 @@
         
         html += '</div>';
         
-        // Graphique des distances
-        if (stats.racesWithDistance && stats.racesWithDistance.length > 0) {
+        // Graphique avec liste déroulante
+        const hasChartData = (stats.racesWithDistance && stats.racesWithDistance.length > 0) ||
+                            (stats.racesWithPrice && stats.racesWithPrice.length > 0) ||
+                            (stats.racesWithTime && stats.racesWithTime.length > 0) ||
+                            (stats.racesWithElevation && stats.racesWithElevation.length > 0);
+        
+        if (hasChartData) {
             html += `<div class="bg-green-50 p-4 rounded-lg mb-6">`;
             html += `<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3">`;
-            html += `<h4 class="font-bold text-green-800">Top 10 des distances</h4>`;
+            html += `<h4 id="chartTitle" class="font-bold text-green-800 flex items-center gap-2 flex-wrap">`;
+            html += `<span>Top 10 de la répartition</span>`;
+            html += `<select id="chartTypeSelect" class="px-2 py-1 border-0 border-b-2 border-green-400 bg-transparent text-green-800 text-sm font-normal cursor-pointer hover:border-green-600 focus:outline-none focus:border-green-600">`;
+            html += `<option value="distance">des distances</option>`;
+            if (stats.racesWithPrice && stats.racesWithPrice.length > 0) {
+                html += `<option value="price">des prix</option>`;
+            }
+            if (stats.racesWithTime && stats.racesWithTime.length > 0) {
+                html += `<option value="time">des temps</option>`;
+            }
+            if (stats.racesWithElevation && stats.racesWithElevation.length > 0) {
+                html += `<option value="elevation">des dénivelés</option>`;
+            }
+            html += `</select>`;
+            html += `</h4>`;
             html += `<div class="flex items-center gap-3">`;
             html += `<label class="flex items-center gap-2 cursor-pointer">`;
             html += `<input type="radio" name="chartSortOrder" value="desc" checked class="w-4 h-4 text-green-600 focus:ring-green-500">`;
@@ -4362,37 +4414,82 @@
         }
         
         // Initialiser le graphique
-        if (stats.racesWithDistance && stats.racesWithDistance.length > 0) {
-            updateChart('desc', 10);
+        if (hasChartData) {
+            updateChart('distance', 'desc', 10);
+            
+            // Gérer les changements de type de graphique
+            const chartTypeSelect = document.getElementById('chartTypeSelect');
+            if (chartTypeSelect) {
+                chartTypeSelect.addEventListener('change', function() {
+                    const currentLimit = parseInt(document.getElementById('chartButtonsContainer').dataset.currentLimit) || 10;
+                    const sortOrder = document.querySelector('input[name="chartSortOrder"]:checked')?.value || 'desc';
+                    updateChart(this.value, sortOrder, currentLimit);
+                });
+            }
             
             // Gérer les changements de tri
             const sortOrderRadios = document.querySelectorAll('input[name="chartSortOrder"]');
             sortOrderRadios.forEach(radio => {
                 radio.addEventListener('change', function() {
                     const currentLimit = parseInt(document.getElementById('chartButtonsContainer').dataset.currentLimit) || 10;
-                    updateChart(this.value, currentLimit);
+                    const chartType = document.getElementById('chartTypeSelect')?.value || 'distance';
+                    updateChart(chartType, this.value, currentLimit);
                 });
             });
         }
     }
     
     // Fonction pour mettre à jour le graphique
-    function updateChart(sortOrder = 'desc', limit = 10) {
+    function updateChart(chartType = 'distance', sortOrder = 'desc', limit = 10) {
         const stats = calculateRaceStats(window.statsIncludeFuture);
-        if (!stats || !stats.racesWithDistance || stats.racesWithDistance.length === 0) return;
+        if (!stats) return;
+        
+        // Sélectionner les données selon le type
+        let sortedRaces = [];
+        let typeLabel = '';
+        let unit = '';
+        
+        switch(chartType) {
+            case 'distance':
+                if (!stats.racesWithDistance || stats.racesWithDistance.length === 0) return;
+                sortedRaces = [...stats.racesWithDistance];
+                typeLabel = 'distances';
+                unit = 'km';
+                break;
+            case 'price':
+                if (!stats.racesWithPrice || stats.racesWithPrice.length === 0) return;
+                sortedRaces = [...stats.racesWithPrice];
+                typeLabel = 'prix';
+                unit = '€';
+                break;
+            case 'time':
+                if (!stats.racesWithTime || stats.racesWithTime.length === 0) return;
+                sortedRaces = [...stats.racesWithTime];
+                typeLabel = 'temps';
+                unit = '';
+                break;
+            case 'elevation':
+                if (!stats.racesWithElevation || stats.racesWithElevation.length === 0) return;
+                sortedRaces = [...stats.racesWithElevation];
+                typeLabel = 'dénivelés';
+                unit = 'm';
+                break;
+            default:
+                return;
+        }
         
         const chartContainer = document.getElementById('top10RacesList');
         const chartButtonsContainer = document.getElementById('chartButtonsContainer');
+        const chartTitle = document.getElementById('chartTitle');
         if (!chartContainer || !chartButtonsContainer) return;
         
         chartContainer.innerHTML = '';
         
         // Trier selon l'ordre sélectionné
-        let sortedRaces = [...stats.racesWithDistance];
         if (sortOrder === 'asc') {
-            sortedRaces.sort((a, b) => a.distance - b.distance);
+            sortedRaces.sort((a, b) => a.value - b.value);
         } else {
-            sortedRaces.sort((a, b) => b.distance - a.distance);
+            sortedRaces.sort((a, b) => b.value - a.value);
         }
         
         // Sauvegarder la liste complète
@@ -4404,14 +4501,14 @@
         const distinctRanks = new Set();
         itemsToShow = 0;
         for (let i = 0; i < sortedRaces.length; i++) {
-            const currentValue = sortedRaces[i].distance;
+            const currentValue = sortedRaces[i].value;
             if (!distinctRanks.has(currentValue)) {
                 distinctRanks.add(currentValue);
             }
             itemsToShow = i + 1;
             if (distinctRanks.size >= limit) {
                 for (let j = i + 1; j < sortedRaces.length; j++) {
-                    if (sortedRaces[j].distance === currentValue) {
+                    if (sortedRaces[j].value === currentValue) {
                         itemsToShow = j + 1;
                     } else {
                         break;
@@ -4424,10 +4521,20 @@
         
         sortedRaces = sortedRaces.slice(0, itemsToShow);
         
+        // Mettre à jour le titre avec le top actuel
+        if (chartTitle) {
+            const topText = limit === 10 ? 'Top 10' : limit === 50 ? 'Top 50' : `Top ${limit}`;
+            const selectElement = chartTitle.querySelector('#chartTypeSelect');
+            if (selectElement) {
+                chartTitle.innerHTML = `<span>${topText} de la répartition</span>`;
+                chartTitle.appendChild(selectElement);
+            }
+        }
+        
         // Calculer le nombre maximum de rangs distincts disponibles
         const maxDistinctRanks = new Set();
         for (let i = 0; i < fullSortedRaces.length; i++) {
-            maxDistinctRanks.add(fullSortedRaces[i].distance);
+            maxDistinctRanks.add(fullSortedRaces[i].value);
         }
         const totalDistinctRanks = maxDistinctRanks.size;
         
@@ -4479,7 +4586,7 @@
         if (nextLimit !== null && totalItems > itemsToShow) {
             const distinctRanksForNext = new Set();
             for (let i = 0; i < Math.min(fullSortedRaces.length, nextLimit * 5); i++) {
-                distinctRanksForNext.add(fullSortedRaces[i].distance);
+                distinctRanksForNext.add(fullSortedRaces[i].value);
                 if (distinctRanksForNext.size >= nextLimit) {
                     break;
                 }
@@ -4496,7 +4603,7 @@
         if (showLessBtn) {
             const prevLimit = parseInt(showLessBtn.dataset.previousLimit);
             showLessBtn.addEventListener('click', function() {
-                updateChart(sortOrder, prevLimit);
+                updateChart(chartType, sortOrder, prevLimit);
             });
         }
         
@@ -4504,7 +4611,7 @@
         if (showMoreBtn) {
             const nextLimitValue = parseInt(showMoreBtn.dataset.nextLimit);
             showMoreBtn.addEventListener('click', function() {
-                updateChart(sortOrder, nextLimitValue);
+                updateChart(chartType, sortOrder, nextLimitValue);
             });
         }
         
@@ -4514,26 +4621,43 @@
             chartRacesCount.textContent = `${itemsToShow} course${itemsToShow > 1 ? 's' : ''} affichée${itemsToShow > 1 ? 's' : ''}`;
         }
         
-        // Calculer la distance maximale pour l'échelle
-        const maxDistance = sortedRaces.length > 0 ? Math.max(...sortedRaces.map(r => r.distance)) : 0;
+        // Calculer la valeur maximale pour l'échelle
+        const maxValue = sortedRaces.length > 0 ? Math.max(...sortedRaces.map(r => r.value)) : 0;
         
         // Calculer les classements en gérant les égalités avec numérotation continue
-        // Si deux courses ont la même distance, elles ont le même rang
+        // Si deux courses ont la même valeur, elles ont le même rang
         const rankings = [];
         let currentRank = 1;
         for (let i = 0; i < sortedRaces.length; i++) {
-            if (i > 0 && sortedRaces[i].distance !== sortedRaces[i - 1].distance) {
+            if (i > 0 && sortedRaces[i].value !== sortedRaces[i - 1].value) {
                 // Si la valeur est différente de la précédente, incrémenter le rang
                 currentRank++;
             }
             rankings.push(currentRank);
         }
         
+        // Fonction pour formater la valeur selon le type
+        function formatValue(value, type) {
+            switch(type) {
+                case 'distance':
+                    return `${value} km`;
+                case 'price':
+                    return `${value} €`;
+                case 'time':
+                    return secondsToTime(value);
+                case 'elevation':
+                    return `${value} m`;
+                default:
+                    return value;
+            }
+        }
+        
         // Afficher les courses
         sortedRaces.forEach((item, index) => {
-            const percentage = maxDistance > 0 ? (item.distance / maxDistance) * 100 : 0;
+            const percentage = maxValue > 0 ? (item.value / maxValue) * 100 : 0;
             const race = item.race;
             const rank = rankings[index];
+            const formattedValue = formatValue(item.value, chartType);
             
             // Afficher le numéro seulement si c'est le premier élément avec ce rang
             const showRank = index === 0 || rankings[index] !== rankings[index - 1];
@@ -4552,9 +4676,9 @@
                 <span class="text-sm text-green-800 font-medium w-32 truncate" title="${race.name}">${race.name}</span>
                 <div class="flex-1 bg-green-200 rounded-full h-6 relative flex items-center" style="min-width: 0;">
                     <div class="bg-green-600 h-full rounded-full transition-all duration-300 ${showValueOutside ? '' : 'flex items-center justify-end pr-2'}" style="width: ${percentage}%; min-width: ${showValueOutside ? '0' : 'fit-content'};">
-                        ${showValueOutside ? '' : `<span class="text-xs text-white whitespace-nowrap">${item.distance} km</span>`}
+                        ${showValueOutside ? '' : `<span class="text-xs text-white whitespace-nowrap">${formattedValue}</span>`}
                     </div>
-                    ${showValueOutside ? `<span class="absolute text-xs text-green-800 font-semibold whitespace-nowrap" style="left: ${Math.max(percentage + 2, 0)}%;">${item.distance} km</span>` : ''}
+                    ${showValueOutside ? `<span class="absolute text-xs text-green-800 font-semibold whitespace-nowrap" style="left: ${Math.max(percentage + 2, 0)}%;">${formattedValue}</span>` : ''}
                 </div>
             `;
             
