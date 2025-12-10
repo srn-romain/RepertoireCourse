@@ -1055,8 +1055,13 @@
 
     // Charger les courses depuis Firebase
     let races = [];
+    let racesLoading = false;
+    let racesLoaded = false;
+    let pendingStatsDisplay = false;
 
     function loadRaces() {
+        racesLoading = true;
+        racesLoaded = false;
         racesContainer.innerHTML = '<div class="col-span-3 text-center py-12"><svg class="animate-spin h-10 w-10 text-green-600 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg><p class="mt-2 text-green-700">Chargement des courses...</p></div>';
 
         racesCollection.get().then((querySnapshot) => {
@@ -1067,6 +1072,9 @@
                     ...doc.data()
                 });
             });
+
+            racesLoading = false;
+            racesLoaded = true;
 
             // Calculer et afficher les statistiques
             updateStats(races);
@@ -1079,9 +1087,23 @@
             
             // Mettre à jour la liste des lieux pour les filtres avancés
             updateLocationFilter();
+            
+            // Si la modale de stats est ouverte et qu'on attendait le chargement, afficher les stats
+            if (pendingStatsDisplay && !statsModal.classList.contains('hidden')) {
+                displayRaceStats();
+                pendingStatsDisplay = false;
+            }
         }).catch((error) => {
             console.error("Erreur lors du chargement des courses:", error);
+            racesLoading = false;
+            racesLoaded = false;
             racesContainer.innerHTML = '<div class="col-span-3 text-center py-12"><p class="text-red-600">Erreur lors du chargement des courses. Veuillez rafraîchir la page.</p></div>';
+            
+            // Si la modale de stats est ouverte, afficher l'erreur
+            if (pendingStatsDisplay && !statsModal.classList.contains('hidden')) {
+                displayRaceStats();
+                pendingStatsDisplay = false;
+            }
         });
     }
 
@@ -4548,8 +4570,23 @@
     // Event listeners pour la modale de statistiques
     if (statsBtn) {
         statsBtn.addEventListener('click', function() {
-            displayRaceStats();
             statsModal.classList.remove('hidden');
+            
+            // Si les courses sont en cours de chargement, afficher un indicateur de chargement
+            if (racesLoading || (!racesLoaded && races.length === 0)) {
+                statsContent.innerHTML = `
+                    <div class="flex flex-col items-center justify-center py-12">
+                        <svg class="animate-spin h-10 w-10 text-green-600 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <p class="mt-2 text-green-700">Chargement des courses...</p>
+                    </div>
+                `;
+                pendingStatsDisplay = true;
+            } else {
+                displayRaceStats();
+            }
         });
     }
     
