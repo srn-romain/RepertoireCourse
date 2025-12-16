@@ -875,11 +875,39 @@
         </div>
     </div>
 
-    <script>
-        // ===================================================================
-        // Faux BACKEND (Authentification & Gestion des rôles)
-        // ===================================================================
+    <!-- Modal d'alerte doublon wishlist -->
+    <div id="wishlistSimilarityModal" class="fixed inset-0 flex items-center justify-center z-[80] hidden">
+        <div class="absolute inset-0 bg-black bg-opacity-50 blur-bg"></div>
+        <div class="relative bg-white rounded-xl shadow-xl w-full max-w-md mx-4 z-10 p-6 flex flex-col items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-yellow-500 mb-2" fill="none"
+                viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <h2 class="text-lg font-bold text-yellow-600 mb-2 text-center">Attention, doublon possible ?</h2>
+            <div class="w-full text-center mb-4">
+                <p class="text-gray-700 mb-2">
+                    Cette course '<span id="similarNewItemName" class="font-bold"></span>' ressemble beaucoup à :
+                </p>
+                <ul id="similarItemsList"
+                    class="text-sm text-left list-disc pl-5 mb-4 font-semibold text-gray-700 bg-gray-50 p-2 rounded">
+                    <!-- Items similaires ici -->
+                </ul>
+            </div>
+            <div class="flex flex-col w-full space-y-2">
+                <button id="confirmAddSimilar"
+                    class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition w-full">
+                    Non c'est une course différente que j'ajoute
+                </button>
+                <button id="cancelAddSimilar"
+                    class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition w-full">
+                    Ah mince je l'ai déjà ajoutée
+                </button>
+            </div>
+        </div>
+    </div>
 
+    <script>
         // Configuration Firebase (sensible)
         const firebaseConfig = {
             apiKey: "AIzaSyAQl3f8x9uafRTFIDvf6WtZPbjZtPbzU9M",
@@ -3902,6 +3930,53 @@
             }
         });
 
+        // Fonction pour vérifier les similarités (4 caractères consécutifs ou plus en commun)
+        function findSimilarWishlistItems(itemName) {
+            const similarItems = [];
+            const itemNameLower = itemName.toLowerCase().trim();
+
+            // Vérifier chaque élément de la wishlist
+            wishlistEditItems.forEach(item => {
+                const existingNameLower = item.name.toLowerCase().trim();
+
+                // Vérifier si 4 caractères consécutifs (côte à côte) ou plus sont communs
+                let foundMatch = false;
+                for (let i = 0; i <= itemNameLower.length - 4 && !foundMatch; i++) {
+                    const fourChars = itemNameLower.substring(i, i + 4);
+                    if (existingNameLower.includes(fourChars)) {
+                        let maxMatch = fourChars;
+                        for (let j = i + 4; j <= itemNameLower.length; j++) {
+                            const longerSubstring = itemNameLower.substring(i, j);
+                            if (existingNameLower.includes(longerSubstring)) {
+                                maxMatch = longerSubstring;
+                            } else {
+                                break;
+                            }
+                        }
+                        if (maxMatch.length >= 4 && !similarItems.find(s => s.name === item.name)) {
+                            similarItems.push(item);
+                            foundMatch = true;
+                        }
+                    }
+                }
+            });
+            return similarItems;
+        }
+
+        let pendingWishlistItemToAdd = null;
+
+        function addWishlistItemToFirebase(item) {
+            wishlistCollection.add(item).then((docRef) => {
+                item.id = docRef.id;
+                wishlistEditItems.push(item);
+                renderWishlistEditList(wishlistEditItems);
+                newWishlistItemInput.value = '';
+                addWishlistItemBtn.disabled = true;
+                addWishlistItemBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                document.querySelectorAll('input[name="wishlistCategory"]').forEach(r => r.checked = false);
+            });
+        }
+
         addWishlistItemBtn.onclick = function () {
             ensureRadioGroup();
             const name = newWishlistItemInput.value.trim();
@@ -3911,23 +3986,63 @@
                 return;
             }
             if (name) {
+                // Check for similarities
+                const similarItems = findSimilarWishlistItems(name);
+                if (similarItems.length > 0) {
+                    const list = document.getElementById('similarItemsList');
+                    list.innerHTML = '';
+                    similarItems.forEach(item => {
+                        const li = document.createElement('li');
+                        li.textContent = item.name;
+                        list.appendChild(li);
+                    });
+
+                    document.getElementById('similarNewItemName').textContent = name;
+
+                    pendingWishlistItemToAdd = {
+                        name,
+                        favorite: false,
+                        category: category.value,
+                        addedAt: new Date().toISOString()
+                    };
+
+                    document.getElementById('wishlistSimilarityModal').classList.remove('hidden');
+                    return;
+                }
+
                 const newItem = {
                     name,
                     favorite: false,
                     category: category.value,
                     addedAt: new Date().toISOString()
                 };
-                wishlistCollection.add(newItem).then((docRef) => {
-                    newItem.id = docRef.id;
-                    wishlistEditItems.push(newItem);
-                    renderWishlistEditList(wishlistEditItems);
-                    newWishlistItemInput.value = '';
-                    addWishlistItemBtn.disabled = true;
-                    addWishlistItemBtn.classList.add('opacity-50', 'cursor-not-allowed');
-                    document.querySelectorAll('input[name="wishlistCategory"]').forEach(r => r.checked = false);
-                });
+                addWishlistItemToFirebase(newItem);
             }
         };
+
+        // Handlers for the similarity modal buttons
+        const confirmAddSimilarBtn = document.getElementById('confirmAddSimilar');
+        if (confirmAddSimilarBtn) {
+            confirmAddSimilarBtn.onclick = function () {
+                if (pendingWishlistItemToAdd) {
+                    addWishlistItemToFirebase(pendingWishlistItemToAdd);
+                    pendingWishlistItemToAdd = null;
+                }
+                document.getElementById('wishlistSimilarityModal').classList.add('hidden');
+            };
+        }
+
+        const cancelAddSimilarBtn = document.getElementById('cancelAddSimilar');
+        if (cancelAddSimilarBtn) {
+            cancelAddSimilarBtn.onclick = function () {
+                pendingWishlistItemToAdd = null;
+                document.getElementById('wishlistSimilarityModal').classList.add('hidden');
+                newWishlistItemInput.value = '';
+                addWishlistItemBtn.disabled = true;
+                addWishlistItemBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                document.querySelectorAll('input[name="wishlistCategory"]').forEach(r => r.checked = false);
+            };
+        }
 
         // Correction du bouton Enregistrer de la modale d'édition de la wishlist
         saveWishlistBtn.onclick = function () {
