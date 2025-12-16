@@ -3073,6 +3073,9 @@
                     loadRaces();
                     raceModal.classList.add('hidden');
 
+                    // Check for wishlist duplicates (only for new races or if name changed)
+                    checkWishlistAfterAdd(name);
+
                     // Réinitialiser le formulaire
                     raceForm.reset();
                 })
@@ -3699,6 +3702,7 @@
                         }
                         totalSpan.textContent = `(${items.length})`;
                     }
+                    wishlistEditItems = items;
                     renderWishlistItems(items);
                     if (items.length > 0) {
                         emptyWishlist.classList.add('hidden');
@@ -5017,6 +5021,173 @@
             });
         }
 
+
+    </script>
+
+    <!-- Modale suggestion suppression wishlist -->
+    <div id="deleteWishlistSuggestionModal"
+        class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div class="mt-3 text-center">
+                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-yellow-100 mb-4">
+                    <svg class="h-6 w-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                </div>
+                <h3 class="text-lg leading-6 font-medium text-gray-900">Suggestion</h3>
+                <div class="mt-2 px-2 py-3">
+                    <p class="text-sm text-gray-500">
+                        Une course au nom similaire (<span id="suggestionWishlistName"
+                            class="font-bold text-gray-800"></span>) a été détectée dans votre wishlist.
+                        Souhaitez-vous la supprimer maintenant que vous avez ajouté cette course ?
+                    </p>
+                </div>
+                <div class="items-center px-4 py-3">
+                    <button id="btnConfirmSuggestion"
+                        class="px-4 py-2 bg-green-600 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-300 transition-colors">
+                        Oui, supprimer de la wishlist
+                    </button>
+                    <button id="btnCancelSuggestion"
+                        class="mt-3 px-4 py-2 bg-gray-200 text-gray-800 text-base font-medium rounded-md w-full shadow-sm hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-300 transition-colors">
+                        Non, conserver
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modale confirmation suppression wishlist -->
+    <div id="confirmDeleteWishlistModal"
+        class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div class="mt-3 text-center">
+                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
+                    <svg class="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                </div>
+                <h3 class="text-lg leading-6 font-medium text-gray-900" id="confirmDeleteWishlistTitle">Supprimer de la
+                    wishlist ?</h3>
+                <div class="mt-2 px-2 py-3">
+                    <p class="text-sm text-gray-500">
+                        Êtes-vous sûr de vouloir supprimer définitivement <span id="confirmDeleteWishlistName"
+                            class="font-bold text-gray-800"></span> de votre wishlist ? Cette action est irréversible.
+                    </p>
+                </div>
+                <div class="items-center px-4 py-3">
+                    <button id="btnConfirmDeleteWishlist"
+                        class="px-4 py-2 bg-red-600 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-300 transition-colors">
+                        Confirmer la suppression
+                    </button>
+                    <button id="btnCancelDeleteWishlist"
+                        class="mt-3 px-4 py-2 bg-gray-200 text-gray-800 text-base font-medium rounded-md w-full shadow-sm hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-300 transition-colors">
+                        Annuler
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Variables pour la suppression de wishlist
+        let pendingWishlistDeleteId = null;
+        let pendingWishlistDeleteName = null;
+
+        // Fonction pour vérifier la présence dans la wishlist après ajout
+        function checkWishlistAfterAdd(raceName) {
+            wishlistCollection.get().then((querySnapshot) => {
+                let items = [];
+                querySnapshot.forEach((doc) => { items.push({ id: doc.id, ...doc.data() }); });
+
+                const raceNameLower = raceName.toLowerCase().trim();
+                let foundItem = null;
+
+                // Logique de similarité qui cherche dans les deux sens pour plus de robustesse
+                for (const item of items) {
+                    const itemNameLower = item.name.toLowerCase().trim();
+                    let foundMatch = false;
+
+                    // Check exact match first
+                    if (itemNameLower === raceNameLower) {
+                        foundItem = item;
+                        break;
+                    }
+
+                    // Chercher une similarité à partir de 4 caractères
+                    for (let i = 0; i <= raceNameLower.length - 4 && !foundMatch; i++) {
+                        const fourChars = raceNameLower.substring(i, i + 4);
+                        if (itemNameLower.includes(fourChars)) {
+                            let maxMatch = fourChars;
+                            for (let j = i + 4; j <= raceNameLower.length; j++) {
+                                const longerSubstring = raceNameLower.substring(i, j);
+                                if (itemNameLower.includes(longerSubstring)) {
+                                    maxMatch = longerSubstring;
+                                } else {
+                                    break;
+                                }
+                            }
+                            if (maxMatch.length >= 4) {
+                                foundItem = item;
+                                foundMatch = true;
+                            }
+                        }
+                    }
+                    if (foundItem) break;
+                }
+
+                if (foundItem) {
+                    pendingWishlistDeleteId = foundItem.id;
+                    pendingWishlistDeleteName = foundItem.name;
+                    document.getElementById('suggestionWishlistName').textContent = foundItem.name;
+                    document.getElementById('deleteWishlistSuggestionModal').classList.remove('hidden');
+                }
+            });
+        }
+
+        // Handlers pour suggestion modal
+        document.getElementById('btnConfirmSuggestion').addEventListener('click', function () {
+            document.getElementById('deleteWishlistSuggestionModal').classList.add('hidden');
+            document.getElementById('confirmDeleteWishlistName').textContent = pendingWishlistDeleteName;
+            document.getElementById('confirmDeleteWishlistModal').classList.remove('hidden');
+        });
+
+        document.getElementById('btnCancelSuggestion').addEventListener('click', function () {
+            document.getElementById('deleteWishlistSuggestionModal').classList.add('hidden');
+            pendingWishlistDeleteId = null;
+            pendingWishlistDeleteName = null;
+        });
+
+        // Handlers pour confirmation modal
+        document.getElementById('btnConfirmDeleteWishlist').addEventListener('click', function () {
+            if (pendingWishlistDeleteId) {
+                wishlistCollection.doc(pendingWishlistDeleteId).delete().then(() => {
+                    // Update global items if exists
+                    if (typeof wishlistEditItems !== 'undefined') {
+                        wishlistEditItems = wishlistEditItems.filter(i => i.id !== pendingWishlistDeleteId);
+                    }
+                    // Hide modal
+                    document.getElementById('confirmDeleteWishlistModal').classList.add('hidden');
+
+                    // Show a toaster or valid feedback?
+                    // Reusing imageAlertModal as a simple alert if needed, or just silent success.
+                    // The user didn't ask for a success message, just the double confirmation.
+
+                    pendingWishlistDeleteId = null;
+                    pendingWishlistDeleteName = null;
+                }).catch(err => {
+                    console.error('Error deleting from wishlist', err);
+                    alert('Erreur lors de la suppression.');
+                });
+            }
+        });
+
+        document.getElementById('btnCancelDeleteWishlist').addEventListener('click', function () {
+            document.getElementById('confirmDeleteWishlistModal').classList.add('hidden');
+            pendingWishlistDeleteId = null;
+            pendingWishlistDeleteName = null;
+        });
     </script>
 </body>
 
