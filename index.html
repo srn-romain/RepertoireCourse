@@ -1572,8 +1572,8 @@
         });
 
         let failedAttempts = 0;
-        const MAX_ATTEMPTS = 3;
-        const BLOCK_DURATION_MS = 60 * 60 * 1000;
+        const MAX_ATTEMPTS = 5;
+        const BLOCK_DURATION_MS = 456 * 1000;
 
         function isBlocked() {
             const blockedUntil = sessionStorage.getItem('blockedUntil');
@@ -1721,18 +1721,8 @@
                 console.error('Erreur de connexion:', error);
                 failedAttempts++;
 
-                let errorMessage = 'Erreur de connexion. ';
-                if (error.code === 'auth/user-not-found') {
-                    errorMessage += 'Aucun compte trouvé avec cet email.';
-                } else if (error.code === 'auth/wrong-password') {
-                    errorMessage += 'Mot de passe incorrect.';
-                } else if (error.code === 'auth/invalid-email') {
-                    errorMessage += 'Email invalide.';
-                } else if (error.code === 'auth/user-disabled') {
-                    errorMessage += 'Ce compte a été désactivé.';
-                } else {
-                    errorMessage += 'Veuillez réessayer.';
-                }
+                const attemptsLeft = MAX_ATTEMPTS - failedAttempts;
+                let errorMessage = `Votre email ou votre mot de passe est incorrect. Il vous reste ${attemptsLeft} essaies.`;
 
                 passwordError.textContent = errorMessage;
                 passwordError.classList.remove('hidden');
@@ -1740,7 +1730,7 @@
                 if (failedAttempts >= MAX_ATTEMPTS) {
                     const blockedUntil = Date.now() + BLOCK_DURATION_MS;
                     sessionStorage.setItem('blockedUntil', blockedUntil.toString());
-                    passwordError.textContent = 'Trop de tentatives. Réessayez dans 1 heure.';
+                    passwordError.textContent = 'Le compte est bloqué pour un certain temps suite à un nombre d\'essaie infructeurux trop important.';
                     passwordInput.disabled = true;
                 }
             } finally {
@@ -1759,7 +1749,7 @@
 
         passwordModal.addEventListener('show', () => {
             if (isBlocked()) {
-                passwordError.textContent = 'Trop de tentatives. Réessayez plus tard.';
+                passwordError.textContent = 'le compte est bloqué pour un certain temps suite à un nombre d\'essaie infructeurux trop important.';
                 passwordError.classList.remove('hidden');
                 passwordInput.value = '';
                 passwordInput.disabled = true;
