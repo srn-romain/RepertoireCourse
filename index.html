@@ -1866,16 +1866,16 @@
                     <div class="flex items-center gap-2">
                         <span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full">
                             <svg xmlns='http://www.w3.org/2000/svg' class='h-4 w-4 text-green-500' fill='none' viewBox='0 0 24 24' stroke='currentColor'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M4 6h16M4 12h16M4 18h16'/></svg>
-                            ${race.distance} km
+                            ${race.distance || '0'} km
                         </span>
                         <span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full">
                             <svg xmlns='http://www.w3.org/2000/svg' class='h-4 w-4 text-green-500' fill='none' viewBox='0 0 24 24' stroke='currentColor'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M4 17l6-6 4 4 6-6'/></svg>
-                            +${race.elevation} m
+                            +${race.elevation || '0'} m
                         </span>
-                        <span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full hidden md:inline-flex">
+                        ${locationDisplay ? `<span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full hidden md:inline-flex">
                             <svg xmlns='http://www.w3.org/2000/svg' class='h-4 w-4 text-green-500' fill='none' viewBox='0 0 24 24' stroke='currentColor'><circle cx='12' cy='10' r='3'/><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z'/></svg>
                             ${locationDisplay}
-                        </span>
+                        </span>` : ''}
                     </div>
                 </div>
                 <div class="mt-4 flex space-x-2 items-center">
