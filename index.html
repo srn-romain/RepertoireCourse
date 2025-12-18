@@ -3870,11 +3870,29 @@
 
 
         // Fonction pour fermer une popup si on clique en dehors de son contenu
+        // Fonction pour fermer une popup si on clique en dehors de son contenu
         document.querySelectorAll('.modal').forEach(modal => {
+            let mouseDownTarget = null;
+
+            modal.addEventListener('mousedown', (event) => {
+                mouseDownTarget = event.target;
+            });
+
             modal.addEventListener('click', (event) => {
-                const modalContent = modal.querySelector('.modal-content');
-                if (!modalContent.contains(event.target)) {
-                    modal.classList.add('hidden');
+                // Skip wishlistModal as it has its own custom logic for unsaved changes
+                if (modal.id === 'wishlistModal') return;
+
+                let modalContent = modal.querySelector('.modal-content');
+                // Fallback: if no modal-content class, try to find the main content container (usually the first child div that is not a blur background)
+                if (!modalContent) {
+                    const children = Array.from(modal.children);
+                    modalContent = children.find(c => c.tagName === 'DIV' && !c.classList.contains('absolute') && !c.classList.contains('blur-bg') && !c.classList.contains('fixed'));
+                }
+
+                if (modalContent) {
+                    if (!modalContent.contains(event.target) && mouseDownTarget && !modalContent.contains(mouseDownTarget)) {
+                        modal.classList.add('hidden');
+                    }
                 }
             });
         });
@@ -4109,19 +4127,23 @@
 
 
         // Empêche la fermeture par click-outside si input non vide
+        // Empêche la fermeture par click-outside si input non vide
+        let wishlistMouseDownTarget = null;
+        wishlistModal.addEventListener('mousedown', (event) => {
+            wishlistMouseDownTarget = event.target;
+        });
+
         wishlistModal.addEventListener('click', function (event) {
-            if (!wishlistEditForm.classList.contains('hidden')) {
-                const modalContent = wishlistModal.querySelector('.modal-content');
-                if (!modalContent.contains(event.target)) {
+            const modalContent = wishlistModal.querySelector('.modal-content');
+            // Check if click (mouseup) AND mousedown were outside
+            if (modalContent && !modalContent.contains(event.target) && wishlistMouseDownTarget && !modalContent.contains(wishlistMouseDownTarget)) {
+                if (!wishlistEditForm.classList.contains('hidden')) {
                     if (!tryCloseWishlistEditModal(event)) {
-                        // Empêche la fermeture
+                        // Empêche la fermeture if unsaved changes
                         return;
                     }
                     wishlistModal.classList.add('hidden');
-                }
-            } else {
-                const modalContent = wishlistModal.querySelector('.modal-content');
-                if (!modalContent.contains(event.target)) {
+                } else {
                     wishlistModal.classList.add('hidden');
                 }
             }
@@ -4949,13 +4971,7 @@
         }
 
         // Fermer la modale en cliquant en dehors
-        if (statsModal) {
-            statsModal.addEventListener('click', function (e) {
-                if (e.target === statsModal) {
-                    statsModal.classList.add('hidden');
-                }
-            });
-        }
+        // (Géré par le gestionnaire générique des modales)
 
         // Gestion de la modale de paramètres des statistiques
         const statsSettingsModal = document.getElementById('statsSettingsModal');
@@ -5019,13 +5035,7 @@
         }
 
         // Fermer la modale de paramètres en cliquant en dehors
-        if (statsSettingsModal) {
-            statsSettingsModal.addEventListener('click', function (e) {
-                if (e.target === statsSettingsModal) {
-                    statsSettingsModal.classList.add('hidden');
-                }
-            });
-        }
+        // (Géré par le gestionnaire générique des modales)
 
 
     </script>
