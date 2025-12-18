@@ -1289,9 +1289,15 @@
                 }
             });
 
-            // Formater le temps total en heures et minutes
+            // Formater le temps total en heures, minutes et secondes
             const totalHours = Math.floor(totalSeconds / 3600);
             const remainingMinutes = Math.floor((totalSeconds % 3600) / 60);
+            const remainingSeconds = totalSeconds % 60;
+
+            const formattedHours = String(totalHours).padStart(2, '0');
+            const formattedMinutes = String(remainingMinutes).padStart(2, '0');
+            const formattedSeconds = String(remainingSeconds).padStart(2, '0');
+            const formattedTime = `${formattedHours}:${formattedMinutes}:${formattedSeconds}`;
 
             // Arrondir la distance à 1 décimale
             totalDistance = Math.round(totalDistance * 10) / 10;
@@ -1315,7 +1321,7 @@
             statsHtml += '<span class="font-semibold">' + totalRaces + '</span> course' + (totalRaces > 1 ? 's' : '') + ' | ' +
                 '<span class="font-semibold">' + totalDistance + '</span> km parcourus | ' +
                 '<span class="font-semibold">' + totalElevation + '</span> m de dénivelé | ' +
-                '<span class="' + timeClass + '">' + totalHours + 'h' + remainingMinutes + '</span> de course';
+                '<span class="' + timeClass + '">' + formattedTime + '</span> de course';
             // Affichage du prix (seulement pour les admins)
             if (isAdmin()) {
                 statsHtml += ' |\n                <span id="totalPriceStat" class="font-semibold group relative cursor-pointer">\n                    <span class="opacity-40">Prix total</span>\n                    <span class="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-2 py-1 bg-green-700 text-white text-xs rounded shadow-lg hidden group-hover:block z-50">\n                        ' + totalPrice.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' € dépensés\n                    </span>\n                </span>';
