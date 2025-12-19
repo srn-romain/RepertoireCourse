@@ -4415,7 +4415,8 @@
                     standardDeviation: Math.round(standardDeviation * 100) / 100,
                     median: Math.round(median * 100) / 100,
                     min: min,
-                    max: max
+                    max: max,
+                    sum: Math.round(distances.reduce((a, b) => a + b, 0) * 100) / 100
                 };
             }
 
@@ -4439,7 +4440,8 @@
                     standardDeviation: Math.round(standardDeviation * 100) / 100,
                     median: Math.round(median * 100) / 100,
                     min: min,
-                    max: max
+                    max: max,
+                    sum: Math.round(prices.reduce((a, b) => a + b, 0) * 100) / 100
                 };
             }
 
@@ -4463,7 +4465,8 @@
                     standardDeviation: Math.round(standardDeviation),
                     median: Math.round(median),
                     min: min,
-                    max: max
+                    max: max,
+                    sum: Math.round(elevations.reduce((a, b) => a + b, 0))
                 };
             }
 
@@ -4487,7 +4490,8 @@
                     standardDeviation: Math.round(standardDeviation),
                     median: Math.round(median),
                     min: min,
-                    max: max
+                    max: max,
+                    sum: Math.round(times.reduce((a, b) => a + b, 0))
                 };
             }
 
@@ -4592,6 +4596,7 @@
                 html += `<li><strong>Médiane :</strong> <span class="text-green-600 font-semibold">${ds.median} km</span></li>`;
                 html += `<li><strong>Étendue :</strong> <span class="text-green-600 font-semibold">${ds.range} km</span></li>`;
                 html += `<li><strong>Écart-type :</strong> <span class="text-green-600 font-semibold">${ds.standardDeviation.toFixed(2)} km</span></li>`;
+                html += `<li><strong>Total :</strong> <span class="text-green-600 font-semibold">${ds.sum} km</span></li>`;
                 html += `</ul></div>`;
             }
 
@@ -4604,6 +4609,7 @@
                 html += `<li><strong>Médiane :</strong> <span class="text-green-600 font-semibold">${ps.median} €</span></li>`;
                 html += `<li><strong>Étendue :</strong> <span class="text-green-600 font-semibold">${ps.range} €</span></li>`;
                 html += `<li><strong>Écart-type :</strong> <span class="text-green-600 font-semibold">${ps.standardDeviation.toFixed(2)} €</span></li>`;
+                html += `<li><strong>Total :</strong> <span class="text-green-600 font-semibold">${ps.sum} €</span></li>`;
                 html += `</ul></div>`;
             }
 
@@ -4616,6 +4622,7 @@
                 html += `<li><strong>Médiane :</strong> <span class="text-green-600 font-semibold">${es.median} m</span></li>`;
                 html += `<li><strong>Étendue :</strong> <span class="text-green-600 font-semibold">${es.range} m</span></li>`;
                 html += `<li><strong>Écart-type :</strong> <span class="text-green-600 font-semibold">${es.standardDeviation} m</span></li>`;
+                html += `<li><strong>Total :</strong> <span class="text-green-600 font-semibold">${es.sum} m</span></li>`;
                 html += `</ul></div>`;
             }
 
@@ -4628,6 +4635,7 @@
                 html += `<li><strong>Médiane :</strong> <span class="text-green-600 font-semibold">${secondsToTime(ts.median)}</span></li>`;
                 html += `<li><strong>Étendue :</strong> <span class="text-green-600 font-semibold">${secondsToTime(ts.range)}</span></li>`;
                 html += `<li><strong>Écart-type :</strong> <span class="text-green-600 font-semibold">${secondsToTime(ts.standardDeviation)}</span></li>`;
+                html += `<li><strong>Total :</strong> <span class="text-green-600 font-semibold">${secondsToTime(ts.sum)}</span></li>`;
                 html += `</ul></div>`;
             }
 
