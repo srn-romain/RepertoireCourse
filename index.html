@@ -4594,6 +4594,7 @@
 
             return {
                 totalRaces: pastRaces.length,
+                validRaces: pastRaces,
                 longestDistanceRace,
                 highestPriceRace,
                 highestElevationRace,
@@ -4609,6 +4610,23 @@
                 racesWithPricePerKm,
                 racesWithPricePerKmWithElevation
             };
+        }
+
+        // Fonction pour formater le nom de la course (gestion des doublons)
+        function getUniqueRaceName(race, contextRaces, isChart = false) {
+            if (!race) return '';
+            const duplicates = contextRaces.filter(r => r.name.trim().toLowerCase() === race.name.trim().toLowerCase());
+            if (duplicates.length > 1 && race.date) {
+                const year = new Date(race.date).getFullYear();
+                if (isChart === 'text') {
+                    return `${race.name} (${year})`;
+                } else if (isChart) {
+                    return `${race.name} <span class="text-xs text-gray-500 font-normal ml-1">(${year})</span>`;
+                } else {
+                    return `${race.name} <span class="text-gray-500 font-normal">(${year})</span>`;
+                }
+            }
+            return race.name;
         }
 
         // Fonction pour afficher les statistiques
@@ -4627,19 +4645,19 @@
             html += `<li><strong>Nombre total de courses :</strong> ${stats.totalRaces}</li>`;
 
             if (stats.longestDistanceRace) {
-                html += `<li><strong>Course avec la plus longue distance :</strong> ${stats.longestDistanceRace.name} (${stats.longestDistanceRace.distance} km)</li>`;
+                html += `<li><strong>Course avec la plus longue distance :</strong> ${getUniqueRaceName(stats.longestDistanceRace, stats.validRaces)} (${stats.longestDistanceRace.distance} km)</li>`;
             }
 
             if (stats.highestPriceRace) {
-                html += `<li><strong>Prix le plus haut :</strong> ${stats.highestPriceRace.name} (${stats.highestPriceRace.price} €)</li>`;
+                html += `<li><strong>Prix le plus haut :</strong> ${getUniqueRaceName(stats.highestPriceRace, stats.validRaces)} (${stats.highestPriceRace.price} €)</li>`;
             }
 
             if (stats.highestElevationRace) {
-                html += `<li><strong>Plus de dénivelé :</strong> ${stats.highestElevationRace.name} (${stats.highestElevationRace.elevation} m D+)</li>`;
+                html += `<li><strong>Plus de dénivelé :</strong> ${getUniqueRaceName(stats.highestElevationRace, stats.validRaces)} (${stats.highestElevationRace.elevation} m D+)</li>`;
             }
 
             if (stats.longestTimeRace) {
-                html += `<li><strong>Temps max :</strong> ${stats.longestTimeRace.name} (${stats.longestTimeRace.time})</li>`;
+                html += `<li><strong>Temps max :</strong> ${getUniqueRaceName(stats.longestTimeRace, stats.validRaces)} (${stats.longestTimeRace.time})</li>`;
             }
 
             html += `</ul></div>`;
@@ -5041,7 +5059,7 @@
 
                 chartItem.innerHTML = `
                 <span class="text-xs text-green-600 w-6 text-center flex-shrink-0">${rankDisplay}</span>
-                <span class="text-sm text-green-800 font-medium w-32 truncate" title="${race.name}">${race.name}</span>
+                <span class="text-sm text-green-800 font-medium w-32 truncate" title="${getUniqueRaceName(race, stats.validRaces, 'text')}">${getUniqueRaceName(race, stats.validRaces, true)}</span>
                 <div class="flex-1 bg-green-200 rounded-full h-6 relative flex items-center" style="min-width: 0;">
                     <div class="bg-green-600 h-full rounded-full transition-all duration-300 ${showValueOutside ? '' : 'flex items-center justify-end pr-2'}" style="width: ${percentage}%; min-width: ${showValueOutside ? '0' : 'fit-content'};">
                         ${showValueOutside ? '' : `<span class="text-xs text-white whitespace-nowrap">${formattedValue}</span>`}
