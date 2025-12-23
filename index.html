@@ -4553,6 +4553,45 @@
                 .filter(r => r.value > 0)
                 .sort((a, b) => b.value - a.value);
 
+            // Préparer les données pour le graphique Prix au Km
+            const racesWithPricePerKm = pastRaces
+                .map(race => {
+                    const price = parseFloat(race.price) || 0;
+                    const distance = parseFloat(race.distance) || 0;
+                    return {
+                        race: race,
+                        value: (price > 0 && distance > 0) ? (price / distance) : 0
+                    };
+                })
+                .filter(r => r.value > 0)
+                .sort((a, b) => b.value - a.value);
+
+            // Préparer les données pour le graphique Prix au Km (ft. dénivelé)
+            const racesWithPricePerKmWithElevation = pastRaces
+                .map(race => {
+                    // Doit avoir une donnée de dénivelé renseignée
+                    if (race.elevation === undefined || race.elevation === null || race.elevation === '') {
+                        return { race: race, value: 0 };
+                    }
+                    const price = parseFloat(race.price) || 0;
+                    const distance = parseFloat(race.distance) || 0;
+                    const elevation = parseFloat(race.elevation) || 0;
+
+                    // On exclut les courses avec 0 de dénivelé pour ce graphique spécifique
+                    if (elevation <= 0) {
+                        return { race: race, value: 0 };
+                    }
+
+                    // 100m D+ = 1km flat
+                    const equivalentDistance = distance + (elevation / 100);
+                    return {
+                        race: race,
+                        value: (price > 0 && distance > 0) ? (price / equivalentDistance) : 0
+                    };
+                })
+                .filter(r => r.value > 0)
+                .sort((a, b) => b.value - a.value);
+
             return {
                 totalRaces: pastRaces.length,
                 longestDistanceRace,
@@ -4566,7 +4605,9 @@
                 racesWithDistance,
                 racesWithPrice,
                 racesWithTime,
-                racesWithElevation
+                racesWithElevation,
+                racesWithPricePerKm,
+                racesWithPricePerKmWithElevation
             };
         }
 
@@ -4664,7 +4705,8 @@
             const hasChartData = (stats.racesWithDistance && stats.racesWithDistance.length > 0) ||
                 (stats.racesWithPrice && stats.racesWithPrice.length > 0) ||
                 (stats.racesWithTime && stats.racesWithTime.length > 0) ||
-                (stats.racesWithElevation && stats.racesWithElevation.length > 0);
+                (stats.racesWithElevation && stats.racesWithElevation.length > 0) ||
+                (stats.racesWithPricePerKm && stats.racesWithPricePerKm.length > 0);
 
             if (hasChartData) {
                 html += `<div class="bg-green-50 p-4 rounded-lg mb-6">`;
@@ -4681,6 +4723,12 @@
                 }
                 if (stats.racesWithElevation && stats.racesWithElevation.length > 0) {
                     html += `<option value="elevation">des dénivelés</option>`;
+                }
+                if (stats.racesWithPricePerKm && stats.racesWithPricePerKm.length > 0) {
+                    html += `<option value="pricePerKm">du prix au km</option>`;
+                }
+                if (stats.racesWithPricePerKmWithElevation && stats.racesWithPricePerKmWithElevation.length > 0) {
+                    html += `<option value="pricePerKmWithElevation">du prix au km (ft. dénivelé)</option>`;
                 }
                 html += `</select>`;
                 html += `</h4>`;
@@ -4774,6 +4822,18 @@
                     sortedRaces = [...stats.racesWithElevation];
                     typeLabel = 'dénivelés';
                     unit = 'm';
+                    break;
+                case 'pricePerKm':
+                    if (!stats.racesWithPricePerKm || stats.racesWithPricePerKm.length === 0) return;
+                    sortedRaces = [...stats.racesWithPricePerKm];
+                    typeLabel = 'prix au km';
+                    unit = '€/km';
+                    break;
+                case 'pricePerKmWithElevation':
+                    if (!stats.racesWithPricePerKmWithElevation || stats.racesWithPricePerKmWithElevation.length === 0) return;
+                    sortedRaces = [...stats.racesWithPricePerKmWithElevation];
+                    typeLabel = 'prix au km (ft. dénivelé)';
+                    unit = '€/km';
                     break;
                 default:
                     return;
@@ -4948,6 +5008,9 @@
                         return secondsToTime(value);
                     case 'elevation':
                         return `${value} m`;
+                    case 'pricePerKm':
+                    case 'pricePerKmWithElevation':
+                        return `${value.toFixed(3)} €/km`;
                     default:
                         return value;
                 }
