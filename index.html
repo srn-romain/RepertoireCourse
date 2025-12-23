@@ -2164,13 +2164,23 @@
             const isUpcomingForSpeed = raceDateOnly > todayForTime;
             const hasCompletedTime = timeStr && timeStr !== '00:00:00' && timeStr.trim() !== '';
 
-            // Ne pas afficher les stats si : course à venir OU (c'est aujourd'hui ET temps non complété)
-            if (isUpcomingForSpeed || (isTodayForSpeed && !hasCompletedTime)) {
-                // Course à venir ou en cours sans temps complété : ne pas afficher les statistiques
-                document.getElementById('averageSpeedInfo').textContent = '';
-            } else if (isNaN(distance) || !timeStr) {
-                document.getElementById('averageSpeedInfo').textContent = '';
-            } else {
+            // Variable pour accumuler le HTML des statistiques
+            let statsHtml = '';
+
+            // 1. Calcul du ratio prix/km (Indépendant du temps, s'affiche dès que prix et distance sont dispos)
+            if (!isInvite() && race.price && !isNaN(parseFloat(race.price)) && !isNaN(distance) && distance > 0) {
+                const price = parseFloat(race.price);
+                const pricePerKm = price / distance;
+                statsHtml += `Prix au km : ${pricePerKm.toFixed(2)} €/km<br>`;
+            }
+
+            // 2. Calcul Vitesse moyenne (Dépend du temps complet et du statut de la course)
+            const shouldShowSpeed = !isUpcomingForSpeed &&
+                !(isTodayForSpeed && !hasCompletedTime) &&
+                !isNaN(distance) &&
+                hasCompletedTime;
+
+            if (shouldShowSpeed) {
                 const parts = timeStr.split(':');
                 let hours = 0;
                 if (parts.length === 3) {
@@ -2180,15 +2190,15 @@
                 } else {
                     hours = parseInt(parts[0]);
                 }
-                if (hours === 0) {
-                    document.getElementById('averageSpeedInfo').textContent = '';
-                } else {
+
+                if (hours > 0) {
                     const speed = distance / hours;
                     const timePerKm = 60 / speed;
-                    document.getElementById('averageSpeedInfo').innerHTML =
-                        `Vitesse moyenne : ${speed.toFixed(2)} km/h<br>Temps moyen au km : ${timePerKm.toFixed(2)} min/km`;
+                    statsHtml += `Vitesse moyenne : ${speed.toFixed(2)} km/h<br>Temps moyen au km : ${timePerKm.toFixed(2)} min/km`;
                 }
             }
+
+            document.getElementById('averageSpeedInfo').innerHTML = statsHtml;
 
 
             // Gérer l'affichage des notes avec surlignage si correspond
