@@ -4963,7 +4963,9 @@
             const showLessBtn = document.getElementById('showLessBtn');
             if (showLessBtn) {
                 const prevLimit = parseInt(showLessBtn.dataset.previousLimit);
-                showLessBtn.addEventListener('click', function () {
+                showLessBtn.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
                     updateChart(chartType, sortOrder, prevLimit);
                 });
             }
@@ -4971,7 +4973,9 @@
             const showMoreBtn = document.getElementById('showMoreBtn');
             if (showMoreBtn) {
                 const nextLimitValue = parseInt(showMoreBtn.dataset.nextLimit);
-                showMoreBtn.addEventListener('click', function () {
+                showMoreBtn.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
                     updateChart(chartType, sortOrder, nextLimitValue);
                 });
             }
