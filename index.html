@@ -2172,6 +2172,14 @@
                 const price = parseFloat(race.price);
                 const pricePerKm = price / distance;
                 statsHtml += `Prix au km : ${pricePerKm.toFixed(2)} €/km<br>`;
+
+                // Prix au km avec dénivelé (100m D+ = 1km plat)
+                if (race.elevation && !isNaN(parseFloat(race.elevation))) {
+                    const elevation = parseFloat(race.elevation);
+                    const equivalentDistance = distance + (elevation / 100);
+                    const pricePerKmWithElevation = price / equivalentDistance;
+                    statsHtml += `Prix au km (ft. dénivelé) : ${pricePerKmWithElevation.toFixed(3)} €/km<br>`;
+                }
             }
 
             // 2. Calcul Vitesse moyenne (Dépend du temps complet et du statut de la course)
