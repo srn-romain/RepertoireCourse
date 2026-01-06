@@ -2753,7 +2753,16 @@
                 const gpxLinkText = fieldMatchesSearch(race.gpxUrl, searchQuery) || fieldMatchesSearch('gpx', searchQuery)
                     ? highlightSearchMatch(gpxText, searchQuery)
                     : gpxText;
-                gpxLink.innerHTML = `<a href="${race.gpxUrl}" target="_blank" rel="noopener" class="mb-2 text-green-700 font-semibold underline hover:text-yellow-600 hover:underline cursor-pointer">${gpxLinkText}</a>`;
+
+                // Si le rectangle de stats est affiché (statsList >= 2), on affiche un bouton pleine largeur
+                if (statsList.length >= 2) {
+                    gpxLink.className = 'mt-2 w-full mb-4';
+                    gpxLink.innerHTML = `<a href="${race.gpxUrl}" target="_blank" rel="noopener" class="block w-full text-center py-2 px-4 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-semibold no-underline shadow-sm">${gpxLinkText}</a>`;
+                } else {
+                    // Sinon affichage standard
+                    gpxLink.className = 'mt-2 text-left mb-4';
+                    gpxLink.innerHTML = `<a href="${race.gpxUrl}" target="_blank" rel="noopener" class="mb-2 text-green-700 font-semibold underline hover:text-yellow-600 hover:underline cursor-pointer">${gpxLinkText}</a>`;
+                }
                 gpxLink.classList.remove('hidden');
             } else {
                 gpxLink.classList.add('hidden');
