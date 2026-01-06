@@ -2805,11 +2805,11 @@
                             if (info) {
                                 // Affichage simple: icône + nom
                                 const badgeEl = document.createElement('div');
-                                badgeEl.className = 'flex items-center gap-2 bg-purple-100 text-purple-800 px-3 py-2 rounded-lg cursor-pointer hover:bg-purple-200 transition-colors detail-badge-item';
+                                badgeEl.className = 'flex items-center gap-1 bg-purple-100 text-purple-800 px-2 py-1 rounded-lg cursor-pointer hover:bg-purple-200 transition-colors detail-badge-item text-xs';
                                 badgeEl.setAttribute('data-badge-key', key);
                                 badgeEl.innerHTML = `
-                                    <i class="fas ${info.icon} text-lg"></i>
-                                    <span class="font-semibold text-sm">${info.name}</span>
+                                    <i class="fas ${info.icon} text-sm"></i>
+                                    <span class="font-medium">${info.name}</span>
                                 `;
                                 detailsBadgesContainer.appendChild(badgeEl);
                             }
