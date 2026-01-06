@@ -3172,8 +3172,9 @@
             // Générer le nom du fichier
             const fileName = `${race.name.replace(/[^a-z0-9]/gi, '_')}_${raceDate.toISOString().split('T')[0]}.pdf`;
 
-            // Sauvegarder le PDF
-            doc.save(fileName);
+            // Sauvegarder le PDF (ou ouvrir dans un nouvel onglet)
+            // doc.save(fileName); 
+            window.open(doc.output('bloburl'), '_blank');
         }
 
         // Fonction pour afficher le modal de mot de passe avec différents contextes
