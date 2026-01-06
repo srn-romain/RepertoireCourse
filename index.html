@@ -2416,21 +2416,21 @@
             const isUpcomingForSpeed = raceDateOnly > todayForTime;
             const hasCompletedTime = timeStr && timeStr !== '00:00:00' && timeStr.trim() !== '';
 
-            // Variable pour accumuler le HTML des statistiques
-            let statsHtml = '';
+            // Variable pour accumuler les statistiques sous forme d'objets
+            let statsList = [];
 
             // 1. Calcul du ratio prix/km (Indépendant du temps, s'affiche dès que prix et distance sont dispos)
             if (!isInvite() && race.price && !isNaN(parseFloat(race.price)) && !isNaN(distance) && distance > 0) {
                 const price = parseFloat(race.price);
                 const pricePerKm = price / distance;
-                statsHtml += `Prix au km : ${pricePerKm.toFixed(2)} €/km<br>`;
+                statsList.push({ label: 'Prix au km', value: `${pricePerKm.toFixed(2)} €/km` });
 
                 // Prix au km avec dénivelé (100m D+ = 1km plat)
                 if (race.elevation && !isNaN(parseFloat(race.elevation))) {
                     const elevation = parseFloat(race.elevation);
                     const equivalentDistance = distance + (elevation / 100);
                     const pricePerKmWithElevation = price / equivalentDistance;
-                    statsHtml += `Prix au km (ft. dénivelé) : ${pricePerKmWithElevation.toFixed(3)} €/km<br>`;
+                    statsList.push({ label: 'Prix au km (ft. déniv.)', value: `${pricePerKmWithElevation.toFixed(3)} €/km` });
                 }
             }
 
@@ -2454,11 +2454,36 @@
                 if (hours > 0) {
                     const speed = distance / hours;
                     const timePerKm = 60 / speed;
-                    statsHtml += `Vitesse moyenne : ${speed.toFixed(2)} km/h<br>Temps moyen au km : ${timePerKm.toFixed(2)} min/km`;
+                    statsList.push({ label: 'Vitesse moyenne', value: `${speed.toFixed(2)} km/h` });
+                    statsList.push({ label: 'Moyenne au km', value: `${timePerKm.toFixed(2)} min/km` });
                 }
             }
 
-            document.getElementById('averageSpeedInfo').innerHTML = statsHtml;
+            // Rendu final
+            const avgSpeedContainer = document.getElementById('averageSpeedInfo');
+            if (statsList.length >= 2) {
+                // Affichage "Rectangle centré"
+                let html = `<div class="bg-green-50 p-3 rounded-lg w-full border border-green-100 mb-4 shadow-sm">
+                    <h4 class="font-bold text-green-800 text-center mb-3 text-sm border-b border-green-200 pb-2">Statistiques calculées</h4>
+                    <div class="flex flex-col gap-2 text-sm items-center">`;
+
+                statsList.forEach(item => {
+                    html += `<div class="flex items-center justify-between w-full max-w-sm px-4">
+                        <span class="text-green-600">${item.label} :</span>
+                        <span class="font-semibold text-green-800 text-right">${item.value}</span>
+                    </div>`;
+                });
+
+                html += `</div></div>`;
+                avgSpeedContainer.innerHTML = html;
+                avgSpeedContainer.className = "mb-2 w-full"; // S'assurer que le conteneur prend la largeur
+            } else if (statsList.length > 0) {
+                // Ancien affichage simple
+                avgSpeedContainer.className = "mb-2 text-green-700 font-semibold";
+                avgSpeedContainer.innerHTML = statsList.map(item => `${item.label} : ${item.value}`).join('<br>');
+            } else {
+                avgSpeedContainer.innerHTML = '';
+            }
 
 
             // Gérer l'affichage des notes avec surlignage si correspond
@@ -2688,7 +2713,7 @@
                 detailsModal.querySelector('.modal-content').appendChild(detailsWebsite);
             }
             if (race.website) {
-                let websiteText = 'Lien vers le site de la course';
+                let websiteText = 'Voir le site de la course';
 
                 // Si terrain renseigné, adapter le texte du lien
                 if (race.terrain) {
