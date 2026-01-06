@@ -419,11 +419,10 @@
                     </div>
                     <div class="mb-4">
                         <label class="block text-green-700 mb-2">Accompagnants</label>
-                        <div class="flex gap-2 mb-2 items-center">
+                        <div class="flex gap-2 mb-2">
                             <input type="text" id="companionNameInput" placeholder="Nom de l'accompagnant"
                                 class="flex-1 px-3 py-2 border border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
 
-                            <!-- Toggle Types -->
                             <!-- Toggle Types -->
                             <div class="flex bg-gray-100 rounded-lg border border-gray-200 overflow-hidden">
                                 <button type="button" id="typeRunnerBtn"
@@ -441,7 +440,7 @@
 
                             <button type="button" id="addCompanionBtn"
                                 class="bg-green-600 text-white px-3 py-2 rounded-lg hover:bg-green-700 transition">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
                                     stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M12 4v16m8-8H4" />
@@ -6053,26 +6052,7 @@
             });
         }
 
-        // Fonction pour afficher l'alerte générique
-        function showImageAlert(message) {
-            const modal = document.getElementById('imageAlertModal');
-            const msg = document.getElementById('imageAlertMessage');
-            if (modal && msg) {
-                msg.textContent = message;
-                modal.classList.remove('hidden');
-            } else {
-                // Fallback safe
-                alert(message);
-            }
-        }
 
-        const closeImageAlertModal = document.getElementById('closeImageAlertModal');
-        if (closeImageAlertModal) {
-            closeImageAlertModal.addEventListener('click', () => {
-                const modal = document.getElementById('imageAlertModal');
-                if (modal) modal.classList.add('hidden');
-            });
-        }
 
         // SETUP FINAL des écouteurs
         const setupBadges = () => {
@@ -6167,6 +6147,29 @@
             </div>
             <div id="badgesContent" class="p-6 overflow-y-auto bg-gray-50 flex-grow">
                 <!-- Le contenu sera généré dynamiquement -->
+            </div>
+        </div>
+    </div>
+    <!-- Generic Alert Modal -->
+    <div id="imageAlertModal" class="fixed inset-0 flex items-center justify-center z-[100] hidden modal">
+        <div class="absolute inset-0 bg-black bg-opacity-50 transition-opacity"></div>
+        <div
+            class="relative bg-white rounded-lg shadow-xl max-w-sm w-full mx-4 overflow-hidden transform transition-all scale-100">
+            <div class="p-6 text-center">
+                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
+                    <svg class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                </div>
+                <h3 class="text-lg leading-6 font-medium text-gray-900 mb-2">Attention</h3>
+                <p id="imageAlertMessage" class="text-sm text-gray-500">Une erreur est survenue.</p>
+                <div class="mt-5">
+                    <button type="button" id="closeImageAlertModal"
+                        class="inline-flex justify-center w-full rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:text-sm">
+                        OK
+                    </button>
+                </div>
             </div>
         </div>
     </div>
