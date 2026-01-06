@@ -447,7 +447,7 @@
                                 </svg>
                             </button>
                         </div>
-                        <p id="companionError" class="text-red-500 text-xs mt-1 font-semibold hidden"></p>
+                        <p id="companionTypeError" class="text-red-500 text-xs mt-1 hidden"></p>
                         <ul id="companionsList" class="space-y-2">
                             <!-- Liste des accompagnants ajoutés -->
                         </ul>
@@ -504,6 +504,7 @@
                             </div>
                         </div>
                     </div>
+                    <p id="companionError" class="text-red-500 text-xs mb-2 text-right hidden"></p>
                     <div class="flex justify-end space-x-3">
                         <button type="button" id="cancelBtn"
                             class="px-4 py-2 text-gray-600 hover:text-gray-800 transition">
@@ -3799,16 +3800,16 @@
         }
 
         function addCompanion() {
-            const companionError = document.getElementById('companionError');
-            if (companionError) companionError.classList.add('hidden');
+            const companionTypeError = document.getElementById('companionTypeError');
+            if (companionTypeError) companionTypeError.classList.add('hidden');
 
             const name = companionNameInput.value.trim();
             if (!name) return;
 
             if (!selectedCompanionType) {
-                if (companionError) {
-                    companionError.textContent = "Veuillez sélectionner un type d'accompagnant.";
-                    companionError.classList.remove('hidden');
+                if (companionTypeError) {
+                    companionTypeError.textContent = "Veuillez sélectionner un type d'accompagnant.";
+                    companionTypeError.classList.remove('hidden');
                 }
                 return;
             }
