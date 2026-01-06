@@ -170,10 +170,10 @@
                 <h1 class="text-3xl md:text-4xl font-bold text-green-800">📊 Carnet de courses</h1>
                 <p id="statsText" class="text-green-600">Chargement des statistiques...</p>
             </div>
-            <div class="mt-4 md:mt-0">
-                <div class="flex space-x-3">
+            <div class="mt-4 md:mt-0 w-full md:w-auto">
+                <div class="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-3 w-full md:w-auto">
                     <button id="wishlistBtn"
-                        class="flex items-center bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-full transition">
+                        class="flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-full transition w-full md:w-auto">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20"
                             fill="currentColor">
                             <path fill-rule="evenodd"
@@ -183,12 +183,15 @@
                         Wishlist
                     </button>
                     <button id="statsBtn"
-                        class="hidden bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-full flex items-center justify-center transition-colors w-full sm:w-auto whitespace-nowrap">
-                        <i class="fas fa-chart-bar mr-2"></i> <span class="hidden sm:inline">Statistiques</span><span
-                            class="sm:hidden">Stats</span>
+                        class="hidden bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-full flex items-center justify-center transition-colors w-full md:w-auto whitespace-nowrap">
+                        <i class="fas fa-chart-bar mr-2"></i> <span>Statistiques</span>
+                    </button>
+                    <button id="badgesBtn"
+                        class="hidden bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-full flex items-center justify-center transition-colors w-full md:w-auto whitespace-nowrap">
+                        <i class="fas fa-award mr-2"></i> <span>Badges</span>
                     </button>
                     <button id="addRaceBtn"
-                        class="flex items-center bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-full transition">
+                        class="flex items-center justify-center bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-full transition w-full md:w-auto">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20"
                             fill="currentColor">
                             <path fill-rule="evenodd"
@@ -333,6 +336,13 @@
                         <p id="raceNameError" class="text-red-500 text-sm mt-1 hidden">Le nom de la course est
                             obligatoire.</p>
                     </div>
+                    <div class="mb-4">
+                        <label class="flex items-center cursor-pointer">
+                            <input type="checkbox" id="raceFavorite"
+                                class="w-5 h-5 text-green-600 border-green-300 rounded focus:ring-green-500 focus:ring-2">
+                            <span class="ml-2 text-green-700">Marquer comme favori</span>
+                        </label>
+                    </div>
                     <div class="mb-4 flex flex-col sm:flex-row gap-4">
                         <div class="flex-1">
                             <label for="raceDate" class="block text-green-700 mb-2">Date <span
@@ -395,13 +405,6 @@
                         <label for="raceNotes" class="block text-green-700 mb-2">Notes</label>
                         <textarea id="raceNotes" rows="3" placeholder="Note course"
                             class="w-full px-3 py-2 border border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"></textarea>
-                    </div>
-                    <div class="mb-4">
-                        <label class="flex items-center cursor-pointer">
-                            <input type="checkbox" id="raceFavorite"
-                                class="w-5 h-5 text-green-600 border-green-300 rounded focus:ring-green-500 focus:ring-2">
-                            <span class="ml-2 text-green-700">Marquer comme favori</span>
-                        </label>
                     </div>
                     <div class="mb-4">
                         <label for="racePhoto" class="block text-green-700 mb-2">Photo</label>
@@ -582,6 +585,7 @@
                 <div id="detailsParcoursContainer" class="mb-4 hidden">
                     <img id="detailsParcours" class="w-full h-auto rounded-lg shadow-md" alt="Parcours de la course">
                 </div>
+                <div id="detailsBadgesContainer" class="mb-4 hidden flex flex-wrap justify-center gap-3"></div>
                 <div id="detailsActionsContainer" class="flex gap-3 mt-6 pt-4 border-t border-gray-200">
                     <button id="editFromDetailsBtn"
                         class="flex-1 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors flex items-center justify-center gap-2">
@@ -1534,12 +1538,13 @@
         // Fonction pour afficher/masquer le bouton statistiques
         function updateStatsButtonVisibility() {
             const statsBtn = document.getElementById('statsBtn');
-            if (statsBtn) {
-                if (BackendAPI.isAuthenticated()) {
-                    statsBtn.classList.remove('hidden');
-                } else {
-                    statsBtn.classList.add('hidden');
-                }
+            const badgesBtn = document.getElementById('badgesBtn');
+            if (BackendAPI.isAuthenticated()) {
+                if (statsBtn) statsBtn.classList.remove('hidden');
+                if (badgesBtn) badgesBtn.classList.remove('hidden');
+            } else {
+                if (statsBtn) statsBtn.classList.add('hidden');
+                if (badgesBtn) badgesBtn.classList.add('hidden');
             }
         }
 
@@ -1795,8 +1800,208 @@
             }
         });
 
+        // ===================================================================
+        // GESTION DES BADGES
+        // ===================================================================
+
+        const badgesModal = document.getElementById('badgesModal');
+        const badgesBtn = document.getElementById('badgesBtn');
+        const closeBadgesModal = document.getElementById('closeBadgesModal');
+        const badgesContent = document.getElementById('badgesContent');
+        window.raceBadges = {};
+
+        // Fonction pour obtenir les informations des badges
+        function getBadgeInfo(badgeKey) {
+            const badgesInfo = {
+                hasRPMile: {
+                    name: "RP temps",
+                    icon: "fa-tachometer-alt",
+                    description: "Record personnel : la course avec le temps le plus rapide au km"
+                },
+                hasMostExpensive: {
+                    name: "Course la plus cher",
+                    icon: "fa-sack-dollar",
+                    description: "La course avec le prix d'inscription le plus élevé"
+                },
+                hasMostElevation: {
+                    name: "Course avec le plus de denivelé",
+                    icon: "fa-mountain",
+                    description: "La course avec le plus grand dénivelé positif"
+                },
+                hasLongestDistance: {
+                    name: "Course la plus longue",
+                    icon: "fa-route",
+                    description: "La course avec la plus longue distance"
+                }
+            };
+            return badgesInfo[badgeKey] || null;
+        }
+
+        // Fonction pour calculer les badges pour toutes les courses
+        function calculateRaceBadges(racesList) {
+            const badges = {};
+            if (!racesList || racesList.length === 0) return badges;
+
+            // Initialiser l'objet badges pour chaque course
+            racesList.forEach(race => {
+                badges[race.id] = {};
+            });
+
+            // 1. Course la plus longue (Distance)
+            let maxDistance = 0;
+            racesList.forEach(race => {
+                const dist = parseFloat(race.distance);
+                if (!isNaN(dist) && dist > maxDistance) maxDistance = dist;
+            });
+            if (maxDistance > 0) {
+                racesList.forEach(race => {
+                    if (parseFloat(race.distance) === maxDistance) {
+                        badges[race.id].hasLongestDistance = true;
+                    }
+                });
+            }
+
+            // 2. Course avec le plus de dénivelé
+            let maxElevation = 0;
+            racesList.forEach(race => {
+                const elev = parseFloat(race.elevation);
+                if (!isNaN(elev) && elev > maxElevation) maxElevation = elev;
+            });
+            if (maxElevation > 0) {
+                racesList.forEach(race => {
+                    if (parseFloat(race.elevation) === maxElevation) {
+                        badges[race.id].hasMostElevation = true;
+                    }
+                });
+            }
+
+            // 3. Course la plus cher
+            let maxPrice = 0;
+            racesList.forEach(race => {
+                const price = parseFloat(race.price);
+                if (!isNaN(price) && price > maxPrice) maxPrice = price;
+            });
+            if (maxPrice > 0) {
+                racesList.forEach(race => {
+                    if (parseFloat(race.price) === maxPrice) {
+                        badges[race.id].hasMostExpensive = true;
+                    }
+                });
+            }
+
+            // 4. RP temps (Temps / Distance le plus faible) => Vitesse la plus élevée
+            let minSecondsPerKm = Infinity;
+
+            const parseTimeToSeconds = (timeStr) => {
+                if (!timeStr || timeStr === '00:00:00') return null;
+                const parts = timeStr.split(':');
+                if (parts.length !== 3) return null;
+                return parseInt(parts[0]) * 3600 + parseInt(parts[1]) * 60 + parseInt(parts[2]);
+            };
+
+            racesList.forEach(race => {
+                const dist = parseFloat(race.distance);
+                const seconds = parseTimeToSeconds(race.time);
+                if (!isNaN(dist) && dist > 0 && seconds !== null && seconds > 0) {
+                    const secondsPerKm = seconds / dist;
+                    if (secondsPerKm < minSecondsPerKm) {
+                        minSecondsPerKm = secondsPerKm;
+                    }
+                }
+            });
+
+            if (minSecondsPerKm !== Infinity) {
+                racesList.forEach(race => {
+                    const dist = parseFloat(race.distance);
+                    const seconds = parseTimeToSeconds(race.time);
+                    if (!isNaN(dist) && dist > 0 && seconds !== null && seconds > 0) {
+                        const secondsPerKm = seconds / dist;
+                        if (Math.abs(secondsPerKm - minSecondsPerKm) < 0.001) {
+                            badges[race.id].hasRPMile = true;
+                        }
+                    }
+                });
+            }
+
+            return badges;
+        }
+
+        // Fonction pour afficher la modale des badges
+        function displayRaceBadgesModal() {
+            window.raceBadges = calculateRaceBadges(races);
+            const badgesList = window.raceBadges;
+
+            const badgeRaces = {
+                hasRPMile: [],
+                hasMostExpensive: [],
+                hasMostElevation: [],
+                hasLongestDistance: []
+            };
+
+            races.forEach(race => {
+                if (badgesList[race.id]) {
+                    if (badgesList[race.id].hasRPMile) badgeRaces.hasRPMile.push(race);
+                    if (badgesList[race.id].hasMostExpensive) badgeRaces.hasMostExpensive.push(race);
+                    if (badgesList[race.id].hasMostElevation) badgeRaces.hasMostElevation.push(race);
+                    if (badgesList[race.id].hasLongestDistance) badgeRaces.hasLongestDistance.push(race);
+                }
+            });
+
+            let html = '<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">';
+            const badgeKeys = ['hasRPMile', 'hasMostExpensive', 'hasMostElevation', 'hasLongestDistance'];
+
+            badgeKeys.forEach(badgeKey => {
+                const badgeInfo = getBadgeInfo(badgeKey);
+                const racesWithBadge = badgeRaces[badgeKey];
+
+                html += `<div class="badge-card bg-white border-2 border-purple-300 rounded-xl p-4 shadow-md hover:shadow-lg transition-all duration-300">`;
+                html += `<div class="flex flex-col items-center text-center mb-3">`;
+                html += `<div class="bg-purple-100 rounded-full p-4 mb-3">`;
+                html += `<i class="fas ${badgeInfo.icon} text-4xl text-purple-600"></i>`;
+                html += `</div>`;
+                html += `<h4 class="text-lg font-bold text-purple-800 mb-2">${badgeInfo.name}</h4>`;
+                html += `<p class="text-xs text-gray-600 mb-3 leading-tight">${badgeInfo.description}</p>`;
+                html += `</div>`;
+
+                html += `<div class="border-t-2 border-purple-100 pt-3 mt-3">`;
+                if (racesWithBadge.length > 0) {
+                    html += `<div class="flex flex-col gap-1 max-h-32 overflow-y-auto">`;
+                    // Trier par date décroissante
+                    racesWithBadge.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+                    racesWithBadge.forEach(race => {
+                        const year = new Date(race.date).getFullYear();
+                        html += `<span class="bg-purple-50 text-purple-800 px-2 py-1 rounded text-xs text-center truncate cursor-pointer hover:bg-purple-200 hover:underline transition-colors badge-race-name" data-race-id="${race.id}" title="${race.name}">${race.name} <span class="text-gray-500 text-[10px]">(${year})</span></span>`;
+                    });
+                    html += `</div>`;
+                } else {
+                    html += `<p class="text-xs text-gray-500 italic text-center">Aucune course</p>`;
+                }
+                html += `</div></div>`;
+            });
+
+            html += '</div>';
+            badgesContent.innerHTML = html;
+
+            document.querySelectorAll('.badge-race-name').forEach(el => {
+                el.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    const raceId = this.getAttribute('data-race-id');
+                    badgesModal.classList.add('hidden');
+                    showRaceDetails(raceId);
+                });
+            });
+        }
+
+        // Event Listeners (Ancient listeners removed to avoid null reference errors. See robust implementation at end of file)
+
         // Display races
         function displayRaces(racesToDisplay) {
+            // Calculer les badges pour toutes les courses (pour s'assurer qu'ils sont à jour)
+            if (isAuthenticated()) {
+                window.raceBadges = calculateRaceBadges(races);
+            }
+
             // Tri des courses par date (plus récentes en haut)
             const sortedRaces = [...racesToDisplay].sort((a, b) => {
                 // Convertir les dates en objets Date pour la comparaison
@@ -1848,10 +2053,13 @@
                 } else if (isUpcoming) {
                     // Course à venir : afficher "À venir"
                     badgeAvenir = `<span class="ml-2 px-2 py-1 bg-yellow-200 text-yellow-800 text-xs rounded-full animate-pulse">À venir</span>`;
-                } else if (!isUpcoming && hasCompletedTime && isWithin10Days) {
+                }
+
+                if (!isUpcoming && hasCompletedTime && isWithin10Days) {
                     // Course passée avec temps complété et dans les 10 derniers jours : afficher "New !"
                     badgeAvenir = `<span class="ml-2 px-2 py-1 bg-green-200 text-green-800 text-xs rounded-full animate-pulse">New !</span>`;
                 }
+
                 const raceCard = document.createElement('div');
                 raceCard.className = 'bg-white rounded-xl overflow-hidden shadow-md card-hover relative group cursor-pointer';
                 raceCard.innerHTML = `
@@ -2533,6 +2741,50 @@
             // Ajouter l'écouteur d'événement pour la navigation au clavier
             currentKeyNavigationHandler = handleKeyNavigation;
             document.addEventListener('keydown', handleKeyNavigation);
+
+            // Initialiser les badges
+            const detailsBadgesContainer = document.getElementById('detailsBadgesContainer');
+            if (detailsBadgesContainer) {
+                detailsBadgesContainer.innerHTML = '';
+                detailsBadgesContainer.classList.add('hidden');
+
+                if (isAuthenticated() && window.raceBadges && window.raceBadges[id]) {
+                    const raceBadges = window.raceBadges[id];
+                    const badgeKeys = Object.keys(raceBadges);
+
+                    if (badgeKeys.length > 0) {
+                        badgeKeys.forEach(key => {
+                            // Use robust getBadgeInfo if available globally or duplicate logic
+                            let info = null;
+                            if (typeof getBadgeInfo === 'function') {
+                                info = getBadgeInfo(key);
+                            } else {
+                                // Fallback map if function not available in this scope
+                                const badgesInfo = {
+                                    hasRPMile: { name: "RP temps", icon: "fa-tachometer-alt" },
+                                    hasMostExpensive: { name: "Course la plus cher", icon: "fa-sack-dollar" },
+                                    hasMostElevation: { name: "Course avec le plus de denivelé", icon: "fa-mountain" },
+                                    hasLongestDistance: { name: "Course la plus longue", icon: "fa-route" }
+                                };
+                                info = badgesInfo[key];
+                            }
+
+                            if (info) {
+                                // Affichage simple: icône + nom
+                                const badgeEl = document.createElement('div');
+                                badgeEl.className = 'flex items-center gap-2 bg-purple-100 text-purple-800 px-3 py-2 rounded-lg cursor-pointer hover:bg-purple-200 transition-colors detail-badge-item';
+                                badgeEl.setAttribute('data-badge-key', key);
+                                badgeEl.innerHTML = `
+                                    <i class="fas ${info.icon} text-lg"></i>
+                                    <span class="font-semibold text-sm">${info.name}</span>
+                                `;
+                                detailsBadgesContainer.appendChild(badgeEl);
+                            }
+                        });
+                        detailsBadgesContainer.classList.remove('hidden');
+                    }
+                }
+            }
 
             detailsModal.classList.remove('hidden');
         }
@@ -5340,7 +5592,188 @@
             pendingWishlistDeleteId = null;
             pendingWishlistDeleteName = null;
         });
+
+        // CORRECTION GESTION BADGES (OVERRIDE ROBUSTE)
+
+        // Fonction robuste pour l'affichage (évite les erreurs null)
+        const robustDisplayBadges = function () {
+            const modal = document.getElementById('badgesModal');
+            const content = document.getElementById('badgesContent');
+
+            if (!modal || !content) return;
+
+            // Recalculer les badges si nécessaire
+            if (typeof calculateRaceBadges === 'function' && typeof races !== 'undefined') {
+                window.raceBadges = calculateRaceBadges(races);
+            }
+
+            const badgesList = window.raceBadges || {};
+
+            const badgeRaces = {
+                hasRPMile: [],
+                hasMostExpensive: [],
+                hasMostElevation: [],
+                hasLongestDistance: []
+            };
+
+            if (typeof races !== 'undefined') {
+                races.forEach(race => {
+                    if (badgesList[race.id]) {
+                        if (badgesList[race.id].hasRPMile) badgeRaces.hasRPMile.push(race);
+                        if (badgesList[race.id].hasMostExpensive) badgeRaces.hasMostExpensive.push(race);
+                        if (badgesList[race.id].hasMostElevation) badgeRaces.hasMostElevation.push(race);
+                        if (badgesList[race.id].hasLongestDistance) badgeRaces.hasLongestDistance.push(race);
+                    }
+                });
+            }
+
+            let html = '<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">';
+            const badgeKeys = ['hasRPMile', 'hasMostExpensive', 'hasMostElevation', 'hasLongestDistance'];
+
+            badgeKeys.forEach(badgeKey => {
+                // Utiliser getBadgeInfo localement si dispo, sinon une structure par défaut
+                let badgeInfo = { name: badgeKey, icon: 'fa-star', description: '' };
+                if (typeof getBadgeInfo === 'function') {
+                    badgeInfo = getBadgeInfo(badgeKey) || badgeInfo;
+                }
+
+                const racesWithBadge = badgeRaces[badgeKey];
+
+                html += `<div class="badge-card bg-white border-2 border-purple-300 rounded-xl p-4 shadow-md hover:shadow-lg transition-all duration-300">`;
+                html += `<div class="flex flex-col items-center text-center mb-3">`;
+                html += `<div class="bg-purple-100 rounded-full p-4 mb-3">`;
+                html += `<i class="fas ${badgeInfo.icon} text-4xl text-purple-600"></i>`;
+                html += `</div>`;
+                html += `<h4 class="text-lg font-bold text-purple-800 mb-2">${badgeInfo.name}</h4>`;
+                html += `<p class="text-xs text-gray-600 mb-3 leading-tight">${badgeInfo.description}</p>`;
+                html += `</div>`;
+
+                html += `<div class="border-t-2 border-purple-100 pt-3 mt-3">`;
+                if (racesWithBadge.length > 0) {
+                    html += `<div class="flex flex-col gap-1 max-h-32 overflow-y-auto">`;
+                    // Trier par date décroissante
+                    racesWithBadge.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+                    racesWithBadge.forEach(race => {
+                        const year = new Date(race.date).getFullYear();
+                        html += `<span class="bg-purple-50 text-purple-800 px-2 py-1 rounded text-xs text-center truncate cursor-pointer hover:bg-purple-200 hover:underline transition-colors badge-race-name" data-race-id="${race.id}" title="${race.name}">${race.name} <span class="text-gray-500 text-[10px]">(${year})</span></span>`;
+                    });
+                    html += `</div>`;
+                } else {
+                    html += `<p class="text-xs text-gray-500 italic text-center">Aucune course</p>`;
+                }
+                html += `</div></div>`;
+            });
+
+            html += '</div>';
+            content.innerHTML = html;
+
+            content.querySelectorAll('.badge-race-name').forEach(el => {
+                el.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    const raceId = this.getAttribute('data-race-id');
+                    modal.classList.add('hidden');
+                    if (typeof showRaceDetails === 'function') showRaceDetails(raceId);
+                });
+            });
+        };
+
+        // SETUP FINAL des écouteurs
+        const setupBadges = () => {
+            const badgesBtn = document.getElementById('badgesBtn');
+            const modal = document.getElementById('badgesModal');
+            const closeBtn = document.getElementById('closeBadgesModal');
+
+            if (badgesBtn) {
+                badgesBtn.onclick = (e) => {
+                    e.preventDefault();
+                    if (modal) {
+                        modal.classList.remove('hidden');
+                        robustDisplayBadges();
+                    }
+                };
+            }
+
+            if (closeBtn) {
+                closeBtn.onclick = () => { if (modal) modal.classList.add('hidden'); };
+            }
+
+            if (modal) {
+                // Fermer si clic en dehors (sur le fond flou)
+                modal.onclick = (e) => {
+                    if (e.target === modal || e.target.classList.contains('blur-bg')) {
+                        modal.classList.add('hidden');
+                    }
+                };
+                // Support pour la div blur-bg expliciement
+                const blurBg = modal.querySelector('.blur-bg');
+                if (blurBg) {
+                    blurBg.onclick = () => modal.classList.add('hidden');
+                }
+            }
+        };
+
+        // Initialisation sécurisée
+        const initBadgesSystem = () => {
+            setupBadges();
+
+            // Ajouter les event listeners pour les clics sur les badges dans les cartes et détails (inspiré de serie.html)
+            document.addEventListener('click', function (e) {
+                // Cherche un élément parent ou lui-même avec l'attribut data-badge-key (ajouté dans showRaceDetails)
+                // Note: showRaceDetails doit ajouter cet attribut aux badges générés
+                // Si l'attribut n'est pas encore ajouté dans showRaceDetails, ce listener sera inactif pour l'instant.
+                // Nous allons supposer que showRaceDetails génère des éléments sans cet attribut pour l'instant,
+                // mais nous ajoutons le support ici.
+                // Pour que cela fonctionne, nous devons modifier showRaceDetails ou cibler la classe spécifique.
+
+                // Ciblage plus large: si on clique sur un badge dans le détail (div.bg-purple-100), on ouvre la modale générale
+                // La structure dans showRaceDetails (step 123) est: <div class="flex items-center ..."> <i ...> <span>Nom</span></div>
+                // Il n'y a pas d'attribut de clé de badge facile. 
+                // Nous allons modifier showRaceDetails pour inclure un data-badge-key ou nous baser sur le texte.
+
+                // Pour l'instant, ajoutons le listener, et nous modifierons showRaceDetails ensuite.
+                const badgeElement = e.target.closest('.detail-badge-item');
+                if (badgeElement) {
+                    const badgeKey = badgeElement.getAttribute('data-badge-key');
+                    // Si on a une clé, on pourrait filtrer ou mettre en évidence. 
+                    // Ici on ouvre juste la modale comme demandé.
+                    robustDisplayBadges();
+                    document.getElementById('badgesModal').classList.remove('hidden');
+
+                    // Si on veut fermer la modale de détail (optionnel, user n'a pas précisé, mais souvent mieux)
+                    // document.getElementById('detailsModal').classList.add('hidden');
+                }
+            });
+        };
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initBadgesSystem);
+        } else {
+            initBadgesSystem();
+        }
     </script>
+
+    <!-- Modale de Badges -->
+    <div id="badgesModal" class="fixed inset-0 flex items-center justify-center z-50 hidden modal">
+        <div class="absolute inset-0 bg-black bg-opacity-50 blur-bg"></div>
+        <div class="relative bg-white rounded-xl shadow-xl w-full max-w-6xl mx-4 z-10 flex flex-col max-h-[90vh]">
+            <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-purple-50 rounded-t-xl">
+                <h3 class="text-2xl font-bold text-purple-800 flex items-center gap-2">
+                    <i class="fas fa-award"></i> Badges et Records
+                </h3>
+                <button id="closeBadgesModal" class="text-gray-500 hover:text-gray-700 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <div id="badgesContent" class="p-6 overflow-y-auto bg-gray-50 flex-grow">
+                <!-- Le contenu sera généré dynamiquement -->
+            </div>
+        </div>
+    </div>
 </body>
 
 </html>
