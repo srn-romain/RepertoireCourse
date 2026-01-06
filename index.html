@@ -1847,14 +1847,20 @@
                 badges[race.id] = {};
             });
 
+            const today = new Date().toISOString().split('T')[0]; // Format YYYY-MM-DD
+
+            // Filter out future races
+            const eligibleRaces = racesList.filter(race => race.date <= today);
+            if (eligibleRaces.length === 0) return badges;
+
             // 1. Course la plus longue (Distance)
             let maxDistance = 0;
-            racesList.forEach(race => {
+            eligibleRaces.forEach(race => {
                 const dist = parseFloat(race.distance);
                 if (!isNaN(dist) && dist > maxDistance) maxDistance = dist;
             });
             if (maxDistance > 0) {
-                racesList.forEach(race => {
+                eligibleRaces.forEach(race => {
                     if (parseFloat(race.distance) === maxDistance) {
                         badges[race.id].hasLongestDistance = true;
                     }
@@ -1863,12 +1869,12 @@
 
             // 2. Course avec le plus de dénivelé
             let maxElevation = 0;
-            racesList.forEach(race => {
+            eligibleRaces.forEach(race => {
                 const elev = parseFloat(race.elevation);
                 if (!isNaN(elev) && elev > maxElevation) maxElevation = elev;
             });
             if (maxElevation > 0) {
-                racesList.forEach(race => {
+                eligibleRaces.forEach(race => {
                     if (parseFloat(race.elevation) === maxElevation) {
                         badges[race.id].hasMostElevation = true;
                     }
@@ -1877,19 +1883,19 @@
 
             // 3. Course la plus cher
             let maxPrice = 0;
-            racesList.forEach(race => {
+            eligibleRaces.forEach(race => {
                 const price = parseFloat(race.price);
                 if (!isNaN(price) && price > maxPrice) maxPrice = price;
             });
             if (maxPrice > 0) {
-                racesList.forEach(race => {
+                eligibleRaces.forEach(race => {
                     if (parseFloat(race.price) === maxPrice) {
                         badges[race.id].hasMostExpensive = true;
                     }
                 });
             }
 
-            // 4. RP temps (Temps / Distance le plus faible) => Vitesse la plus élevée
+            // 4. RP temps (Temps au KM le plus court)
             let minSecondsPerKm = Infinity;
 
             const parseTimeToSeconds = (timeStr) => {
@@ -1899,7 +1905,7 @@
                 return parseInt(parts[0]) * 3600 + parseInt(parts[1]) * 60 + parseInt(parts[2]);
             };
 
-            racesList.forEach(race => {
+            eligibleRaces.forEach(race => {
                 const dist = parseFloat(race.distance);
                 const seconds = parseTimeToSeconds(race.time);
                 if (!isNaN(dist) && dist > 0 && seconds !== null && seconds > 0) {
@@ -1911,11 +1917,12 @@
             });
 
             if (minSecondsPerKm !== Infinity) {
-                racesList.forEach(race => {
+                eligibleRaces.forEach(race => {
                     const dist = parseFloat(race.distance);
                     const seconds = parseTimeToSeconds(race.time);
                     if (!isNaN(dist) && dist > 0 && seconds !== null && seconds > 0) {
                         const secondsPerKm = seconds / dist;
+                        // Using a small epsilon for float comparison logic
                         if (Math.abs(secondsPerKm - minSecondsPerKm) < 0.001) {
                             badges[race.id].hasRPMile = true;
                         }
