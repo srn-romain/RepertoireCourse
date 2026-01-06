@@ -384,6 +384,17 @@
                             placeholder="Lieu course">
                     </div>
                     <div class="mb-4">
+                        <label for="raceTerrain" class="block text-green-700 mb-2">Terrain</label>
+                        <select id="raceTerrain"
+                            class="w-full px-3 py-2 border border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
+                            <option value="">Sélectionner un terrain</option>
+                            <option value="route">Route</option>
+                            <option value="trail">Trail</option>
+                            <option value="triathlon">Triathlon</option>
+                            <option value="relai">Relai</option>
+                        </select>
+                    </div>
+                    <div class="mb-4">
                         <label for="racePrice" class="block text-green-700 mb-2">Prix (€)</label>
                         <input type="number" id="racePrice" name="racePrice"
                             class="w-full px-3 py-2 border border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
@@ -3244,6 +3255,7 @@
             document.getElementById('raceElevation').value = race.elevation;
             document.getElementById('raceTime').value = race.time;
             document.getElementById('raceLocation').value = race.location;
+            document.getElementById('raceTerrain').value = race.terrain || '';
             document.getElementById('raceNotes').value = race.notes || '';
             document.getElementById('racePrice').value = (race.price !== undefined && race.price !== null) ? race.price : '';
             document.getElementById('raceWebsite').value = race.website || '';
@@ -3292,6 +3304,7 @@
             const elevation = parseInt(document.getElementById('raceElevation').value);
             const time = document.getElementById('raceTime').value;
             const location = document.getElementById('raceLocation').value;
+            const terrain = document.getElementById('raceTerrain').value;
             const notes = document.getElementById('raceNotes').value;
             const price = document.getElementById('racePrice').value;
             const website = document.getElementById('raceWebsite').value.trim();
@@ -3343,6 +3356,7 @@
                 elevation,
                 time,
                 location,
+                terrain,
                 notes,
                 price: parseFloat(price),
                 website,
@@ -4799,6 +4813,18 @@
                 };
             }
 
+            // Calculer les statistiques par terrain
+            let terrainStats = { route: 0, trail: 0, triathlon: 0, relai: 0, total: 0 };
+            pastRaces.forEach(race => {
+                if (race.terrain) {
+                    const t = race.terrain.toLowerCase();
+                    if (terrainStats.hasOwnProperty(t)) {
+                        terrainStats[t]++;
+                        terrainStats.total++;
+                    }
+                }
+            });
+
             // Préparer les données pour le graphique des distances
             const racesWithDistance = pastRaces
                 .map(race => ({
@@ -4888,6 +4914,7 @@
                 priceStats,
                 elevationStats,
                 timeStats,
+                terrainStats,
                 racesWithDistance,
                 racesWithPrice,
                 racesWithTime,
@@ -5003,6 +5030,35 @@
             }
 
             html += '</div>';
+
+            html += '</div>';
+
+            // Visualisation des terrains (Barre de progression)
+            if (stats.terrainStats && stats.terrainStats.total > 0) {
+                const ts = stats.terrainStats;
+                const getPercent = (val) => (val / ts.total) * 100;
+
+                html += `<div class="bg-green-50 p-4 rounded-lg mb-6">`;
+                html += `<h4 class="font-bold text-green-800 mb-3">Répartition par terrain</h4>`;
+
+                // Barre de progression
+                html += `<div class="w-full h-6 rounded-full flex overflow-hidden mb-3 bg-gray-200">`;
+                if (ts.route > 0) html += `<div class="bg-gray-500 h-full transition-all duration-500" style="width: ${getPercent(ts.route)}%"></div>`;
+                if (ts.trail > 0) html += `<div class="bg-emerald-600 h-full transition-all duration-500" style="width: ${getPercent(ts.trail)}%"></div>`;
+                if (ts.triathlon > 0) html += `<div class="bg-blue-500 h-full transition-all duration-500" style="width: ${getPercent(ts.triathlon)}%"></div>`;
+                if (ts.relai > 0) html += `<div class="bg-yellow-500 h-full transition-all duration-500" style="width: ${getPercent(ts.relai)}%"></div>`;
+                html += `</div>`;
+
+                // Légende
+                html += `<div class="flex flex-wrap gap-4 justify-center text-sm text-gray-700">`;
+                if (ts.route > 0) html += `<div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-gray-500"></span> Route (${ts.route})</div>`;
+                if (ts.trail > 0) html += `<div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-emerald-600"></span> Trail (${ts.trail})</div>`;
+                if (ts.triathlon > 0) html += `<div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-blue-500"></span> Triathlon (${ts.triathlon})</div>`;
+                if (ts.relai > 0) html += `<div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-yellow-500"></span> Relai (${ts.relai})</div>`;
+                html += `</div>`;
+
+                html += `</div>`;
+            }
 
             // Graphique avec liste déroulante
             const hasChartData = (stats.racesWithDistance && stats.racesWithDistance.length > 0) ||
