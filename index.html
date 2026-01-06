@@ -5892,7 +5892,7 @@
                     const itemNameLower = item.name.toLowerCase().trim();
                     let foundMatch = false;
 
-                    // Check exact match first
+                    // Vérifier la correspondance exacte d'abord
                     if (itemNameLower === raceNameLower) {
                         foundItem = item;
                         break;
@@ -5946,16 +5946,16 @@
         document.getElementById('btnConfirmDeleteWishlist').addEventListener('click', function () {
             if (pendingWishlistDeleteId) {
                 wishlistCollection.doc(pendingWishlistDeleteId).delete().then(() => {
-                    // Update global items if exists
+                    // Mettre à jour les éléments globaux si existants
                     if (typeof wishlistEditItems !== 'undefined') {
                         wishlistEditItems = wishlistEditItems.filter(i => i.id !== pendingWishlistDeleteId);
                     }
-                    // Hide modal
+                    // Masquer la modale
                     document.getElementById('confirmDeleteWishlistModal').classList.add('hidden');
 
-                    // Show a toaster or valid feedback?
-                    // Reusing imageAlertModal as a simple alert if needed, or just silent success.
-                    // The user didn't ask for a success message, just the double confirmation.
+                    // Afficher une notification ou un retour de validation ?
+                    // Réutilisation de imageAlertModal comme simple alerte si nécessaire, ou succès silencieux.
+                    // L'utilisateur n'a pas demandé de message de succès, juste la double confirmation.
 
                     pendingWishlistDeleteId = null;
                     pendingWishlistDeleteName = null;
