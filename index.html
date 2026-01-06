@@ -2688,7 +2688,17 @@
                 detailsModal.querySelector('.modal-content').appendChild(detailsWebsite);
             }
             if (race.website) {
-                const websiteText = 'Lien vers le site de la course';
+                let websiteText = 'Lien vers le site de la course';
+
+                // Si terrain renseigné, adapter le texte du lien
+                if (race.terrain) {
+                    const t = race.terrain.toLowerCase();
+                    if (t === 'route') websiteText = 'Voir le site de la course (route)';
+                    else if (t === 'triathlon') websiteText = 'Voir le site du triathlon';
+                    else if (t === 'relai') websiteText = 'Voir le site de la course (relai)';
+                    else if (t === 'trail') websiteText = 'Voir le site du trail';
+                }
+
                 const websiteLinkText = fieldMatchesSearch(race.website, searchQuery) || fieldMatchesSearch(websiteText, searchQuery)
                     ? highlightSearchMatch(websiteText, searchQuery)
                     : websiteText;
