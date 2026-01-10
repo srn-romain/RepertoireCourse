@@ -2638,6 +2638,21 @@
 
             document.getElementById('detailsDate').innerHTML = dateDisplay + heureHtml + badgeAvenir;
 
+            // Ajout du type de terrain en italique juste en dessous
+            let terrainHtml = '';
+            if (race.terrain) {
+                let terrainText = '';
+                switch (race.terrain) {
+                    case 'route': terrainText = 'Cette course est sur route'; break;
+                    case 'trail': terrainText = 'Cette course est un trail'; break;
+                    case 'triathlon': terrainText = 'Cette course est un triathlon'; break;
+                    case 'relai': terrainText = 'Cette course est en relai'; break;
+                    default: terrainText = `Cette course est de type ${race.terrain}`;
+                }
+                terrainHtml = `<div class="text-sm italic text-gray-500 mt-1">${terrainText}</div>`;
+                document.getElementById('detailsDate').innerHTML += terrainHtml;
+            }
+
             // Distance avec surlignage si correspond
             const distanceElement = document.getElementById('detailsDistance');
             if (race.distance && race.distance !== '' && !isNaN(race.distance)) {
@@ -3052,17 +3067,7 @@
                 detailsModal.querySelector('.modal-content').appendChild(detailsWebsite);
             }
             if (race.website) {
-                let websiteText = 'Voir le site de la course';
-
-                // Si terrain renseigné, adapter le texte du lien
-                if (race.terrain) {
-                    const t = race.terrain.toLowerCase();
-                    if (t === 'route') websiteText = 'Voir le site de la course (route)';
-                    else if (t === 'triathlon') websiteText = 'Voir le site du triathlon';
-                    else if (t === 'relai') websiteText = 'Voir le site de la course (relai)';
-                    else if (t === 'trail') websiteText = 'Voir le site du trail';
-                }
-
+                const websiteText = 'Lien vers le site de la course';
                 const websiteLinkText = fieldMatchesSearch(race.website, searchQuery) || fieldMatchesSearch(websiteText, searchQuery)
                     ? highlightSearchMatch(websiteText, searchQuery)
                     : websiteText;
