@@ -2848,14 +2848,7 @@
             if (race.notes && race.notes.trim() !== '') {
                 notesSection.classList.remove('hidden');
 
-                // Mettre à jour le label avec le terrain si disponible
-                if (race.terrain) {
-                    // Capitaliser la première lettre
-                    const terrainFormatted = race.terrain.charAt(0).toUpperCase() + race.terrain.slice(1);
-                    notesLabel.textContent = `Note de la course (${terrainFormatted})`;
-                } else {
-                    notesLabel.textContent = 'Notes';
-                }
+                notesLabel.textContent = 'Note';
 
                 if (fieldMatchesSearch(race.notes, searchQuery)) {
                     notesElement.innerHTML = highlightSearchMatch(race.notes, searchQuery);
