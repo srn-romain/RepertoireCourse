@@ -4603,11 +4603,17 @@
         });
 
         // Bouton Modifier depuis la modale de détails
-        editFromDetailsBtn.addEventListener('click', () => {
-            if (!isAdmin()) {
+        editFromDetailsBtn.addEventListener('click', async () => {
+            if (!isAuthenticated()) {
+                showPasswordModal('edit', currentRaceIdInDetails);
+                return;
+            }
+
+            if (await isInviteAsync()) {
                 showPermissionDeniedModal('modifier une course');
                 return;
             }
+
             if (currentRaceIdInDetails) {
                 // Fermer la modale de détails
                 detailsModal.classList.add('hidden');
@@ -4616,8 +4622,10 @@
                     document.removeEventListener('keydown', currentKeyNavigationHandler);
                     currentKeyNavigationHandler = null;
                 }
-                // Ouvrir la modale d'édition
-                showPasswordModal('edit', currentRaceIdInDetails);
+                modalTitle.textContent = 'Modifier la course';
+                populateEditForm(currentRaceIdInDetails);
+                raceModal.classList.remove('hidden');
+                document.getElementById('raceName').focus();
             }
         });
 
@@ -6720,8 +6728,8 @@
     <!-- Footer Signature -->
     <footer class="text-center py-6 text-green-900 opacity-50 text-sm mt-8">
         <p>&copy; 2026 Carnet de Courses. Tous droits réservés.</p>
-        <p class="mt-1">Développé avec ❤️ par <a href="https://www.linkedin.com/in/romain-sieurin/" target="_blank"
-                class="font-semibold hover:underline">Romain SIEURIN</a></p>
+        <p class="mt-1">Développé avec ♡ et avec (un peu) d'IA par <a href="https://www.linkedin.com/in/romain-sieurin/"
+                target="_blank" class="font-semibold hover:underline">Romain SIEURIN</a></p>
     </footer>
 
     <script>
