@@ -5031,7 +5031,8 @@
 
             modal.addEventListener('click', (event) => {
                 // Skip wishlistModal as it has its own custom logic for unsaved changes
-                if (modal.id === 'wishlistModal') return;
+                // Skip inviteUserSelectModal to prevent closing by mistake (user request)
+                if (modal.id === 'wishlistModal' || modal.id === 'inviteUserSelectModal') return;
 
                 let modalContent = modal.querySelector('.modal-content');
                 // Fallback: if no modal-content class, try to find the main content container (usually the first child div that is not a blur background)
