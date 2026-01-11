@@ -6674,6 +6674,181 @@
         }
     </script>
 
+    <!-- Bouton Anniversaire (Souvenirs) -->
+    <button id="anniversaryBtn"
+        class="fixed bottom-6 left-6 bg-purple-600 hover:bg-purple-700 text-white rounded-full p-3 shadow-lg transition-all duration-300 z-50 focus:outline-none"
+        title="Voir mon souvenir le plus proche">
+        <i class="fas fa-history text-xl"></i>
+    </button>
+
+    <!-- Modal Anniversaire -->
+    <div id="anniversaryModal"
+        class="modal hidden fixed inset-0 z-[70] flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
+        <div
+            class="modal-content bg-white p-6 w-full max-w-lg m-4 rounded-xl shadow-2xl relative border border-purple-100">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-purple-800 flex items-center gap-2">
+                    <i class="fas fa-history"></i> Souvenirs
+                </h3>
+                <button onclick="document.getElementById('anniversaryModal').classList.add('hidden')"
+                    class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+
+            <div id="anniversaryContent" class="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
+                <!-- Contenu généré dynamiquement -->
+            </div>
+
+            <div class="mt-6 text-center">
+                <button onclick="document.getElementById('anniversaryModal').classList.add('hidden')"
+                    class="px-6 py-2 bg-purple-600 text-white rounded-full hover:bg-purple-700 transition font-medium shadow-md hover:shadow-lg">
+                    C'est noté !
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bouton Retour en haut -->
+    <button id="scrollToTopBtn"
+        class="fixed bottom-6 right-6 bg-green-600 hover:bg-green-700 text-white rounded-full p-3 shadow-lg transition-all duration-300 transform translate-y-20 opacity-0 z-50 focus:outline-none">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18" />
+        </svg>
+    </button>
+
+    <!-- Footer Signature -->
+    <footer class="text-center py-6 text-green-900 opacity-50 text-sm mt-8">
+        <p>&copy; 2026 Carnet de Courses. Tous droits réservés.</p>
+        <p class="mt-1">Développé avec ❤️ par <a href="https://www.linkedin.com/in/romain-sieurin/" target="_blank"
+                class="font-semibold hover:underline">Romain SIEURIN</a></p>
+    </footer>
+
+    <script>
+        // Gestion du bouton retour en haut
+        const scrollToTopBtn = document.getElementById('scrollToTopBtn');
+        const anniversaryBtn = document.getElementById('anniversaryBtn');
+
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 300) {
+                // Afficher le bouton retour en haut
+                scrollToTopBtn.classList.remove('translate-y-20', 'opacity-0');
+            } else {
+                // Masquer le bouton retour en haut
+                scrollToTopBtn.classList.add('translate-y-20', 'opacity-0');
+            }
+        });
+
+        scrollToTopBtn.addEventListener('click', () => {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+
+        // Logique Anniversaire
+        anniversaryBtn.addEventListener('click', () => {
+            if (typeof races === 'undefined' || !races || races.length === 0) {
+                alert("Aucune course enregistrée pour calculer les souvenirs.");
+                return;
+            }
+
+            const now = new Date();
+            let minDiff = Infinity;
+            let candidates = [];
+
+            // Trouver les courses avec l'anniversaire le plus proche (jour/mois)
+            races.forEach(race => {
+                if (!race.date) return;
+                const raceDate = new Date(race.date);
+
+                // Créer des dates d'anniversaire potentielles (cette année, année précédente, année suivante)
+                // pour gérer la circularité (ex: 31 déc proche de 1 jan)
+                const currentYear = now.getFullYear();
+                const datesToCheck = [
+                    new Date(currentYear, raceDate.getMonth(), raceDate.getDate()),
+                    new Date(currentYear - 1, raceDate.getMonth(), raceDate.getDate()),
+                    new Date(currentYear + 1, raceDate.getMonth(), raceDate.getDate())
+                ];
+
+                let localMin = Infinity;
+                datesToCheck.forEach(d => {
+                    const diff = Math.abs(now - d);
+                    if (diff < localMin) localMin = diff;
+                });
+
+                if (localMin < minDiff) {
+                    minDiff = localMin;
+                    candidates = [race];
+                } else if (Math.abs(localMin - minDiff) < 1000) { // Tolérance ms
+                    candidates.push(race);
+                }
+            });
+
+            // Afficher les résultats
+            const contentDiv = document.getElementById('anniversaryContent');
+            contentDiv.innerHTML = '';
+
+            if (candidates.length > 0) {
+                // Trier par date d'origine (du plus vieux au plus récent ou inverse)
+                candidates.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+                candidates.forEach(race => {
+                    const raceDate = new Date(race.date);
+
+                    // Calcul précis du temps écoulé
+                    let diffMs = now.getTime() - raceDate.getTime();
+                    const isPast = diffMs >= 0;
+                    diffMs = Math.abs(diffMs);
+
+                    // Approximation simplifiée mais lisible
+                    // On ne peut pas juste diviser par 365.25 car les mois ont des durées variables
+                    // Mais pour "Il y a X ans, X jours", l'approximation est souvent suffisant pour l'UX
+
+                    const years = Math.floor(diffMs / (365.25 * 24 * 60 * 60 * 1000));
+                    diffMs -= years * (365.25 * 24 * 60 * 60 * 1000);
+
+                    const days = Math.floor(diffMs / (24 * 60 * 60 * 1000));
+                    diffMs -= days * (24 * 60 * 60 * 1000);
+
+                    const hours = Math.floor(diffMs / (60 * 60 * 1000));
+
+                    const prefix = isPast ? "Il y a" : "Dans";
+
+                    const div = document.createElement('div');
+                    div.className = "bg-purple-50 p-4 rounded-xl border border-purple-100 flex flex-col gap-2";
+
+                    // Calcul âge course
+                    let dateStr = raceDate.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+
+                    div.innerHTML = `
+                        <div class="flex justify-between items-start">
+                            <h4 class="font-bold text-lg text-purple-900">${race.name}</h4>
+                            <span class="text-xs bg-purple-200 text-purple-800 px-2 py-1 rounded-full">${dateStr}</span>
+                        </div>
+                        <div class="text-purple-700 font-medium text-lg mt-1">
+                            ${prefix} <span class="font-bold text-xl">${years} ans</span>, 
+                            <span class="font-bold text-xl">${days} jours</span> et 
+                            <span class="font-bold text-xl">${hours} heures</span>.
+                        </div>
+                    `;
+                    contentDiv.appendChild(div);
+                });
+
+                // Message contextuel si c'est pile aujourd'hui
+                if (minDiff < (24 * 3600 * 1000)) {
+                    const msg = document.createElement('p');
+                    msg.className = "text-center text-green-600 font-bold mb-4 animate-bounce";
+                    msg.innerHTML = "🎉 Joyeux Anniversaire de Course ! 🎉";
+                    contentDiv.insertBefore(msg, contentDiv.firstChild);
+                }
+            } else {
+                contentDiv.innerHTML = "<p class='text-center text-gray-500'>Aucun souvenir trouvé.</p>";
+            }
+
+            document.getElementById('anniversaryModal').classList.remove('hidden');
+        });
+    </script>
 </body>
 
 </html>
