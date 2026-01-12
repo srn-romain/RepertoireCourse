@@ -207,6 +207,48 @@ function initSettingsLogic() {
         if (cb) cb.addEventListener('change', saveUISettings);
     });
 
+    // CHARGEMENT DES PRÉFÉRENCES ACTUELLES
+    const loadCurrentSettings = async () => {
+        const user = firebase.auth().currentUser;
+        if (!user) return;
+
+        try {
+            const doc = await db.collection('users').doc(user.uid).get();
+            if (doc.exists) {
+                const data = doc.data();
+
+                // Privacy settings
+                if (data.privacy) {
+                    if (prefShowPseudo) prefShowPseudo.checked = data.privacy.showPseudo !== false; // Default true if undefined? assuming privacy centric maybe false? let's stick to what's stored.
+                    if (prefShowCity) prefShowCity.checked = data.privacy.showCity !== false;
+                    if (prefShowFavorite) prefShowFavorite.checked = data.privacy.showFavorite !== false;
+                    if (prefShowDay) prefShowDay.checked = data.privacy.showDay !== false;
+                }
+
+                // UI preferences (Default to true if undefined, as buttons were previously visible)
+                if (data.uiPreferences) {
+                    if (prefShowImportBtn) prefShowImportBtn.checked = data.uiPreferences.showImportBtn !== false;
+                    if (prefShowStatsBtn) prefShowStatsBtn.checked = data.uiPreferences.showStatsBtn !== false;
+                } else {
+                    // Defaults if no settings saved yet
+                    if (prefShowImportBtn) prefShowImportBtn.checked = true; // Default visible logic handled by dashboard
+                    if (prefShowStatsBtn) prefShowStatsBtn.checked = true;
+                }
+
+                // Pseudo input
+                const pseudoInput = document.getElementById('settingsNewPseudo');
+                if (pseudoInput && data.pseudo) {
+                    pseudoInput.value = data.pseudo;
+                }
+            }
+        } catch (e) {
+            console.error("Erreur chargement settings", e);
+        }
+    };
+
+    // Appeler le chargement
+    loadCurrentSettings();
+
     // Fonction d'affichage de message
     function showMessage(msg, type = 'success') {
         msgContainer.textContent = msg;
@@ -323,6 +365,25 @@ window.openUserSettings = async function () {
             if (prefShowCity) prefShowCity.checked = (p.showCity !== undefined) ? p.showCity : false;
             if (prefShowFavorite) prefShowFavorite.checked = (p.showFavorite !== undefined) ? p.showFavorite : false;
             if (prefShowDay) prefShowDay.checked = (p.showDay !== undefined) ? p.showDay : false;
+
+            // Charger les préférences UI
+            const ui = data.uiPreferences || {};
+            const prefShowImportBtn = document.getElementById('prefShowImportBtn');
+            const prefShowStatsBtn = document.getElementById('prefShowStatsBtn');
+
+            // Par défaut : affiché (true) si non défini
+            // Pour Import : cohérence avec dashboard => si non défini, true seulement si <= 3 courses (ou true si on veut encourager l'import?)
+            // L'utilisateur a demandé "c'est à lui de décider". Donc s'il ouvre les settings, il voit l'état "voulu".
+            // Si on met 'true' par défaut ici alors qu'il est caché sur le dashboard, c'est confus.
+            // On va essayer de récupérer l'état logique par défaut.
+
+            let defaultImportState = true;
+            if (window.races && Array.isArray(window.races)) {
+                defaultImportState = (window.races.length <= 3);
+            }
+
+            if (prefShowImportBtn) prefShowImportBtn.checked = (ui.showImportBtn !== undefined) ? ui.showImportBtn : defaultImportState;
+            if (prefShowStatsBtn) prefShowStatsBtn.checked = (ui.showStatsBtn !== undefined) ? ui.showStatsBtn : true;
 
         } else {
             if (pseudoInput) pseudoInput.value = "";

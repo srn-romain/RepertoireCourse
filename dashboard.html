@@ -1836,6 +1836,11 @@
                     displayRaceStats();
                     pendingStatsDisplay = false;
                 }
+
+                // Mettre à jour la visibilité des boutons selon les préférences UI
+                if (typeof applyUserUIPreferences === 'function') {
+                    applyUserUIPreferences();
+                }
             }).catch((error) => {
                 console.error("Erreur lors du chargement des courses:", error);
                 racesLoading = false;
@@ -4596,7 +4601,10 @@
             await updateAuthStatusBar();
             updateSearchInputState();
             updateAddButtonVisibility();
-            updateStatsButtonVisibility();
+            // updateStatsButtonVisibility(); // Remplacé par applyUserUIPreferences
+            if (typeof applyUserUIPreferences === 'function') {
+                await applyUserUIPreferences();
+            }
         };
 
         // Callback appelé par le backend lors de la déconnexion automatique pour inactivité
@@ -4606,6 +4614,9 @@
             updateAddButtonVisibility();
             updateStats(races);
             displayRaces(races);
+            if (typeof applyUserUIPreferences === 'function') {
+                await applyUserUIPreferences();
+            }
         };
 
         // Fonction pour afficher la notification d'inactivité
@@ -6492,19 +6503,6 @@
 
             // Ajouter les event listeners pour les clics sur les badges dans les cartes et détails (inspiré de serie.html)
             document.addEventListener('click', function (e) {
-                // Cherche un élément parent ou lui-même avec l'attribut data-badge-key (ajouté dans showRaceDetails)
-                // Note: showRaceDetails doit ajouter cet attribut aux badges générés
-                // Si l'attribut n'est pas encore ajouté dans showRaceDetails, ce listener sera inactif pour l'instant.
-                // Nous allons supposer que showRaceDetails génère des éléments sans cet attribut pour l'instant,
-                // mais nous ajoutons le support ici.
-                // Pour que cela fonctionne, nous devons modifier showRaceDetails ou cibler la classe spécifique.
-
-                // Ciblage plus large: si on clique sur un badge dans le détail (div.bg-purple-100), on ouvre la modale générale
-                // La structure dans showRaceDetails (step 123) est: <div class="flex items-center ..."> <i ...> <span>Nom</span></div>
-                // Il n'y a pas d'attribut de clé de badge facile. 
-                // Nous allons modifier showRaceDetails pour inclure un data-badge-key ou nous baser sur le texte.
-
-                // Pour l'instant, ajoutons le listener, et nous modifierons showRaceDetails ensuite.
                 const badgeElement = e.target.closest('.detail-badge-item');
                 if (badgeElement) {
                     const badgeKey = badgeElement.getAttribute('data-badge-key');
@@ -6780,17 +6778,58 @@
 
         let parsedImportData = null;
 
-        // Gérer la visibilité du bouton d'import (≤3 courses)
-        function updateImportButtonVisibility() {
-            if (races && races.length <= 3) {
-                importJsonBtn.classList.remove('hidden');
-            } else {
-                importJsonBtn.classList.add('hidden');
+        // Gérer les préférences d'interface utilisateur (Import / Stats)
+        async function applyUserUIPreferences() {
+            const user = firebase.auth().currentUser;
+            const importBtn = document.getElementById('importJsonBtn');
+            const statsBtn = document.getElementById('statsBtn');
+
+            if (!user) {
+                if (importBtn) importBtn.classList.add('hidden');
+                if (statsBtn) statsBtn.classList.add('hidden'); // Stats button usually hidden for guests anyway?
+                return;
+            }
+
+            try {
+                const doc = await db.collection('users').doc(user.uid).get();
+                if (doc.exists) {
+                    const data = doc.data();
+                    const uiPrefs = data.uiPreferences || {};
+
+                    // IMPORT BUTTON
+                    // Par défaut : visible si <= 3 courses (ancienne logique) OU visible si pas de préférence définie ?
+                    // Le user veut décider. Disons: 
+                    // Si préférence définie : on respecte.
+                    // Si PAS définie : on applique la logique par défaut (<= 3 courses).
+
+                    let showImport = false;
+                    if (uiPrefs.hasOwnProperty('showImportBtn')) {
+                        showImport = uiPrefs.showImportBtn;
+                    } else {
+                        // Default logic if preference not set yet
+                        showImport = (races && races.length <= 3);
+                    }
+
+                    if (importBtn) {
+                        if (showImport) importBtn.classList.remove('hidden');
+                        else importBtn.classList.add('hidden');
+                    }
+
+                    let showStats = true; // Default intent for logged in users usually
+                    if (uiPrefs.hasOwnProperty('showStatsBtn')) {
+                        showStats = uiPrefs.showStatsBtn;
+                    }
+
+                    if (statsBtn) {
+
+                        if (showStats) statsBtn.classList.remove('hidden');
+                        else statsBtn.classList.add('hidden');
+                    }
+                }
+            } catch (error) {
+                console.error("Error applying UI prefs:", error);
             }
         }
-
-        // Vérifier périodiquement la visibilité du bouton d'import
-        setInterval(updateImportButtonVisibility, 1000);
 
         // Import JSON - Ouvrir modale
         if (importJsonBtn) {
