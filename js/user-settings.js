@@ -351,15 +351,6 @@ window.openUserSettings = async function () {
             const data = doc.data();
             if (pseudoInput) pseudoInput.value = data.pseudo || "";
 
-            // Charger les préférences (Défaut: true si non défini, pour être public friendly par défaut, sauf jour?)
-            // Le user veut pouvoir contrôler. Disons:
-            // Pseudo: True by default
-            // City: False by default (current behavior was hidden)
-            // Favorite: False by default (current behavior was hidden)
-            // Day: False by default (current behavior was hidden)
-            // MAIS pour les checkbox, si c'est undefined, je vais mettre FALSE pour respecter l'état visuel actuel du site
-            // SAUF pour le pseudo qui est affiché par défaut.
-
             const p = data.privacy || {};
             if (prefShowPseudo) prefShowPseudo.checked = (p.showPseudo !== undefined) ? p.showPseudo : true;
             if (prefShowCity) prefShowCity.checked = (p.showCity !== undefined) ? p.showCity : false;
