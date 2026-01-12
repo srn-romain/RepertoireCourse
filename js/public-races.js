@@ -237,7 +237,6 @@ async function loadPublicRaces() {
             const elTotal = document.getElementById('statTotalRaces');
             const elUpcoming = document.getElementById('statUpcomingRaces');
             const elKm = document.getElementById('statTotalKm');
-            const elMsg = document.getElementById('communityMessage');
 
             // Animation function (Fondu Vertical Style)
             function animateCounter(element, targetUserValue) {
@@ -268,10 +267,6 @@ async function loadPublicRaces() {
             if (elTotal) animateCounter(elTotal, statsCount.count);
             if (elUpcoming) animateCounter(elUpcoming, statsCount.upcoming);
             if (elKm) animateCounter(elKm, Math.round(statsCount.km));
-
-            if (elMsg) {
-                elMsg.innerHTML = `<span class="text-gray-600 italic text-lg">"La communauté a prévu <strong class="text-blue-600">${statsCount.upcoming} courses</strong> prochainement !"</span>`;
-            }
 
             statsContainer.classList.remove('hidden');
             if (statsHeader) statsHeader.classList.remove('hidden');
