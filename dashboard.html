@@ -2936,10 +2936,14 @@
 
             // Titre avec surlignage si correspond
             const titleElement = document.getElementById('detailsTitle');
+
+            // Icône de cadenas si la course n'est pas publique
+            const lockIcon = (race.public !== true) ? '<i class="fas fa-lock text-gray-500 mr-2"></i>' : '';
+
             if (fieldMatchesSearch(race.name, searchQuery)) {
-                titleElement.innerHTML = highlightSearchMatch(race.name, searchQuery);
+                titleElement.innerHTML = lockIcon + highlightSearchMatch(race.name, searchQuery);
             } else {
-                titleElement.textContent = race.name;
+                titleElement.innerHTML = lockIcon + race.name;
             }
 
             // Ajout de l'heure juste après la date
@@ -6660,17 +6664,10 @@
                     const isPast = diffMs >= 0;
                     diffMs = Math.abs(diffMs);
 
-                    // Approximation simplifiée mais lisible
-                    // On ne peut pas juste diviser par 365.25 car les mois ont des durées variables
-                    // Mais pour "Il y a X ans, X jours", l'approximation est souvent suffisant pour l'UX
-
                     const years = Math.floor(diffMs / (365.25 * 24 * 60 * 60 * 1000));
                     diffMs -= years * (365.25 * 24 * 60 * 60 * 1000);
 
                     const days = Math.floor(diffMs / (24 * 60 * 60 * 1000));
-                    diffMs -= days * (24 * 60 * 60 * 1000);
-
-                    const hours = Math.floor(diffMs / (60 * 60 * 1000));
 
                     const prefix = isPast ? "Il y a" : "Dans";
 
@@ -6686,9 +6683,8 @@
                             <span class="text-xs bg-purple-200 text-purple-800 px-2 py-1 rounded-full">${dateStr}</span>
                         </div>
                         <div class="text-purple-700 font-medium text-lg mt-1">
-                            ${prefix} <span class="font-bold text-xl">${years} ans</span>, 
-                            <span class="font-bold text-xl">${days} jours</span> et 
-                            <span class="font-bold text-xl">${hours} heures</span>.
+                            ${prefix} <span class="font-bold text-xl">${years} ans</span> et 
+                            <span class="font-bold text-xl">${days} jours</span>.
                         </div>
                     `;
                     contentDiv.appendChild(div);
