@@ -721,7 +721,8 @@
                             </svg>
                             <span>Badge</span>
                         </p>
-                        <p id="DetailBadgeButton" class="font-semibold text-green-800">Aucun badge</p>
+                        <div id="DetailBadgeButton" class="mt-1 font-semibold text-green-800 flex flex-wrap gap-1">/
+                        </div>
                     </div>
                 </div>
                 <div id="detailsActionsContainer" class="flex gap-3 mt-6 pt-4 border-t border-gray-200">
@@ -3170,7 +3171,7 @@
             if (detailTerrainText) detailTerrainText.textContent = terrainLabel;
 
             // Gestion des Badges (Carré de droite)
-            let badgeText = 'Pas encore débloqué';
+            let badgeHtml = '/';
             if (isAuthenticated() && window.raceBadges && window.raceBadges[race.id]) {
                 const badgeKeys = Object.keys(window.raceBadges[race.id]);
                 if (badgeKeys.length > 0) {
@@ -3181,10 +3182,16 @@
                         hasMostElevation: "Plus de dénivelé",
                         hasLongestDistance: "Plus longue course"
                     };
-                    badgeText = badgeKeys.map(key => badgesInfoMap[key] || key).join(', ');
+                    // Générer le HTML pour chaque badge (bleu, arrondi, petite icône)
+                    badgeHtml = badgeKeys.map(key => {
+                        const label = badgesInfoMap[key] || key;
+                        return `<span class="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs flex items-center gap-1 w-fit border border-blue-200">
+                                    <i class="fas fa-medal text-blue-500"></i> ${label}
+                                </span>`;
+                    }).join('');
                 }
             }
-            if (detailBadgeText) detailBadgeText.textContent = badgeText;
+            if (detailBadgeText) detailBadgeText.innerHTML = badgeHtml;
 
 
             // Créer les placeholders s'ils n'existent pas
