@@ -143,6 +143,11 @@
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
         }
+
+        /* Bouton anniversaire en arrière-plan quand modale ouverte */
+        .anniversary-behind {
+            z-index: 10 !important;
+        }
     </style>
 </head>
 
@@ -3497,6 +3502,18 @@
                 yPos += 8;
             }
 
+            // Email du propriétaire du compte
+            if (firebase.auth().currentUser && firebase.auth().currentUser.email) {
+                doc.setFont(undefined, 'bold');
+                doc.text('Par : ', margin, yPos);
+                const labelWidth = doc.getTextWidth('Par : ');
+                doc.setFont(undefined, 'normal');
+                doc.setTextColor(37, 99, 235); // Bleu pour l'email
+                doc.text(firebase.auth().currentUser.email, margin + labelWidth, yPos);
+                doc.setTextColor(...textColor); // Remettre la couleur normale
+                yPos += 8;
+            }
+
             // Badge "À venir" si applicable
             const today = new Date();
             today.setHours(0, 0, 0, 0);
@@ -6741,6 +6758,63 @@
         title="Voir mon souvenir le plus proche">
         <i class="fas fa-history text-xl"></i>
     </button>
+
+    <script>
+        // Fonction pour gérer le z-index des boutons flottants (anniversaire et scroll-to-top)
+        function updateAnniversaryButtonZIndex() {
+            const anniversaryBtn = document.getElementById('anniversaryBtn');
+            const scrollToTopBtn = document.getElementById('scrollToTopBtn');
+
+            const detailsModal = document.getElementById('detailsModal');
+            const statsModal = document.getElementById('statsModal');
+            const badgesModal = document.getElementById('badgesModal');
+            const wishlistModal = document.getElementById('wishlistModal');
+
+            // Vérifier si au moins une modale est affichée
+            const isAnyModalOpen =
+                (detailsModal && !detailsModal.classList.contains('hidden')) ||
+                (statsModal && !statsModal.classList.contains('hidden')) ||
+                (badgesModal && !badgesModal.classList.contains('hidden')) ||
+                (wishlistModal && !wishlistModal.classList.contains('hidden'));
+
+            // Ajouter/retirer la classe anniversary-behind pour les deux boutons
+            if (isAnyModalOpen) {
+                if (anniversaryBtn) anniversaryBtn.classList.add('anniversary-behind');
+                if (scrollToTopBtn) scrollToTopBtn.classList.add('anniversary-behind');
+            } else {
+                if (anniversaryBtn) anniversaryBtn.classList.remove('anniversary-behind');
+                if (scrollToTopBtn) scrollToTopBtn.classList.remove('anniversary-behind');
+            }
+        }
+
+        // Observer les changements de classe sur les modales
+        function setupModalObservers() {
+            const modalsToObserve = [
+                document.getElementById('detailsModal'),
+                document.getElementById('statsModal'),
+                document.getElementById('badgesModal'),
+                document.getElementById('wishlistModal')
+            ];
+
+            const observer = new MutationObserver(updateAnniversaryButtonZIndex);
+
+            modalsToObserve.forEach(modal => {
+                if (modal) {
+                    observer.observe(modal, {
+                        attributes: true,
+                        attributeFilter: ['class']
+                    });
+                }
+            });
+        }
+
+        // Initialiser les observateurs au chargement
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', setupModalObservers);
+        } else {
+            setupModalObservers();
+        }
+    </script>
 
     <!-- Modal Anniversaire -->
     <div id="anniversaryModal"
