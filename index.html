@@ -140,6 +140,7 @@
             <div class="text-center mb-12">
                 <span
                     class="bg-green-100 text-green-800 text-sm px-3 py-1 rounded-full uppercase tracking-wider mt-2 mb-4">Fonctionnalités</span>
+                <h2 class="text-3xl text-green-800 mt-2 mb-4">Tout pour votre progression</h2>
                 <p class="text-gray-600 max-w-2xl mx-auto">Une suite d'outils complète conçue pour les passionnés de
                     course à pied.</p>
             </div>
@@ -211,6 +212,26 @@
                     <p class="text-gray-600 text-sm">Parcourez, en tant qu'invité, le répertoire des coureurs
                         et trouvez la course qui vous motive.</p>
                     </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Public Races Section -->
+    <div id="publicRacesSection" class="py-16 bg-gray-50">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <span
+                    class="bg-green-100 text-green-800 text-sm px-3 py-1 rounded-full uppercase tracking-wider mt-2 mb-4">Communauté</span>
+                <h2 class="text-3xl text-green-800 mt-2 mb-4">Les dernières courses</h2>
+                <p class="text-gray-600 max-w-2xl mx-auto">Découvrez les exploits de tous les coureurs.</p>
+            </div>
+
+            <div id="publicRacesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Les courses seront chargées ici dynamiquement -->
+                <div class="col-span-1 md:col-span-2 lg:col-span-3 text-center py-12">
+                    <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+                    <p class="mt-2 text-gray-500">Chargement des courses...</p>
                 </div>
             </div>
         </div>
@@ -304,13 +325,6 @@
                 </section>
             </div>
 
-            <!-- Footer -->
-            <div class="p-6 border-t border-gray-100 flex justify-end bg-gray-50 rounded-b-xl shrink-0">
-                <button onclick="closeModal('manualModal')"
-                    class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition-colors font-medium">
-                    Fermer
-                </button>
-            </div>
         </div>
     </div>
 
@@ -319,6 +333,7 @@
 
     <!-- Auth Modals & Logic (Injects Login/Signup Modals) -->
     <script src="js/modal-auth.js"></script>
+    <script src="js/public-races.js"></script>
 
     <!-- Vérifier si déconnexion automatique -->
     <script>
