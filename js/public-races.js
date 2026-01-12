@@ -231,7 +231,6 @@ async function loadPublicRaces() {
 
         // UPDATE STATS UI
         const statsContainer = document.getElementById('communityStatsContainer');
-        const statsHeader = document.getElementById('communityStatsHeader');
 
         if (statsContainer) {
             const elTotal = document.getElementById('statTotalRaces');
@@ -269,7 +268,6 @@ async function loadPublicRaces() {
             if (elKm) animateCounter(elKm, Math.round(statsCount.km));
 
             statsContainer.classList.remove('hidden');
-            if (statsHeader) statsHeader.classList.remove('hidden');
         }
 
     } catch (error) {

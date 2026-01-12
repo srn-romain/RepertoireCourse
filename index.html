@@ -53,7 +53,7 @@
 
     <!-- Bandeau de connexion (visible si connecté) -->
     <!-- Bandeau de connexion -->
-    <div id="authStatusBar" class="bg-green-50 border-b border-green-200 py-2 px-4">
+    <div id="authStatusBar" class="bg-green-50 border-b border-green-200 py-2 px-4 relative">
         <div class="container mx-auto flex justify-between items-center">
             <div class="flex items-center gap-3">
                 <button id="backupDataBtn" class="text-green-600 hover:text-green-800 transition hidden"
@@ -130,9 +130,9 @@
                     class="px-4 py-2 rounded-full bg-green-600 hover:bg-green-700 text-white transition flex items-center justify-center gap-2 cursor-pointer">
                     <i class="fas fa-running"></i> Commencer maintenant
                 </button>
-                <a href="#features"
+                <a href="#publicRacesSection"
                     class="px-4 py-2 rounded-full bg-white text-green-700 border-2 border-green-600 hover:bg-green-50 transition flex items-center justify-center gap-2">
-                    <i class="fas fa-info-circle"></i> Découvrir
+                    <i class="fas fa-info-circle"></i> Découvrir la communauté
                 </a>
             </div>
         </div>
@@ -222,19 +222,19 @@
     </div>
 
     <!-- Public Races Section -->
-    <div id="publicRacesSection" class="py-16">
+    <div id="publicRacesSection" class="py-6">
         <div class="container mx-auto px-4 sm:px-6 lg:px-8">
 
             <!-- Statistiques de la Communauté (Dynamique) -->
-            <div class="text-center mb-8 hidden" id="communityStatsHeader">
-                <h2
-                    class="text-2xl font-bold text-green-800 uppercase tracking-widest border-b-2 border-green-100 inline-block pb-2">
-                    <i class="fas fa-users mr-2"></i> Statistiques de la Communauté
-                </h2>
+            <div class="text-center mb-12" id="communityStatsHeader">
+                <span
+                    class="bg-green-100 text-green-800 text-sm px-3 py-1 rounded-full uppercase tracking-wider mt-2 mb-4">Communauté</span>
+                <h2 class="text-3xl text-green-800 mt-2 mb-4">Les dernières courses</h2>
+                <p class="text-gray-600 max-w-2xl mx-auto">Découvrez les performances collectives des coureurs.</p>
             </div>
 
             <div id="communityStatsContainer"
-                class="hidden max-w-5xl mx-auto mb-16 bg-white rounded-3xl p-6 shadow-sm border border-green-50 transform transition-all duration-500">
+                class="hidden max-w-5xl mx-auto mb-8 bg-white rounded-3xl p-6 shadow-sm border border-green-50 transform transition-all duration-500">
                 <div
                     class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center divide-y md:divide-y-0 md:divide-x divide-green-50">
 
@@ -263,11 +263,9 @@
 
             </div>
 
-            <div class="text-center mb-12">
-                <span
-                    class="bg-green-100 text-green-800 text-sm px-3 py-1 rounded-full uppercase tracking-wider mt-2 mb-4">Communauté</span>
-                <h2 class="text-3xl text-green-800 mt-2 mb-4">Les dernières courses</h2>
-                <p class="text-gray-600 max-w-2xl mx-auto">Découvrez les exploits de tous les coureurs.</p>
+            <!-- Séparateur -->
+            <div class="max-w-4xl mx-auto mb-6">
+                <hr class="border-t border-green-100">
             </div>
 
             <div id="publicRacesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -418,12 +416,15 @@
 
                 if (user) {
                     // Utilisateur connecté
-                    // État de chargement immédiat
+                    // État de chargement immédiat - Centré Absolument
                     if (authStatusText) {
-                        authStatusText.className = "fixed inset-0 z-[60] bg-white bg-opacity-95 flex flex-col items-center justify-center backdrop-blur-sm";
+                        if (authStatusBar) authStatusBar.classList.replace('py-2', 'py-6');
+                        authStatusText.className = "absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 text-sm text-green-800 flex items-center";
                         authStatusText.innerHTML = `
-                            <i class="fas fa-circle-notch fa-spin text-green-600 text-6xl mb-6"></i>
-                            <span class="font-bold text-green-800 text-2xl animate-pulse">Chargement de votre profil...</span>
+                            <div class="flex items-center text-green-600 animate-pulse">
+                                <i class="fas fa-circle-notch fa-spin mr-2"></i>
+                                <span class="font-medium">Chargement profil...</span>
+                            </div>
                          `;
                     }
 
@@ -438,6 +439,7 @@
 
                     // Affichage Final
                     if (authStatusText) {
+                        if (authStatusBar) authStatusBar.classList.replace('py-6', 'py-2'); // Rétablir hauteur normale
                         // Reset du style pour le bandeau standard
                         authStatusText.className = "text-sm text-green-800";
                         authStatusText.innerHTML = `
