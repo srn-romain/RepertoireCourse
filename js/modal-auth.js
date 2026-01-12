@@ -277,26 +277,4 @@ function initAuthLogic() {
             }
         });
     }
-
-    // Redirection if already logged in (optional check, maybe only on index?)
-    // On manuel.html we might not want auto-redirect, but the modals are only for connecting.
-    // If user is already connected, auth state change will trigger.
-    if (window.location.pathname.endsWith('index.html') || window.location.pathname.endsWith('manuel.html')) {
-        auth.onAuthStateChanged(user => {
-            if (user) {
-                const isManuel = window.location.pathname.endsWith('manuel.html');
-                // Adjust behavior: if on manual, maybe show "Go to Dashboard" instead of auto redirect?
-                // For now, consistent behavior: auto redirect to dashboard if logged in.
-                // Except maybe manual page should be readable even if logged in?
-                // The user requested: "accessible depuis cette page".
-                // If I am logged in, and I go to manuel.html, should I be redirected?
-                // Dashboard has everything. Manual is help.
-                // Let's NOT auto-redirect from manual.html, only from index.html (landing page).
-
-                if (!isManuel) {
-                    window.location.href = 'dashboard.html';
-                }
-            }
-        });
-    }
 }
