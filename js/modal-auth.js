@@ -88,7 +88,21 @@ const authModalsHTML = `
                         <i class="fas fa-eye-slash hidden" id="signup-eye-off"></i>
                     </button>
                 </div>
-                <p class="text-xs text-gray-500 mt-1">6 caractères minimum</p>
+                
+                <!-- PASSWORD STRENGTH METER -->
+                <div class="mt-2">
+                    <div class="h-1 w-full bg-gray-200 rounded-full overflow-hidden">
+                        <div id="passwordStrengthBar" class="h-full bg-red-500 w-0 transition-all duration-300"></div>
+                    </div>
+                    <span id="passwordStrengthText" class="text-xs text-gray-400 mt-1 block text-right">Faible</span>
+                    
+                    <ul class="text-xs text-gray-500 mt-2 space-y-1 grid grid-cols-2 gap-x-2">
+                        <li id="lengthResult" class="text-gray-400"><i class="fas fa-circle text-[6px] mr-2 align-middle"></i> 8 caractères min.</li>
+                        <li id="uppercaseResult" class="text-gray-400"><i class="fas fa-circle text-[6px] mr-2 align-middle"></i> Majuscule & Minuscule</li>
+                        <li id="numberResult" class="text-gray-400"><i class="fas fa-circle text-[6px] mr-2 align-middle"></i> Chiffre</li>
+                        <li id="specialResult" class="text-gray-400"><i class="fas fa-circle text-[6px] mr-2 align-middle"></i> Caractère spécial</li>
+                    </ul>
+                </div>
             </div>
             <div>
                 <label for="signup-confirm-password" class="block text-sm font-semibold text-gray-700 mb-1">Confirmer</label>
@@ -243,6 +257,110 @@ function initAuthLogic() {
         });
     }
 
+    // SIGNUP FORM LOGIC WITH PASSWORD STRENGTH
+    const signupPasswordInput = document.getElementById('signup-password');
+    const signupSubmitBtn = document.getElementById('signupSubmitBtn');
+
+    // Critères
+    const lengthResult = document.getElementById('lengthResult');
+    const uppercaseResult = document.getElementById('uppercaseResult');
+    const numberResult = document.getElementById('numberResult');
+    const specialResult = document.getElementById('specialResult');
+
+    // Barre de force
+    const passwordStrengthBar = document.getElementById('passwordStrengthBar');
+    const passwordStrengthText = document.getElementById('passwordStrengthText');
+
+    function checkPasswordStrength(password) {
+        let score = 0;
+        let validCount = 0;
+
+        // 1. Longueur (8 min)
+        if (password.length >= 8) {
+            lengthResult.classList.remove('text-gray-400');
+            lengthResult.classList.add('text-green-600', 'font-bold');
+            lengthResult.innerHTML = '<i class="fas fa-check mr-1"></i> 8 caractères min.';
+            score += 25;
+            validCount++;
+        } else {
+            lengthResult.classList.remove('text-green-600', 'font-bold');
+            lengthResult.classList.add('text-gray-400');
+            lengthResult.innerHTML = '<i class="fas fa-circle text-[6px] mr-2 align-middle"></i> 8 caractères min.';
+        }
+
+        // 2. Majuscule & Minuscule
+        if (/[A-Z]/.test(password) && /[a-z]/.test(password)) {
+            uppercaseResult.classList.remove('text-gray-400');
+            uppercaseResult.classList.add('text-green-600', 'font-bold');
+            uppercaseResult.innerHTML = '<i class="fas fa-check mr-1"></i> Majuscule & Minuscule';
+            score += 25;
+            validCount++;
+        } else {
+            uppercaseResult.classList.remove('text-green-600', 'font-bold');
+            uppercaseResult.classList.add('text-gray-400');
+            uppercaseResult.innerHTML = '<i class="fas fa-circle text-[6px] mr-2 align-middle"></i> Majuscule & Minuscule';
+        }
+
+        // 3. Chiffre
+        if (/[0-9]/.test(password)) {
+            numberResult.classList.remove('text-gray-400');
+            numberResult.classList.add('text-green-600', 'font-bold');
+            numberResult.innerHTML = '<i class="fas fa-check mr-1"></i> Chiffre';
+            score += 25;
+            validCount++;
+        } else {
+            numberResult.classList.remove('text-green-600', 'font-bold');
+            numberResult.classList.add('text-gray-400');
+            numberResult.innerHTML = '<i class="fas fa-circle text-[6px] mr-2 align-middle"></i> Chiffre';
+        }
+
+        // 4. Caractère spécial
+        if (/[^A-Za-z0-9]/.test(password)) {
+            specialResult.classList.remove('text-gray-400');
+            specialResult.classList.add('text-green-600', 'font-bold');
+            specialResult.innerHTML = '<i class="fas fa-check mr-1"></i> Caractère spécial';
+            score += 25;
+            validCount++;
+        } else {
+            specialResult.classList.remove('text-green-600', 'font-bold');
+            specialResult.classList.add('text-gray-400');
+            specialResult.innerHTML = '<i class="fas fa-circle text-[6px] mr-2 align-middle"></i> Caractère spécial';
+        }
+
+        // Mise à jour Barre
+        passwordStrengthBar.style.width = score + '%';
+        passwordStrengthBar.className = 'h-1 rounded-full transition-all duration-300 '; // reset base
+
+        if (score < 50) {
+            passwordStrengthBar.classList.add('bg-red-500');
+            passwordStrengthText.textContent = 'Faible';
+            passwordStrengthText.className = 'text-xs text-red-500 font-semibold mt-1 block text-right';
+        } else if (score < 100) {
+            passwordStrengthBar.classList.add('bg-yellow-500');
+            passwordStrengthText.textContent = 'Moyen';
+            passwordStrengthText.className = 'text-xs text-yellow-600 font-semibold mt-1 block text-right';
+        } else {
+            passwordStrengthBar.classList.add('bg-green-500');
+            passwordStrengthText.textContent = 'Fort';
+            passwordStrengthText.className = 'text-xs text-green-600 font-bold mt-1 block text-right animate-pulse';
+
+            // Animation "Succès" interactive
+            if (!passwordStrengthBar.dataset.animate) {
+                passwordStrengthBar.dataset.animate = "true";
+                signupPasswordInput.classList.add('border-green-500', 'ring-2', 'ring-green-100');
+                setTimeout(() => signupPasswordInput.classList.remove('ring-2', 'ring-green-100'), 1000);
+            }
+        }
+
+        return validCount === 4;
+    }
+
+    if (signupPasswordInput) {
+        signupPasswordInput.addEventListener('input', (e) => {
+            checkPasswordStrength(e.target.value);
+        });
+    }
+
     // SIGNUP SUBMIT
     const signupForm = document.getElementById('signupForm');
     if (signupForm) {
@@ -256,6 +374,14 @@ function initAuthLogic() {
 
             if (password !== confirm) {
                 showError('signup-error', "Les mots de passe ne correspondent pas.");
+                return;
+            }
+
+            if (!checkPasswordStrength(password)) {
+                showError('signup-error', "Le mot de passe ne respecte pas les critères de sécurité.");
+                // Animation shake
+                signupForm.classList.add('animate-pulse'); // Simple pulse for now
+                setTimeout(() => signupForm.classList.remove('animate-pulse'), 500);
                 return;
             }
 
