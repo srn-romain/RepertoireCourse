@@ -1720,9 +1720,9 @@
                 '<span class="font-semibold">' + totalDistance + '</span> km parcourus | ' +
                 '<span class="font-semibold">' + totalElevation + '</span> m de dénivelé | ' +
                 '<span class="' + timeClass + '">' + formattedTime + '</span> de course';
-            // Affichage du prix (seulement pour les admins)
-            if (isAdmin()) {
-                statsHtml += ' |\n                <span id="totalPriceStat" class="font-semibold group relative cursor-pointer">\n                    <span class="opacity-40">Prix total</span>\n                    <span class="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-2 py-1 bg-green-700 text-white text-xs rounded shadow-lg hidden group-hover:block z-50">\n                        ' + totalPrice.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' € dépensés\n                    </span>\n                </span>';
+            // Affichage du prix (pour tous les utilisateurs connectés)
+            if (isUserAuthenticated) {
+                statsHtml += ' |\n                <span id="totalPriceStat" class="font-semibold group relative cursor-pointer">\n                    <span class="opacity-40">Prix total</span>\n                    <span class="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-2 py-1 bg-green-700 text-white text-xs rounded shadow-lg hidden group-hover:block z-50 whitespace-nowrap">\n                        ' + totalPrice.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' € dépensés\n                    </span>\n                </span>';
             }
             statsElement.innerHTML = statsHtml;
             // Ajout du hover JS si besoin (pour compatibilité)
@@ -4640,21 +4640,27 @@
 
         // Fonction pour mettre à jour le placeholder et l'affichage des filtres
         function updateSearchInputState() {
-            const userIsAuthenticated = isAuthenticated();
+            const userIsAuthenticated = BackendAPI.isAuthenticated();
             const advancedFiltersPanel = document.getElementById('advancedFiltersPanel');
+            const searchInput = document.getElementById('searchInput');
 
             if (userIsAuthenticated) {
-                if (isAdmin()) {
-                    searchInput.placeholder = 'Rechercher une course... (nom, lieu, date, distance, dénivelé, temps, notes, prix, etc.)';
-                } else {
-                    // Pour les invités, on ne mentionne pas le prix
-                    searchInput.placeholder = 'Rechercher une course... (nom, lieu, date, distance, dénivelé, temps, notes, etc.)';
+                // Pour tous les utilisateurs connectés, on affiche les options complètes
+                searchInput.placeholder = 'Rechercher une course... (nom, lieu, date, distance, dénivelé, temps, notes, prix, etc.)';
+
+                if (advancedFiltersPanel) {
+                    advancedFiltersPanel.classList.remove('hidden');
                 }
-                advancedFiltersPanel.classList.remove('hidden');
-                updateLocationFilter();
+
+                // Mettre à jour les lieux si possible (avec sécurité)
+                if (typeof updateLocationFilter === 'function' && typeof races !== 'undefined') {
+                    updateLocationFilter();
+                }
             } else {
                 searchInput.placeholder = 'Rechercher une course par nom...';
-                advancedFiltersPanel.classList.add('hidden');
+                if (advancedFiltersPanel) {
+                    advancedFiltersPanel.classList.add('hidden');
+                }
             }
         }
 
@@ -6756,10 +6762,6 @@
 
         // Logique Anniversaire
         anniversaryBtn.addEventListener('click', () => {
-            if (typeof races === 'undefined' || !races || races.length === 0) {
-                alert("Aucune course enregistrée pour calculer les souvenirs.");
-                return;
-            }
 
             const now = new Date();
             let minDiff = Infinity;
