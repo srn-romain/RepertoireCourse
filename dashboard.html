@@ -700,14 +700,16 @@
                     <img id="detailsParcours" class="w-full h-auto rounded-lg shadow-md" alt="Parcours de la course">
                 </div>
                 <div class="grid grid-cols-2 gap-4 mb-4">
-                    <div class="bg-green-50 p-3 rounded-lg" id="ImageButton">
+                    <div class="bg-green-50 p-3 rounded-lg flex flex-col h-full" id="ImageButton">
                         <p id="DetailImageTitle" class="text-sm text-green-600 flex items-center gap-2"></p>
                         <p id="DetailImageButton" class="font-semibold text-green-800 hidden"></p>
                         <!-- Hidden as text is likely not used with the new logic, but ID kept for safety -->
-                        <button id="voirParcoursBtn"
-                            class="mt-2 px-2 py-1 bg-green-100 text-green-800 rounded hover:bg-green-200 text-xs w-full">
-                            Voir le parcours
-                        </button>
+                        <div class="flex-grow flex items-center w-full">
+                            <button id="voirParcoursBtn"
+                                class="mt-1 px-2 py-1 bg-green-100 text-green-800 rounded hover:bg-green-200 text-xs w-full">
+                                Voir le parcours
+                            </button>
+                        </div>
                     </div>
                     <div class="bg-green-50 p-3 rounded-lg" id="BadgeButton">
                         <p class="text-sm text-green-600 flex items-center gap-2">
