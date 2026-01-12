@@ -37,10 +37,11 @@ async function loadPublicRaces() {
         // Prepare a fragment to batch updates (prevents visual duplicates during render)
         const fragment = document.createDocumentFragment();
 
-        // Cache object (persisted across function calls could be better but let's keep it simple locally first)
-        // Actually, if we want to reuse cache across re-runs (if any), we should define it outside.
-        // But for atomic display, local is fine.
+        // Cache object
         const userCache = {};
+
+        // Stats Counters
+        const statsCount = { count: 0, upcoming: 0, km: 0 };
 
         for (const doc of snapshot.docs) {
             const race = { id: doc.id, ...doc.data() };
@@ -132,6 +133,16 @@ async function loadPublicRaces() {
             raceDateOnly.setHours(0, 0, 0, 0);
             const isToday = raceDateOnly.getTime() === today.getTime();
             const isUpcoming = raceDate >= today;
+
+            // STATS CALCULATION
+            statsCount.count++;
+            if (isUpcoming) statsCount.upcoming++;
+            if (race.distance) {
+                // Gestion basique des formats style "10,5" ou "10.5"
+                const dist = parseFloat(race.distance.toString().replace(',', '.'));
+                if (!isNaN(dist)) statsCount.km += dist;
+            }
+
             const daysSinceRace = Math.floor((today.getTime() - raceDateOnly.getTime()) / (1000 * 60 * 60 * 24));
             const isWithin10Days = daysSinceRace >= 0 && daysSinceRace <= 10;
             const hasCompletedTime = race.time && race.time !== '00:00:00' && race.time.trim() !== '';
@@ -156,8 +167,8 @@ async function loadPublicRaces() {
 
             // City conditional
             const cityHtml = (showCity && locationDisplay)
-                ? `<span class="flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-800 text-xs rounded-full" title="${race.location}">
-                     <i class="fas fa-map-marker-alt text-blue-500"></i> ${locationDisplay}
+                ? `<span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full" title="${race.location}">
+                     <i class="fas fa-map-marker-alt text-green-500"></i> ${locationDisplay}
                    </span>`
                 : '';
 
@@ -217,6 +228,54 @@ async function loadPublicRaces() {
         // ATOMIC UPDATE: Clear and Append
         grid.innerHTML = '';
         grid.appendChild(fragment);
+
+        // UPDATE STATS UI
+        const statsContainer = document.getElementById('communityStatsContainer');
+        const statsHeader = document.getElementById('communityStatsHeader');
+
+        if (statsContainer) {
+            const elTotal = document.getElementById('statTotalRaces');
+            const elUpcoming = document.getElementById('statUpcomingRaces');
+            const elKm = document.getElementById('statTotalKm');
+            const elMsg = document.getElementById('communityMessage');
+
+            // Animation function (Fondu Vertical Style)
+            function animateCounter(element, targetUserValue) {
+                const duration = 2500;
+                const target = parseInt(targetUserValue);
+                if (isNaN(target)) {
+                    element.textContent = targetUserValue;
+                    return;
+                }
+
+                // Logique demandée par l'user (increment par intervalle 50ms)
+                const incrementTime = 30;
+                const steps = duration / incrementTime;
+                const incrementValue = target / steps;
+
+                let current = 0;
+                const timer = setInterval(() => {
+                    current += incrementValue;
+                    if (current >= target) {
+                        element.textContent = target.toLocaleString('fr-FR');
+                        clearInterval(timer);
+                    } else {
+                        element.textContent = Math.round(current).toLocaleString('fr-FR');
+                    }
+                }, incrementTime);
+            }
+
+            if (elTotal) animateCounter(elTotal, statsCount.count);
+            if (elUpcoming) animateCounter(elUpcoming, statsCount.upcoming);
+            if (elKm) animateCounter(elKm, Math.round(statsCount.km));
+
+            if (elMsg) {
+                elMsg.innerHTML = `<span class="text-gray-600 italic text-lg">"La communauté a prévu <strong class="text-blue-600">${statsCount.upcoming} courses</strong> prochainement !"</span>`;
+            }
+
+            statsContainer.classList.remove('hidden');
+            if (statsHeader) statsHeader.classList.remove('hidden');
+        }
 
     } catch (error) {
         console.error("Error loading public races:", error);

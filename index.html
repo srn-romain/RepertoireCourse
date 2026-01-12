@@ -100,6 +100,10 @@
             </div>
             <div class="mt-4 lg:mt-0 w-full lg:w-auto">
                 <div class="flex flex-col lg:flex-row space-y-2 lg:space-y-0 lg:space-x-3 w-full lg:w-auto">
+                    <button id="accountSettingsBtn" onclick="openUserSettings()"
+                        class="hidden flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-full transition-colors w-full lg:w-auto whitespace-nowrap cursor-pointer shadow-md">
+                        <i class="fas fa-user-cog mr-2"></i> <span>Compte</span>
+                    </button>
                     <button onclick="openModal('manualModal')"
                         class="flex items-center justify-center bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-full transition-colors w-full lg:w-auto whitespace-nowrap cursor-pointer">
                         <i class="fas fa-book-open mr-2"></i> <span>Manuel</span>
@@ -218,8 +222,50 @@
     </div>
 
     <!-- Public Races Section -->
-    <div id="publicRacesSection" class="py-16 bg-gray-50">
+    <div id="publicRacesSection" class="py-16">
         <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+
+            <!-- Statistiques de la Communauté (Dynamique) -->
+            <div class="text-center mb-8 hidden" id="communityStatsHeader">
+                <h2
+                    class="text-2xl font-bold text-green-800 uppercase tracking-widest border-b-2 border-green-100 inline-block pb-2">
+                    <i class="fas fa-users mr-2"></i> Statistiques de la Communauté
+                </h2>
+            </div>
+
+            <div id="communityStatsContainer"
+                class="hidden max-w-5xl mx-auto mb-16 bg-white rounded-3xl p-6 shadow-sm border border-green-50 transform transition-all duration-500">
+                <div
+                    class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center divide-y md:divide-y-0 md:divide-x divide-green-50">
+
+                    <!-- Stat 1 : Total -->
+                    <div class="p-4 flex flex-col items-center">
+                        <span id="statTotalRaces" class="text-4xl font-bold text-green-600 block mb-2">0</span>
+                        <!-- Barre de soulignement (Design System) -->
+                        <div class="w-12 h-1 bg-green-500 rounded-full mb-3"></div>
+                        <p class="text-gray-500 font-medium uppercase tracking-wider text-xs">Courses Partagées</p>
+                    </div>
+
+                    <!-- Stat 2 : À venir -->
+                    <div class="p-4 flex flex-col items-center">
+                        <span id="statUpcomingRaces" class="text-4xl font-bold text-blue-600 block mb-2">0</span>
+                        <div class="w-12 h-1 bg-blue-500 rounded-full mb-3"></div>
+                        <p class="text-gray-500 font-medium uppercase tracking-wider text-xs">Courses Prévues</p>
+                    </div>
+
+                    <!-- Stat 3 : Km -->
+                    <div class="p-4 flex flex-col items-center">
+                        <span id="statTotalKm" class="text-4xl font-bold text-purple-600 block mb-2">0</span>
+                        <div class="w-12 h-1 bg-purple-500 rounded-full mb-3"></div>
+                        <p class="text-gray-500 font-medium uppercase tracking-wider text-xs">Km Parcourus</p>
+                    </div>
+                </div>
+
+                <div class="mt-6 text-center" id="communityMessage">
+                    <!-- Message dynamique -->
+                </div>
+            </div>
+
             <div class="text-center mb-12">
                 <span
                     class="bg-green-100 text-green-800 text-sm px-3 py-1 rounded-full uppercase tracking-wider mt-2 mb-4">Communauté</span>
@@ -366,6 +412,7 @@
 
                 // Bouton Hero CTA
                 const heroCtaButton = document.getElementById('heroCtaButton');
+                const accountSettingsBtn = document.getElementById('accountSettingsBtn');
 
                 // Boutons de la barre de statut
                 const disconnectBtn = document.getElementById('disconnectBtn');
@@ -374,6 +421,16 @@
 
                 if (user) {
                     // Utilisateur connecté
+                    // État de chargement immédiat
+                    if (authStatusText) {
+                        authStatusText.className = "fixed inset-0 z-[60] bg-white bg-opacity-95 flex flex-col items-center justify-center backdrop-blur-sm";
+                        authStatusText.innerHTML = `
+                            <i class="fas fa-circle-notch fa-spin text-green-600 text-6xl mb-6"></i>
+                            <span class="font-bold text-green-800 text-2xl animate-pulse">Chargement de votre profil...</span>
+                         `;
+                    }
+
+                    // Récupération pseudo
                     let userPseudo = "Utilisateur";
                     try {
                         const uDoc = await db.collection('users').doc(user.uid).get();
@@ -382,7 +439,10 @@
                         }
                     } catch (e) { console.error(e); }
 
+                    // Affichage Final
                     if (authStatusText) {
+                        // Reset du style pour le bandeau standard
+                        authStatusText.className = "text-sm text-green-800";
                         authStatusText.innerHTML = `
                             <span class="italic font-normal text-gray-600 mr-2">Connecté en tant que</span>
                             <span class="font-bold text-green-800 mr-2">${user.email} (${userPseudo})</span>
@@ -412,6 +472,7 @@
                         heroCtaButton.classList.remove('bg-green-600', 'hover:bg-green-700');
                         heroCtaButton.classList.add('bg-blue-600', 'hover:bg-blue-700');
                     }
+                    if (accountSettingsBtn) accountSettingsBtn.classList.remove('hidden');
                 } else {
                     // Utilisateur non connecté
 
@@ -423,6 +484,7 @@
                     if (barSignupBtn) barSignupBtn.classList.remove('hidden');
 
                     if (titleLink) titleLink.href = '#';
+                    if (accountSettingsBtn) accountSettingsBtn.classList.add('hidden');
 
                     // Rétablir le bouton Hero CTA
                     if (heroCtaButton) {
