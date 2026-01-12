@@ -7,7 +7,7 @@
 
 const userSettingsModalHTML = `
 <div id="userSettingsModal" class="modal hidden fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm transition-opacity duration-300">
-    <div class="modal-content bg-white p-8 w-full max-w-md m-4 rounded-2xl shadow-2xl relative transform scale-100 transition-transform duration-300">
+    <div class="modal-content bg-white p-8 w-full max-w-lg m-4 rounded-2xl shadow-2xl relative transform scale-100 transition-transform duration-300 max-h-[90vh] overflow-y-auto">
         <button onclick="closeSettingsModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition">
             <i class="fas fa-times text-xl"></i>
         </button>
@@ -29,6 +29,32 @@ const userSettingsModalHTML = `
                         <i class="fas fa-save"></i>
                     </button>
                 </form>
+            </div>
+
+            <hr class="border-gray-100">
+
+            <!-- Confidentialité -->
+            <div>
+                <h3 class="text-sm font-semibold text-gray-700 mb-3">Confidentialité (Affichage public)</h3>
+                <div class="space-y-3 bg-gray-50 p-4 rounded-lg border border-gray-100">
+                    <label class="flex items-center cursor-pointer">
+                        <input type="checkbox" id="prefShowPseudo" class="w-4 h-4 text-green-600 rounded focus:ring-green-500">
+                        <span class="ml-2 text-sm text-gray-700">Afficher mon pseudo</span>
+                    </label>
+                    <label class="flex items-center cursor-pointer">
+                        <input type="checkbox" id="prefShowCity" class="w-4 h-4 text-green-600 rounded focus:ring-green-500">
+                        <span class="ml-2 text-sm text-gray-700">Afficher la ville de la course</span>
+                    </label>
+                    <label class="flex items-center cursor-pointer">
+                        <input type="checkbox" id="prefShowFavorite" class="w-4 h-4 text-green-600 rounded focus:ring-green-500">
+                        <span class="ml-2 text-sm text-gray-700">Afficher le statut "Favori"</span>
+                    </label>
+                    <label class="flex items-center cursor-pointer">
+                        <input type="checkbox" id="prefShowDay" class="w-4 h-4 text-green-600 rounded focus:ring-green-500">
+                        <span class="ml-2 text-sm text-gray-700">Afficher le jour précis (ex: 12 mars)</span>
+                    </label>
+                </div>
+                <p class="text-xs text-gray-400 mt-2 italic">Ces réglages s'appliquent à toutes vos courses publiques.</p>
             </div>
 
             <hr class="border-gray-100">
@@ -82,6 +108,37 @@ function initSettingsLogic() {
     const pseudoForm = document.getElementById('updatePseudoForm');
     const resetBtn = document.getElementById('btnSendPasswordReset');
     const msgContainer = document.getElementById('settingsMessageContainer');
+
+    // Checkboxes
+    const prefShowPseudo = document.getElementById('prefShowPseudo');
+    const prefShowCity = document.getElementById('prefShowCity');
+    const prefShowFavorite = document.getElementById('prefShowFavorite');
+    const prefShowDay = document.getElementById('prefShowDay');
+
+    // Sauvegarder les préférences au changement
+    const savePrivacySettings = async () => {
+        const user = firebase.auth().currentUser;
+        if (!user) return;
+
+        const privacy = {
+            showPseudo: prefShowPseudo.checked,
+            showCity: prefShowCity.checked,
+            showFavorite: prefShowFavorite.checked,
+            showDay: prefShowDay.checked
+        };
+
+        try {
+            await db.collection('users').doc(user.uid).set({ privacy }, { merge: true });
+            console.log("Préférences sauvegardées", privacy);
+            settingsHasChanged = true; // Reload required to reflect changes on public page
+        } catch (e) {
+            console.error("Erreur save privacy", e);
+        }
+    };
+
+    [prefShowPseudo, prefShowCity, prefShowFavorite, prefShowDay].forEach(cb => {
+        if (cb) cb.addEventListener('change', savePrivacySettings);
+    });
 
     // Fonction d'affichage de message
     function showMessage(msg, type = 'success') {
@@ -168,21 +225,44 @@ window.openUserSettings = async function () {
     const emailDisplay = document.getElementById('settingsUserEmail');
     const pseudoInput = document.getElementById('settingsNewPseudo');
 
+    // Checkboxes inputs
+    const prefShowPseudo = document.getElementById('prefShowPseudo');
+    const prefShowCity = document.getElementById('prefShowCity');
+    const prefShowFavorite = document.getElementById('prefShowFavorite');
+    const prefShowDay = document.getElementById('prefShowDay');
+
     if (emailDisplay) emailDisplay.textContent = user.email;
 
     // Pré-remplir le pseudo actuel
-    if (pseudoInput) {
-        pseudoInput.value = "Chargement...";
-        try {
-            const doc = await db.collection('users').doc(user.uid).get();
-            if (doc.exists && doc.data().pseudo) {
-                pseudoInput.value = doc.data().pseudo;
-            } else {
-                pseudoInput.value = "";
-            }
-        } catch (e) {
-            pseudoInput.value = "";
+    if (pseudoInput) pseudoInput.value = "Chargement...";
+
+    try {
+        const doc = await db.collection('users').doc(user.uid).get();
+        if (doc.exists) {
+            const data = doc.data();
+            if (pseudoInput) pseudoInput.value = data.pseudo || "";
+
+            // Charger les préférences (Défaut: true si non défini, pour être public friendly par défaut, sauf jour?)
+            // Le user veut pouvoir contrôler. Disons:
+            // Pseudo: True by default
+            // City: False by default (current behavior was hidden)
+            // Favorite: False by default (current behavior was hidden)
+            // Day: False by default (current behavior was hidden)
+            // MAIS pour les checkbox, si c'est undefined, je vais mettre FALSE pour respecter l'état visuel actuel du site
+            // SAUF pour le pseudo qui est affiché par défaut.
+
+            const p = data.privacy || {};
+            if (prefShowPseudo) prefShowPseudo.checked = (p.showPseudo !== undefined) ? p.showPseudo : true;
+            if (prefShowCity) prefShowCity.checked = (p.showCity !== undefined) ? p.showCity : false;
+            if (prefShowFavorite) prefShowFavorite.checked = (p.showFavorite !== undefined) ? p.showFavorite : false;
+            if (prefShowDay) prefShowDay.checked = (p.showDay !== undefined) ? p.showDay : false;
+
+        } else {
+            if (pseudoInput) pseudoInput.value = "";
         }
+    } catch (e) {
+        console.error(e);
+        if (pseudoInput) pseudoInput.value = "";
     }
 
     if (modal) modal.classList.remove('hidden');
