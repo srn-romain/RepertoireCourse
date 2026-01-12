@@ -201,7 +201,7 @@
     <div id="authStatusBar" class="bg-green-50 border-b border-green-200 py-2 px-4 hidden">
         <div class="container mx-auto flex justify-between items-center">
             <div class="flex items-center gap-3">
-                <button id="backupDataBtn" class="text-green-600 hover:text-green-800 transition hidden"
+                <button id="backupDataBtn" class="text-green-600 hover:text-green-800 transition"
                     title="Sauvegarder mes données (JSON)">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                         <path fill-rule="evenodd"
@@ -247,6 +247,11 @@
                                 clip-rule="evenodd" />
                         </svg>
                         Wishlist
+                    </button>
+                    <button id="importJsonBtn"
+                        class="hidden flex items-center justify-center bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-full transition w-full lg:w-auto">
+                        <i class="fas fa-upload mr-2"></i>
+                        Import
                     </button>
                     <button id="statsBtn"
                         class="hidden bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-full flex items-center justify-center transition-colors w-full lg:w-auto whitespace-nowrap">
@@ -1258,6 +1263,65 @@
             </div>
         </div>
     </div>
+
+    <!-- Modal Import JSON -->
+    <div id="importJsonModal"
+        class="modal hidden fixed inset-0 z-[70] flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
+        <div
+            class="modal-content bg-white p-6 w-full max-w-lg m-4 rounded-xl shadow-2xl relative border border-orange-100">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-orange-800 flex items-center gap-2">
+                    <i class="fas fa-upload"></i> Importer mes données
+                </h3>
+                <button onclick="document.getElementById('importJsonModal').classList.add('hidden')"
+                    class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+
+            <div class="mb-4">
+                <p class="text-sm text-gray-600 mb-4">
+                    Importez vos courses depuis un fichier JSON au format standard. Les données seront ajoutées à votre
+                    répertoire existant.
+                </p>
+                <div class="bg-orange-50 border-l-4 border-orange-500 p-3 rounded-r-lg mb-4">
+                    <p class="text-xs text-orange-800">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        Le fichier doit être au format JSON exporté depuis cette application.
+                    </p>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Fichier JSON
+                </label>
+                <input type="file" id="jsonFileInput" accept=".json"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500">
+            </div>
+
+            <div id="importPreview" class="hidden mb-4">
+                <div class="bg-gray-50 p-3 rounded-lg">
+                    <p class="text-sm font-semibold text-gray-700 mb-2">Aperçu :</p>
+                    <p id="importPreviewText" class="text-xs text-gray-600"></p>
+                </div>
+            </div>
+
+            <div id="importMessage" class="hidden mb-4"></div>
+
+            <div class="flex justify-end gap-3">
+                <button onclick="document.getElementById('importJsonModal').classList.add('hidden')"
+                    class="px-6 py-2 bg-gray-200 text-gray-700 rounded-full hover:bg-gray-300 transition font-medium">
+                    Annuler
+                </button>
+                <button id="confirmImportBtn" disabled
+                    class="px-6 py-2 bg-orange-600 text-white rounded-full hover:bg-orange-700 transition font-medium shadow-md hover:shadow-lg disabled:bg-gray-400 disabled:cursor-not-allowed">
+                    Importer
+                </button>
+            </div>
+        </div>
+    </div>
+
 
     <!-- Bouton Retour en haut -->
     <button id="scrollToTopBtn"
@@ -6461,19 +6525,20 @@
             initBadgesSystem();
         }
 
-        // --- FONCTION DE MIGRATION DES DONNÉES (ADMIN ONLY) ---
+        // --- FONCTION DE SAUVEGARDE DES DONNÉES ---
         const migrateDataBtn = document.getElementById('migrateDataBtn');
         const backupDataBtn = document.getElementById('backupDataBtn');
 
         if (migrateDataBtn || backupDataBtn) {
-            // Afficher le bouton seulement si on est admin
+            // Le bouton backup est déjà visible dans le HTML (sans classe hidden)
+            // On garde juste la restriction admin pour migrateDataBtn si besoin
             BackendAPI.onAuthStateChanged(async (user) => {
                 if (user) {
                     const isAdmin = await BackendAPI.isAdminAsync();
                     if (isAdmin) {
                         if (migrateDataBtn) migrateDataBtn.classList.remove('hidden');
-                        if (backupDataBtn) backupDataBtn.classList.remove('hidden');
                     }
+                    // backupDataBtn est déjà visible pour tous les utilisateurs connectés
                 }
             });
 
@@ -6703,6 +6768,160 @@
 
             document.getElementById('anniversaryModal').classList.remove('hidden');
         });
+
+        // ===== EXPORT / IMPORT JSON =====
+        const importJsonBtn = document.getElementById('importJsonBtn');
+        const importJsonModal = document.getElementById('importJsonModal');
+        const jsonFileInput = document.getElementById('jsonFileInput');
+        const confirmImportBtn = document.getElementById('confirmImportBtn');
+        const importPreview = document.getElementById('importPreview');
+        const importPreviewText = document.getElementById('importPreviewText');
+        const importMessage = document.getElementById('importMessage');
+
+        let parsedImportData = null;
+
+        // Gérer la visibilité du bouton d'import (≤3 courses)
+        function updateImportButtonVisibility() {
+            if (races && races.length <= 3) {
+                importJsonBtn.classList.remove('hidden');
+            } else {
+                importJsonBtn.classList.add('hidden');
+            }
+        }
+
+        // Vérifier périodiquement la visibilité du bouton d'import
+        setInterval(updateImportButtonVisibility, 1000);
+
+        // Import JSON - Ouvrir modale
+        if (importJsonBtn) {
+            importJsonBtn.addEventListener('click', () => {
+                importJsonModal.classList.remove('hidden');
+                jsonFileInput.value = '';
+                importPreview.classList.add('hidden');
+                importMessage.classList.add('hidden');
+                confirmImportBtn.disabled = true;
+                parsedImportData = null;
+            });
+        }
+
+        // Lecture du fichier JSON
+        if (jsonFileInput) {
+            jsonFileInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    try {
+                        const data = JSON.parse(event.target.result);
+
+                        // Validation basique
+                        if (!data.races || !Array.isArray(data.races)) {
+                            throw new Error('Format invalide : le fichier doit contenir un tableau "races".');
+                        }
+
+                        parsedImportData = data;
+
+                        // Afficher aperçu détaillé
+                        const racesCount = data.races.length;
+                        const wishlistCount = data.wishlist ? data.wishlist.length : 0;
+
+                        let previewText = `${racesCount} course(s) trouvée(s)`;
+                        if (wishlistCount > 0) {
+                            previewText += ` et ${wishlistCount} élément(s) de wishlist`;
+                        }
+                        previewText += ' dans le fichier.';
+
+                        importPreviewText.textContent = previewText;
+                        importPreview.classList.remove('hidden');
+                        confirmImportBtn.disabled = false;
+
+                        importMessage.className = 'bg-green-50 border-l-4 border-green-500 p-3 rounded-r-lg mb-4';
+                        importMessage.innerHTML = '<i class="fas fa-check-circle text-green-600 mr-2"></i>Fichier valide et prêt à être importé.';
+                        importMessage.classList.remove('hidden');
+
+                    } catch (error) {
+                        console.error('Erreur parsing JSON:', error);
+                        importMessage.className = 'bg-red-50 border-l-4 border-red-500 p-3 rounded-r-lg mb-4';
+                        importMessage.innerHTML = `<i class="fas fa-exclamation-triangle text-red-600 mr-2"></i>${error.message}`;
+                        importMessage.classList.remove('hidden');
+                        confirmImportBtn.disabled = true;
+                        parsedImportData = null;
+                        importPreview.classList.add('hidden');
+                    }
+                };
+                reader.readAsText(file);
+            });
+        }
+
+        // Confirmer l'import
+        if (confirmImportBtn) {
+            confirmImportBtn.addEventListener('click', async () => {
+                if (!parsedImportData) return;
+
+                try {
+                    confirmImportBtn.disabled = true;
+                    confirmImportBtn.textContent = 'Import en cours...';
+
+                    const user = firebase.auth().currentUser;
+                    if (!user) {
+                        alert('Vous devez être connecté pour importer des données.');
+                        return;
+                    }
+
+                    const userRacesRef = db.collection('users').doc(user.uid).collection('races');
+                    const userWishlistRef = db.collection('users').doc(user.uid).collection('wishlist');
+                    let importedRacesCount = 0;
+                    let importedWishlistCount = 0;
+
+                    // Importer les courses
+                    for (const race of parsedImportData.races) {
+                        // Retirer l'id s'il existe pour éviter les conflits
+                        const { id, ...raceData } = race;
+
+                        // Par défaut les courses sont PUBLIQUES sauf si explicitement privées
+                        if (!raceData.hasOwnProperty('public')) {
+                            raceData.public = true;
+                        }
+
+                        // Ajouter la course avec toutes ses données
+                        await userRacesRef.add(raceData);
+                        importedRacesCount++;
+                    }
+
+                    // Importer la wishlist si elle existe
+                    if (parsedImportData.wishlist && Array.isArray(parsedImportData.wishlist)) {
+                        for (const item of parsedImportData.wishlist) {
+                            const { id, ...itemData } = item;
+                            await userWishlistRef.add(itemData);
+                            importedWishlistCount++;
+                        }
+                    }
+
+                    importMessage.className = 'bg-green-50 border-l-4 border-green-500 p-3 rounded-r-lg mb-4';
+                    let successMsg = `<i class="fas fa-check-circle text-green-600 mr-2"></i>${importedRacesCount} course(s) importée(s) avec succès !`;
+                    if (importedWishlistCount > 0) {
+                        successMsg += ` ${importedWishlistCount} élément(s) de wishlist importé(s).`;
+                    }
+                    successMsg += ' Les courses sont publiques par défaut.';
+                    importMessage.innerHTML = successMsg;
+                    importMessage.classList.remove('hidden');
+
+                    // Recharger les courses après 2 secondes
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 2000);
+
+                } catch (error) {
+                    console.error('Erreur import:', error);
+                    importMessage.className = 'bg-red-50 border-l-4 border-red-500 p-3 rounded-r-lg mb-4';
+                    importMessage.innerHTML = `<i class="fas fa-exclamation-triangle text-red-600 mr-2"></i>Erreur lors de l'import : ${error.message}`;
+                    importMessage.classList.remove('hidden');
+                    confirmImportBtn.disabled = false;
+                    confirmImportBtn.textContent = 'Importer';
+                }
+            });
+        }
     </script>
     <script src="js/user-settings.js"></script>
 </body>

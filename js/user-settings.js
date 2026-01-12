@@ -59,6 +59,24 @@ const userSettingsModalHTML = `
 
             <hr class="border-gray-100">
 
+            <!-- Préférences d'interface -->
+            <div>
+                <h3 class="text-sm font-semibold text-gray-700 mb-3">Préférences d'interface</h3>
+                <div class="space-y-3 bg-gray-50 p-4 rounded-lg border border-gray-100">
+                    <label class="flex items-center cursor-pointer">
+                        <input type="checkbox" id="prefShowImportBtn" class="w-4 h-4 text-green-600 rounded focus:ring-green-500">
+                        <span class="ml-2 text-sm text-gray-700">Afficher le bouton "Importer mes données"</span>
+                    </label>
+                    <label class="flex items-center cursor-pointer">
+                        <input type="checkbox" id="prefShowStatsBtn" class="w-4 h-4 text-green-600 rounded focus:ring-green-500">
+                        <span class="ml-2 text-sm text-gray-700">Afficher le bouton "Statistiques"</span>
+                    </label>
+                </div>
+                <p class="text-xs text-gray-400 mt-2 italic">Ces réglages contrôlent l'affichage des boutons dans le tableau de bord.</p>
+            </div>
+
+            <hr class="border-gray-100">
+
             <!-- Réinitialiser mot de passe -->
             <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-2">Sécurité</label>
@@ -137,6 +155,10 @@ function initSettingsLogic() {
     const prefShowFavorite = document.getElementById('prefShowFavorite');
     const prefShowDay = document.getElementById('prefShowDay');
 
+    // Checkboxes UI preferences
+    const prefShowImportBtn = document.getElementById('prefShowImportBtn');
+    const prefShowStatsBtn = document.getElementById('prefShowStatsBtn');
+
     // Sauvegarder les préférences au changement
     const savePrivacySettings = async () => {
         const user = firebase.auth().currentUser;
@@ -158,8 +180,31 @@ function initSettingsLogic() {
         }
     };
 
+    // Sauvegarder les préférences d'interface
+    const saveUISettings = async () => {
+        const user = firebase.auth().currentUser;
+        if (!user) return;
+
+        const uiPreferences = {
+            showImportBtn: prefShowImportBtn.checked,
+            showStatsBtn: prefShowStatsBtn.checked
+        };
+
+        try {
+            await db.collection('users').doc(user.uid).set({ uiPreferences }, { merge: true });
+            console.log("Préférences UI sauvegardées", uiPreferences);
+            settingsHasChanged = true; // Reload required to reflect changes
+        } catch (e) {
+            console.error("Erreur save UI preferences", e);
+        }
+    };
+
     [prefShowPseudo, prefShowCity, prefShowFavorite, prefShowDay].forEach(cb => {
         if (cb) cb.addEventListener('change', savePrivacySettings);
+    });
+
+    [prefShowImportBtn, prefShowStatsBtn].forEach(cb => {
+        if (cb) cb.addEventListener('change', saveUISettings);
     });
 
     // Fonction d'affichage de message
