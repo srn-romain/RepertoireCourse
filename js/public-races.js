@@ -45,25 +45,31 @@ async function loadPublicRaces() {
             const race = { id: doc.id, ...doc.data() };
 
             // Get User Email
+            // Get User Pseudo
             const uid = doc.ref.parent.parent ? doc.ref.parent.parent.id : null;
-            let ownerEmail = "Coureur mystère";
+            let ownerPseudo = "Coureur mystère";
 
             if (uid) {
                 if (userCache[uid]) {
-                    ownerEmail = userCache[uid];
+                    ownerPseudo = userCache[uid];
                 } else {
                     try {
                         const userDoc = await db.collection('users').doc(uid).get();
                         if (userDoc.exists) {
                             const data = userDoc.data();
                             console.log("User data found for", uid, data); // Debug log
-                            if (data && data.email) {
-                                ownerEmail = data.email;
-                                userCache[uid] = ownerEmail;
+                            // Priorité au Pseudo, sinon Email, sinon fallback
+                            if (data && data.pseudo) {
+                                ownerPseudo = data.pseudo;
+                                userCache[uid] = ownerPseudo;
+                            } else if (data && data.email) {
+                                // Fallback si pas de pseudo (anciens comptes)
+                                // On peut choisir d'afficher le début de l'email ou "Anonyme"
+                                ownerPseudo = data.email.split('@')[0]; // Affiche juste la partie avant @
+                                userCache[uid] = ownerPseudo;
                             } else {
-                                // Doc exists but no email
-                                ownerEmail = "Email non disponible";
-                                userCache[uid] = ownerEmail;
+                                ownerPseudo = "Pseudo non disponible";
+                                userCache[uid] = ownerPseudo;
                             }
                         } else {
                             console.warn("User doc not found for uid:", uid);
@@ -77,7 +83,9 @@ async function loadPublicRaces() {
 
             // === FILTER: Hide Unknown Users ===
             // Si on n'a pas trouvé l'email (Coureur mystère ou non disponible), on saute cette course
-            if (ownerEmail === "Coureur mystère" || ownerEmail === "Email non disponible") {
+            // === FILTER: Hide Unknown Users ===
+            // Si on n'a pas trouvé de nom valide
+            if (ownerPseudo === "Coureur mystère" || ownerPseudo === "Pseudo non disponible") {
                 continue;
             }
 
@@ -160,9 +168,9 @@ async function loadPublicRaces() {
 
                     <!-- Footer -->
                     <div class="mt-4 pt-3 flex items-center justify-between border-t border-green-50">
-                        <span class="text-xs text-gray-500 flex items-center gap-2" title="${ownerEmail}">
+                        <span class="text-xs text-gray-500 flex items-center gap-2" title="${ownerPseudo}">
                             <i class="fas fa-user-circle text-green-600 text-lg"></i>
-                            <span class="truncate max-w-[150px]">${ownerEmail}</span>
+                            <span class="truncate max-w-[150px] font-semibold">${ownerPseudo}</span>
                         </span>
                         ${race.time ? `<span class="text-sm font-bold text-green-700 font-mono">${race.time}</span>` : ''}
                     </div>

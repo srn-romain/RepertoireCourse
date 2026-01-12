@@ -66,6 +66,12 @@ const authModalsHTML = `
 
         <form id="signupForm" class="space-y-4">
             <div>
+                <label for="signup-pseudo" class="block text-sm font-semibold text-gray-700 mb-1">Pseudo</label>
+                <input type="text" id="signup-pseudo" required 
+                    class="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none transition text-gray-800 placeholder-gray-400"
+                    placeholder="Votre pseudo">
+            </div>
+            <div>
                 <label for="signup-email" class="block text-sm font-semibold text-gray-700 mb-1">Adresse Email</label>
                 <input type="email" id="signup-email" required 
                     class="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none transition text-gray-800 placeholder-gray-400"
@@ -243,6 +249,7 @@ function initAuthLogic() {
         signupForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = document.getElementById('signup-email').value;
+            const pseudo = document.getElementById('signup-pseudo').value;
             const password = document.getElementById('signup-password').value;
             const confirm = document.getElementById('signup-confirm-password').value;
             const errorEl = document.getElementById('signup-error');
@@ -252,16 +259,23 @@ function initAuthLogic() {
                 return;
             }
 
+            if (pseudo.trim() === "") {
+                showError('signup-error', "Le pseudo est obligatoire.");
+                return;
+            }
+
             if (errorEl) errorEl.classList.add('hidden');
             setLoading('signupSubmitBtn', 'signup-loading', true);
 
             try {
                 const userCredential = await auth.createUserWithEmailAndPassword(email, password);
 
-                // Force user doc creation
+                // Force user doc creation with pseudo
                 await db.collection('users').doc(userCredential.user.uid).set({
                     email: email,
+                    pseudo: pseudo,
                     createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    lastLogin: firebase.firestore.FieldValue.serverTimestamp(),
                     role: 'user'
                 }, { merge: true });
 
