@@ -671,13 +671,19 @@
                         </p>
                         <p id="detailsPrice" class="font-semibold text-green-800"></p>
                     </div>
-                    <div class="bg-green-50 p-3 rounded-lg" id="ImageButton">
-                        <p id="DetailImageTitle" class="text-sm text-green-600 flex items-center gap-2"></p>
-                        <p id="DetailImageButton" class="font-semibold text-green-800"></p>
-                        <button id="voirParcoursBtn"
-                            class="mt-2 px-2 py-1 bg-blue-100 text-blue-800 rounded hover:bg-blue-200 text-xs hidden">Voir
-                            le parcours</button>
+                    <div class="bg-green-50 p-3 rounded-lg" id="TerrainContainer">
+                        <p id="DetailTerrainTitle" class="text-sm text-green-600 flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-500" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path
+                                    d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5" />
+                            </svg>
+                            <span>Type de Terrain</span>
+                        </p>
+                        <p id="DetailTerrainText" class="font-semibold text-green-800">/</p>
                     </div>
+
                 </div>
 
                 <div id="averageSpeedInfo" class="mb-2 text-green-700 font-semibold"></div>
@@ -693,7 +699,31 @@
                 <div id="detailsParcoursContainer" class="mb-4 hidden">
                     <img id="detailsParcours" class="w-full h-auto rounded-lg shadow-md" alt="Parcours de la course">
                 </div>
-                <div id="detailsBadgesContainer" class="mb-4 hidden flex flex-wrap justify-center gap-3"></div>
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div class="bg-green-50 p-3 rounded-lg" id="ImageButton">
+                        <p id="DetailImageTitle" class="text-sm text-green-600 flex items-center gap-2"></p>
+                        <p id="DetailImageButton" class="font-semibold text-green-800 hidden"></p>
+                        <!-- Hidden as text is likely not used with the new logic, but ID kept for safety -->
+                        <button id="voirParcoursBtn"
+                            class="mt-2 px-2 py-1 bg-green-100 text-green-800 rounded hover:bg-green-200 text-xs w-full">
+                            Voir le parcours
+                        </button>
+                    </div>
+                    <div class="bg-green-50 p-3 rounded-lg" id="BadgeButton">
+                        <p class="text-sm text-green-600 flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-500" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path d="M12 15l-2 5l2 1l2-1l-2-5Z"></path>
+                                <path d="M12 4c-3.31 0-6 2.69-6 6c0 4.5 4 8.5 6 11c2-2.5 6-6.5 6-11c0-3.31-2.69-6-6-6Z">
+                                </path>
+                                <circle cx="12" cy="10" r="2"></circle>
+                            </svg>
+                            <span>Badge</span>
+                        </p>
+                        <p id="DetailBadgeButton" class="font-semibold text-green-800">Aucun badge</p>
+                    </div>
+                </div>
                 <div id="detailsActionsContainer" class="flex gap-3 mt-6 pt-4 border-t border-gray-200">
                     <button id="editFromDetailsBtn"
                         class="flex-1 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors flex items-center justify-center gap-2">
@@ -2817,21 +2847,6 @@
 
             document.getElementById('detailsDate').innerHTML = dateDisplay + heureHtml + badgeAvenir;
 
-            // Ajout du type de terrain en italique juste en dessous
-            let terrainHtml = '';
-            if (race.terrain) {
-                let terrainText = '';
-                switch (race.terrain) {
-                    case 'route': terrainText = 'Cette course est sur route'; break;
-                    case 'trail': terrainText = 'Cette course est un trail'; break;
-                    case 'triathlon': terrainText = 'Cette course est un triathlon'; break;
-                    case 'relai': terrainText = 'Cette course est en relai'; break;
-                    default: terrainText = `Cette course est de type ${race.terrain}`;
-                }
-                terrainHtml = `<div class="text-sm italic text-gray-500 mt-1">${terrainText}</div>`;
-                document.getElementById('detailsDate').innerHTML += terrainHtml;
-            }
-
             // Distance avec surlignage si correspond
             const distanceElement = document.getElementById('detailsDistance');
             if (race.distance && race.distance !== '' && !isNaN(race.distance)) {
@@ -3009,7 +3024,7 @@
 
                 html += `</div></div>`;
                 avgSpeedContainer.innerHTML = html;
-                avgSpeedContainer.className = "mb-2 w-full"; // S'assurer que le conteneur prend la largeur
+                avgSpeedContainer.className = "mb-2 w-full";
             } else {
                 avgSpeedContainer.innerHTML = '';
             }
@@ -3133,12 +3148,48 @@
                 e.stopPropagation();
                 if (parcoursImg.src) openImageInNewTab(parcoursImg.src);
             };
-            // Toujours afficher le bouton "voir le parcours"
-            parcoursBtn.classList.remove('hidden');
+            // Ancienne logique de bouton bascule image/parcours RESTAURÉE comme demandé.
+            // Le Type de Terrain est affiché dans le texte du carré.
+
+            if (parcoursBtn) parcoursBtn.classList.remove('hidden');
+
+            const detailTerrainText = document.getElementById('DetailTerrainText');
+            const detailBadgeText = document.getElementById('DetailBadgeButton');
+
+            // Configurer l'affichage du Terrain
+            let terrainLabel = '/';
+            if (race.terrain) {
+                switch (race.terrain) {
+                    case 'route': terrainLabel = 'Route'; break;
+                    case 'trail': terrainLabel = 'Trail'; break;
+                    case 'triathlon': terrainLabel = 'Triathlon'; break;
+                    case 'relai': terrainLabel = 'Relai'; break;
+                    default: terrainLabel = race.terrain.charAt(0).toUpperCase() + race.terrain.slice(1);
+                }
+            }
+            if (detailTerrainText) detailTerrainText.textContent = terrainLabel;
+
+            // Gestion des Badges (Carré de droite)
+            let badgeText = 'Pas encore débloqué';
+            if (isAuthenticated() && window.raceBadges && window.raceBadges[race.id]) {
+                const badgeKeys = Object.keys(window.raceBadges[race.id]);
+                if (badgeKeys.length > 0) {
+                    // Mapper les clés de badge aux noms lisibles
+                    const badgesInfoMap = {
+                        hasRPMile: "RP temps",
+                        hasMostExpensive: "Course la plus cher",
+                        hasMostElevation: "Plus de dénivelé",
+                        hasLongestDistance: "Plus longue course"
+                    };
+                    badgeText = badgeKeys.map(key => badgesInfoMap[key] || key).join(', ');
+                }
+            }
+            if (detailBadgeText) detailBadgeText.textContent = badgeText;
+
 
             // Créer les placeholders s'ils n'existent pas
             let parcoursPlaceholder = document.getElementById('detailsParcoursPlaceholder');
-            if (!parcoursPlaceholder) {
+            if (!parcoursPlaceholder && parcoursContainer) {
                 parcoursPlaceholder = document.createElement('div');
                 parcoursPlaceholder.id = 'detailsParcoursPlaceholder';
                 parcoursPlaceholder.className = 'mb-4 flex flex-col items-center justify-center py-8 bg-gray-50 rounded-lg border border-gray-200';
@@ -3152,7 +3203,7 @@
             }
 
             let photoPlaceholder = document.getElementById('detailsPhotoPlaceholder');
-            if (!photoPlaceholder) {
+            if (!photoPlaceholder && photoContainer) {
                 photoPlaceholder = document.createElement('div');
                 photoPlaceholder.id = 'detailsPhotoPlaceholder';
                 photoPlaceholder.className = 'mb-4 flex flex-col items-center justify-center py-8 bg-gray-50 rounded-lg border border-gray-200';
@@ -3202,29 +3253,22 @@
                 }
             }
 
-            // Initialiser l'affichage (commencer par la photo si elle existe, sinon le parcours)
-            if (race.photo) {
-                showParcours = false;
-            } else {
-                showParcours = true; // Commencer par le parcours si pas de photo
-            }
-
-            // Charger les images si elles existent
-            if (race.photo) {
-                photoImg.src = race.photo;
-            }
-            if (race.parcours) {
-                parcoursImg.src = race.parcours;
-            }
-
-            // Mettre à jour l'affichage initial
+            // Initialisation de la vue (photo par défaut)
+            showParcours = false;
             updateImageDisplay();
 
-            // Gestionnaire de clic sur le bouton
-            parcoursBtn.onclick = function () {
-                showParcours = !showParcours;
-                updateImageDisplay();
-            };
+            // Gestionnaire de clic sur le bouton toggle
+            if (parcoursBtn) {
+                parcoursBtn.onclick = function (e) {
+                    e.preventDefault();
+                    showParcours = !showParcours;
+                    updateImageDisplay();
+                };
+            }
+
+            // Charger les sources d'images pour qu'elles soient prêtes
+            if (race.photo && photoImg) photoImg.src = race.photo;
+            if (race.parcours && parcoursImg) parcoursImg.src = race.parcours;
 
             // Gérer l'affichage du lien site web avec surlignage si correspond
             let detailsWebsite = document.getElementById('detailsWebsite');
