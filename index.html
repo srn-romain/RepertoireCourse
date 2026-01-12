@@ -42,13 +42,18 @@
             border-color: rgba(34, 197, 94, 0.3);
             /* green-500 */
         }
+
+        .blur-bg {
+            backdrop-filter: blur(5px);
+        }
     </style>
 </head>
 
 <body class="min-h-screen flex flex-col bg-green-50 bg-opacity-90">
 
     <!-- Bandeau de connexion (visible si connecté) -->
-    <div id="authStatusBar" class="bg-green-50 border-b border-green-200 py-2 px-4 hidden">
+    <!-- Bandeau de connexion -->
+    <div id="authStatusBar" class="bg-green-50 border-b border-green-200 py-2 px-4">
         <div class="container mx-auto flex justify-between items-center">
             <div class="flex items-center gap-3">
                 <button id="backupDataBtn" class="text-green-600 hover:text-green-800 transition hidden"
@@ -66,9 +71,13 @@
                     class="px-3 py-1 bg-blue-100 hover:bg-blue-200 text-blue-800 text-sm rounded-full transition hidden">
                     <i class="fas fa-exchange-alt mr-1"></i> Changer de carnet
                 </button>
-                <button id="connectBtn"
-                    class="px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-sm rounded-full transition hidden">
+                <button id="connectBtn" onclick="openModal('loginModal')"
+                    class="px-3 py-1 bg-white border border-green-600 text-green-700 hover:bg-green-50 text-sm rounded-full transition hidden">
                     Se connecter
+                </button>
+                <button id="barSignupBtn" onclick="openModal('signupModal')"
+                    class="px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-sm rounded-full transition hidden">
+                    S'inscrire
                 </button>
                 <button id="disconnectBtn"
                     class="px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-sm rounded-full transition hidden">
@@ -91,24 +100,11 @@
             </div>
             <div class="mt-4 lg:mt-0 w-full lg:w-auto">
                 <div class="flex flex-col lg:flex-row space-y-2 lg:space-y-0 lg:space-x-3 w-full lg:w-auto">
-                    <a href="manuel.html"
-                        class="flex items-center justify-center bg-gray-100 hover:bg-gray-200 text-green-700 font-semibold px-4 py-2 rounded-full transition w-full lg:w-auto">
-                        <i class="fas fa-book-open mr-2"></i> Manuel
-                    </a>
-                    <button id="loginButton" onclick="openModal('loginModal')"
-                        class="flex items-center justify-center bg-white hover:bg-gray-50 text-green-700 font-semibold px-4 py-2 rounded-full transition border border-green-600 w-full lg:w-auto cursor-pointer">
-                        Se connecter
-                    </button>
-                    <button id="signupButton" onclick="openModal('signupModal')"
-                        class="flex items-center justify-center bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-full transition w-full lg:w-auto cursor-pointer">
-                        <i class="fas fa-user-plus mr-2"></i> S'inscrire
+                    <button onclick="openModal('manualModal')"
+                        class="flex items-center justify-center bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-full transition-colors w-full lg:w-auto whitespace-nowrap cursor-pointer">
+                        <i class="fas fa-book-open mr-2"></i> <span>Manuel</span>
                     </button>
 
-                    <!-- Bouton pour utilisateurs connectés -->
-                    <button id="logoutButton"
-                        class="hidden flex items-center justify-center bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-full transition w-full lg:w-auto cursor-pointer">
-                        <i class="fas fa-sign-out-alt mr-2"></i> Se déconnecter
-                    </button>
                 </div>
             </div>
         </header>
@@ -143,8 +139,7 @@
         <div class="container mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-12">
                 <span
-                    class="bg-green-100 text-green-800 text-sm px-3 py-1 rounded-full uppercase tracking-wider">Fonctionnalités</span>
-                <h2 class="text-3xl text-green-800 mt-2 mb-4">Tout pour votre progression</h2>
+                    class="bg-green-100 text-green-800 text-sm px-3 py-1 rounded-full uppercase tracking-wider mt-2 mb-4">Fonctionnalités</span>
                 <p class="text-gray-600 max-w-2xl mx-auto">Une suite d'outils complète conçue pour les passionnés de
                     course à pied.</p>
             </div>
@@ -255,6 +250,70 @@
     <!-- Firebase SDK & Auth Check -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+
+    <!-- Manuel Modal (Style Dashboard) -->
+    <div id="manualModal" class="fixed inset-0 flex items-center justify-center z-50 hidden modal">
+        <div class="absolute inset-0 bg-black bg-opacity-50 blur-bg" onclick="closeModal('manualModal')"></div>
+        <div class="relative bg-white rounded-xl shadow-xl w-full max-w-4xl mx-4 z-10 flex flex-col max-h-[90vh]">
+            <!-- Header -->
+            <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-white rounded-t-xl shrink-0">
+                <h3 class="text-2xl font-bold text-green-800 mb-0 flex items-center gap-2">
+                    <i class="fas fa-book-open"></i> Manuel Utilisateur
+                </h3>
+                <button onclick="closeModal('manualModal')" class="text-gray-400 hover:text-gray-600 transition">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+
+            <!-- Content -->
+            <div class="p-6 overflow-y-auto custom-scrollbar">
+                <!-- Intro -->
+                <section class="mb-6">
+                    <h4 class="text-lg font-bold text-green-700 mb-2 border-b border-green-100 pb-1">Introduction</h4>
+                    <p class="text-gray-600 leading-relaxed"><strong>Carnet de Courses</strong> centralise votre
+                        historique sportif, analyse vos performances et planifie vos défis.</p>
+                </section>
+
+                <!-- Connexion -->
+                <section class="mb-6">
+                    <h4 class="text-lg font-bold text-green-700 mb-2 border-b border-green-100 pb-1">Connexion</h4>
+                    <ul class="list-disc list-inside space-y-1 ml-2 text-gray-600">
+                        <li><strong>Compte Personnel :</strong> Inscription email/mot de passe pour vos données privées.
+                        </li>
+                        <li><strong>Mode Invité :</strong> Identifiant "invite" pour consulter les données publiques.
+                        </li>
+                    </ul>
+                </section>
+
+                <!-- Features -->
+                <section>
+                    <h4 class="text-lg font-bold text-green-700 mb-2 border-b border-green-100 pb-1">Fonctionnalités
+                        Clés</h4>
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div>
+                            <h5 class="font-bold text-green-800 mb-1">Gestion des courses</h5>
+                            <p class="text-sm text-gray-600 mb-2">Ajoutez, modifiez ou supprimez vos courses avec
+                                détails complets (Photos, GPX, Notes).</p>
+                        </div>
+                        <div>
+                            <h5 class="font-bold text-green-800 mb-1">Analyses & Outils</h5>
+                            <p class="text-sm text-gray-600 mb-2">Recherche avancée, graphiques statistiques, wishlist
+                                et souvenirs d'anniversaire.</p>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Footer -->
+            <div class="p-6 border-t border-gray-100 flex justify-end bg-gray-50 rounded-b-xl shrink-0">
+                <button onclick="closeModal('manualModal')"
+                    class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition-colors font-medium">
+                    Fermer
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     <script src="js/firebase-config.js"></script>
 
@@ -289,28 +348,20 @@
                 const authStatusText = document.getElementById('authStatusText');
                 const titleLink = document.getElementById('titleLink');
 
-                // Boutons du header principal
-                const loginButton = document.getElementById('loginButton');
-                const signupButton = document.getElementById('signupButton');
-                const logoutButton = document.getElementById('logoutButton');
-
                 // Bouton Hero CTA
                 const heroCtaButton = document.getElementById('heroCtaButton');
 
-                // Boutons de la barre de statut (si présents)
+                // Boutons de la barre de statut
                 const disconnectBtn = document.getElementById('disconnectBtn');
                 const connectBtn = document.getElementById('connectBtn');
-                const changeUserBtn = document.getElementById('changeUserBtn');
-                const backupDataBtn = document.getElementById('backupDataBtn');
+                const barSignupBtn = document.getElementById('barSignupBtn');
 
                 if (user) {
                     // Utilisateur connecté
 
-                    // Afficher la barre de statut (Style Dashboard)
-                    if (authStatusBar) authStatusBar.classList.remove('hidden');
-                    if (authStatusText) authStatusText.textContent = `Connecté: ${user.email}`;
+                    if (authStatusText) authStatusText.innerHTML = `<span class="italic font-normal text-gray-600 mr-2">Vous êtes connecté avec</span> <span class="font-bold text-green-800">${user.email}</span>`;
 
-                    // Configurer les boutons dans la barre
+                    // Gestion boutons barre
                     if (disconnectBtn) {
                         disconnectBtn.classList.remove('hidden');
                         disconnectBtn.onclick = async () => {
@@ -318,14 +369,7 @@
                         };
                     }
                     if (connectBtn) connectBtn.classList.add('hidden');
-
-                    // Afficher options avancées seulement si admin ou logique spécifique (optionnel, ici on affiche simple)
-                    // on peut laisser changeUserBtn et backupDataBtn masqués pour simplifier sur index
-
-                    // Masquer les boutons de connexion du header
-                    if (loginButton) loginButton.classList.add('hidden');
-                    if (signupButton) signupButton.classList.add('hidden');
-                    if (logoutButton) logoutButton.classList.add('hidden'); // On utilise le bouton de la barre
+                    if (barSignupBtn) barSignupBtn.classList.add('hidden');
 
                     if (titleLink) titleLink.href = 'dashboard.html';
 
@@ -335,18 +379,17 @@
                         heroCtaButton.onclick = () => window.location.href = 'dashboard.html';
                         heroCtaButton.title = "Retourner à votre tableau de bord";
                         heroCtaButton.classList.remove('bg-green-600', 'hover:bg-green-700');
-                        heroCtaButton.classList.add('bg-green-600', 'hover:bg-green-700');
+                        heroCtaButton.classList.add('bg-blue-600', 'hover:bg-blue-700');
                     }
                 } else {
                     // Utilisateur non connecté
 
-                    // Masquer la barre de statut
-                    if (authStatusBar) authStatusBar.classList.add('hidden');
+                    if (authStatusText) authStatusText.innerHTML = `<span class="italic font-normal text-gray-600 mr-2">Vous n'êtes pas connecté</span>`;
 
-                    // Afficher les boutons de connexion du header
-                    if (loginButton) loginButton.classList.remove('hidden');
-                    if (signupButton) signupButton.classList.remove('hidden');
-                    if (logoutButton) logoutButton.classList.add('hidden');
+                    // Gestion boutons barre
+                    if (disconnectBtn) disconnectBtn.classList.add('hidden');
+                    if (connectBtn) connectBtn.classList.remove('hidden');
+                    if (barSignupBtn) barSignupBtn.classList.remove('hidden');
 
                     if (titleLink) titleLink.href = '#';
 
