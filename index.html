@@ -122,7 +122,7 @@
                 <span class="text-green-600">sublimé et analysé.</span>
             </h1>
             <p class="mt-4 text-xl text-gray-600 mb-10 max-w-2xl mx-auto leading-relaxed">
-                Centralisez vos courses, analysez vos performances avec précision, gérez votre wishlist et collectionnez
+                Centralisez vos courses, analysez vos performances, gérez votre wishlist et collectionnez
                 vos badges de réussite.
             </p>
             <div class="flex flex-col sm:flex-row justify-center gap-4">
@@ -835,6 +835,12 @@
                                 <span class="font-medium">Chargement profil...</span>
                             </div>
                          `;
+                        // Désactiver le bouton CTA pendant le chargement
+                        if (heroCtaButton) {
+                            heroCtaButton.disabled = true;
+                            heroCtaButton.classList.add('opacity-50', 'cursor-not-allowed');
+                            heroCtaButton.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Chargement...';
+                        }
                     }
 
                     // Récupération pseudo
@@ -877,8 +883,9 @@
                         heroCtaButton.innerHTML = '<i class="fas fa-chart-line"></i> Accéder à mon carnet';
                         heroCtaButton.onclick = () => window.location.href = 'dashboard.html';
                         heroCtaButton.title = "Retourner à votre tableau de bord";
-                        heroCtaButton.classList.remove('bg-green-600', 'hover:bg-green-700');
+                        heroCtaButton.classList.remove('bg-green-600', 'hover:bg-green-700', 'opacity-50', 'cursor-not-allowed');
                         heroCtaButton.classList.add('bg-blue-600', 'hover:bg-blue-700');
+                        heroCtaButton.disabled = false;
                     }
                     if (accountSettingsBtn) accountSettingsBtn.classList.remove('hidden');
                 } else {

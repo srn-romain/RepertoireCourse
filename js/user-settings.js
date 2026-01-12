@@ -133,6 +133,7 @@ document.addEventListener('DOMContentLoaded', () => {
 window.closeSettingsModal = function () {
     const modal = document.getElementById('userSettingsModal');
     if (modal) modal.classList.add('hidden');
+    document.body.classList.remove('overflow-hidden'); // Unfreeze background
 
     if (settingsHasChanged) {
         window.location.reload();
@@ -378,5 +379,8 @@ window.openUserSettings = async function () {
         if (pseudoInput) pseudoInput.value = "";
     }
 
-    if (modal) modal.classList.remove('hidden');
+    if (modal) {
+        modal.classList.remove('hidden');
+        document.body.classList.add('overflow-hidden'); // Freeze background
+    }
 }
