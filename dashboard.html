@@ -1441,7 +1441,13 @@
                     if (authStatusText) {
                         // On garde le texte spécifique si on est déjà en mode consultation (peu probable au chargement direct mais bon)
                         // Ici c'est l'initialisation.
-                        authStatusText.innerHTML = `<span class="italic font-normal text-gray-600 mr-2">Connecté en tant que</span> <span class="font-bold text-green-800">${user.email} (${userPseudo})</span>`;
+                        authStatusText.innerHTML = `
+                            <span class="italic font-normal text-gray-600 mr-2">Connecté en tant que</span>
+                            <span class="font-bold text-green-800 mr-2">${user.email} (${userPseudo})</span>
+                            <button onclick="openUserSettings()" class="text-gray-400 hover:text-green-600 transition" title="Paramètres du compte">
+                                <i class="fas fa-cog"></i>
+                            </button>
+                        `;
                     }
 
                     if (disconnectBtn) {
@@ -6702,6 +6708,7 @@
             document.getElementById('anniversaryModal').classList.remove('hidden');
         });
     </script>
+    <script src="js/user-settings.js"></script>
 </body>
 
 </html>

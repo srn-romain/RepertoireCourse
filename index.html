@@ -334,6 +334,7 @@
     <!-- Auth Modals & Logic (Injects Login/Signup Modals) -->
     <script src="js/modal-auth.js"></script>
     <script src="js/public-races.js"></script>
+    <script src="js/user-settings.js"></script>
 
     <!-- Vérifier si déconnexion automatique -->
     <script>
@@ -381,7 +382,15 @@
                         }
                     } catch (e) { console.error(e); }
 
-                    if (authStatusText) authStatusText.innerHTML = `<span class="italic font-normal text-gray-600 mr-2">Connecté en tant que</span> <span class="font-bold text-green-800">${user.email} (${userPseudo})</span>`;
+                    if (authStatusText) {
+                        authStatusText.innerHTML = `
+                            <span class="italic font-normal text-gray-600 mr-2">Connecté en tant que</span>
+                            <span class="font-bold text-green-800 mr-2">${user.email} (${userPseudo})</span>
+                            <button onclick="openUserSettings()" class="text-gray-400 hover:text-green-600 transition" title="Paramètres du compte">
+                                <i class="fas fa-cog"></i>
+                            </button>
+                        `;
+                    }
 
                     // Gestion boutons barre
                     if (disconnectBtn) {
