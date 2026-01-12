@@ -1429,7 +1429,7 @@
 
         // Variables pour la gestion de l'inactivité
         let inactivityTimer = null;
-        const INACTIVITY_TIMEOUT = 15 * 60 * 1000;
+        const INACTIVITY_TIMEOUT = 3000;
         let lastActivityTime = Date.now();
 
         /**
@@ -1624,16 +1624,13 @@
                     // Vérifier si l'utilisateur est toujours inactif
                     const timeSinceLastActivity = Date.now() - lastActivityTime;
                     if (timeSinceLastActivity >= INACTIVITY_TIMEOUT) {
+                        // Stocker un flag pour indiquer une déconnexion automatique
+                        sessionStorage.setItem('autoLoggedOut', 'true');
+
                         // Déconnexion automatique
                         BackendAPI.signOut().then(() => {
-                            // Afficher une notification
-                            if (typeof showInactivityNotification === 'function') {
-                                showInactivityNotification();
-                            }
-                            // Recharger la page ou mettre à jour l'UI
-                            if (typeof onAutoLogout === 'function') {
-                                onAutoLogout();
-                            }
+                            // Redirection vers index.html
+                            window.location.href = 'index.html';
                         });
                     }
                 }, INACTIVITY_TIMEOUT);

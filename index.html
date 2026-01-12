@@ -74,7 +74,7 @@
 
     <!-- Hero Section -->
     <div class="flex-grow flex items-center justify-center px-4 sm:px-6 lg:px-8 -mt-10">
-        <div class="app-card max-w-4xl mx-auto p-12 text-center shadow-2xl border-green-100">
+        <div class="app-card max-w-4xl mx-auto p-12 text-center border-green-100">
             <h1 class="text-4xl sm:text-5xl font-bold text-green-800 mb-6 leading-tight">
                 Votre historique sportif,<br>
                 <span class="text-green-600">sublimé et analysé.</span>
@@ -179,6 +179,27 @@
         </div>
     </div>
 
+    <!-- Modal de déconnexion automatique -->
+    <div id="autoLogoutModal" class="modal hidden fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"
+        style="backdrop-filter: blur(5px); z-index: 50;">
+        <div class="modal-content bg-white p-6 rounded-lg shadow-lg max-w-md w-full mx-4">
+            <div class="text-center">
+                <div class="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-clock text-orange-600 text-2xl"></i>
+                </div>
+                <h2 class="text-xl font-bold text-orange-800 mb-3">Déconnexion automatique</h2>
+                <p class="text-gray-600 mb-6">
+                    Vous avez été déconnecté en raison d'une période d'inactivité prolongée pour des raisons de
+                    sécurité.
+                </p>
+                <button onclick="closeAutoLogoutModal()"
+                    class="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded transition">
+                    J'ai compris
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Footer -->
     <footer class="py-8 mt-auto text-center text-green-900 opacity-50 text-sm font-medium">
         <div class="container mx-auto px-4">
@@ -197,6 +218,28 @@
 
     <!-- Auth Modals & Logic (Injects Login/Signup Modals) -->
     <script src="js/modal-auth.js"></script>
+
+    <!-- Vérifier si déconnexion automatique -->
+    <script>
+        // Vérifier si l'utilisateur a été déconnecté automatiquement
+        function checkAutoLogout() {
+            const autoLoggedOut = sessionStorage.getItem('autoLoggedOut');
+            if (autoLoggedOut === 'true') {
+                // Afficher la modale
+                document.getElementById('autoLogoutModal').classList.remove('hidden');
+                // Retirer le flag pour ne pas afficher à nouveau
+                sessionStorage.removeItem('autoLoggedOut');
+            }
+        }
+
+        // Fonction pour fermer la modale
+        function closeAutoLogoutModal() {
+            document.getElementById('autoLogoutModal').classList.add('hidden');
+        }
+
+        // Appeler au chargement de la page
+        window.addEventListener('DOMContentLoaded', checkAutoLogout);
+    </script>
 </body>
 
 </html>
