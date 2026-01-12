@@ -249,7 +249,7 @@
                         Wishlist
                     </button>
                     <button id="importJsonBtn"
-                        class="hidden flex items-center justify-center bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-full transition w-full lg:w-auto">
+                        class="hidden flex items-center justify-center bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-full transition w-full lg:w-auto">
                         <i class="fas fa-upload mr-2"></i>
                         Import
                     </button>
@@ -1331,6 +1331,13 @@
         </svg>
     </button>
 
+    <!-- Bouton Anniversaire (Souvenirs) -->
+    <button id="anniversaryBtn"
+        class="fixed bottom-6 left-6 bg-purple-600 hover:bg-purple-700 text-white rounded-full p-3 shadow-lg transition-all duration-300 z-50 focus:outline-none"
+        title="Voir mon souvenir le plus proche">
+        <i class="fas fa-history text-xl"></i>
+    </button>
+
     <!-- Footer Signature -->
     <footer class="text-center py-6 text-green-900 opacity-50 text-sm mt-8">
         <p>&copy; 2026 Carnet de Courses. Tous droits réservés.</p>
@@ -1840,6 +1847,11 @@
                 // Mettre à jour la visibilité des boutons selon les préférences UI
                 if (typeof applyUserUIPreferences === 'function') {
                     applyUserUIPreferences();
+                }
+
+                // Mettre à jour la visibilité du bouton Badges
+                if (typeof updateBadgesButtonVisibility === 'function') {
+                    updateBadgesButtonVisibility();
                 }
             }).catch((error) => {
                 console.error("Erreur lors du chargement des courses:", error);
@@ -4605,6 +4617,9 @@
             if (typeof applyUserUIPreferences === 'function') {
                 await applyUserUIPreferences();
             }
+            if (typeof updateBadgesButtonVisibility === 'function') {
+                updateBadgesButtonVisibility();
+            }
         };
 
         // Callback appelé par le backend lors de la déconnexion automatique pour inactivité
@@ -6356,11 +6371,47 @@
             document.getElementById('wishlistCleanAfterAddModal').classList.add('hidden');
         });
 
-
-
-
-
         // CORRECTION GESTION BADGES (OVERRIDE ROBUSTE)
+
+        // Mettre à jour la visibilité du bouton Badges
+        window.updateBadgesButtonVisibility = function () {
+            const badgesBtn = document.getElementById('badgesBtn');
+            if (!badgesBtn) return;
+
+            // Vérifier si connecté
+            if (!isAuthenticated()) {
+                badgesBtn.classList.add('hidden');
+                return;
+            }
+
+            // Calculer les badges si nécessaire
+            if (typeof calculateRaceBadges === 'function' && typeof races !== 'undefined') {
+                window.raceBadges = calculateRaceBadges(races);
+            }
+
+            const badgesList = window.raceBadges || {};
+            let hasAnyBadge = false;
+
+            // Vérifier s'il y a au moins un badge parmi toutes les courses
+            if (Object.keys(badgesList).length > 0) {
+                // Il faut parcourir, car badgesList contient une entrée par course par défaut peut-être?
+                // calculateRaceBadges retourne un objet { raceId: { hasRPMile: bool, ... } }
+
+                for (const raceId in badgesList) {
+                    const b = badgesList[raceId];
+                    if (b.hasRPMile || b.hasMostExpensive || b.hasMostElevation || b.hasLongestDistance) {
+                        hasAnyBadge = true;
+                        break;
+                    }
+                }
+            }
+
+            if (hasAnyBadge) {
+                badgesBtn.classList.remove('hidden');
+            } else {
+                badgesBtn.classList.add('hidden');
+            }
+        };
 
         // Fonction robuste pour l'affichage (évite les erreurs null)
         const robustDisplayBadges = function () {
@@ -6590,16 +6641,7 @@
                 // Fonctionnalité supprimée
             }
         }
-    </script>
 
-    <!-- Bouton Anniversaire (Souvenirs) -->
-    <button id="anniversaryBtn"
-        class="fixed bottom-6 left-6 bg-purple-600 hover:bg-purple-700 text-white rounded-full p-3 shadow-lg transition-all duration-300 z-50 focus:outline-none"
-        title="Voir mon souvenir le plus proche">
-        <i class="fas fa-history text-xl"></i>
-    </button>
-
-    <script>
         // Fonction pour gérer le z-index des boutons flottants (anniversaire et scroll-to-top)
         function updateAnniversaryButtonZIndex() {
             const anniversaryBtn = document.getElementById('anniversaryBtn');
@@ -6807,7 +6849,9 @@
                         showImport = uiPrefs.showImportBtn;
                     } else {
                         // Default logic if preference not set yet
-                        showImport = (races && races.length <= 3);
+                        // Si races est undefined (chargement en cours ou non initialisé), on considère 0 => donc affiché
+                        const currentRacesCount = (typeof races !== 'undefined' && Array.isArray(races)) ? races.length : 0;
+                        showImport = (currentRacesCount <= 3);
                     }
 
                     if (importBtn) {
