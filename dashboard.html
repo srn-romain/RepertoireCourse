@@ -1221,7 +1221,51 @@
         </div>
     </div>
 
+    <!-- Modal Anniversaire -->
+    <div id="anniversaryModal"
+        class="modal hidden fixed inset-0 z-[70] flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
+        <div
+            class="modal-content bg-white p-6 w-full max-w-lg m-4 rounded-xl shadow-2xl relative border border-purple-100">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-purple-800 flex items-center gap-2">
+                    <i class="fas fa-history"></i> Souvenirs
+                </h3>
+                <button onclick="document.getElementById('anniversaryModal').classList.add('hidden')"
+                    class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+
+            <div id="anniversaryContent" class="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
+                <!-- Contenu généré dynamiquement -->
+            </div>
+
+            <div class="mt-6 text-center">
+                <button onclick="document.getElementById('anniversaryModal').classList.add('hidden')"
+                    class="px-6 py-2 bg-purple-600 text-white rounded-full hover:bg-purple-700 transition font-medium shadow-md hover:shadow-lg">
+                    C'est noté !
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bouton Retour en haut -->
+    <button id="scrollToTopBtn"
+        class="fixed bottom-6 right-6 bg-green-600 hover:bg-green-700 text-white rounded-full p-3 shadow-lg transition-all duration-300 transform translate-y-20 opacity-0 z-50 focus:outline-none">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18" />
+        </svg>
+    </button>
+
+    <!-- Footer Signature -->
+    <footer class="text-center py-6 text-green-900 opacity-50 text-sm mt-8">
+        <p>&copy; 2026 Carnet de Courses. Tous droits réservés.</p>
+        <p class="mt-1">Développé avec ♡ et avec (un peu) d'IA par <a href="https://www.linkedin.com/in/romain-sieurin/"
+                target="_blank" class="font-semibold hover:underline">Romain SIEURIN</a></p>
+    </footer>
+
     <script src="js/firebase-config.js"></script>
+    <script src="js/advanced-filters.js"></script>
     <script>
         // Références Firebase dynamiques (initialisées après auth)
         let usersCollection = db.collection('users');
@@ -1623,6 +1667,27 @@
             }
         });
 
+        // Mise à jour dynamique du placeholder de recherche
+        function updateSearchPlaceholder() {
+            const searchInput = document.getElementById('searchInput');
+            if (!searchInput) return;
+
+            if (BackendAPI.isAdmin()) {
+                searchInput.placeholder = 'Rechercher une course... (nom, lieu, date, distance, dénivelé, temps, notes, prix, etc.)';
+            } else {
+                // Pour les invités, on ne mentionne pas le prix
+                searchInput.placeholder = 'Rechercher une course... (nom, lieu, date, distance, dénivelé, temps, notes, etc.)';
+            }
+        }
+
+        // Appeler lors du changement d'état d'auth
+        BackendAPI.onAuthStateChanged(() => {
+            updateSearchPlaceholder();
+        });
+
+        // Appeler immédiatement aussi
+        updateSearchPlaceholder();
+
         // Charger les courses depuis Firebase
         let races = [];
         let racesLoading = false;
@@ -1653,6 +1718,14 @@
 
                 // Calculer et afficher les statistiques
                 updateStats(races);
+
+                // Exposer races globalement pour advanced-filters.js
+                window.races = races;
+
+                // Remplir le filtre de lieux si la fonction existe
+                if (typeof window.populateLocationFilter === 'function') {
+                    window.populateLocationFilter();
+                }
 
                 // Générer les filtres d'années basés sur les données
                 generateYearFilters(races);
@@ -6814,52 +6887,7 @@
         } else {
             setupModalObservers();
         }
-    </script>
 
-    <!-- Modal Anniversaire -->
-    <div id="anniversaryModal"
-        class="modal hidden fixed inset-0 z-[70] flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
-        <div
-            class="modal-content bg-white p-6 w-full max-w-lg m-4 rounded-xl shadow-2xl relative border border-purple-100">
-            <div class="flex justify-between items-center mb-6">
-                <h3 class="text-2xl font-bold text-purple-800 flex items-center gap-2">
-                    <i class="fas fa-history"></i> Souvenirs
-                </h3>
-                <button onclick="document.getElementById('anniversaryModal').classList.add('hidden')"
-                    class="text-gray-400 hover:text-gray-600">
-                    <i class="fas fa-times text-xl"></i>
-                </button>
-            </div>
-
-            <div id="anniversaryContent" class="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
-                <!-- Contenu généré dynamiquement -->
-            </div>
-
-            <div class="mt-6 text-center">
-                <button onclick="document.getElementById('anniversaryModal').classList.add('hidden')"
-                    class="px-6 py-2 bg-purple-600 text-white rounded-full hover:bg-purple-700 transition font-medium shadow-md hover:shadow-lg">
-                    C'est noté !
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Bouton Retour en haut -->
-    <button id="scrollToTopBtn"
-        class="fixed bottom-6 right-6 bg-green-600 hover:bg-green-700 text-white rounded-full p-3 shadow-lg transition-all duration-300 transform translate-y-20 opacity-0 z-50 focus:outline-none">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18" />
-        </svg>
-    </button>
-
-    <!-- Footer Signature -->
-    <footer class="text-center py-6 text-green-900 opacity-50 text-sm mt-8">
-        <p>&copy; 2026 Carnet de Courses. Tous droits réservés.</p>
-        <p class="mt-1">Développé avec ♡ et avec (un peu) d'IA par <a href="https://www.linkedin.com/in/romain-sieurin/"
-                target="_blank" class="font-semibold hover:underline">Romain SIEURIN</a></p>
-    </footer>
-
-    <script>
         // Gestion du bouton retour en haut
         const scrollToTopBtn = document.getElementById('scrollToTopBtn');
         const anniversaryBtn = document.getElementById('anniversaryBtn');
