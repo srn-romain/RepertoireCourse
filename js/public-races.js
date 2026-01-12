@@ -2,6 +2,67 @@
 // Logic to load and display public races on the landing page
 let isLoadingPublicRaces = false;
 
+// Filtres pour les courses publiques
+const publicRaceFilters = {
+    limit: 10,
+    status: 'all', // 'all', 'upcoming', 'past'
+    sort: 'desc' // 'desc' (plus récentes), 'asc' (plus anciennes)
+};
+
+// Fonction pour mettre à jour les filtres
+window.updatePublicRaceFilter = function (type, value) {
+    // Vérifier si l'utilisateur est connecté
+    if (typeof auth === 'undefined' || !auth.currentUser) {
+        // Afficher la modale de permission refusée
+        const modal = document.getElementById('permissionDeniedModal');
+        if (modal) {
+            modal.classList.remove('hidden');
+        }
+        return; // Ne pas appliquer le filtre
+    }
+
+    publicRaceFilters[type] = value;
+
+    // Update UI buttons
+    if (type === 'limit') {
+        ['10', '20', '50'].forEach(val => {
+            const btn = document.getElementById(`filterLimit${val}`);
+            if (btn) {
+                if (parseInt(val) === value) {
+                    btn.className = 'px-3 py-1.5 text-sm rounded-full bg-green-600 text-white border border-green-600';
+                } else {
+                    btn.className = 'px-3 py-1.5 text-sm rounded-full border border-green-200 hover:bg-green-50 transition';
+                }
+            }
+        });
+    } else if (type === 'status') {
+        ['all', 'upcoming', 'past'].forEach(val => {
+            const btn = document.getElementById(`filterStatus${val.charAt(0).toUpperCase() + val.slice(1)}`);
+            if (btn) {
+                if (val === value) {
+                    btn.className = 'px-3 py-1.5 text-sm rounded-full bg-green-600 text-white border border-green-600';
+                } else {
+                    btn.className = 'px-3 py-1.5 text-sm rounded-full border border-green-200 hover:bg-green-50 transition';
+                }
+            }
+        });
+    } else if (type === 'sort') {
+        ['desc', 'asc'].forEach(val => {
+            const btn = document.getElementById(`filterSort${val.charAt(0).toUpperCase() + val.slice(1)}`);
+            if (btn) {
+                if (val === value) {
+                    btn.className = 'px-3 py-1.5 text-sm rounded-full bg-green-600 text-white border border-green-600';
+                } else {
+                    btn.className = 'px-3 py-1.5 text-sm rounded-full border border-green-200 hover:bg-green-50 transition';
+                }
+            }
+        });
+    }
+
+    // Reload races
+    loadPublicRaces();
+};
+
 document.addEventListener('DOMContentLoaded', () => {
     loadPublicRaces();
 });
@@ -24,8 +85,8 @@ async function loadPublicRaces() {
 
         const snapshot = await db.collectionGroup('races')
             .where('public', '==', true) // SÉCURITÉ : Ne demande QUE les courses publiques
-            .orderBy('date', 'desc')
-            .limit(50)
+            .orderBy('date', publicRaceFilters.sort) // Tri dynamique
+            .limit(publicRaceFilters.limit) // Limite dynamique
             .get();
 
         if (snapshot.empty) {
@@ -133,6 +194,10 @@ async function loadPublicRaces() {
             raceDateOnly.setHours(0, 0, 0, 0);
             const isToday = raceDateOnly.getTime() === today.getTime();
             const isUpcoming = raceDate >= today;
+
+            // === FILTER: Status (À venir / Passées) ===
+            if (publicRaceFilters.status === 'upcoming' && !isUpcoming) continue;
+            if (publicRaceFilters.status === 'past' && isUpcoming) continue;
 
             // STATS CALCULATION
             statsCount.count++;

@@ -86,6 +86,28 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.appendChild(div);
     }
 
+    // Empêcher la fermeture au clic extérieur pour la modale de paramètres
+    const modal = document.getElementById('userSettingsModal');
+    if (modal) {
+        modal.addEventListener('click', function (e) {
+            // Si on clique sur le backdrop (modal lui-même), ne rien faire
+            if (e.target === modal) {
+                e.stopPropagation();
+                e.preventDefault();
+                // Ne pas fermer la modale
+                return false;
+            }
+        });
+
+        // Empêcher la propagation des clics sur le contenu de la modale
+        const modalContent = modal.querySelector('.modal-content');
+        if (modalContent) {
+            modalContent.addEventListener('click', function (e) {
+                e.stopPropagation();
+            });
+        }
+    }
+
     initSettingsLogic();
 });
 

@@ -13,7 +13,7 @@ const authModalsHTML = `
         </button>
 
         <div class="text-center mb-6">
-            <h2 class="text-2xl font-bold text-green-800 mb-2">Bon retour ! 👋</h2>
+            <h2 class="text-2xl font-bold text-green-800 mb-2">Bon retour !</h2>
             <p class="text-gray-600">Connectez-vous pour accéder à votre carnet.</p>
         </div>
 
@@ -60,7 +60,7 @@ const authModalsHTML = `
         </button>
 
         <div class="text-center mb-6">
-            <h2 class="text-2xl font-bold text-green-800 mb-2">Bienvenue ! 🚀</h2>
+            <h2 class="text-2xl font-bold text-green-800 mb-2">Bienvenue !</h2>
             <p class="text-gray-600">Créez votre compte pour commencer.</p>
         </div>
 

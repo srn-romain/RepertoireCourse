@@ -268,6 +268,62 @@
                 <hr class="border-t border-green-100">
             </div>
 
+            <!-- Barre de filtres -->
+            <div class="mb-8 flex flex-wrap items-center justify-center gap-3">
+                <!-- Nombre de courses -->
+                <div class="flex items-center gap-2">
+                    <span class="text-sm text-gray-600 font-medium">Afficher :</span>
+                    <div class="flex gap-1">
+                        <button onclick="updatePublicRaceFilter('limit', 10)" id="filterLimit10"
+                            class="px-3 py-1.5 text-sm rounded-full bg-green-600 text-white border border-green-600">
+                            10
+                        </button>
+                        <button onclick="updatePublicRaceFilter('limit', 20)" id="filterLimit20"
+                            class="px-3 py-1.5 text-sm rounded-full border border-green-200 hover:bg-green-50 transition">
+                            20
+                        </button>
+                        <button onclick="updatePublicRaceFilter('limit', 50)" id="filterLimit50"
+                            class="px-3 py-1.5 text-sm rounded-full border border-green-200 hover:bg-green-50 transition">
+                            50
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Statut -->
+                <div class="flex items-center gap-2">
+                    <span class="text-sm text-gray-600 font-medium">Statut :</span>
+                    <div class="flex gap-1">
+                        <button onclick="updatePublicRaceFilter('status', 'all')" id="filterStatusAll"
+                            class="px-3 py-1.5 text-sm rounded-full bg-green-600 text-white border border-green-600">
+                            Toutes
+                        </button>
+                        <button onclick="updatePublicRaceFilter('status', 'upcoming')" id="filterStatusUpcoming"
+                            class="px-3 py-1.5 text-sm rounded-full border border-green-200 hover:bg-green-50 transition">
+                            À venir
+                        </button>
+                        <button onclick="updatePublicRaceFilter('status', 'past')" id="filterStatusPast"
+                            class="px-3 py-1.5 text-sm rounded-full border border-green-200 hover:bg-green-50 transition">
+                            Passées
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Tri -->
+                <div class="flex items-center gap-2">
+                    <span class="text-sm text-gray-600 font-medium">Tri :</span>
+                    <div class="flex gap-1">
+                        <button onclick="updatePublicRaceFilter('sort', 'desc')" id="filterSortDesc"
+                            class="px-3 py-1.5 text-sm rounded-full bg-green-600 text-white border border-green-600">
+                            <i class="fas fa-arrow-down mr-1"></i> Récentes
+                        </button>
+                        <button onclick="updatePublicRaceFilter('sort', 'asc')" id="filterSortAsc"
+                            class="px-3 py-1.5 text-sm rounded-full border border-green-200 hover:bg-green-50 transition">
+                            <i class="fas fa-arrow-up mr-1"></i> Anciennes
+                        </button>
+                    </div>
+                </div>
+            </div>
+
             <div id="publicRacesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <!-- Les courses seront chargées ici dynamiquement -->
                 <div class="col-span-1 md:col-span-2 lg:col-span-3 text-center py-12">
@@ -299,6 +355,45 @@
         </div>
     </div>
 
+    <!-- Modal Permissions refusées -->
+    <div id="permissionDeniedModal"
+        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden" style="z-index: 100;">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-semibold text-green-600">Permissions insuffisantes</h3>
+                <button onclick="closePermissionDeniedModal()" class="text-gray-500 hover:text-gray-700">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <div class="mb-6">
+                <div class="flex items-center justify-center mb-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-green-500" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                </div>
+                <p id="permissionDeniedMessage" class="text-gray-700 text-center">
+                    Vous devez être connecté pour utiliser les filtres. Veuillez vous connecter ou créer un compte.
+                </p>
+            </div>
+            <div class="flex justify-end gap-3">
+                <button onclick="closePermissionDeniedModal()"
+                    class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-6 py-2 rounded-lg transition-colors">
+                    Annuler
+                </button>
+                <button onclick="openModal('loginModal'); closePermissionDeniedModal();"
+                    class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg transition-colors">
+                    Se connecter
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Footer -->
     <footer class="py-8 mt-auto text-center text-green-900 opacity-50 text-sm font-medium">
         <div class="container mx-auto px-4">
@@ -316,9 +411,10 @@
     <!-- Manuel Modal (Style Dashboard) -->
     <div id="manualModal" class="fixed inset-0 flex items-center justify-center z-50 hidden modal">
         <div class="absolute inset-0 bg-black bg-opacity-50 blur-bg" onclick="closeModal('manualModal')"></div>
-        <div class="relative bg-white rounded-xl shadow-xl w-full max-w-4xl mx-4 z-10 flex flex-col max-h-[90vh]">
+        <div class="relative bg-white rounded-xl shadow-xl w-full max-w-5xl mx-4 z-10 flex flex-col max-h-[90vh]">
             <!-- Header -->
-            <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-white rounded-t-xl shrink-0">
+            <div
+                class="p-6 border-b border-green-100 flex justify-between items-center bg-gradient-to-r from-green-50 to-white rounded-t-xl shrink-0">
                 <h3 class="text-2xl font-bold text-green-800 mb-0 flex items-center gap-2">
                     <i class="fas fa-book-open"></i> Manuel Utilisateur
                 </h3>
@@ -328,46 +424,304 @@
             </div>
 
             <!-- Content -->
-            <div class="p-6 overflow-y-auto custom-scrollbar">
+            <div class="p-8 overflow-y-auto custom-scrollbar">
                 <!-- Intro -->
-                <section class="mb-6">
-                    <h4 class="text-lg font-bold text-green-700 mb-2 border-b border-green-100 pb-1">Introduction</h4>
-                    <p class="text-gray-600 leading-relaxed"><strong>Carnet de Courses</strong> centralise votre
-                        historique sportif, analyse vos performances et planifie vos défis.</p>
+                <section class="mb-8">
+                    <h4 class="text-xl font-bold text-green-700 mb-3 flex items-center gap-2">
+                        <i class="fas fa-info-circle text-green-600"></i> Introduction
+                    </h4>
+                    <div class="bg-green-50 border-l-4 border-green-500 p-4 rounded-r-lg mb-4">
+                        <p class="text-gray-700 leading-relaxed">
+                            <strong class="text-green-800">Carnet de Courses</strong> est votre compagnon idéal pour
+                            centraliser, analyser et partager vos performances sportives.
+                            Que vous soyez coureur débutant ou confirmé, cette application vous aide à suivre votre
+                            progression et à atteindre vos objectifs.
+                        </p>
+                    </div>
                 </section>
 
                 <!-- Connexion -->
-                <section class="mb-6">
-                    <h4 class="text-lg font-bold text-green-700 mb-2 border-b border-green-100 pb-1">Connexion</h4>
-                    <ul class="list-disc list-inside space-y-1 ml-2 text-gray-600">
-                        <li><strong>Compte Personnel :</strong> Inscription email/mot de passe pour vos données privées.
-                        </li>
-                        <li><strong>Mode Invité :</strong> Identifiant "invite" pour consulter les données publiques.
-                        </li>
-                    </ul>
-                </section>
-
-                <!-- Features -->
-                <section>
-                    <h4 class="text-lg font-bold text-green-700 mb-2 border-b border-green-100 pb-1">Fonctionnalités
-                        Clés</h4>
-                    <div class="grid md:grid-cols-2 gap-6">
-                        <div>
-                            <h5 class="font-bold text-green-800 mb-1">Gestion des courses</h5>
-                            <p class="text-sm text-gray-600 mb-2">Ajoutez, modifiez ou supprimez vos courses avec
-                                détails complets (Photos, GPX, Notes).</p>
+                <section class="mb-8">
+                    <h4 class="text-xl font-bold text-green-700 mb-3 flex items-center gap-2">
+                        <i class="fas fa-sign-in-alt text-green-600"></i> Connexion
+                    </h4>
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div class="bg-white border border-green-100 rounded-lg p-4 shadow-sm">
+                            <h5 class="font-bold text-green-800 mb-2 flex items-center gap-2">
+                                <i class="fas fa-user-plus text-green-600"></i> Compte Personnel
+                            </h5>
+                            <p class="text-sm text-gray-600 mb-2">Créez votre compte avec email et mot de passe pour des
+                                fonctionnalités complètes :</p>
+                            <ul class="text-sm text-gray-600 space-y-1 ml-4">
+                                <li>✓ Sauvegarde cloud sécurisée</li>
+                                <li>✓ Synchronisation multi-appareils</li>
+                                <li>✓ Données privées par défaut</li>
+                                <li>✓ Export et sauvegarde</li>
+                            </ul>
                         </div>
-                        <div>
-                            <h5 class="font-bold text-green-800 mb-1">Analyses & Outils</h5>
-                            <p class="text-sm text-gray-600 mb-2">Recherche avancée, graphiques statistiques, wishlist
-                                et souvenirs d'anniversaire.</p>
+                        <div class="bg-white border border-blue-100 rounded-lg p-4 shadow-sm">
+                            <h5 class="font-bold text-blue-800 mb-2 flex items-center gap-2">
+                                <i class="fas fa-eye text-blue-600"></i> Mode Invité
+                            </h5>
+                            <p class="text-sm text-gray-600 mb-2">Utilisez le pseudo <code
+                                    class="bg-gray-100 px-2 py-0.5 rounded">invite</code> pour consulter :</p>
+                            <ul class="text-sm text-gray-600 space-y-1 ml-4">
+                                <li>✓ Courses publiques communautaires</li>
+                                <li>✓ Statistiques générales</li>
+                                <li>✓ Pas de modification possible</li>
+                            </ul>
                         </div>
                     </div>
                 </section>
+
+                <!-- Interface principale -->
+                <section class="mb-8">
+                    <h4 class="text-xl font-bold text-green-700 mb-3 flex items-center gap-2">
+                        <i class="fas fa-desktop text-green-600"></i> Interface Principale
+                    </h4>
+                    <div class="bg-white border border-green-100 rounded-lg overflow-hidden shadow-sm">
+                        <img src="img/app_generale.png" alt="Interface générale" class="w-full h-auto">
+                        <div class="p-4 bg-gray-50">
+                            <p class="text-sm text-gray-600">
+                                <strong>Vue d'ensemble :</strong> L'interface principale affiche votre tableau de bord
+                                avec statistiques, graphiques et liste de courses.
+                            </p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Gestion des courses -->
+                <section class="mb-8">
+                    <h4 class="text-xl font-bold text-green-700 mb-3 flex items-center gap-2">
+                        <i class="fas fa-running text-green-600"></i> Gestion des Courses
+                    </h4>
+
+                    <div class="space-y-4">
+                        <!-- Ajouter une course -->
+                        <div class="bg-white border border-green-100 rounded-lg p-4 shadow-sm">
+                            <h5 class="font-bold text-green-800 mb-2 flex items-center gap-2">
+                                <i class="fas fa-plus-circle text-green-600"></i> Ajouter une Course
+                            </h5>
+                            <p class="text-sm text-gray-600 mb-2">Cliquez sur le bouton <span
+                                    class="px-2 py-1 bg-green-600 text-white text-xs rounded-full">+ Nouvelle
+                                    Course</span> en haut du tableau de bord.</p>
+                            <div class="bg-gray-50 rounded p-3 mt-2">
+                                <p class="text-xs font-semibold text-gray-700 mb-2">Informations disponibles :</p>
+                                <div class="grid md:grid-cols-2 gap-2 text-xs text-gray-600">
+                                    <div>• Nom de la course <span class="text-red-500">*</span></div>
+                                    <div>• Date <span class="text-red-500">*</span></div>
+                                    <div>• Distance (km) <span class="text-red-500">*</span></div>
+                                    <div>• Dénivelé (m+)</div>
+                                    <div>• Temps de course</div>
+                                    <div>• Lieu / Ville</div>
+                                    <div>• Photo (JPG, PNG)</div>
+                                    <div>• Fichier GPX</div>
+                                    <div>• Notes personnelles</div>
+                                    <div>• Statut favori ⭐</div>
+                                    <div>• Partage public 🌍</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Modifier/Supprimer -->
+                        <div class="grid md:grid-cols-2 gap-4">
+                            <div class="bg-white border border-blue-100 rounded-lg p-4 shadow-sm">
+                                <h5 class="font-bold text-blue-800 mb-2 flex items-center gap-2">
+                                    <i class="fas fa-edit text-blue-600"></i> Modifier
+                                </h5>
+                                <p class="text-sm text-gray-600">Cliquez sur l'icône <i
+                                        class="fas fa-pencil-alt text-blue-600"></i> dans une carte de course pour
+                                    modifier ses informations.</p>
+                            </div>
+                            <div class="bg-white border border-red-100 rounded-lg p-4 shadow-sm">
+                                <h5 class="font-bold text-red-800 mb-2 flex items-center gap-2">
+                                    <i class="fas fa-trash text-red-600"></i> Supprimer
+                                </h5>
+                                <p class="text-sm text-gray-600">Cliquez sur l'icône <i
+                                        class="fas fa-trash text-red-600"></i> et confirmez la suppression définitive.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Statistiques -->
+                <section class="mb-8">
+                    <h4 class="text-xl font-bold text-green-700 mb-3 flex items-center gap-2">
+                        <i class="fas fa-chart-line text-green-600"></i> Statistiques & Analyses
+                    </h4>
+                    <div class="bg-white border border-green-100 rounded-lg overflow-hidden shadow-sm">
+                        <img src="img/stat.png" alt="Statistiques" class="w-full h-auto">
+                        <div class="p-4 bg-gray-50">
+                            <p class="text-sm text-gray-600 mb-3">
+                                <strong>Graphiques interactifs :</strong> Visualisez votre progression avec plusieurs
+                                types de graphiques.
+                            </p>
+                            <div class="grid md:grid-cols-2 gap-2 text-xs text-gray-600">
+                                <div>📊 Distance par mois/année</div>
+                                <div>⛰️ Dénivelé cumulé</div>
+                                <div>📈 Évolution du nombre de courses</div>
+                                <div>🏃 Vitesse moyenne par période</div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Recherche avancée -->
+                <section class="mb-8">
+                    <h4 class="text-xl font-bold text-green-700 mb-3 flex items-center gap-2">
+                        <i class="fas fa-search text-green-600"></i> Recherche Avancée
+                    </h4>
+                    <div class="bg-white border border-green-100 rounded-lg p-4 shadow-sm">
+                        <p class="text-sm text-gray-600 mb-3">Filtrez vos courses selon plusieurs critères simultanés :
+                        </p>
+                        <div class="grid md:grid-cols-3 gap-3">
+                            <div class="bg-green-50 p-3 rounded">
+                                <p class="font-semibold text-green-800 text-sm mb-1">📅 Par Date</p>
+                                <p class="text-xs text-gray-600">Année, mois, période personnalisée</p>
+                            </div>
+                            <div class="bg-blue-50 p-3 rounded">
+                                <p class="font-semibold text-blue-800 text-sm mb-1">📏 Par Distance</p>
+                                <p class="text-xs text-gray-600">5km, 10km, semi, marathon, ultra</p>
+                            </div>
+                            <div class="bg-purple-50 p-3 rounded">
+                                <p class="font-semibold text-purple-800 text-sm mb-1">📍 Par Lieu</p>
+                                <p class="text-xs text-gray-600">Ville, région, pays</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Wishlist -->
+                <section class="mb-8">
+                    <h4 class="text-xl font-bold text-green-700 mb-3 flex items-center gap-2">
+                        <i class="fas fa-heart text-green-600"></i> Wishlist
+                    </h4>
+                    <div class="bg-white border border-blue-100 rounded-lg p-4 shadow-sm">
+                        <p class="text-sm text-gray-600 mb-3">Planifiez vos courses futures et suivez leur réalisation :
+                        </p>
+                        <ul class="space-y-2 text-sm text-gray-600">
+                            <li class="flex items-start gap-2">
+                                <i class="fas fa-check-circle text-green-600 mt-0.5"></i>
+                                <span>Ajoutez des courses à votre liste de souhaits</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i class="fas fa-check-circle text-green-600 mt-0.5"></i>
+                                <span>Cochez-les une fois réalisées</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i class="fas fa-check-circle text-green-600 mt-0.5"></i>
+                                <span>Suivez votre progression d'objectifs</span>
+                            </li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- Paramètres -->
+                <section class="mb-8">
+                    <h4 class="text-xl font-bold text-green-700 mb-3 flex items-center gap-2">
+                        <i class="fas fa-cog text-green-600"></i> Paramètres du Compte
+                    </h4>
+                    <div class="bg-white border border-green-100 rounded-lg p-4 shadow-sm">
+                        <p class="text-sm text-gray-600 mb-3">Accédez aux paramètres via l'icône <i
+                                class="fas fa-cog text-gray-600"></i> dans le bandeau de connexion :</p>
+                        <div class="space-y-3">
+                            <div class="bg-gray-50 p-3 rounded">
+                                <p class="font-semibold text-gray-800 text-sm mb-1">👤 Modifier le Pseudo</p>
+                                <p class="text-xs text-gray-600">Changez votre nom d'affichage public</p>
+                            </div>
+                            <div class="bg-gray-50 p-3 rounded">
+                                <p class="font-semibold text-gray-800 text-sm mb-1">🔒 Confidentialité</p>
+                                <p class="text-xs text-gray-600">Contrôlez ce qui est visible publiquement : pseudo,
+                                    ville, favoris, date précise</p>
+                            </div>
+                            <div class="bg-gray-50 p-3 rounded">
+                                <p class="font-semibold text-gray-800 text-sm mb-1">🔑 Sécurité</p>
+                                <p class="text-xs text-gray-600">Réinitialisez votre mot de passe par email</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Export & Backup -->
+                <section class="mb-8">
+                    <h4 class="text-xl font-bold text-green-700 mb-3 flex items-center gap-2">
+                        <i class="fas fa-download text-green-600"></i> Export & Sauvegarde
+                    </h4>
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div class="bg-white border border-green-100 rounded-lg p-4 shadow-sm">
+                            <h5 class="font-bold text-green-800 mb-2 flex items-center gap-2">
+                                <i class="fas fa-file-export text-green-600"></i> Export JSON
+                            </h5>
+                            <p class="text-sm text-gray-600">Téléchargez toutes vos données au format JSON pour
+                                sauvegarde ou analyse externe.</p>
+                        </div>
+                        <div class="bg-white border border-red-100 rounded-lg p-4 shadow-sm">
+                            <h5 class="font-bold text-red-800 mb-2 flex items-center gap-2">
+                                <i class="fas fa-file-pdf text-red-600"></i> Export PDF
+                            </h5>
+                            <p class="text-sm text-gray-600">Générez un rapport PDF professionnel de vos courses pour
+                                impression ou partage.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Communauté -->
+                <section class="mb-8">
+                    <h4 class="text-xl font-bold text-green-700 mb-3 flex items-center gap-2">
+                        <i class="fas fa-users text-green-600"></i> Communauté
+                    </h4>
+                    <div class="bg-white border border-green-100 rounded-lg p-4 shadow-sm">
+                        <p class="text-sm text-gray-600 mb-3">Partagez vos exploits avec la communauté :</p>
+                        <ul class="space-y-2 text-sm text-gray-600">
+                            <li class="flex items-start gap-2">
+                                <i class="fas fa-globe text-green-600 mt-0.5"></i>
+                                <span>Activez le partage public pour chaque course individuellement</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i class="fas fa-eye text-blue-600 mt-0.5"></i>
+                                <span>Consultez les courses des autres coureurs sur la page d'accueil</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i class="fas fa-filter text-purple-600 mt-0.5"></i>
+                                <span>Filtrez par statut (À venir / Passées) et nombre de résultats</span>
+                            </li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- Astuces -->
+                <section>
+                    <h4 class="text-xl font-bold text-green-700 mb-3 flex items-center gap-2">
+                        <i class="fas fa-lightbulb text-green-600"></i> Astuces & Raccourcis
+                    </h4>
+                    <div class="bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-lg p-4">
+                        <div class="grid md:grid-cols-2 gap-3 text-sm text-gray-700">
+                            <div class="flex items-start gap-2">
+                                <i class="fas fa-star text-yellow-500 mt-0.5"></i>
+                                <span>Marquez vos courses favorites avec l'étoile ⭐</span>
+                            </div>
+                            <div class="flex items-start gap-2">
+                                <i class="fas fa-calendar-check text-green-600 mt-0.5"></i>
+                                <span>Activez les rappels d'anniversaire de courses</span>
+                            </div>
+                            <div class="flex items-start gap-2">
+                                <i class="fas fa-camera text-blue-600 mt-0.5"></i>
+                                <span>Ajoutez des photos pour immortaliser vos moments</span>
+                            </div>
+                            <div class="flex items-start gap-2">
+                                <i class="fas fa-route text-purple-600 mt-0.5"></i>
+                                <span>Importez vos traces GPX pour visualiser votre parcours</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
             </div>
 
         </div>
     </div>
+
 
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     <script src="js/firebase-config.js"></script>
@@ -393,6 +747,11 @@
         // Fonction pour fermer la modale
         function closeAutoLogoutModal() {
             document.getElementById('autoLogoutModal').classList.add('hidden');
+        }
+
+        // Fonction pour fermer la modale de permission refusée
+        function closePermissionDeniedModal() {
+            document.getElementById('permissionDeniedModal').classList.add('hidden');
         }
 
         // Appeler au chargement de la page
