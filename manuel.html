@@ -57,32 +57,30 @@
 
 <body class="min-h-screen flex flex-col bg-green-50 bg-opacity-90">
 
-    <!-- Header identique à index.html avec état actif -->
-    <div class="container mx-auto px-4 py-6">
-        <header class="flex flex-col md:flex-row justify-between items-center mb-8">
-            <div class="mb-4 md:mb-0">
+    <!-- Header -->
+    <div class="container mx-auto px-4 py-8">
+        <header class="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8">
+            <div>
                 <a href="index.html" class="hover:opacity-80 transition" title="Retour au menu principal">
-                    <h1 class="text-3xl md:text-4xl font-bold text-green-800 flex items-center gap-2">
-                        <span>📊</span> Carnet de courses
-                    </h1>
+                    <h1 class="text-3xl md:text-4xl font-bold text-green-800">📊 Carnet de courses</h1>
                 </a>
             </div>
-            <div class="flex items-center gap-3">
-                <!-- Lien Manuel Actif (Style visuel distinct) -->
-                <div
-                    class="px-5 py-2 bg-green-100 text-green-800 font-bold rounded-full border border-green-200 shadow-inner flex items-center gap-1">
-                    <i class="fas fa-book-open"></i> <span class="hidden md:inline">Manuel</span>
+            <div class="mt-4 lg:mt-0 w-full lg:w-auto">
+                <div class="flex flex-col lg:flex-row space-y-2 lg:space-y-0 lg:space-x-3 w-full lg:w-auto">
+                    <!-- Bouton Manuel Actif -->
+                    <div
+                        class="flex items-center justify-center bg-green-100 text-green-800 font-bold px-4 py-2 rounded-full border border-green-200 shadow-inner w-full lg:w-auto">
+                        <i class="fas fa-book-open mr-2"></i> Manuel
+                    </div>
+                    <button onclick="openModal('loginModal')"
+                        class="flex items-center justify-center bg-white hover:bg-gray-50 text-green-700 font-semibold px-4 py-2 rounded-full transition border border-green-600 w-full lg:w-auto cursor-pointer">
+                        Se connecter
+                    </button>
+                    <button onclick="openModal('signupModal')"
+                        class="flex items-center justify-center bg-green-600 hover:bg-green-700 text-white font-bold px-4 py-2 rounded-full transition w-full lg:w-auto cursor-pointer">
+                        <i class="fas fa-user-plus mr-2"></i> S'inscrire
+                    </button>
                 </div>
-
-                <!-- Les boutons ouvrent les modales injectées par JS -->
-                <button onclick="openModal('loginModal')"
-                    class="px-5 py-2 text-green-700 font-semibold hover:text-green-900 transition cursor-pointer">
-                    Se connecter
-                </button>
-                <button onclick="openModal('signupModal')"
-                    class="px-5 py-2 bg-green-600 hover:bg-green-700 text-white font-bold rounded-full transition shadow-md flex items-center gap-2 cursor-pointer">
-                    <i class="fas fa-user-plus"></i> S'inscrire
-                </button>
             </div>
         </header>
 
@@ -135,9 +133,8 @@
                         garder une trace précise de vos exploits,
                         d'analyser vos performances et de planifier vos futurs défis.
                     </p>
-                    <div class="img-placeholder">
-                        <i class="fas fa-image text-3xl mb-2 block"></i>
-                        Image d'illustration générale de l'application
+                    <div class="img-placeholder p-0 overflow-hidden rounded">
+                        <img src="img/app_generale.png" alt="Illustration de l'application Carnet de Courses" class="w-full h-48 md:h-64 object-cover" loading="lazy">
                     </div>
                 </section>
 
@@ -182,10 +179,6 @@
                         <li>Photo de couverture (si ajoutée).</li>
                         <li>Badges spéciaux (ex: "New !", "Record").</li>
                     </ul>
-                    <div class="img-placeholder">
-                        <i class="fas fa-image text-3xl mb-2 block"></i>
-                        Aperçu d'une carte de course
-                    </div>
                 </section>
 
                 <!-- Section: Gestion des Courses -->
@@ -296,9 +289,8 @@
                         <li><strong>Records :</strong> L'application met en évidence vos courses les plus longues, les
                             plus pentues ou les plus rapides.</li>
                     </ul>
-                    <div class="img-placeholder">
-                        <i class="fas fa-chart-bar text-3xl mb-2 block"></i>
-                        Exemple de graphiques statistiques
+                    <div class="img-placeholder p-0 overflow-hidden rounded">
+                        <img src="img/stat.png" alt="Exemple de graphiques statistiques" class="w-full h-48 md:h-64 object-cover" loading="lazy">
                     </div>
                 </section>
 

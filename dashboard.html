@@ -1429,7 +1429,7 @@
 
         // Variables pour la gestion de l'inactivité
         let inactivityTimer = null;
-        const INACTIVITY_TIMEOUT = 3000;
+        const INACTIVITY_TIMEOUT = 15 * 60 * 1000;
         let lastActivityTime = Date.now();
 
         /**

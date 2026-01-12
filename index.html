@@ -47,27 +47,27 @@
 
 <body class="min-h-screen flex flex-col bg-green-50 bg-opacity-90">
 
-    <!-- Header similaire au Dashboard -->
-    <div class="container mx-auto px-4 py-6">
-        <header class="flex flex-col md:flex-row justify-between items-center mb-8">
-            <div class="mb-4 md:mb-0">
-                <h1 class="text-3xl md:text-4xl font-bold text-green-800 flex items-center gap-2">
-                    <span>📊</span> Carnet de courses
-                </h1>
+    <!-- Header -->
+    <div class="container mx-auto px-4 py-8">
+        <header class="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8">
+            <div>
+                <h1 class="text-3xl md:text-4xl font-bold text-green-800">📊 Carnet de courses</h1>
             </div>
-            <div class="flex items-center gap-3">
-                <a href="manuel.html"
-                    class="px-5 py-2 text-green-700 font-semibold hover:text-green-900 transition flex items-center gap-1">
-                    <i class="fas fa-book-open"></i> <span class="hidden md:inline">Manuel</span>
-                </a>
-                <button onclick="openModal('loginModal')"
-                    class="px-5 py-2 text-green-700 font-semibold hover:text-green-900 transition cursor-pointer">
-                    Se connecter
-                </button>
-                <button onclick="openModal('signupModal')"
-                    class="px-5 py-2 bg-green-600 hover:bg-green-700 text-white font-bold rounded-full transition shadow-md flex items-center gap-2 cursor-pointer">
-                    <i class="fas fa-user-plus"></i> S'inscrire
-                </button>
+            <div class="mt-4 lg:mt-0 w-full lg:w-auto">
+                <div class="flex flex-col lg:flex-row space-y-2 lg:space-y-0 lg:space-x-3 w-full lg:w-auto">
+                    <a href="manuel.html"
+                        class="flex items-center justify-center bg-gray-100 hover:bg-gray-200 text-green-700 font-semibold px-4 py-2 rounded-full transition w-full lg:w-auto">
+                        <i class="fas fa-book-open mr-2"></i> Manuel
+                    </a>
+                    <button onclick="openModal('loginModal')"
+                        class="flex items-center justify-center bg-white hover:bg-gray-50 text-green-700 font-semibold px-4 py-2 rounded-full transition border border-green-600 w-full lg:w-auto cursor-pointer">
+                        Se connecter
+                    </button>
+                    <button onclick="openModal('signupModal')"
+                        class="flex items-center justify-center bg-green-600 hover:bg-green-700 text-white font-bold px-4 py-2 rounded-full transition w-full lg:w-auto cursor-pointer">
+                        <i class="fas fa-user-plus mr-2"></i> S'inscrire
+                    </button>
+                </div>
             </div>
         </header>
     </div>
@@ -85,11 +85,11 @@
             </p>
             <div class="flex flex-col sm:flex-row justify-center gap-4">
                 <button onclick="openModal('signupModal')"
-                    class="px-8 py-3 rounded-full bg-green-600 hover:bg-green-700 text-white font-bold text-lg transition shadow-lg flex items-center justify-center gap-2 cursor-pointer">
+                    class="px-4 py-2 rounded-full bg-green-600 hover:bg-green-700 text-white transition flex items-center justify-center gap-2 cursor-pointer">
                     <i class="fas fa-running"></i> Commencer maintenant
                 </button>
                 <a href="#features"
-                    class="px-8 py-3 rounded-full bg-white text-green-700 border-2 border-green-600 hover:bg-green-50 font-bold text-lg transition flex items-center justify-center gap-2">
+                    class="px-4 py-2 rounded-full bg-white text-green-700 border-2 border-green-600 hover:bg-green-50 transition flex items-center justify-center gap-2">
                     <i class="fas fa-info-circle"></i> Découvrir
                 </a>
             </div>
@@ -101,8 +101,8 @@
         <div class="container mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-12">
                 <span
-                    class="bg-green-100 text-green-800 text-sm font-semibold px-3 py-1 rounded-full uppercase tracking-wider">Fonctionnalités</span>
-                <h2 class="text-3xl font-bold text-green-800 mt-2 mb-4">Tout pour votre progression</h2>
+                    class="bg-green-100 text-green-800 text-sm px-3 py-1 rounded-full uppercase tracking-wider">Fonctionnalités</span>
+                <h2 class="text-3xl text-green-800 mt-2 mb-4">Tout pour votre progression</h2>
                 <p class="text-gray-600 max-w-2xl mx-auto">Une suite d'outils complète conçue pour les passionnés de
                     course à pied.</p>
             </div>
@@ -114,7 +114,7 @@
                         class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4 text-green-600">
                         <i class="fas fa-list-ul text-xl"></i>
                     </div>
-                    <h3 class="text-lg font-bold text-green-800 mb-2">Journal Complet</h3>
+                    <h3 class="text-lg text-green-800 mb-2">Journal Complet</h3>
                     <p class="text-gray-600 text-sm">Gardez une trace de toutes vos courses avec détails, photos, et
                         notes personnelles.</p>
                 </div>
@@ -125,7 +125,7 @@
                         class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4 text-green-600">
                         <i class="fas fa-chart-line text-xl"></i>
                     </div>
-                    <h3 class="text-lg font-bold text-green-800 mb-2">Statistiques Avancées</h3>
+                    <h3 class="text-lg text-green-800 mb-2">Statistiques Avancées</h3>
                     <p class="text-gray-600 text-sm">Visualisez votre progression, km parcourus et dénivelé via des
                         graphiques interactifs.</p>
                 </div>
@@ -136,7 +136,7 @@
                         class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4 text-green-600">
                         <i class="fas fa-award text-xl"></i>
                     </div>
-                    <h3 class="text-lg font-bold text-green-800 mb-2">Badges & Succès</h3>
+                    <h3 class="text-lg text-green-800 mb-2">Badges & Succès</h3>
                     <p class="text-gray-600 text-sm">Débloquez des badges uniques en atteignant vos objectifs et records
                         personnels.</p>
                 </div>
@@ -147,7 +147,7 @@
                         class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4 text-green-600">
                         <i class="fas fa-heart text-xl"></i>
                     </div>
-                    <h3 class="text-lg font-bold text-green-800 mb-2">Wishlist</h3>
+                    <h3 class="text-lg text-green-800 mb-2">Wishlist</h3>
                     <p class="text-gray-600 text-sm">Listez les courses de vos rêves et cochez-les une fois réalisées.
                     </p>
                 </div>
@@ -158,7 +158,7 @@
                         class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4 text-green-600">
                         <i class="fas fa-file-pdf text-xl"></i>
                     </div>
-                    <h3 class="text-lg font-bold text-green-800 mb-2">Export PDF</h3>
+                    <h3 class="text-lg text-green-800 mb-2">Export PDF</h3>
                     <p class="text-gray-600 text-sm">Générez des rapports PDF de vos courses pour partager vos
                         performances.</p>
                 </div>
@@ -169,7 +169,7 @@
                         class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4 text-green-600">
                         <i class="fas fa-users text-xl"></i>
                     </div>
-                    <h3 class="text-lg font-bold text-green-800 mb-2">Communauté</h3>
+                    <h3 class="text-lg text-green-800 mb-2">Communauté</h3>
                     <p class="text-gray-600 text-sm">
                     <p class="text-gray-600 text-sm">Parcourez, en tant qu'invité, le répertoire des coureurs
                         et trouvez la course qui vous motive.</p>
