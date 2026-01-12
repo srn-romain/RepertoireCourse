@@ -6,7 +6,6 @@
     // Attendre que BackendAPI soit disponible
     function initAdvancedFilters() {
         if (typeof BackendAPI === 'undefined') {
-            // BackendAPI n'est pas encore défini, réessayer dans 100ms
             setTimeout(initAdvancedFilters, 100);
             return;
         }
@@ -20,46 +19,33 @@
 
         // Vérifier que les éléments essentiels sont présents
         if (!toggleFiltersBtn || !filtersContent || !advancedFiltersPanel) {
-            console.warn('⚠️ Filtres avancés: éléments DOM non trouvés, nouvelle tentative...');
             setTimeout(initAdvancedFilters, 100);
             return;
         }
-
-        console.log('✅ Filtres avancés: initialisation réussie');
 
         // Afficher le panneau de filtres si l'utilisateur est connecté
         function updateFiltersVisibility() {
             if (BackendAPI.isAuthenticated() && advancedFiltersPanel) {
                 advancedFiltersPanel.classList.remove('hidden');
-                console.log('✅ Panneau de filtres affiché');
             }
         }
 
         // S'assurer que le contenu des filtres est caché au démarrage
         if (filtersContent) {
             filtersContent.style.display = 'none';
-            console.log('🔒 Contenu des filtres initialement caché');
         }
 
-        // Toggle le contenu des filtres (utilise uniquement display, pas la classe hidden)
+        // Toggle le contenu des filtres
         if (toggleFiltersBtn && filtersContent) {
             toggleFiltersBtn.addEventListener('click', () => {
-                console.log('🔄 Toggle filtres cliqué');
-
-                // Vérifier l'état actuel via le style display
                 const currentDisplay = window.getComputedStyle(filtersContent).display;
-                console.log('📊 Display actuel:', currentDisplay);
 
                 if (currentDisplay === 'none') {
-                    // Afficher le contenu
                     filtersContent.style.display = 'block';
                     filtersContent.classList.remove('hidden');
-                    console.log('✅ Filtres OUVERTS');
                 } else {
-                    // Cacher le contenu
                     filtersContent.style.display = 'none';
                     filtersContent.classList.add('hidden');
-                    console.log('❌ Filtres FERMÉS');
                 }
 
                 // Rotation de l'icône
@@ -67,7 +53,6 @@
                     toggleFiltersIcon.classList.toggle('rotate-180');
                 }
             });
-            console.log('✅ Event listener toggle ajouté');
         }
 
         // Remplir la liste des lieux à partir des courses
@@ -83,15 +68,12 @@
                 }
             });
 
-            // Trier alphabétiquement
             const sortedLocations = Array.from(locations).sort();
 
-            // Vider les options existantes (sauf la première)
             while (filterLocation.options.length > 1) {
                 filterLocation.remove(1);
             }
 
-            // Ajouter les nouvelles options
             sortedLocations.forEach(location => {
                 const option = document.createElement('option');
                 option.value = location;
@@ -108,17 +90,14 @@
                 const filterElevation = document.getElementById('filterElevation')?.value || '';
                 const filterDistance = document.getElementById('filterDistance')?.value || '';
 
-                // Filtrer les courses
                 let filteredRaces = [...window.races];
 
-                // Filtre par lieu
                 if (filterLocation) {
                     filteredRaces = filteredRaces.filter(race =>
                         race.location && race.location.trim() === filterLocation
                     );
                 }
 
-                // Filtre par prix
                 if (filterPrice) {
                     filteredRaces = filteredRaces.filter(race => {
                         const price = parseFloat(race.price);
@@ -133,7 +112,6 @@
                     });
                 }
 
-                // Filtre par dénivelé
                 if (filterElevation) {
                     filteredRaces = filteredRaces.filter(race => {
                         const elevation = parseFloat(race.elevation);
@@ -148,7 +126,6 @@
                     });
                 }
 
-                // Filtre par distance
                 if (filterDistance) {
                     filteredRaces = filteredRaces.filter(race => {
                         const distance = parseFloat(race.distance);
@@ -164,7 +141,6 @@
                     });
                 }
 
-                // Afficher les courses filtrées
                 if (typeof displayRaces === 'function') {
                     displayRaces(filteredRaces);
                 }
@@ -174,13 +150,11 @@
         // Réinitialiser les filtres
         if (resetFiltersBtn) {
             resetFiltersBtn.addEventListener('click', () => {
-                // Réinitialiser tous les selects
                 document.getElementById('filterLocation').value = '';
                 document.getElementById('filterPrice').value = '';
                 document.getElementById('filterElevation').value = '';
                 document.getElementById('filterDistance').value = '';
 
-                // Réafficher toutes les courses
                 if (typeof displayRaces === 'function' && window.races) {
                     displayRaces(window.races);
                 }
