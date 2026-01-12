@@ -1426,7 +1426,24 @@
 
                 if (authStatusBar) {
                     authStatusBar.classList.remove('hidden');
-                    if (authStatusText) authStatusText.textContent = `Connecté: ${user.email}`;
+
+                    // Récupération du pseudo pour l'affichage
+                    let userPseudo = "Utilisateur";
+                    try {
+                        const uDoc = await db.collection('users').doc(user.uid).get();
+                        if (uDoc.exists && uDoc.data().pseudo) {
+                            userPseudo = uDoc.data().pseudo;
+                        }
+                    } catch (e) {
+                        console.error("Erreur récup pseudo", e);
+                    }
+
+                    if (authStatusText) {
+                        // On garde le texte spécifique si on est déjà en mode consultation (peu probable au chargement direct mais bon)
+                        // Ici c'est l'initialisation.
+                        authStatusText.innerHTML = `<span class="italic font-normal text-gray-600 mr-2">Connecté en tant que</span> <span class="font-bold text-green-800">${user.email} (${userPseudo})</span>`;
+                    }
+
                     if (disconnectBtn) {
                         disconnectBtn.classList.remove('hidden');
                         disconnectBtn.onclick = () => auth.signOut();

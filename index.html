@@ -358,7 +358,7 @@
 
         // Gestion de l'affichage selon l'état de connexion
         if (typeof auth !== 'undefined') {
-            auth.onAuthStateChanged((user) => {
+            auth.onAuthStateChanged(async (user) => {
                 const authStatusBar = document.getElementById('authStatusBar');
                 const authStatusText = document.getElementById('authStatusText');
                 const titleLink = document.getElementById('titleLink');
@@ -373,8 +373,15 @@
 
                 if (user) {
                     // Utilisateur connecté
+                    let userPseudo = "Utilisateur";
+                    try {
+                        const uDoc = await db.collection('users').doc(user.uid).get();
+                        if (uDoc.exists && uDoc.data().pseudo) {
+                            userPseudo = uDoc.data().pseudo;
+                        }
+                    } catch (e) { console.error(e); }
 
-                    if (authStatusText) authStatusText.innerHTML = `<span class="italic font-normal text-gray-600 mr-2">Vous êtes connecté avec</span> <span class="font-bold text-green-800">${user.email}</span>`;
+                    if (authStatusText) authStatusText.innerHTML = `<span class="italic font-normal text-gray-600 mr-2">Connecté en tant que</span> <span class="font-bold text-green-800">${user.email} (${userPseudo})</span>`;
 
                     // Gestion boutons barre
                     if (disconnectBtn) {
