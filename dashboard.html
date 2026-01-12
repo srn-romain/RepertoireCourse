@@ -409,6 +409,14 @@
                             <span class="ml-2 text-green-700">Marquer comme favori</span>
                         </label>
                     </div>
+                    <div class="mb-4">
+                        <label class="flex items-center cursor-pointer">
+                            <input type="checkbox" id="racePublic" checked
+                                class="w-5 h-5 text-blue-600 border-blue-300 rounded focus:ring-blue-500 focus:ring-2">
+                            <span class="ml-2 text-green-700">Rendre public</span>
+                            <p class="text-xs text-gray-400 italic mt-1 ml-7">(Visible par la communauté)</p>
+                        </label>
+                    </div>
                     <div class="mb-4 flex flex-col sm:flex-row gap-4">
                         <div class="flex-1">
                             <label for="raceDate" class="block text-green-700 mb-2">Date <span
@@ -2569,6 +2577,10 @@
             }
             delete raceForm.dataset.wishlistConfirmed;
 
+            // Réinitialiser la checkbox public à true par défaut
+            const publicCheckbox = document.getElementById('racePublic');
+            if (publicCheckbox) publicCheckbox.checked = true;
+
             // Réinitialiser l'état de la photo
             photoData = null;
             document.getElementById('racePhoto').value = '';
@@ -2587,6 +2599,13 @@
             document.getElementById('raceParcours').value = '';
             const pPr = document.getElementById('parcoursPreview');
             if (pPr) pPr.classList.add('hidden');
+
+            // Réinitialiser les accompagnants (CORRECTION BUG CONTACTS)
+            currentCompanions = [];
+            renderCompanionsList();
+            const compInput = document.getElementById('companionNameInput');
+            if (compInput) compInput.value = '';
+            if (typeof setCompanionType === 'function') setCompanionType(null);
 
             // Pré-remplissage si données fournies
             if (prefillData) {
@@ -3663,6 +3682,7 @@
             document.getElementById('raceWebsite').value = race.website || '';
             document.getElementById('raceGpxUrl').value = race.gpxUrl || '';
             document.getElementById('raceFavorite').checked = race.favorite || false;
+            document.getElementById('racePublic').checked = (race.public !== undefined) ? race.public : true;
 
             // Load companions
             currentCompanions = race.companions || [];
@@ -3815,7 +3835,8 @@
                 website,
                 gpxUrl,
                 companions: currentCompanions,
-                favorite: favorite || false
+                favorite: favorite || false,
+                public: document.getElementById('racePublic').checked
             };
             // Ajouter la photo seulement si elle existe
             if (photoData) {

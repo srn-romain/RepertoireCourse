@@ -396,28 +396,6 @@
                         heroCtaButton.classList.remove('bg-green-600', 'hover:bg-green-700');
                         heroCtaButton.classList.add('bg-blue-600', 'hover:bg-blue-700');
                     }
-
-                    // --- AUTO REPARATION ADMIN ---
-                    // Ajoute les champs manquants ou crée le document si absent
-                    const userDocRef = db.collection('users').doc(user.uid);
-                    userDocRef.get().then((docSnapshot) => {
-                        const data = docSnapshot.exists ? docSnapshot.data() : {};
-
-                        // Si le doc n'existe pas OU s'il manque pseudo/lastLogin
-                        if (!docSnapshot.exists || !data.pseudo || !data.lastLogin) {
-                            console.log("Réparation FORCEE du compte Admin...");
-
-                            userDocRef.set({
-                                email: user.email,
-                                pseudo: "Romain (Admin)",
-                                lastLogin: firebase.firestore.FieldValue.serverTimestamp(),
-                                role: data.role || 'admin',
-                                createdAt: data.createdAt || firebase.firestore.FieldValue.serverTimestamp()
-                            }, { merge: true })
-                                .then(() => console.log("✅ Compte Admin réparé/créé avec succès !"))
-                                .catch((err) => console.error("❌ Erreur réparation Admin:", err));
-                        }
-                    });
                 } else {
                     // Utilisateur non connecté
 

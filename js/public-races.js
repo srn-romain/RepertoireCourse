@@ -23,6 +23,7 @@ async function loadPublicRaces() {
         // if (grid.children.length === 0) grid.innerHTML = '<...spinner...>';
 
         const snapshot = await db.collectionGroup('races')
+            .where('public', '==', true) // SÉCURITÉ : Ne demande QUE les courses publiques
             .orderBy('date', 'desc')
             .limit(50)
             .get();
@@ -82,10 +83,15 @@ async function loadPublicRaces() {
             }
 
             // === FILTER: Hide Unknown Users ===
-            // Si on n'a pas trouvé l'email (Coureur mystère ou non disponible), on saute cette course
-            // === FILTER: Hide Unknown Users ===
             // Si on n'a pas trouvé de nom valide
             if (ownerPseudo === "Coureur mystère" || ownerPseudo === "Pseudo non disponible") {
+                continue;
+            }
+
+            // === FILTER: Visible (Public) Races Only ===
+            // Si le champ 'public' existe et est false, on masque.
+            // Par défaut (undefined), on considère que c'est visible pour rétrocompatibilité
+            if (race.public === false) {
                 continue;
             }
 
