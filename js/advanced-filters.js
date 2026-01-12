@@ -85,6 +85,12 @@
         // Appliquer les filtres
         if (applyFiltersBtn) {
             applyFiltersBtn.addEventListener('click', () => {
+                // Réinitialiser le filtre d'années à "Toutes"
+                const allYearsBtn = document.querySelector('.year-filter[data-year="all"]');
+                if (allYearsBtn) {
+                    allYearsBtn.click();
+                }
+
                 const filterLocation = document.getElementById('filterLocation')?.value || '';
                 const filterPrice = document.getElementById('filterPrice')?.value || '';
                 const filterElevation = document.getElementById('filterElevation')?.value || '';
