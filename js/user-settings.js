@@ -372,15 +372,9 @@ window.openUserSettings = async function () {
             const prefShowStatsBtn = document.getElementById('prefShowStatsBtn');
 
             // Par défaut : affiché (true) si non défini
-            // Pour Import : cohérence avec dashboard => si non défini, true seulement si <= 3 courses (ou true si on veut encourager l'import?)
-            // L'utilisateur a demandé "c'est à lui de décider". Donc s'il ouvre les settings, il voit l'état "voulu".
-            // Si on met 'true' par défaut ici alors qu'il est caché sur le dashboard, c'est confus.
-            // On va essayer de récupérer l'état logique par défaut.
+            // Pour Import : Caché par défaut (demande user), activable manuellement.
 
-            let defaultImportState = true;
-            if (window.races && Array.isArray(window.races)) {
-                defaultImportState = (window.races.length <= 3);
-            }
+            let defaultImportState = false;
 
             if (prefShowImportBtn) prefShowImportBtn.checked = (ui.showImportBtn !== undefined) ? ui.showImportBtn : defaultImportState;
             if (prefShowStatsBtn) prefShowStatsBtn.checked = (ui.showStatsBtn !== undefined) ? ui.showStatsBtn : true;

@@ -6849,9 +6849,8 @@
                         showImport = uiPrefs.showImportBtn;
                     } else {
                         // Default logic if preference not set yet
-                        // Si races est undefined (chargement en cours ou non initialisé), on considère 0 => donc affiché
-                        const currentRacesCount = (typeof races !== 'undefined' && Array.isArray(races)) ? races.length : 0;
-                        showImport = (currentRacesCount <= 3);
+                        // NOUVEAU: Caché par défaut tout le temps (demande user)
+                        showImport = false;
                     }
 
                     if (importBtn) {
