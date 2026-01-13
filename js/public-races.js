@@ -4,7 +4,7 @@ let isLoadingPublicRaces = false;
 
 // Filtres pour les courses publiques
 const publicRaceFilters = {
-    limit: 10,
+    limit: 15,
     status: 'all', // 'all', 'upcoming', 'past'
     sort: 'desc' // 'desc' (plus récentes), 'asc' (plus anciennes)
 };
@@ -25,7 +25,7 @@ window.updatePublicRaceFilter = function (type, value) {
 
     // Update UI buttons
     if (type === 'limit') {
-        ['10', '20', '50'].forEach(val => {
+        ['15', '30', '60'].forEach(val => {
             const btn = document.getElementById(`filterLimit${val}`);
             if (btn) {
                 if (parseInt(val) === value) {
