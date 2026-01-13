@@ -633,23 +633,14 @@
                 <div class="grid grid-cols-2 gap-4 mb-4">
                     <div class="bg-green-50 p-3 rounded-lg">
                         <p class="text-sm text-green-600 flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-500" viewBox="0 0 24 24"
-                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                stroke-linejoin="round">
-                                <path d="M3 12h3l3 8 4-16 3 8h3"></path>
-                            </svg>
+                            <i class="fas fa-ruler-horizontal text-green-500"></i>
                             <span>Distance</span>
                         </p>
                         <p id="detailsDistance" class="font-semibold text-green-800"></p>
                     </div>
                     <div class="bg-green-50 p-3 rounded-lg">
                         <p class="text-sm text-green-600 flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-500" viewBox="0 0 24 24"
-                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                stroke-linejoin="round">
-                                <path d="M3 12c0-4 3-7 7-7s7 3 7 7-3 7-7 7-7-3-7-7z" />
-                                <path d="M12 7v5l3 3" />
-                            </svg>
+                            <i class="fas fa-mountain text-green-500"></i>
                             <span>Dénivelé</span>
                         </p>
                         <p id="detailsElevation" class="font-semibold text-green-800"></p>
@@ -668,12 +659,7 @@
                     </div>
                     <div class="bg-green-50 p-3 rounded-lg">
                         <p class="text-sm text-green-600 flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-500" viewBox="0 0 24 24"
-                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                stroke-linejoin="round">
-                                <path d="M21 10c0 6-9 11-9 11S3 16 3 10a9 9 0 1118 0z" />
-                                <circle cx="12" cy="10" r="3" />
-                            </svg>
+                            <i class="fas fa-map-marker-alt text-green-500"></i>
                             <span>Lieu</span>
                         </p>
                         <p id="detailsLocation" class="font-semibold text-green-800"></p>
@@ -2824,15 +2810,15 @@
                 <div class="mt-4 flex flex-col gap-2">
                     <div class="flex items-center gap-2">
                         <span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full">
-                            <svg xmlns='http://www.w3.org/2000/svg' class='h-4 w-4 text-green-500' fill='none' viewBox='0 0 24 24' stroke='currentColor'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M4 6h16M4 12h16M4 18h16'/></svg>
+                            <i class="fas fa-ruler-horizontal text-green-500"></i>
                             ${race.distance || '0'} km
                         </span>
                         <span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full">
-                            <svg xmlns='http://www.w3.org/2000/svg' class='h-4 w-4 text-green-500' fill='none' viewBox='0 0 24 24' stroke='currentColor'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M4 17l6-6 4 4 6-6'/></svg>
+                            <i class="fas fa-mountain text-green-500"></i>
                             +${race.elevation || '0'} m
                         </span>
                         ${locationDisplay ? `<span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full hidden md:inline-flex">
-                            <svg xmlns='http://www.w3.org/2000/svg' class='h-4 w-4 text-green-500' fill='none' viewBox='0 0 24 24' stroke='currentColor'><circle cx='12' cy='10' r='3'/><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z'/></svg>
+                            <i class="fas fa-map-marker-alt text-green-500"></i>
                             ${locationDisplay}
                         </span>` : ''}
                     </div>
