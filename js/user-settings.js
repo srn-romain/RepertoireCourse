@@ -465,6 +465,24 @@ function initSettingsLogic() {
             btnFinalDelete.disabled = true;
             btnFinalDelete.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Suppression en cours...`;
 
+            // Vérification de sécurité (Session récente < 5 min)
+            const lastSignInTime = new Date(user.metadata.lastSignInTime).getTime();
+            const now = Date.now();
+            const fiveMinutes = 5 * 60 * 1000;
+
+            if (now - lastSignInTime > fiveMinutes) {
+                btnFinalDelete.disabled = false;
+                btnFinalDelete.innerHTML = "OUI, Supprimer mon compte définitivement";
+
+                const errContainer = document.getElementById('deleteAccountErrorContainer');
+                if (errContainer) {
+                    errContainer.textContent = "Par sécurité, cette action nécessite une connexion récente (moins de 5 min). Veuillez vous déconnecter et vous reconnecter avant de réessayer.";
+                    errContainer.className = "p-3 mb-4 rounded-lg text-sm text-center bg-red-100 text-red-800";
+                    errContainer.classList.remove('hidden');
+                }
+                return;
+            }
+
             try {
                 const uid = user.uid;
 
