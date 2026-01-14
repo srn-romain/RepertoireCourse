@@ -29,6 +29,8 @@ const userSettingsModalHTML = `
                         <i class="fas fa-save"></i>
                     </button>
                 </form>
+                <!-- Zone de message spécifique au pseudo -->
+                <div id="pseudoMessageContainer" class="hidden mt-2 text-sm"></div>
             </div>
 
             <hr class="border-gray-100">
@@ -53,8 +55,13 @@ const userSettingsModalHTML = `
                         <input type="checkbox" id="prefShowDay" class="w-4 h-4 text-green-600 rounded focus:ring-green-500">
                         <span class="ml-2 text-sm text-gray-700">Afficher le jour précis (ex: 12 mars)</span>
                     </label>
+                    <div class="pt-2 border-t border-gray-200 mt-2">
+                        <p class="text-xs text-green-600 font-medium"><i class="fas fa-check-circle mr-1"></i>Les modifications sont automatiquement enregistrées.</p>
+                    </div>
                 </div>
-                <p class="text-xs text-gray-400 mt-2 italic">Ces réglages s'appliquent à toutes vos courses publiques.</p>
+                <div class="flex flex-col gap-1 mt-2">
+                    <p class="text-xs text-gray-400 italic">Ces réglages s'appliquent à toutes vos courses publiques.</p>
+                </div>
             </div>
 
             <hr class="border-gray-100">
@@ -71,8 +78,13 @@ const userSettingsModalHTML = `
                         <input type="checkbox" id="prefShowStatsBtn" class="w-4 h-4 text-green-600 rounded focus:ring-green-500">
                         <span class="ml-2 text-sm text-gray-700">Afficher le bouton "Statistiques"</span>
                     </label>
+                    <div class="pt-2 border-t border-gray-200 mt-2">
+                        <p class="text-xs text-green-600 font-medium"><i class="fas fa-check-circle mr-1"></i>Les modifications sont automatiquement enregistrées.</p>
+                    </div>
                 </div>
-                <p class="text-xs text-gray-400 mt-2 italic">Ces réglages contrôlent l'affichage des boutons dans le tableau de bord.</p>
+                <div class="flex flex-col gap-1 mt-2">
+                     <p class="text-xs text-gray-400 italic">Ces réglages contrôlent l'affichage des boutons dans le tableau de bord.</p>
+                </div>
             </div>
 
             <hr class="border-gray-100">
@@ -89,6 +101,68 @@ const userSettingsModalHTML = `
             
             <!-- Zone de message -->
             <div id="settingsMessageContainer" class="hidden p-3 rounded-lg text-sm text-center"></div>
+            
+            <div class="mt-8 border-t border-red-100 pt-6">
+                <h3 class="text-sm font-semibold text-red-800 mb-2">Zone Danger</h3>
+                <button id="btnInitDeleteAccount" class="w-full py-2 px-4 border border-red-300 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition flex items-center justify-center gap-2">
+                    <i class="fas fa-trash-alt"></i>
+                    Supprimer mon compte
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- WARNING MODAL -->
+<div id="deleteAccountWarningModal" class="modal hidden fixed inset-0 z-[60] flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm transition-opacity duration-300">
+    <div class="modal-content bg-white p-6 w-full max-w-md m-4 rounded-xl shadow-2xl border border-red-200">
+        <div class="text-center mb-6">
+             <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 text-red-600 mb-4">
+                <i class="fas fa-exclamation-triangle text-3xl"></i>
+            </div>
+            <h3 class="text-xl font-bold text-gray-900 mb-2">Attention !</h3>
+            <p class="text-gray-600">Vous allez perdre toutes vos données enregistrées (compte et wishlist).</p>
+        </div>
+        <div class="flex gap-3 justify-center">
+             <button onclick="closeModal('deleteAccountWarningModal')" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg text-gray-800 transition">Annuler</button>
+             <button id="btnConfirmDeleteWarning" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition font-bold">Confirmer</button>
+        </div>
+    </div>
+</div>
+
+<!-- ULTIMATUM MODAL -->
+<div id="deleteAccountUltimatumModal" class="modal hidden fixed inset-0 z-[70] flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm transition-opacity duration-300">
+    <div class="modal-content bg-white p-6 w-full max-w-lg m-4 rounded-xl shadow-2xl border-2 border-red-500 relative">
+        <button onclick="closeModal('deleteAccountUltimatumModal')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
+            <i class="fas fa-times"></i>
+        </button>
+        <div class="text-center mb-6">
+             <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 text-red-600 mb-4">
+                <i class="fas fa-heart-broken text-3xl"></i>
+            </div>
+            <h3 class="text-2xl font-bold text-red-700 mb-4">Voulez-vous vraiment supprimer ?</h3>
+            
+            <p class="text-gray-700 mb-2 font-medium">Cette action est définitive et irréversible.</p>
+            <p class="text-gray-500 mb-6 text-sm">Nous sommes tristes de vous voir partir...</p>
+
+            <div class="bg-blue-50 p-4 rounded-lg border border-blue-100 mb-6 mx-auto max-w-sm">
+                <p class="text-blue-800 text-sm">
+                    Avez-vous pensé à sauvegarder vos données ?<br>
+                    Vous pouvez le faire via le bouton <i class="fas fa-download mx-1"></i> présent en haut à gauche de votre tableau de bord.
+                </p>
+            </div>
+        </div>
+        
+        <!-- Zone de message d'erreur/succès pour suppression -->
+        <div id="deleteAccountErrorContainer" class="hidden p-3 mb-4 rounded-lg text-sm text-center"></div>
+
+        <div class="flex flex-col gap-3">
+             <button id="btnFinalDeleteAccount" class="w-full py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl transition font-bold shadow-lg hover:shadow-xl transform active:scale-95">
+                OUI, Supprimer mon compte définitivement
+             </button>
+             <button onclick="closeModal('deleteAccountUltimatumModal')" class="w-full py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl transition font-semibold">
+                Non, je reste !
+             </button>
         </div>
     </div>
 </div>
@@ -133,6 +207,10 @@ document.addEventListener('DOMContentLoaded', () => {
 window.closeSettingsModal = function () {
     const modal = document.getElementById('userSettingsModal');
     if (modal) modal.classList.add('hidden');
+    // Aussi fermer les sous-modales si ouvertes
+    closeModal('deleteAccountWarningModal');
+    closeModal('deleteAccountUltimatumModal');
+
     document.body.classList.remove('overflow-hidden'); // Unfreeze background
 
     if (settingsHasChanged) {
@@ -142,7 +220,21 @@ window.closeSettingsModal = function () {
 
 // Helper global closeModal (si modal-auth absent) - On le garde pour compatibilité générique
 if (typeof window.closeModal === 'undefined') {
-    window.closeModal = window.closeSettingsModal; // Alias
+    window.closeModal = function (modalId) {
+        if (modalId) {
+            const el = document.getElementById(modalId);
+            if (el) el.classList.add('hidden');
+        } else {
+            window.closeSettingsModal();
+        }
+    };
+}
+
+if (typeof window.openModal === 'undefined') {
+    window.openModal = function (modalId) {
+        const el = document.getElementById(modalId);
+        if (el) el.classList.remove('hidden');
+    };
 }
 
 function initSettingsLogic() {
@@ -251,18 +343,33 @@ function initSettingsLogic() {
     loadCurrentSettings();
 
     // Fonction d'affichage de message
-    function showMessage(msg, type = 'success') {
-        msgContainer.textContent = msg;
-        msgContainer.classList.remove('hidden', 'bg-green-100', 'text-green-800', 'bg-red-100', 'text-red-800');
+    function showMessage(msg, type = 'success', targetId = 'settingsMessageContainer') {
+        const targetContainer = document.getElementById(targetId);
+        if (!targetContainer) return;
 
-        if (type === 'success') {
-            msgContainer.classList.add('bg-green-100', 'text-green-800');
+        targetContainer.textContent = msg;
+        targetContainer.classList.remove('hidden', 'bg-green-100', 'text-green-800', 'bg-red-100', 'text-red-800', 'text-green-600', 'text-red-600');
+
+        if (targetId === 'pseudoMessageContainer') {
+            // Style spécifique pour le message sous le pseudo (texte simple coloré)
+            if (type === 'success') {
+                targetContainer.classList.add('text-green-600');
+            } else {
+                targetContainer.classList.add('text-red-600');
+            }
         } else {
-            msgContainer.classList.add('bg-red-100', 'text-red-800');
+            // Style boîte classique
+            if (type === 'success') {
+                targetContainer.classList.add('bg-green-100', 'text-green-800');
+            } else {
+                targetContainer.classList.add('bg-red-100', 'text-red-800');
+            }
         }
 
+        targetContainer.classList.remove('hidden');
+
         setTimeout(() => {
-            msgContainer.classList.add('hidden');
+            targetContainer.classList.add('hidden');
         }, 5000);
     }
 
@@ -286,7 +393,7 @@ function initSettingsLogic() {
                 settingsHasChanged = true;
 
                 // Feedback
-                showMessage("Pseudo mis à jour avec succès !");
+                showMessage("Pseudo mis à jour avec succès !", "success", "pseudoMessageContainer");
 
                 // Mettre à jour l'affichage dans la barre si possible sans rechargement
                 // On peut re-déclencher une mise à jour UI si nécessaire, mais le plus simple est de recharger ou attendre la prochaine nav.
@@ -301,7 +408,7 @@ function initSettingsLogic() {
 
             } catch (error) {
                 console.error("Erreur update pseudo:", error);
-                showMessage("Erreur lors de la mise à jour.", "error");
+                showMessage("Erreur lors de la mise à jour.", "error", "pseudoMessageContainer");
             }
         });
     }
@@ -321,6 +428,107 @@ function initSettingsLogic() {
             } catch (error) {
                 console.error("Erreur reset password:", error);
                 showMessage("Erreur lors de l'envoi de l'email.", "error");
+            }
+        });
+    }
+
+    // GESTION SUPPRESSION COMPTE
+    const btnInitDelete = document.getElementById('btnInitDeleteAccount');
+    const btnConfirmWarning = document.getElementById('btnConfirmDeleteWarning');
+    const btnUltimatumDownload = document.getElementById('btnUltimatumDownload');
+    const btnFinalDelete = document.getElementById('btnFinalDeleteAccount');
+
+    if (btnInitDelete) {
+        btnInitDelete.addEventListener('click', () => {
+            // Fermer settings ? Non, on empile ou on switch. 
+            // On affiche le Warning par dessus ou on switch.
+            // Affichons par dessus (z-index 60 géré dans HTML)
+            window.openModal('deleteAccountWarningModal');
+        });
+    }
+
+    if (btnConfirmWarning) {
+        btnConfirmWarning.addEventListener('click', () => {
+            window.closeModal('deleteAccountWarningModal');
+            window.openModal('deleteAccountUltimatumModal');
+        });
+    }
+
+
+
+    if (btnFinalDelete) {
+        btnFinalDelete.addEventListener('click', async () => {
+            const user = firebase.auth().currentUser;
+            if (!user) return;
+
+            // Désactiver bouton pour éviter double clic
+            btnFinalDelete.disabled = true;
+            btnFinalDelete.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Suppression en cours...`;
+
+            try {
+                const uid = user.uid;
+
+                // 1. Suppression des sous-collections (batch manuel si possible, ou simple tentative)
+                // Note: Client SDK ne peut pas supprimer une collection entière facilement sans cloud function.
+                // On va essayer de supprimer les documents visibles dans races et wishlist si les références globales existent.
+
+                const deleteCollectionDocs = async (collectionRef) => {
+                    if (!collectionRef) return;
+                    try {
+                        const snapshot = await collectionRef.get();
+                        const batch = db.batch();
+                        let count = 0;
+                        snapshot.forEach(doc => {
+                            batch.delete(doc.ref);
+                            count++;
+                        });
+                        if (count > 0) await batch.commit();
+                        console.log(`Supprimé ${count} docs de la collection.`);
+                    } catch (e) {
+                        console.warn("Erreur clean collection:", e);
+                    }
+                };
+
+                // On suppose que window.racesCollection / wishlistCollection sont accessibles
+                // Si on est dans dashboard.html avec les scripts chargés
+                if (typeof racesCollection !== 'undefined') await deleteCollectionDocs(racesCollection);
+                if (typeof wishlistCollection !== 'undefined') await deleteCollectionDocs(wishlistCollection);
+
+                // 2. Supprimer la doc user
+                await db.collection('users').doc(uid).delete();
+
+                // 3. Supprimer le compte Auth
+                await user.delete();
+
+                // 4. Message et Redirection
+                const errContainer = document.getElementById('deleteAccountErrorContainer');
+                if (errContainer) {
+                    errContainer.textContent = "Votre compte a été supprimé. Redirection...";
+                    errContainer.className = "p-3 mb-4 rounded-lg text-sm text-center bg-green-100 text-green-800";
+                    errContainer.classList.remove('hidden');
+                }
+
+                setTimeout(() => {
+                    window.location.href = "index.html";
+                }, 2000);
+
+            } catch (error) {
+                console.error("Erreur suppression compte:", error);
+                btnFinalDelete.disabled = false;
+                btnFinalDelete.innerText = "Réessayer la suppression";
+
+                const errContainer = document.getElementById('deleteAccountErrorContainer');
+                let msg = "Une erreur est survenue : " + error.message;
+
+                if (error.code === 'auth/requires-recent-login') {
+                    msg = "Par sécurité, cette opération nécessite une connexion récente. Veuillez vous déconnecter et vous reconnecter, puis réessayez.";
+                }
+
+                if (errContainer) {
+                    errContainer.textContent = msg;
+                    errContainer.className = "p-3 mb-4 rounded-lg text-sm text-center bg-red-100 text-red-800";
+                    errContainer.classList.remove('hidden');
+                }
             }
         });
     }
