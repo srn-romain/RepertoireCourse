@@ -144,7 +144,6 @@
             -webkit-overflow-scrolling: touch;
         }
 
-        /* Bouton anniversaire en arrière-plan quand modale ouverte */
         .anniversary-behind {
             z-index: 10 !important;
         }
@@ -2228,7 +2227,6 @@
 
         // Confirmer la connexion avec Firebase Auth
         confirmPassword.addEventListener('click', async function () {
-            // Ajouter automatiquement @gmail.com si l'utilisateur a saisi "invite" (en arrière-plan)
             let emailValue = emailInput.value.trim();
             const emailValueLower = emailValue.toLowerCase();
             if (emailValueLower === 'invite' && !emailValue.includes('@')) {
@@ -4934,8 +4932,6 @@
             });
         }
 
-
-        // Fonction pour fermer une popup si on clique en dehors de son contenu
         // Fonction pour fermer une popup si on clique en dehors de son contenu
         document.querySelectorAll('.modal').forEach(modal => {
             let mouseDownTarget = null;
@@ -6557,7 +6553,30 @@
                     if (isAdmin) {
                         if (migrateDataBtn) migrateDataBtn.classList.remove('hidden');
                     }
-                    // backupDataBtn est déjà visible pour tous les utilisateurs connectés
+
+                    // Vérifier si c'est un compte invité
+                    const isInviteUser = await (async () => {
+                        // Check custom claims
+                        try {
+                            const token = await user.getIdTokenResult();
+                            if (token.claims.invite) return true;
+                        } catch (e) { }
+                        // Check doc
+                        try {
+                            const d = await db.collection('users').doc(user.uid).get();
+                            if (d.exists && d.data().role === 'invite') return true;
+                        } catch (e) { }
+                        return sessionStorage.getItem('authLevel') === 'invite';
+                    })();
+
+                    // Masquer le bouton de sauvegarde pour les comptes invités
+                    if (backupDataBtn) {
+                        if (isInviteUser) {
+                            backupDataBtn.classList.add('hidden');
+                        } else {
+                            backupDataBtn.classList.remove('hidden');
+                        }
+                    }
                 }
             });
 
