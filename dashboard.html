@@ -1333,6 +1333,22 @@
                 console.log("Utilisateur connecté:", user.uid);
                 usersCollection = db.collection('users');
 
+                // Définition globale de la méthode de vérification invité
+                window.checkIfInviteUser = async function (userObj) {
+                    if (!userObj) return false;
+                    // Check custom claims
+                    try {
+                        const token = await userObj.getIdTokenResult();
+                        if (token.claims.invite) return true;
+                    } catch (e) { }
+                    // Check doc
+                    try {
+                        const d = await db.collection('users').doc(userObj.uid).get();
+                        if (d.exists && d.data().role === 'invite') return true;
+                    } catch (e) { }
+                    return sessionStorage.getItem('authLevel') === 'invite';
+                };
+
                 // --- AUTO-RÉPARATION : Vérifier et créer le document utilisateur s'il manque ---
                 try {
                     const userDocRef = usersCollection.doc(user.uid);
@@ -1362,19 +1378,7 @@
                 }
 
                 // Vérifier si c'est un compte invité
-                const isInviteUser = await (async () => {
-                    // Check custom claims
-                    try {
-                        const token = await user.getIdTokenResult();
-                        if (token.claims.invite) return true;
-                    } catch (e) { }
-                    // Check doc
-                    try {
-                        const d = await usersCollection.doc(user.uid).get();
-                        if (d.exists && d.data().role === 'invite') return true;
-                    } catch (e) { }
-                    return sessionStorage.getItem('authLevel') === 'invite';
-                })();
+                const isInviteUser = await window.checkIfInviteUser(user);
 
                 if (isInviteUser) {
                     console.log("Mode Invité détecté");
@@ -1910,9 +1914,13 @@
                 '<span class="font-semibold">' + totalDistance + '</span> km parcourus | ' +
                 '<span class="font-semibold">' + totalElevation + '</span> m de dénivelé | ' +
                 '<span class="' + timeClass + '">' + formattedTime + '</span> de course';
-            // Affichage du prix (pour tous les utilisateurs connectés)
+            // Affichage du prix (pour tous les utilisateurs connectés SAUF les invités)
             if (isUserAuthenticated) {
-                statsHtml += ' |\n                <span id="totalPriceStat" class="font-semibold group relative cursor-pointer">\n                    <span class="opacity-40">Prix total</span>\n                    <span class="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-2 py-1 bg-green-700 text-white text-xs rounded shadow-lg hidden group-hover:block z-50 whitespace-nowrap">\n                        ' + totalPrice.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' € dépensés\n                    </span>\n                </span>';
+                // Vérifier si l'utilisateur est invité de manière synchrone via sessionStorage
+                const isInvite = sessionStorage.getItem('authLevel') === 'invite';
+                if (!isInvite) {
+                    statsHtml += ' |\n                <span id="totalPriceStat" class="font-semibold group relative cursor-pointer">\n                    <span class="opacity-40">Prix total</span>\n                    <span class="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-2 py-1 bg-green-700 text-white text-xs rounded shadow-lg hidden group-hover:block z-50 whitespace-nowrap">\n                        ' + totalPrice.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' € dépensés\n                    </span>\n                </span>';
+                }
             }
             statsElement.innerHTML = statsHtml;
             // Ajout du hover JS si besoin (pour compatibilité)
@@ -6863,18 +6871,10 @@
                     const data = doc.data();
                     const uiPrefs = data.uiPreferences || {};
 
-                    // IMPORT BUTTON
-                    // Par défaut : visible si <= 3 courses (ancienne logique) OU visible si pas de préférence définie ?
-                    // Le user veut décider. Disons: 
-                    // Si préférence définie : on respecte.
-                    // Si PAS définie : on applique la logique par défaut (<= 3 courses).
-
                     let showImport = false;
                     if (uiPrefs.hasOwnProperty('showImportBtn')) {
                         showImport = uiPrefs.showImportBtn;
                     } else {
-                        // Default logic if preference not set yet
-                        // NOUVEAU: Caché par défaut tout le temps (demande user)
                         showImport = false;
                     }
 
