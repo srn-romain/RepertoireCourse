@@ -5729,13 +5729,17 @@
             // Statistiques sur les prix
             if (stats.priceStats && Object.keys(stats.priceStats).length > 0) {
                 const ps = stats.priceStats;
+                // Vérifier si l'utilisateur est invité
+                const isInvite = sessionStorage.getItem('authLevel') === 'invite';
+                const blurClass = isInvite ? 'blur-text' : '';
+
                 html += `<div class="bg-green-100 p-4 rounded-lg"><h4 class="font-bold text-green-800 mb-3">Statistiques sur les prix</h4>`;
                 html += `<ul class="list-disc list-inside space-y-2">`;
                 html += `<li><strong>Moyenne :</strong> <span class="text-green-600 font-semibold">${ps.mean} €</span></li>`;
-                html += `<li><strong>Médiane :</strong> <span class="text-green-600 font-semibold">${ps.median} €</span></li>`;
-                html += `<li><strong>Étendue :</strong> <span class="text-green-600 font-semibold">${ps.range} €</span></li>`;
-                html += `<li><strong>Écart-type :</strong> <span class="text-green-600 font-semibold">${ps.standardDeviation.toFixed(2)} €</span></li>`;
-                html += `<li><strong>Total :</strong> <span class="text-green-600 font-semibold">${ps.sum} €</span></li>`;
+                html += `<li><strong>Médiane :</strong> <span class="text-green-600 font-semibold ${blurClass}">${ps.median} €</span></li>`;
+                html += `<li><strong>Étendue :</strong> <span class="text-green-600 font-semibold ${blurClass}">${ps.range} €</span></li>`;
+                html += `<li><strong>Écart-type :</strong> <span class="text-green-600 font-semibold ${blurClass}">${ps.standardDeviation.toFixed(2)} €</span></li>`;
+                html += `<li><strong>Total :</strong> <span class="text-green-600 font-semibold ${blurClass}">${ps.sum} €</span></li>`;
                 html += `</ul></div>`;
             }
 
@@ -5811,7 +5815,11 @@
                 html += `<span>Top 10 de la répartition</span>`;
                 html += `<select id="chartTypeSelect" class="px-2 py-1 border-0 border-b-2 border-green-400 bg-transparent text-green-800 text-sm font-normal cursor-pointer hover:border-green-600 focus:outline-none focus:border-green-600">`;
                 html += `<option value="distance">des distances</option>`;
-                if (stats.racesWithPrice && stats.racesWithPrice.length > 0) {
+
+                // Vérifier si l'utilisateur est invité
+                const isInvite = sessionStorage.getItem('authLevel') === 'invite';
+
+                if (stats.racesWithPrice && stats.racesWithPrice.length > 0 && !isInvite) {
                     html += `<option value="price">des prix</option>`;
                 }
                 if (stats.racesWithTime && stats.racesWithTime.length > 0) {
@@ -5820,10 +5828,10 @@
                 if (stats.racesWithElevation && stats.racesWithElevation.length > 0) {
                     html += `<option value="elevation">des dénivelés</option>`;
                 }
-                if (stats.racesWithPricePerKm && stats.racesWithPricePerKm.length > 0) {
+                if (stats.racesWithPricePerKm && stats.racesWithPricePerKm.length > 0 && !isInvite) {
                     html += `<option value="pricePerKm">du prix au km</option>`;
                 }
-                if (stats.racesWithPricePerKmWithElevation && stats.racesWithPricePerKmWithElevation.length > 0) {
+                if (stats.racesWithPricePerKmWithElevation && stats.racesWithPricePerKmWithElevation.length > 0 && !isInvite) {
                     html += `<option value="pricePerKmWithElevation">du prix au km (ft. dénivelé)</option>`;
                 }
                 html += `</select>`;
