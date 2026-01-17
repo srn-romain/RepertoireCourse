@@ -231,37 +231,14 @@
                     class="bg-green-100 text-green-800 text-sm px-3 py-1 rounded-full uppercase tracking-wider mt-2 mb-4">Communauté</span>
                 <h2 class="text-3xl text-green-800 mt-2 mb-4">Les dernières courses</h2>
                 <p class="text-gray-600 max-w-2xl mx-auto">Découvrez les performances collectives des coureurs.</p>
+
+                <!-- Message discret : Total KM communauté -->
+                <p id="communityKmMessage" class="text-sm text-gray-500 mt-4 italic">
+                    <i class="fas fa-running mr-1"></i>
+                    <span id="totalCommunityKm">Calcul en cours...</span>
+                </p>
             </div>
 
-            <div id="communityStatsContainer"
-                class="hidden max-w-5xl mx-auto mb-8 bg-white rounded-3xl p-6 shadow-sm border border-green-50 transform transition-all duration-500">
-                <div
-                    class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center divide-y md:divide-y-0 md:divide-x divide-green-50">
-
-                    <!-- Stat 1 : Total -->
-                    <div class="p-4 flex flex-col items-center">
-                        <span id="statTotalRaces" class="text-4xl font-bold text-green-600 block mb-2">0</span>
-                        <!-- Barre de soulignement (Design System) -->
-                        <div class="w-12 h-1 bg-green-500 rounded-full mb-3"></div>
-                        <p class="text-gray-500 font-medium uppercase tracking-wider text-xs">Courses Partagées</p>
-                    </div>
-
-                    <!-- Stat 2 : À venir -->
-                    <div class="p-4 flex flex-col items-center">
-                        <span id="statUpcomingRaces" class="text-4xl font-bold text-blue-600 block mb-2">0</span>
-                        <div class="w-12 h-1 bg-blue-500 rounded-full mb-3"></div>
-                        <p class="text-gray-500 font-medium uppercase tracking-wider text-xs">Courses Prévues</p>
-                    </div>
-
-                    <!-- Stat 3 : Km -->
-                    <div class="p-4 flex flex-col items-center">
-                        <span id="statTotalKm" class="text-4xl font-bold text-purple-600 block mb-2">0</span>
-                        <div class="w-12 h-1 bg-purple-500 rounded-full mb-3"></div>
-                        <p class="text-gray-500 font-medium uppercase tracking-wider text-xs">Km Parcourus</p>
-                    </div>
-                </div>
-
-            </div>
 
             <!-- Séparateur -->
             <div class="max-w-4xl mx-auto mb-6">

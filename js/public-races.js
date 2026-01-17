@@ -202,7 +202,8 @@ async function loadPublicRaces() {
             // STATS CALCULATION
             statsCount.count++;
             if (isUpcoming) statsCount.upcoming++;
-            if (race.distance) {
+            // Ne compter que les km des courses passées
+            if (!isUpcoming && race.distance) {
                 // Gestion basique des formats style "10,5" ou "10.5"
                 const dist = parseFloat(race.distance.toString().replace(',', '.'));
                 if (!isNaN(dist)) statsCount.km += dist;
@@ -294,45 +295,12 @@ async function loadPublicRaces() {
         grid.innerHTML = '';
         grid.appendChild(fragment);
 
-        // UPDATE STATS UI
-        const statsContainer = document.getElementById('communityStatsContainer');
+        // UPDATE STATS UI - Afficher uniquement le total KM message
+        const totalKmElement = document.getElementById('totalCommunityKm');
 
-        if (statsContainer) {
-            const elTotal = document.getElementById('statTotalRaces');
-            const elUpcoming = document.getElementById('statUpcomingRaces');
-            const elKm = document.getElementById('statTotalKm');
-
-            // Animation function (Fondu Vertical Style)
-            function animateCounter(element, targetUserValue) {
-                const duration = 2500;
-                const target = parseInt(targetUserValue);
-                if (isNaN(target)) {
-                    element.textContent = targetUserValue;
-                    return;
-                }
-
-                // Logique demandée par l'user (increment par intervalle 50ms)
-                const incrementTime = 30;
-                const steps = duration / incrementTime;
-                const incrementValue = target / steps;
-
-                let current = 0;
-                const timer = setInterval(() => {
-                    current += incrementValue;
-                    if (current >= target) {
-                        element.textContent = target.toLocaleString('fr-FR');
-                        clearInterval(timer);
-                    } else {
-                        element.textContent = Math.round(current).toLocaleString('fr-FR');
-                    }
-                }, incrementTime);
-            }
-
-            if (elTotal) animateCounter(elTotal, statsCount.count);
-            if (elUpcoming) animateCounter(elUpcoming, statsCount.upcoming);
-            if (elKm) animateCounter(elKm, Math.round(statsCount.km));
-
-            statsContainer.classList.remove('hidden');
+        if (totalKmElement) {
+            const totalKm = Math.round(statsCount.km);
+            totalKmElement.innerHTML = `La communauté a pour le moment parcouru <strong>${totalKm.toLocaleString('fr-FR')} km</strong> dans des courses passées.`;
         }
 
     } catch (error) {
