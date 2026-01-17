@@ -246,6 +246,15 @@
                             <h3 class="text-xl font-bold text-red-800">Statistiques Administrateur</h3>
                         </div>
 
+                        <!-- FILTRES ADMIN -->
+                        <div class="flex justify-center gap-2 mb-6">
+                            <button onclick="updateAdminStatsFilter('all')" id="btnAdminFilterAll"
+                                class="px-3 py-1 text-sm rounded-full bg-red-600 text-white font-bold transition shadow-sm">Tout</button>
+                            <button onclick="updateAdminStatsFilter('past')" id="btnAdminFilterPast"
+                                class="px-3 py-1 text-sm rounded-full bg-white text-red-600 border border-red-200 hover:bg-red-50 transition shadow-sm">Courses
+                                passées</button>
+                        </div>
+
                         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                             <!-- Utilisateurs -->
                             <div class="bg-white rounded-lg p-4 text-center border border-red-100">
@@ -297,6 +306,24 @@
                             <div class="bg-white rounded-lg p-4 text-center border border-red-100">
                                 <p class="text-2xl font-bold text-pink-600" id="adminStatUsersWithWishlist">0</p>
                                 <p class="text-xs text-gray-600 mt-1">Utilisateurs avec wishlist</p>
+                            </div>
+
+                            <!-- AUTRES STATS -->
+                            <div class="bg-white rounded-lg p-4 text-center border border-red-100">
+                                <p class="text-lg font-bold text-gray-800" id="adminStatTerrain">N/A</p>
+                                <p class="text-xs text-gray-600 mt-1">Top Terrain</p>
+                            </div>
+                            <div class="bg-white rounded-lg p-4 text-center border border-red-100">
+                                <p class="text-2xl font-bold text-blue-500" id="adminStatPrice">0 €</p>
+                                <p class="text-xs text-gray-600 mt-1">Prix Moyen</p>
+                            </div>
+                            <div class="bg-white rounded-lg p-4 text-center border border-red-100">
+                                <p class="text-2xl font-bold text-indigo-500" id="adminStatTime">0h</p>
+                                <p class="text-xs text-gray-600 mt-1">Temps Moyen</p>
+                            </div>
+                            <div class="bg-white rounded-lg p-4 text-center border border-red-100">
+                                <p class="text-lg font-bold text-gray-800" id="adminStatStartHour">N/A</p>
+                                <p class="text-xs text-gray-600 mt-1">Heure Départ Fav.</p>
                             </div>
                             <div class="bg-white rounded-lg p-4 text-center border border-red-100">
                                 <p class="text-2xl font-bold text-cyan-600" id="adminStatAvgWishlistItems">0</p>
@@ -876,6 +903,13 @@
                 const barSignupBtn = document.getElementById('barSignupBtn');
 
                 if (user) {
+                    // Update Last Login
+                    try {
+                        db.collection('users').doc(user.uid).set({
+                            lastLogin: firebase.firestore.FieldValue.serverTimestamp()
+                        }, { merge: true });
+                    } catch (e) { console.error("Update lastLogin failed", e); }
+
                     // Utilisateur connecté
                     // État de chargement immédiat - Centré Absolument
                     if (authStatusText) {

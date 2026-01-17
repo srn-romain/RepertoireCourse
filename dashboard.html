@@ -1398,6 +1398,11 @@
                 console.log("Utilisateur connecté:", user.uid);
                 usersCollection = db.collection('users');
 
+                // Update Last Login systematic
+                usersCollection.doc(user.uid).set({
+                    lastLogin: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true }).catch(err => console.error("Error updating lastLogin:", err));
+
                 // --- AUTO-RÉPARATION : Vérifier et créer le document utilisateur s'il manque ---
                 try {
                     const userDocRef = usersCollection.doc(user.uid);
