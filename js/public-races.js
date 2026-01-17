@@ -9,6 +9,27 @@ const publicRaceFilters = {
     sort: 'desc' // 'desc' (plus récentes), 'asc' (plus anciennes)
 };
 
+const PUBLIC_FILTER_BUTTON_IDS = [
+    'filterLimit15', 'filterLimit30', 'filterLimit60',
+    'filterStatusAll', 'filterStatusUpcoming', 'filterStatusPast',
+    // Sort buttons if present in DOM
+    'filterSortDesc', 'filterSortAsc'
+];
+
+function setPublicFiltersLoading(isLoading) {
+    PUBLIC_FILTER_BUTTON_IDS.forEach(id => {
+        const btn = document.getElementById(id);
+        if (btn) {
+            btn.disabled = isLoading;
+            if (isLoading) {
+                btn.classList.add('opacity-50', 'cursor-not-allowed');
+            } else {
+                btn.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+        }
+    });
+}
+
 // Fonction pour mettre à jour les filtres
 window.updatePublicRaceFilter = function (type, value) {
     // Vérifier si l'utilisateur est connecté
@@ -23,7 +44,7 @@ window.updatePublicRaceFilter = function (type, value) {
 
     publicRaceFilters[type] = value;
 
-    // Update UI buttons
+    // Update UI buttons styling immediately
     if (type === 'limit') {
         ['15', '30', '60'].forEach(val => {
             const btn = document.getElementById(`filterLimit${val}`);
@@ -59,12 +80,16 @@ window.updatePublicRaceFilter = function (type, value) {
         });
     }
 
+    // Freeze buttons immediately for feedback
+    setPublicFiltersLoading(true);
+
     // Reload races
     loadPublicRaces();
 };
 
 document.addEventListener('DOMContentLoaded', () => {
     loadPublicRaces();
+    fetchGlobalCommunityStats();
 });
 
 async function loadPublicRaces() {
@@ -78,11 +103,11 @@ async function loadPublicRaces() {
         return;
     }
 
-    try {
-        // We do NOT clear grid here instantly to keep spinner visible if present
-        // Or if we want to show spinner explicitly if it's missing:
-        // if (grid.children.length === 0) grid.innerHTML = '<...spinner...>';
+    // Show loading spinner
+    setPublicFiltersLoading(true); // Ensure frozen
+    grid.innerHTML = '<div class="col-span-full flex justify-center items-center py-12"><i class="fas fa-circle-notch fa-spin text-green-500 text-4xl"></i></div>';
 
+    try {
         const snapshot = await db.collectionGroup('races')
             .where('public', '==', true) // SÉCURITÉ : Ne demande QUE les courses publiques
             .orderBy('date', publicRaceFilters.sort) // Tri dynamique
@@ -91,7 +116,6 @@ async function loadPublicRaces() {
 
         if (snapshot.empty) {
             grid.innerHTML = '<div class="col-span-full text-center text-gray-500 py-8">Aucune course trouvée.</div>';
-            isLoadingPublicRaces = false;
             return;
         }
 
@@ -107,9 +131,6 @@ async function loadPublicRaces() {
         for (const doc of snapshot.docs) {
             const race = { id: doc.id, ...doc.data() };
 
-            // Get User Email
-            // Get User Pseudo
-            // Get User Data & Privacy
             const uid = doc.ref.parent.parent ? doc.ref.parent.parent.id : null;
             let userData = { pseudo: "Coureur mystère", privacy: {} };
 
@@ -141,9 +162,6 @@ async function loadPublicRaces() {
             }
 
             // === FILTER: Hide Invalid Users ===
-            // Si l'utilisateur n'existe pas vraiment (erreur technique ou suppression)
-            // On le saute. MAIS on ne saute PAS ceux qui ont juste choisi de masquer leur pseudo via 'privacy'.
-            // "Coureur mystère" est la valeur par défaut locale si doc non trouvé.
             if (userData.pseudo === "Coureur mystère" || userData.pseudo === "Pseudo non disponible") {
                 continue;
             }
@@ -151,12 +169,8 @@ async function loadPublicRaces() {
             // === PRIVACY LOGIC ===
             const privacy = userData.privacy || {};
 
-            // DEBUG
-            //console.log(`Course ${race.name} (User ${uid}) - Privacy:`, privacy);
-
             // 1. Pseudo
             let ownerPseudoDisplay = userData.pseudo;
-            // Si la préférence est EXPLICITEMENT false (par défaut undefined = true/visible)
             if (privacy.showPseudo === false) {
                 ownerPseudoDisplay = "Utilisateur Anonyme";
             }
@@ -165,10 +179,10 @@ async function loadPublicRaces() {
             const showCity = privacy.showCity === true;
 
             // 3. Favorite
-            const showFavorite = privacy.showFavorite === true; // Default false/hidden
+            const showFavorite = privacy.showFavorite === true;
 
             // 4. Date (Day)
-            const showDay = privacy.showDay === true; // Default false/hidden
+            const showDay = privacy.showDay === true;
 
             // === FILTER: Public Race ===
             if (race.public === false) continue;
@@ -198,16 +212,6 @@ async function loadPublicRaces() {
             // === FILTER: Status (À venir / Passées) ===
             if (publicRaceFilters.status === 'upcoming' && !isUpcoming) continue;
             if (publicRaceFilters.status === 'past' && isUpcoming) continue;
-
-            // STATS CALCULATION
-            statsCount.count++;
-            if (isUpcoming) statsCount.upcoming++;
-            // Ne compter que les km des courses passées
-            if (!isUpcoming && race.distance) {
-                // Gestion basique des formats style "10,5" ou "10.5"
-                const dist = parseFloat(race.distance.toString().replace(',', '.'));
-                if (!isNaN(dist)) statsCount.km += dist;
-            }
 
             const daysSinceRace = Math.floor((today.getTime() - raceDateOnly.getTime()) / (1000 * 60 * 60 * 24));
             const isWithin10Days = daysSinceRace >= 0 && daysSinceRace <= 10;
@@ -295,9 +299,6 @@ async function loadPublicRaces() {
         grid.innerHTML = '';
         grid.appendChild(fragment);
 
-        // UPDATE STATS UI - Partial stats update removed in favor of fetchGlobalCommunityStats()
-        // const totalKmElement = document.getElementById('totalCommunityKm'); ...
-
     } catch (error) {
         console.error("Error loading public races:", error);
         grid.innerHTML = `
@@ -307,6 +308,7 @@ async function loadPublicRaces() {
             </div>
         `;
     } finally {
+        setPublicFiltersLoading(false);
         isLoadingPublicRaces = false;
     }
 }
@@ -322,8 +324,6 @@ async function fetchGlobalCommunityStats() {
 
         try {
             // TENTATIVE 1 : Récupérer TOUTES les courses (Publiques + Privées)
-            // Cela fonctionnera si l'utilisateur est Admin ou si les règles Firestore le permettent.
-            // Correspond à la méthode de calcul de l'Admin.
             snapshot = await db.collectionGroup('races').get();
         } catch (e) {
             console.warn("Accès global refusé, repli sur les courses publiques uniquement.");
@@ -339,8 +339,6 @@ async function fetchGlobalCommunityStats() {
 
         snapshot.forEach(doc => {
             const data = doc.data();
-            // On calcule sur TOUTE la BDD récupérée (Passées + Futures) pour s'aligner sur l'admin
-            // Si on voulait seulement les passées, on décommenterait le filtre date.
             if (data.distance) {
                 const dist = parseFloat(data.distance.toString().replace(',', '.'));
                 if (!isNaN(dist)) {
@@ -350,18 +348,9 @@ async function fetchGlobalCommunityStats() {
         });
 
         // Mise à jour du texte
-        // Si on a tout (y compris futur), le texte "courses passées" est techniquement inexact mais demandé.
-        // On pourrait ajouter une mention si c'est partiel (public only).
         totalKmElement.innerHTML = `La communauté a pour le moment parcouru <strong>${Math.round(totalKm).toLocaleString('fr-FR')} km</strong> ${isPartial ? '(courses publiques)' : '(total global)'}.`;
 
     } catch (error) {
         console.warn("Erreur calcul stats globales:", error);
-        // On laisse le texte par défaut ou on met un message d'erreur discret
     }
 }
-
-// Lancer le calcul global au chargement
-document.addEventListener('DOMContentLoaded', () => {
-    // loadPublicRaces est déjà appelé par l'autre listener, mais on peut appeler stats ici
-    fetchGlobalCommunityStats();
-});
