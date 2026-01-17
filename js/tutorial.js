@@ -1,0 +1,375 @@
+/**
+ * js/tutorial.js
+ * Système de tutoriel interactif guidé pour l'application
+ */
+
+(function () {
+    'use strict';
+
+    // Configuration des étapes du tutoriel
+    const tutorialSteps = [
+        {
+            target: '#statsText',
+            title: 'Bienvenue ! 🎉',
+            content: 'Voici vos statistiques générales : nombre de courses, distance totale, dénivelé, et temps de course. Ces données se mettent à jour automatiquement.',
+            position: 'bottom'
+        },
+        {
+            target: '#wishlistBtn',
+            title: 'Wishlist 📝',
+            content: 'Gérez votre liste de courses à faire ! Ajoutez des courses que vous souhaitez réaliser à l\'avenir. Vous pourrez ensuite les transformer en courses réalisées.',
+            position: 'bottom'
+        },
+        {
+            target: '#importJsonBtn',
+            title: 'Importer des données 📥',
+            content: 'Importez vos données depuis un fichier JSON de sauvegarde. Pratique pour restaurer vos courses après une sauvegarde.',
+            position: 'bottom'
+        },
+        {
+            target: '#statsBtn',
+            title: 'Statistiques détaillées 📊',
+            content: 'Consultez des statistiques avancées : graphiques, records personnels, répartition des distances, des dénivelés, et bien plus !',
+            position: 'bottom'
+        },
+        {
+            target: '#badgesBtn',
+            title: 'Badges 🏅',
+            content: 'Visualisez vos badges et accomplissements ! Débloquez-les en atteignant différents objectifs (nombre de courses, distance totale, etc.).',
+            position: 'bottom'
+        },
+        {
+            target: '#addRaceBtn',
+            title: 'Ajouter une course ➕',
+            content: 'Cliquez ici pour ajouter une nouvelle course à votre carnet. Vous pourrez renseigner tous les détails : nom, date, distance, dénivelé, temps, lieu, et plus encore.',
+            position: 'bottom'
+        },
+        {
+            target: '#searchInput',
+            title: 'Recherche 🔍',
+            content: 'Recherchez rapidement une course par son nom, lieu, date, distance, dénivelé, temps, notes, ou tout autre critère. La recherche est instantanée !',
+            position: 'bottom'
+        },
+        {
+            target: '#advancedFiltersBtn',
+            title: 'Filtres avancés 🎛️',
+            content: 'Accédez aux filtres avancés pour affiner votre recherche : terrain, prix, heure de départ, et autres critères spécifiques.',
+            position: 'top'
+        },
+        {
+            target: '#yearFilter',
+            title: 'Filtre par année 📅',
+            content: 'Filtrez vos courses par année pour voir vos performances sur une période spécifique. Sélectionnez "Toutes" pour voir l\'ensemble de votre historique.',
+            position: 'bottom'
+        },
+        {
+            target: '#favoritesFilterBtn',
+            title: 'Courses favorites ⭐',
+            content: 'Affichez uniquement vos courses favorites. Marquez une course comme favorite en cliquant sur l\'étoile dans sa carte.',
+            position: 'bottom'
+        },
+        {
+            target: '.race-card',
+            title: 'Carte de course 🏃',
+            content: 'Chaque course est affichée dans une carte avec ses informations principales. Cliquez sur une carte pour voir tous les détails. L\'étoile permet de la marquer en favoris.',
+            position: 'top',
+            fallback: '#racesContainer'
+        },
+        {
+            target: '#userSettingsBtn',
+            title: 'Paramètres du compte ⚙️',
+            content: 'Gérez vos paramètres : modifier votre pseudo, configurer la confidentialité de vos courses publiques, personnaliser l\'interface, et bien plus.',
+            position: 'left'
+        },
+        {
+            target: '#logoutBtn',
+            title: 'Déconnexion 🚪',
+            content: 'Déconnectez-vous de votre compte en toute sécurité. Vos données resteront sauvegardées dans le cloud.',
+            position: 'left'
+        },
+        {
+            target: '#backupDataBtn',
+            title: 'Sauvegarde de sécurité 💾',
+            content: 'Téléchargez une copie de toutes vos données au format JSON. C\'est votre filet de sécurité ! Vous pourrez restaurer ces données via le bouton "Importer".',
+            position: 'bottom'
+        },
+        {
+            target: '#anniversaryBtn',
+            title: 'Souvenirs 🎂',
+            content: 'Revivez vos souvenirs ! Ce bouton vous montre vos courses passées à la même période. Parfait pour se remémorer ses exploits d\'il y a 1, 2 ou 3 ans.',
+            position: 'right'
+        },
+        {
+            target: null,
+            title: 'Tutoriel terminé ! 🎓',
+            content: 'Vous êtes maintenant prêt à utiliser votre carnet de courses ! N\'hésitez pas à explorer toutes les fonctionnalités. Bon run ! 🏃‍♂️💨',
+            position: 'center'
+        }
+    ];
+
+    let currentStep = 0;
+    let tutorialActive = false;
+
+    // Créer l'overlay et le tooltip
+    function createTutorialElements() {
+        // Overlay sombre
+        const overlay = document.createElement('div');
+        overlay.id = 'tutorialOverlay';
+        overlay.className = 'fixed inset-0 bg-black transition-opacity duration-300 pointer-events-none';
+        overlay.style.cssText = 'z-index: 9998; opacity: 0.7;';
+
+        // Tooltip container
+        const tooltip = document.createElement('div');
+        tooltip.id = 'tutorialTooltip';
+        tooltip.className = 'fixed bg-white rounded-xl shadow-2xl p-6 max-w-md transition-all duration-300';
+        tooltip.style.cssText = 'z-index: 10000;';
+        tooltip.innerHTML = `
+            <div class="flex items-start justify-between mb-3">
+                <h3 id="tutorialTitle" class="text-lg font-bold text-green-800 flex-1"></h3>
+                <button id="tutorialClose" class="text-gray-400 hover:text-gray-600 transition ml-2">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <p id="tutorialContent" class="text-gray-700 mb-4 leading-relaxed"></p>
+            <div class="flex items-center justify-between">
+                <span id="tutorialProgress" class="text-sm text-gray-500"></span>
+                <div class="flex gap-2">
+                    <button id="tutorialPrev" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg text-gray-700 transition font-medium">
+                        <i class="fas fa-arrow-left mr-2"></i>Précédent
+                    </button>
+                    <button id="tutorialNext" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition font-bold shadow-md">
+                        Suivant<i class="fas fa-arrow-right ml-2"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+
+        // Highlight element
+        const highlight = document.createElement('div');
+        highlight.id = 'tutorialHighlight';
+        highlight.className = 'fixed transition-all duration-300 pointer-events-none';
+        highlight.style.cssText = 'z-index: 9999; box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.5), 0 0 0 9999px rgba(0, 0, 0, 0.7); border-radius: 8px;';
+
+        document.body.appendChild(overlay);
+        document.body.appendChild(highlight);
+        document.body.appendChild(tooltip);
+
+        // Event listeners
+        document.getElementById('tutorialClose').addEventListener('click', endTutorial);
+        document.getElementById('tutorialNext').addEventListener('click', nextStep);
+        document.getElementById('tutorialPrev').addEventListener('click', prevStep);
+    }
+
+    // Positionner le tooltip
+    function positionTooltip(targetElement, position) {
+        const tooltip = document.getElementById('tutorialTooltip');
+        const highlight = document.getElementById('tutorialHighlight');
+
+        if (!targetElement) {
+            // Tooltip centré
+            tooltip.style.cssText = `
+                z-index: 10000;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                max-width: 90%;
+                width: 500px;
+            `;
+            highlight.style.display = 'none';
+            return;
+        }
+
+        const rect = targetElement.getBoundingClientRect();
+        const tooltipRect = tooltip.getBoundingClientRect();
+
+        // Highlight l'élément
+        highlight.style.display = 'block';
+        highlight.style.top = `${rect.top - 4}px`;
+        highlight.style.left = `${rect.left - 4}px`;
+        highlight.style.width = `${rect.width + 8}px`;
+        highlight.style.height = `${rect.height + 8}px`;
+
+        // Scroll to element
+        targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+        // Position tooltip
+        let top, left;
+        const spacing = 20;
+
+        switch (position) {
+            case 'bottom':
+                top = rect.bottom + spacing;
+                left = rect.left + (rect.width / 2) - (tooltipRect.width / 2);
+                break;
+            case 'top':
+                top = rect.top - tooltipRect.height - spacing;
+                left = rect.left + (rect.width / 2) - (tooltipRect.width / 2);
+                break;
+            case 'left':
+                top = rect.top + (rect.height / 2) - (tooltipRect.height / 2);
+                left = rect.left - tooltipRect.width - spacing;
+                break;
+            case 'right':
+                top = rect.top + (rect.height / 2) - (tooltipRect.height / 2);
+                left = rect.right + spacing;
+                break;
+            default:
+                top = rect.bottom + spacing;
+                left = rect.left;
+        }
+
+        // Ajustements pour rester dans la fenêtre
+        const maxLeft = window.innerWidth - tooltipRect.width - 20;
+        const maxTop = window.innerHeight - tooltipRect.height - 20;
+        left = Math.max(20, Math.min(left, maxLeft));
+        top = Math.max(20, Math.min(top, maxTop));
+
+        tooltip.style.top = `${top}px`;
+        tooltip.style.left = `${left}px`;
+        tooltip.style.transform = 'none';
+        tooltip.style.maxWidth = '90vw';
+    }
+
+    // Afficher une étape
+    function showStep(stepIndex) {
+        if (stepIndex < 0 || stepIndex >= tutorialSteps.length) return;
+
+        const step = tutorialSteps[stepIndex];
+        const tooltip = document.getElementById('tutorialTooltip');
+
+        document.getElementById('tutorialTitle').textContent = step.title;
+        document.getElementById('tutorialContent').textContent = step.content;
+        document.getElementById('tutorialProgress').textContent = `Étape ${stepIndex + 1} sur ${tutorialSteps.length}`;
+
+        // Boutons
+        const prevBtn = document.getElementById('tutorialPrev');
+        const nextBtn = document.getElementById('tutorialNext');
+
+        prevBtn.style.display = stepIndex === 0 ? 'none' : 'inline-flex';
+
+        if (stepIndex === tutorialSteps.length - 1) {
+            nextBtn.innerHTML = '<i class="fas fa-check mr-2"></i>Terminer';
+        } else {
+            nextBtn.innerHTML = 'Suivant<i class="fas fa-arrow-right ml-2"></i>';
+        }
+
+        // Trouver l'élément cible
+        let targetElement = null;
+        if (step.target) {
+            targetElement = document.querySelector(step.target);
+            // Si l'élément n'existe pas, essayer le fallback
+            if (!targetElement && step.fallback) {
+                targetElement = document.querySelector(step.fallback);
+            }
+        }
+
+        positionTooltip(targetElement, step.position);
+    }
+
+    // Navigation
+    function nextStep() {
+        if (currentStep < tutorialSteps.length - 1) {
+            currentStep++;
+            showStep(currentStep);
+        } else {
+            endTutorial();
+        }
+    }
+
+    function prevStep() {
+        if (currentStep > 0) {
+            currentStep--;
+            showStep(currentStep);
+        }
+    }
+
+    // Démarrer le tutoriel
+    function startTutorial() {
+        if (tutorialActive) return;
+
+        tutorialActive = true;
+        currentStep = 0;
+        createTutorialElements();
+        showStep(0);
+
+        // Freeze le body
+        document.body.style.overflow = 'hidden';
+    }
+
+    // Terminer le tutoriel
+    async function endTutorial() {
+        tutorialActive = false;
+
+        // Supprimer les éléments
+        const overlay = document.getElementById('tutorialOverlay');
+        const tooltip = document.getElementById('tutorialTooltip');
+        const highlight = document.getElementById('tutorialHighlight');
+
+        if (overlay) overlay.remove();
+        if (tooltip) tooltip.remove();
+        if (highlight) highlight.remove();
+
+        // Restore body
+        document.body.style.overflow = '';
+
+        // Marquer le tutoriel comme vu dans Firestore
+        const user = firebase.auth().currentUser;
+        if (user && typeof db !== 'undefined') {
+            try {
+                await db.collection('users').doc(user.uid).set({
+                    tutorialCompleted: true,
+                    tutorialCompletedAt: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
+            } catch (error) {
+                console.error('Erreur lors de la sauvegarde du statut du tutoriel:', error);
+            }
+        }
+    }
+
+    // Vérifier si l'utilisateur a déjà vu le tutoriel
+    async function shouldShowTutorialPrompt() {
+        const user = firebase.auth().currentUser;
+        if (!user) return false;
+
+        // Ne pas afficher pour les invités
+        if (typeof window.isInviteUser === 'function') {
+            const isInvite = await window.isInviteUser();
+            if (isInvite) return false;
+        }
+
+        try {
+            const doc = await db.collection('users').doc(user.uid).get();
+            if (doc.exists && doc.data().tutorialCompleted) {
+                return false; // Déjà vu
+            }
+            return true; // Pas encore vu
+        } catch (error) {
+            console.error('Erreur lors de la vérification du tutoriel:', error);
+            return false;
+        }
+    }
+
+    // Afficher la modale de proposition
+    function showTutorialPrompt() {
+        const modal = document.getElementById('tutorialPromptModal');
+        if (modal) {
+            modal.classList.remove('hidden');
+        }
+    }
+
+    // Initialisation
+    window.initTutorial = async function () {
+        // Attendre un peu que la page charge
+        setTimeout(async () => {
+            const shouldShow = await shouldShowTutorialPrompt();
+            if (shouldShow) {
+                showTutorialPrompt();
+            }
+        }, 1000);
+    };
+
+    // Exposer les fonctions globalement
+    window.startTutorial = startTutorial;
+    window.endTutorial = endTutorial;
+
+})();

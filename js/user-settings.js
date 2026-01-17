@@ -97,22 +97,33 @@ const userSettingsModalHTML = `
 
             <hr class="border-gray-100">
 
-            <!-- Réinitialiser mot de passe -->
+            <!-- Actions rapides -->
             <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-2">Sécurité</label>
-                <button id="btnSendPasswordReset" class="w-full py-2 px-4 border border-red-200 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition flex items-center justify-center gap-2">
-                    <i class="fas fa-key"></i>
-                    Réinitialiser le mot de passe
-                </button>
-                <p class="text-xs text-gray-400 mt-1 text-center">Vous recevrez un email pour changer votre mot de passe.</p>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Actions</label>
+                <div class="space-y-2">
+                    <div class="relative group">
+                        <button id="btnShowTutorial" class="w-full py-1.5 px-3 border border-green-200 bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition flex items-center justify-center gap-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-green-50">
+                            <i class="fas fa-graduation-cap"></i>
+                            Voir le tutoriel
+                        </button>
+                        <div id="tutorialDisabledTooltip" class="hidden absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-gray-800 text-white text-xs rounded shadow-lg whitespace-nowrap z-10">
+                            Veuillez recharger la page pour lancer le tutoriel
+                            <div class="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-800"></div>
+                        </div>
+                    </div>
+                    <button id="btnSendPasswordReset" class="w-full py-1.5 px-3 border border-red-200 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition flex items-center justify-center gap-2 text-sm">
+                        <i class="fas fa-key"></i>
+                        Réinitialiser le mot de passe
+                    </button>
+                </div>
             </div>
             
             <!-- Zone de message -->
             <div id="settingsMessageContainer" class="hidden p-3 rounded-lg text-sm text-center"></div>
             
-            <div class="mt-8 border-t border-red-100 pt-6">
+            <div class="mt-6 border-t border-red-100 pt-4">
                 <h3 class="text-sm font-semibold text-red-800 mb-2">Zone Danger</h3>
-                <button id="btnInitDeleteAccount" class="w-full py-2 px-4 border border-red-300 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition flex items-center justify-center gap-2">
+                <button id="btnInitDeleteAccount" class="w-full py-1.5 px-3 border border-red-300 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition flex items-center justify-center gap-2 text-sm">
                     <i class="fas fa-trash-alt"></i>
                     Supprimer mon compte
                 </button>
@@ -363,6 +374,36 @@ async function initSettingsLogic() {
         });
     }
 
+    // Gestion du bouton tutoriel
+    const tutorialBtn = document.getElementById('btnShowTutorial');
+    const tutorialTooltip = document.getElementById('tutorialDisabledTooltip');
+
+    if (tutorialBtn) {
+        tutorialBtn.addEventListener('click', function () {
+            if (!this.disabled) {
+                closeSettingsModal();
+                setTimeout(() => {
+                    if (typeof startTutorial === 'function') {
+                        startTutorial();
+                    }
+                }, 300);
+            }
+        });
+
+        // Afficher/masquer le tooltip au hover si désactivé
+        tutorialBtn.addEventListener('mouseenter', function () {
+            if (this.disabled && tutorialTooltip) {
+                tutorialTooltip.classList.remove('hidden');
+            }
+        });
+
+        tutorialBtn.addEventListener('mouseleave', function () {
+            if (tutorialTooltip) {
+                tutorialTooltip.classList.add('hidden');
+            }
+        });
+    }
+
     // CHARGEMENT DES PRÉFÉRENCES ACTUELLES
     const loadCurrentSettings = async () => {
         const user = firebase.auth().currentUser;
@@ -454,6 +495,12 @@ async function initSettingsLogic() {
 
                 // Marquer le changement pour recharger la page à la fermeture
                 settingsHasChanged = true;
+
+                // Désactiver le bouton tutoriel et afficher le tooltip
+                const tutorialBtn = document.getElementById('btnShowTutorial');
+                if (tutorialBtn) {
+                    tutorialBtn.disabled = true;
+                }
 
                 // Feedback
                 showMessage("Pseudo mis à jour avec succès !", "success", "pseudoMessageContainer");
