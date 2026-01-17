@@ -587,6 +587,18 @@
                         </div>
                     </div>
                     <p id="companionError" class="text-red-500 text-xs mb-2 text-right hidden"></p>
+                    <div id="autoImageMessage"
+                        class="hidden mb-4 bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-blue-800 flex items-start gap-2">
+                        <i class="fas fa-magic text-blue-500 mt-1 text-lg"></i>
+                        <div>
+                            <p class="font-semibold">Image automatique</p>
+                            <p class="text-xs mt-1">Vous avez renseigné le site web de la course mais pas d'image. En
+                                enregistrant, notre algorithme <b>tentera</b> de récupérer automatiquement une image
+                                pertinente
+                                depuis ce site.</p>
+                        </div>
+                    </div>
+
                     <div class="flex justify-end space-x-3">
                         <button type="button" id="cancelBtn"
                             class="px-4 py-2 text-gray-600 hover:text-gray-800 transition">
@@ -3827,7 +3839,7 @@
         }
 
         // Sauvegarder une course
-        function saveRace(e) {
+        async function saveRace(e) {
             e.preventDefault();
 
             // Check if companion input has text but not added
@@ -3946,8 +3958,40 @@
                 favorite: favorite || false,
                 public: document.getElementById('racePublic').checked
             };
-            // Ajouter la photo seulement si elle existe
-            if (photoData) {
+
+            // TENTATIVE DE RECUPERATION AUTOMATIQUE D'IMAGE SI ABSENTE
+            if (!photoData && website && website.startsWith('http')) {
+                const submitBtn = raceForm.querySelector('button[type="submit"]');
+                const originalText = submitBtn.textContent;
+                const originalCursor = document.body.style.cursor;
+
+                if (submitBtn) {
+                    submitBtn.textContent = '🖼️ Recherche image...';
+                    submitBtn.disabled = true;
+                }
+                document.body.style.cursor = 'wait';
+
+                try {
+                    // Utilisation de l'API Microlink pour récupérer l'image OpenGraph
+                    const apiUrl = `https://api.microlink.io?url=${encodeURIComponent(website)}&palette=true`;
+                    const response = await fetch(apiUrl);
+                    const data = await response.json();
+
+                    if (data.status === 'success' && data.data.image && data.data.image.url) {
+                        raceData.photo = data.data.image.url;
+                        console.log('Image récupérée automatiquement:', raceData.photo);
+                    }
+                } catch (err) {
+                    console.warn('Impossible de récupérer l\'image du site:', err);
+                } finally {
+                    if (submitBtn) {
+                        submitBtn.textContent = originalText;
+                        submitBtn.disabled = false;
+                    }
+                    document.body.style.cursor = originalCursor;
+                }
+            } else if (photoData) {
+                // Ajouter la photo seulement si elle existe (et pas remplacée par l'auto)
                 raceData.photo = photoData;
             }
             // Ajouter le parcours seulement si il existe
@@ -4044,6 +4088,22 @@
         let photoData = null;
         const MAX_IMAGE_SIZE = 716800; // 700 KB
 
+        // Vérifier conditions pour message image automatique
+        function checkAutoImageConditions() {
+            const website = document.getElementById('raceWebsite').value.trim();
+            const message = document.getElementById('autoImageMessage');
+
+            // Afficher si : site web présent ET commence par http ET pas de photo uploadée
+            if (website && website.startsWith('http') && !photoData) {
+                message.classList.remove('hidden');
+            } else {
+                message.classList.add('hidden');
+            }
+        }
+
+        // Ecouter les changements sur le champ website
+        document.getElementById('raceWebsite').addEventListener('input', checkAutoImageConditions);
+
         // Gestionnaire d'événement pour l'upload de photo
         racePhoto.addEventListener('change', function () {
             const file = this.files[0];
@@ -4053,6 +4113,7 @@
                     document.getElementById('imageAlertText').textContent = 'La taille de l\'image encodée ne doit pas dépasser 1 Mo.';
                     document.getElementById('imageAlertModal').classList.remove('hidden');
                     this.value = '';
+                    checkAutoImageConditions(); // Vérifier l'état
                     return;
                 }
                 const reader = new FileReader();
@@ -4062,8 +4123,11 @@
                     previewImage.classList.remove('hidden');
                     photoPlaceholder.classList.add('hidden');
                     removePhoto.classList.remove('hidden');
+                    checkAutoImageConditions(); // Masquer le message car photo présente
                 };
                 reader.readAsDataURL(file);
+            } else {
+                checkAutoImageConditions();
             }
         });
 
@@ -4083,6 +4147,7 @@
                 photoPlaceholder.classList.add('hidden');
             }
             removePhoto.classList.add('hidden');
+            checkAutoImageConditions(); // Vérifier si on doit réafficher le message
         });
 
         // --- Gestion du parcours (image) ---
