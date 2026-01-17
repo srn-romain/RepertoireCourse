@@ -48,7 +48,6 @@ async function loadAdminStats() {
 
     try {
         // Récupérer toutes les courses publiques de tous les utilisateurs
-        // Note: On récupère TOUT pour avoir les stats complètes, le filtrage se fera en JS
         const allRacesSnapshot = await db.collectionGroup('races').get();
 
         // Récupérer tous les utilisateurs
@@ -57,7 +56,7 @@ async function loadAdminStats() {
         // Calculer les statistiques
         const stats = {
             totalUsers: 0,
-            activeUsers: 0, // Utilisateurs ayant au moins une course
+            activeUsers: 0,
             totalRaces: 0,
             publicRaces: 0,
             privateRaces: 0,
@@ -67,18 +66,20 @@ async function loadAdminStats() {
             totalElevation: 0,
             averageRacesPerUser: 0,
             usersWithWishlist: 0,
+            // New Stats
             totalPrice: 0,
             priceCount: 0,
             totalTimeSeconds: 0,
             timeCount: 0,
             terrains: {},
-            startHours: { 'Matin': 0, 'Midi': 0, 'Après-midi': 0, 'Soirée': 0 }
+            totalStartMinutes: 0,
+            startHourCount: 0
         };
 
         const today = new Date();
         today.setHours(0, 0, 0, 0);
 
-        // Compter les utilisateurs (NON affecté par le filtre courses)
+        // Compter les utilisateurs
         const userRaceCount = {};
         usersSnapshot.forEach(doc => {
             stats.totalUsers++;
@@ -95,7 +96,6 @@ async function loadAdminStats() {
             raceDate.setHours(0, 0, 0, 0);
 
             if (currentAdminFilter === 'past') {
-                // Si on filtre "Passées", on ignore les courses futures ou d'aujourd'hui
                 if (raceDate >= today) return;
             }
 
@@ -113,7 +113,7 @@ async function loadAdminStats() {
                 stats.privateRaces++;
             }
 
-            // Upcoming/Past (toujours pertinent même si filtré "past", upcoming sera 0)
+            // Upcoming/Past
             if (raceDate >= today) {
                 stats.upcomingRaces++;
             } else {
@@ -152,7 +152,7 @@ async function loadAdminStats() {
                 }
             }
 
-            // 3. Temps de course (Durée) - Format HH:MM:SS
+            // 3. Temps de course (Durée)
             if (race.time && /^\d{2}:\d{2}:\d{2}$/.test(race.time)) {
                 const parts = race.time.split(':');
                 const secs = parseInt(parts[0]) * 3600 + parseInt(parts[1]) * 60 + parseInt(parts[2]);
@@ -160,19 +160,21 @@ async function loadAdminStats() {
                 stats.timeCount++;
             }
 
-            // 4. Heure de départ (race.hour) - Format HH:MM
+            // 4. Heure de départ (race.hour)
             if (race.hour) {
-                const h = parseInt(race.hour.split(':')[0]);
-                if (!isNaN(h)) {
-                    if (h >= 5 && h < 12) stats.startHours['Matin']++;
-                    else if (h >= 12 && h < 14) stats.startHours['Midi']++;
-                    else if (h >= 14 && h < 18) stats.startHours['Après-midi']++;
-                    else stats.startHours['Soirée']++; // 18-5 roughly (incluant nuit)
+                const parts = race.hour.split(':');
+                if (parts.length >= 2) {
+                    const h = parseInt(parts[0]);
+                    const m = parseInt(parts[1]);
+                    if (!isNaN(h) && !isNaN(m)) {
+                        stats.totalStartMinutes += (h * 60) + m;
+                        stats.startHourCount++;
+                    }
                 }
             }
         });
 
-        // Compter les utilisateurs actifs (basé sur les courses filtrées)
+        // Compter les utilisateurs actifs
         Object.values(userRaceCount).forEach(count => {
             if (count > 0) {
                 stats.activeUsers++;
@@ -184,9 +186,7 @@ async function loadAdminStats() {
             stats.averageRacesPerUser = (stats.totalRaces / stats.activeUsers).toFixed(1);
         }
 
-        // Compter les utilisateurs avec wishlist (NON affecté par le filtre courses)
-        // Note: C'est une opération lourde à répéter, mais acceptable pour admin.
-        // Optimisation : On ne le fait qu'une fois ? Non, on laisse simple.
+        // Compter les utilisateurs avec wishlist
         const wishlistPromises = [];
         for (const uid of Object.keys(userRaceCount)) {
             wishlistPromises.push(
@@ -203,7 +203,7 @@ async function loadAdminStats() {
             ? (totalWishlistItems / stats.usersWithWishlist).toFixed(1)
             : 0;
 
-        // Statistiques temporelles utilisateurs (NON affecté)
+        // Statistiques temporelles utilisateurs
         let lastLoginDate = null;
         let lastLoginUser = null;
 
@@ -224,14 +224,18 @@ async function loadAdminStats() {
 
         // --- CALCULS FINAUX NOUVELLES STATS ---
 
-        // Top Terrain
-        let topTerrain = "N/A";
-        let maxT = 0;
-        for (const [t, count] of Object.entries(stats.terrains)) {
-            if (count > maxT) {
-                maxT = count;
-                topTerrain = t.charAt(0).toUpperCase() + t.slice(1); // Capitalize
-            }
+        // Top Terrain -> Répartition % (Liste complète directe)
+        let topTerrainFull = "N/A";
+        const totalTerrains = Object.values(stats.terrains).reduce((a, b) => a + b, 0);
+
+        if (totalTerrains > 0) {
+            const sortedTerrains = Object.entries(stats.terrains).sort((a, b) => b[1] - a[1]);
+            // Format: "Route (60%), Trail (40%)"
+            const parts = sortedTerrains.map(([t, count]) => {
+                const pct = Math.round((count / totalTerrains) * 100);
+                return `${t.charAt(0).toUpperCase() + t.slice(1)} (${pct}%)`;
+            });
+            topTerrainFull = parts.join(', '); // La liste complète
         }
 
         // Prix Moyen
@@ -246,14 +250,13 @@ async function loadAdminStats() {
             avgTimeStr = `${hrs}h${mins > 0 ? mins.toString().padStart(2, '0') : ''}`;
         }
 
-        // Start Hour Fav
+        // Heure Moyenne
         let favStart = "N/A";
-        let maxStart = 0;
-        for (const [period, count] of Object.entries(stats.startHours)) {
-            if (count > maxStart) {
-                maxStart = count;
-                favStart = period;
-            }
+        if (stats.startHourCount > 0) {
+            const avgMins = Math.round(stats.totalStartMinutes / stats.startHourCount);
+            const h = Math.floor(avgMins / 60);
+            const m = avgMins % 60;
+            favStart = `${h}h${m.toString().padStart(2, '0')}`;
         }
 
         // Formater les dates
@@ -295,7 +298,14 @@ async function loadAdminStats() {
         const elTime = document.getElementById('adminStatTime');
         const elStartHour = document.getElementById('adminStatStartHour');
 
-        if (elTerrain) elTerrain.textContent = topTerrain;
+        // Affichage simple sans hover, mais en petit (text-xs)
+        if (elTerrain) {
+            elTerrain.textContent = topTerrainFull;
+            // On force les classes CSS pour garantir la petite taille et éviter les débordements
+            // Note : on écrase les classes potentiellement mises dans index.html
+            elTerrain.className = "text-xs font-bold text-gray-800 break-words";
+        }
+
         if (elPrice) elPrice.textContent = avgPrice;
         if (elTime) elTime.textContent = avgTimeStr;
         if (elStartHour) elStartHour.textContent = favStart;
@@ -303,18 +313,14 @@ async function loadAdminStats() {
         document.getElementById('adminStatUsersWithWishlist').textContent = stats.usersWithWishlist.toLocaleString('fr-FR');
         document.getElementById('adminStatAvgWishlistItems').textContent = avgWishlistItems;
 
-        // Afficher les statistiques temporelles
         document.getElementById('adminStatLastLogin').textContent = formatDate(lastLoginDate, lastLoginUser);
 
     } catch (error) {
         console.error('Erreur lors du chargement des statistiques admin:', error);
-        console.error('Stack:', error.stack);
     }
 }
 
-// Charger les stats admin au chargement de la page
 document.addEventListener('DOMContentLoaded', () => {
-    // Attendre que Firebase soit initialisé
     setTimeout(() => {
         if (typeof auth !== 'undefined') {
             auth.onAuthStateChanged((user) => {
