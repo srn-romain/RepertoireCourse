@@ -15,6 +15,14 @@ const userSettingsModalHTML = `
         <div class="text-center mb-6">
             <h2 class="text-xl font-bold text-gray-800 mb-1">Paramètres du compte</h2>
             <p class="text-sm text-gray-500" id="settingsUserEmail"></p>
+            
+            <!-- Notice pour les invités -->
+            <div id="inviteNotice" class="hidden mt-4 bg-blue-50 border-l-4 border-blue-400 p-3 rounded-r-lg">
+                <p class="text-sm text-blue-800">
+                    <i class="fas fa-info-circle mr-2"></i>
+                    En mode invité, les options de modification sont limitées. Seule la réinitialisation du mot de passe est disponible.
+                </p>
+            </div>
         </div>
 
         <div class="space-y-6">
@@ -252,6 +260,51 @@ function initSettingsLogic() {
     const prefShowImportBtn = document.getElementById('prefShowImportBtn');
     const prefShowStatsBtn = document.getElementById('prefShowStatsBtn');
 
+    // Vérifier si l'utilisateur est invité
+    const isInvite = sessionStorage.getItem('authLevel') === 'invite';
+
+    // Désactiver les contrôles pour les invités (sauf le bouton reset password)
+    if (isInvite) {
+        // Désactiver le formulaire pseudo
+        const pseudoInput = document.getElementById('settingsNewPseudo');
+        const pseudoSubmitBtn = pseudoForm?.querySelector('button[type="submit"]');
+        if (pseudoInput) {
+            pseudoInput.disabled = true;
+            pseudoInput.classList.add('opacity-50', 'cursor-not-allowed');
+        }
+        if (pseudoSubmitBtn) {
+            pseudoSubmitBtn.disabled = true;
+            pseudoSubmitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+        }
+
+        // Désactiver toutes les checkboxes de confidentialité
+        [prefShowPseudo, prefShowCity, prefShowFavorite, prefShowDay].forEach(cb => {
+            if (cb) {
+                cb.disabled = true;
+                cb.classList.add('opacity-50', 'cursor-not-allowed');
+                const label = cb.closest('label');
+                if (label) label.classList.add('opacity-50', 'cursor-not-allowed');
+            }
+        });
+
+        // Désactiver toutes les checkboxes de préférences UI
+        [prefShowImportBtn, prefShowStatsBtn].forEach(cb => {
+            if (cb) {
+                cb.disabled = true;
+                cb.classList.add('opacity-50', 'cursor-not-allowed');
+                const label = cb.closest('label');
+                if (label) label.classList.add('opacity-50', 'cursor-not-allowed');
+            }
+        });
+
+        // Désactiver le bouton de suppression de compte
+        const deleteAccountBtn = document.getElementById('btnInitDeleteAccount');
+        if (deleteAccountBtn) {
+            deleteAccountBtn.disabled = true;
+            deleteAccountBtn.classList.add('opacity-50', 'cursor-not-allowed');
+        }
+    }
+
     // Sauvegarder les préférences au changement
     const savePrivacySettings = async () => {
         const user = firebase.auth().currentUser;
@@ -292,13 +345,16 @@ function initSettingsLogic() {
         }
     };
 
-    [prefShowPseudo, prefShowCity, prefShowFavorite, prefShowDay].forEach(cb => {
-        if (cb) cb.addEventListener('change', savePrivacySettings);
-    });
+    // Ne pas attacher les listeners si l'utilisateur est invité
+    if (!isInvite) {
+        [prefShowPseudo, prefShowCity, prefShowFavorite, prefShowDay].forEach(cb => {
+            if (cb) cb.addEventListener('change', savePrivacySettings);
+        });
 
-    [prefShowImportBtn, prefShowStatsBtn].forEach(cb => {
-        if (cb) cb.addEventListener('change', saveUISettings);
-    });
+        [prefShowImportBtn, prefShowStatsBtn].forEach(cb => {
+            if (cb) cb.addEventListener('change', saveUISettings);
+        });
+    }
 
     // CHARGEMENT DES PRÉFÉRENCES ACTUELLES
     const loadCurrentSettings = async () => {
@@ -560,6 +616,7 @@ window.openUserSettings = async function () {
     const modal = document.getElementById('userSettingsModal');
     const emailDisplay = document.getElementById('settingsUserEmail');
     const pseudoInput = document.getElementById('settingsNewPseudo');
+    const inviteNotice = document.getElementById('inviteNotice');
 
     // Checkboxes inputs
     const prefShowPseudo = document.getElementById('prefShowPseudo');
@@ -568,6 +625,16 @@ window.openUserSettings = async function () {
     const prefShowDay = document.getElementById('prefShowDay');
 
     if (emailDisplay) emailDisplay.textContent = user.email;
+
+    // Vérifier si l'utilisateur est invité et afficher le notice
+    const isInvite = sessionStorage.getItem('authLevel') === 'invite';
+    if (inviteNotice) {
+        if (isInvite) {
+            inviteNotice.classList.remove('hidden');
+        } else {
+            inviteNotice.classList.add('hidden');
+        }
+    }
 
     // Pré-remplir le pseudo actuel
     if (pseudoInput) pseudoInput.value = "Chargement...";
