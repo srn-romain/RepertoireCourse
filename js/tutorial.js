@@ -41,7 +41,7 @@
         {
             target: '#addRaceBtn',
             title: 'Ajouter une course ➕',
-            content: 'Cliquez ici pour ajouter une nouvelle course à votre carnet. Vous pourrez renseigner tous les détails : nom, date, distance, dénivelé, temps, lieu, et plus encore.',
+            content: 'Ajoutez une nouvelle course à votre carnet. Astuce : si vous ne mettez pas de photo, l\'application cherchera automatiquement une image pertinente pour vous via le site web de la course ou son nom !',
             position: 'bottom'
         },
         {
@@ -70,8 +70,8 @@
         },
         {
             target: '.race-card',
-            title: 'Carte de course 🏃',
-            content: 'Chaque course est affichée dans une carte avec ses informations principales. Cliquez sur une carte pour voir tous les détails. L\'étoile permet de la marquer en favoris.',
+            title: 'Détails & PDF 🏃',
+            content: 'Cliquez sur une carte pour voir tous les détails, modifier la course, ou **télécharger un superbe rapport PDF**. Vous pouvez aussi y voir vos accompagnants et la météo de la course.',
             position: 'top',
             fallback: '#racesContainer'
         },

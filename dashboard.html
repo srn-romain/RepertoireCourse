@@ -592,11 +592,22 @@
                         <i class="fas fa-magic text-blue-500 mt-1 text-lg"></i>
                         <div>
                             <p class="font-semibold">Image automatique</p>
-                            <p class="text-xs mt-1">Vous avez renseigné le site web de la course mais pas d'image. En
-                                enregistrant, notre algorithme <b>tentera</b> de récupérer automatiquement une image
-                                pertinente
-                                depuis ce site.</p>
+                            <p class="text-xs mt-1">Si vous n'ajoutez pas de photo, nous tenterons d'en récupérer une
+                                via le <b>site web</b> ou d'en générer une à partir du <b>nom de la course</b>.</p>
                         </div>
+                    </div>
+
+                    <div id="autoImageCheckboxContainer"
+                        class="hidden mb-4 bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-sm text-yellow-800">
+                        <label class="flex items-start gap-2 cursor-pointer">
+                            <input type="checkbox" id="autoImageCheckbox"
+                                class="mt-1 w-4 h-4 text-yellow-600 border-yellow-300 rounded focus:ring-yellow-500">
+                            <div>
+                                <p class="font-semibold">Recherche d'image automatique ?</p>
+                                <p class="text-xs mt-1">Aucune image n'est définie. Cochez cette case pour que
+                                    l'algorithme recherche automatiquement une nouvelle image.</p>
+                            </div>
+                        </label>
                     </div>
 
                     <div class="flex justify-end space-x-3">
@@ -2697,6 +2708,12 @@
             const publicCheckbox = document.getElementById('racePublic');
             if (publicCheckbox) publicCheckbox.checked = true;
 
+            // Réinitialiser la checkbox auto-image
+            const autoImageCheckbox = document.getElementById('autoImageCheckbox');
+            if (autoImageCheckbox) autoImageCheckbox.checked = false;
+            // Vérifier conditions (affichera le message car mode ajout)
+            if (typeof checkAutoImageConditions === 'function') checkAutoImageConditions();
+
             // Réinitialiser l'état de la photo
             photoData = null;
             document.getElementById('racePhoto').value = '';
@@ -3836,6 +3853,12 @@
 
             // Mettre à jour l'état du champ temps selon la date
             updateTimeFieldState();
+
+            // Réinitialiser la checkbox auto-image
+            const autoImageCheckbox = document.getElementById('autoImageCheckbox');
+            if (autoImageCheckbox) autoImageCheckbox.checked = false;
+            // Vérifier conditions (affichera la checkbox car mode modif)
+            if (typeof checkAutoImageConditions === 'function') checkAutoImageConditions();
         }
 
         // Sauvegarder une course
@@ -3960,29 +3983,51 @@
             };
 
             // TENTATIVE DE RECUPERATION AUTOMATIQUE D'IMAGE SI ABSENTE
-            if (!photoData && website && website.startsWith('http')) {
+            // AJOUT : Automatique si (Site ou Nom) et Pas de photo
+            // MODIF : Uniquement si Checkbox cochée et Pas de photo
+            const autoCheckbox = document.getElementById('autoImageCheckbox');
+            const shouldAutoSearch = (!id && !photoData && (website || name)) ||
+                (id && !photoData && autoCheckbox && autoCheckbox.checked);
+
+            if (shouldAutoSearch) {
                 const submitBtn = raceForm.querySelector('button[type="submit"]');
                 const originalText = submitBtn.textContent;
                 const originalCursor = document.body.style.cursor;
 
                 if (submitBtn) {
-                    submitBtn.textContent = '🖼️ Recherche image...';
+                    submitBtn.textContent = 'Recherche image...';
                     submitBtn.disabled = true;
                 }
                 document.body.style.cursor = 'wait';
 
                 try {
-                    // Utilisation de l'API Microlink pour récupérer l'image OpenGraph
-                    const apiUrl = `https://api.microlink.io?url=${encodeURIComponent(website)}&palette=true`;
-                    const response = await fetch(apiUrl);
-                    const data = await response.json();
+                    // 1. Essai via Site Web (Microlink) si URL présente
+                    let imageFound = false;
+                    if (website && website.startsWith('http')) {
+                        try {
+                            const apiUrl = `https://api.microlink.io?url=${encodeURIComponent(website)}&palette=true`;
+                            const response = await fetch(apiUrl);
+                            const data = await response.json();
 
-                    if (data.status === 'success' && data.data.image && data.data.image.url) {
-                        raceData.photo = data.data.image.url;
-                        console.log('Image récupérée automatiquement:', raceData.photo);
+                            if (data.status === 'success' && data.data.image && data.data.image.url) {
+                                raceData.photo = data.data.image.url;
+                                imageFound = true;
+                                console.log('Image récupérée automatiquement du site web:', raceData.photo);
+                            }
+                        } catch (err) {
+                            console.warn('Echec Microlink:', err);
+                        }
                     }
+
+                    // 2. Fallback via Nom (Bing Proxy) si pas d'image
+                    if (!imageFound && name) {
+                        const query = `${name} course race running`;
+                        raceData.photo = `https://tse2.mm.bing.net/th?q=${encodeURIComponent(query)}&w=800&h=600&c=7&rs=1&p=0&dpr=3&pid=1.7&mkt=fr-FR&adlt=moderate`;
+                        console.log('Image recherchée automatiquement via le nom:', raceData.photo);
+                    }
+
                 } catch (err) {
-                    console.warn('Impossible de récupérer l\'image du site:', err);
+                    console.warn('Erreur globale recherche image:', err);
                 } finally {
                     if (submitBtn) {
                         submitBtn.textContent = originalText;
@@ -4091,18 +4136,30 @@
         // Vérifier conditions pour message image automatique
         function checkAutoImageConditions() {
             const website = document.getElementById('raceWebsite').value.trim();
+            const name = document.getElementById('raceName').value.trim();
             const message = document.getElementById('autoImageMessage');
+            const checkboxContainer = document.getElementById('autoImageCheckboxContainer');
+            const raceId = document.getElementById('raceId').value;
 
-            // Afficher si : site web présent ET commence par http ET pas de photo uploadée
-            if (website && website.startsWith('http') && !photoData) {
-                message.classList.remove('hidden');
-            } else {
-                message.classList.add('hidden');
+            // Masquer tout par défaut
+            message.classList.add('hidden');
+            checkboxContainer.classList.add('hidden');
+
+            // Vérifier les conditions de base : (Nom ou Site) ET Pas de photo
+            if ((name || (website && website.startsWith('http'))) && !photoData) {
+                if (!raceId) {
+                    // MODE AJOUT : Afficher le message d'info automatique
+                    message.classList.remove('hidden');
+                } else {
+                    // MODE MODIF : Afficher la checkbox de proposition
+                    checkboxContainer.classList.remove('hidden');
+                }
             }
         }
 
-        // Ecouter les changements sur le champ website
+        // Ecouter les changements sur le champ website et name
         document.getElementById('raceWebsite').addEventListener('input', checkAutoImageConditions);
+        document.getElementById('raceName').addEventListener('input', checkAutoImageConditions);
 
         // Gestionnaire d'événement pour l'upload de photo
         racePhoto.addEventListener('change', function () {
