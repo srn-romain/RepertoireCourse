@@ -2543,7 +2543,23 @@
         const wishlistCheckCancelBtn = document.getElementById('wishlistCheckCancelBtn');
         const wishlistCheckConfirmBtn = document.getElementById('wishlistCheckConfirmBtn');
 
-        function showWishlistCheckModal() {
+        async function showWishlistCheckModal() {
+            // Vérifier d'abord si la wishlist contient des éléments
+            if (wishlistCollection) {
+                try {
+                    const snapshot = await wishlistCollection.get();
+                    if (snapshot.empty) {
+                        // Wishlist vide, ouvrir directement le formulaire d'ajout
+                        openAddRaceModal(null);
+                        return;
+                    }
+                } catch (error) {
+                    console.error('Erreur lors de la vérification de la wishlist:', error);
+                    // En cas d'erreur, continuer normalement
+                }
+            }
+
+            // Wishlist non vide ou erreur, afficher la modale de vérification
             wishlistCheckModal.classList.remove('hidden');
             wishlistCheckStep1.classList.remove('hidden');
             wishlistCheckStep2.classList.add('hidden');
