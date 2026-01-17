@@ -51,7 +51,7 @@
             position: 'bottom'
         },
         {
-            target: '#advancedFiltersBtn',
+            target: '#toggleFiltersBtn',
             title: 'Filtres avancés 🎛️',
             content: 'Accédez aux filtres avancés pour affiner votre recherche : terrain, prix, heure de départ, et autres critères spécifiques.',
             position: 'top'
@@ -82,7 +82,7 @@
             position: 'bottom'
         },
         {
-            target: '#logoutBtn',
+            target: '#disconnectBtn',
             title: 'Déconnexion 🚪',
             content: 'Déconnectez-vous de votre compte en toute sécurité. Vos données resteront sauvegardées dans le cloud.',
             position: 'left'
