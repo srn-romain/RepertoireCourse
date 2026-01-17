@@ -226,14 +226,14 @@
         <div class="container mx-auto px-4 sm:px-6 lg:px-8">
 
             <!-- Statistiques de la Communauté (Dynamique) -->
-            <div class="text-center mb-12" id="communityStatsHeader">
+            <div class="text-center mb-6" id="communityStatsHeader">
                 <span
                     class="bg-green-100 text-green-800 text-sm px-3 py-1 rounded-full uppercase tracking-wider mt-2 mb-4">Communauté</span>
                 <h2 class="text-3xl text-green-800 mt-2 mb-4">Les dernières courses</h2>
                 <p class="text-gray-600 max-w-2xl mx-auto">Découvrez les performances collectives des coureurs.</p>
 
                 <!-- Message discret : Total KM communauté -->
-                <p id="communityKmMessage" class="text-sm text-gray-500 mt-4 italic">
+                <p id="communityKmMessage" class="text-sm text-gray-500 mt-2 italic">
                     <i class="fas fa-running mr-1"></i>
                     <span id="totalCommunityKm">Calcul en cours...</span>
                 </p>
@@ -825,6 +825,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     <script src="js/firebase-config.js"></script>
     <script src="js/isAdmin.js"></script>
+    <script src="js/isInvite.js"></script>
 
     <!-- Auth Modals & Logic (Injects Login/Signup Modals) -->
     <script src="js/modal-auth.js"></script>

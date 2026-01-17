@@ -295,13 +295,8 @@ async function loadPublicRaces() {
         grid.innerHTML = '';
         grid.appendChild(fragment);
 
-        // UPDATE STATS UI - Afficher uniquement le total KM message
-        const totalKmElement = document.getElementById('totalCommunityKm');
-
-        if (totalKmElement) {
-            const totalKm = Math.round(statsCount.km);
-            totalKmElement.innerHTML = `La communauté a pour le moment parcouru <strong>${totalKm.toLocaleString('fr-FR')} km</strong> dans des courses passées.`;
-        }
+        // UPDATE STATS UI - Partial stats update removed in favor of fetchGlobalCommunityStats()
+        // const totalKmElement = document.getElementById('totalCommunityKm'); ...
 
     } catch (error) {
         console.error("Error loading public races:", error);
@@ -315,3 +310,58 @@ async function loadPublicRaces() {
         isLoadingPublicRaces = false;
     }
 }
+
+// Nouvelle fonction pour calculer les stats sur TOUTE la base de données
+async function fetchGlobalCommunityStats() {
+    const totalKmElement = document.getElementById('totalCommunityKm');
+    if (!totalKmElement) return;
+
+    try {
+        let snapshot;
+        let isPartial = false;
+
+        try {
+            // TENTATIVE 1 : Récupérer TOUTES les courses (Publiques + Privées)
+            // Cela fonctionnera si l'utilisateur est Admin ou si les règles Firestore le permettent.
+            // Correspond à la méthode de calcul de l'Admin.
+            snapshot = await db.collectionGroup('races').get();
+        } catch (e) {
+            console.warn("Accès global refusé, repli sur les courses publiques uniquement.");
+            // TENTATIVE 2 : Repli sur les courses publiques uniquement
+            snapshot = await db.collectionGroup('races')
+                .where('public', '==', true)
+                .orderBy('date', 'desc')
+                .get();
+            isPartial = true;
+        }
+
+        let totalKm = 0;
+
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            // On calcule sur TOUTE la BDD récupérée (Passées + Futures) pour s'aligner sur l'admin
+            // Si on voulait seulement les passées, on décommenterait le filtre date.
+            if (data.distance) {
+                const dist = parseFloat(data.distance.toString().replace(',', '.'));
+                if (!isNaN(dist)) {
+                    totalKm += dist;
+                }
+            }
+        });
+
+        // Mise à jour du texte
+        // Si on a tout (y compris futur), le texte "courses passées" est techniquement inexact mais demandé.
+        // On pourrait ajouter une mention si c'est partiel (public only).
+        totalKmElement.innerHTML = `La communauté a pour le moment parcouru <strong>${Math.round(totalKm).toLocaleString('fr-FR')} km</strong> ${isPartial ? '(courses publiques)' : '(total global)'}.`;
+
+    } catch (error) {
+        console.warn("Erreur calcul stats globales:", error);
+        // On laisse le texte par défaut ou on met un message d'erreur discret
+    }
+}
+
+// Lancer le calcul global au chargement
+document.addEventListener('DOMContentLoaded', () => {
+    // loadPublicRaces est déjà appelé par l'autre listener, mais on peut appeler stats ici
+    fetchGlobalCommunityStats();
+});
