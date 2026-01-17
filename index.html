@@ -355,78 +355,77 @@
                         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
                 </div>
             </div>
-        </div>
 
 
-        <!-- Séparateur -->
-        <div class="max-w-4xl mx-auto mb-6">
-            <hr class="border-t border-green-100">
-        </div>
+            <!-- Séparateur -->
+            <div class="max-w-4xl mx-auto mb-6">
+                <hr class="border-t border-green-100">
+            </div>
 
-        <!-- Barre de filtres -->
-        <div class="mb-8 flex flex-wrap items-center justify-center gap-3">
-            <!-- Nombre de courses -->
-            <div class="flex items-center gap-2">
-                <span class="text-sm text-gray-600 font-medium">Afficher :</span>
-                <div class="flex gap-1">
-                    <button onclick="updatePublicRaceFilter('limit', 15)" id="filterLimit15"
-                        class="px-3 py-1.5 text-sm rounded-full bg-green-600 text-white border border-green-600">
-                        15
-                    </button>
-                    <button onclick="updatePublicRaceFilter('limit', 30)" id="filterLimit30"
-                        class="px-3 py-1.5 text-sm rounded-full border border-green-200 hover:bg-green-50 transition">
-                        30
-                    </button>
-                    <button onclick="updatePublicRaceFilter('limit', 60)" id="filterLimit60"
-                        class="px-3 py-1.5 text-sm rounded-full border border-green-200 hover:bg-green-50 transition">
-                        60
-                    </button>
+            <!-- Barre de filtres -->
+            <div class="mb-8 flex flex-wrap items-center justify-center gap-3">
+                <!-- Nombre de courses -->
+                <div class="flex items-center gap-2">
+                    <span class="text-sm text-gray-600 font-medium">Afficher :</span>
+                    <div class="flex gap-1">
+                        <button onclick="updatePublicRaceFilter('limit', 15)" id="filterLimit15"
+                            class="px-3 py-1.5 text-sm rounded-full bg-green-600 text-white border border-green-600">
+                            15
+                        </button>
+                        <button onclick="updatePublicRaceFilter('limit', 30)" id="filterLimit30"
+                            class="px-3 py-1.5 text-sm rounded-full border border-green-200 hover:bg-green-50 transition">
+                            30
+                        </button>
+                        <button onclick="updatePublicRaceFilter('limit', 60)" id="filterLimit60"
+                            class="px-3 py-1.5 text-sm rounded-full border border-green-200 hover:bg-green-50 transition">
+                            60
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Statut -->
+                <div class="flex items-center gap-2">
+                    <span class="text-sm text-gray-600 font-medium">Statut :</span>
+                    <div class="flex gap-1">
+                        <button onclick="updatePublicRaceFilter('status', 'all')" id="filterStatusAll"
+                            class="px-3 py-1.5 text-sm rounded-full bg-green-600 text-white border border-green-600">
+                            Toutes
+                        </button>
+                        <button onclick="updatePublicRaceFilter('status', 'upcoming')" id="filterStatusUpcoming"
+                            class="px-3 py-1.5 text-sm rounded-full border border-green-200 hover:bg-green-50 transition">
+                            À venir
+                        </button>
+                        <button onclick="updatePublicRaceFilter('status', 'past')" id="filterStatusPast"
+                            class="px-3 py-1.5 text-sm rounded-full border border-green-200 hover:bg-green-50 transition">
+                            Passées
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Tri -->
+                <div class="flex items-center gap-2">
+                    <span class="text-sm text-gray-600 font-medium">Tri :</span>
+                    <div class="flex gap-1">
+                        <button onclick="updatePublicRaceFilter('sort', 'desc')" id="filterSortDesc"
+                            class="px-3 py-1.5 text-sm rounded-full bg-green-600 text-white border border-green-600">
+                            <i class="fas fa-arrow-down mr-1"></i> Récentes
+                        </button>
+                        <button onclick="updatePublicRaceFilter('sort', 'asc')" id="filterSortAsc"
+                            class="px-3 py-1.5 text-sm rounded-full border border-green-200 hover:bg-green-50 transition">
+                            <i class="fas fa-arrow-up mr-1"></i> Anciennes
+                        </button>
+                    </div>
                 </div>
             </div>
 
-            <!-- Statut -->
-            <div class="flex items-center gap-2">
-                <span class="text-sm text-gray-600 font-medium">Statut :</span>
-                <div class="flex gap-1">
-                    <button onclick="updatePublicRaceFilter('status', 'all')" id="filterStatusAll"
-                        class="px-3 py-1.5 text-sm rounded-full bg-green-600 text-white border border-green-600">
-                        Toutes
-                    </button>
-                    <button onclick="updatePublicRaceFilter('status', 'upcoming')" id="filterStatusUpcoming"
-                        class="px-3 py-1.5 text-sm rounded-full border border-green-200 hover:bg-green-50 transition">
-                        À venir
-                    </button>
-                    <button onclick="updatePublicRaceFilter('status', 'past')" id="filterStatusPast"
-                        class="px-3 py-1.5 text-sm rounded-full border border-green-200 hover:bg-green-50 transition">
-                        Passées
-                    </button>
-                </div>
-            </div>
-
-            <!-- Tri -->
-            <div class="flex items-center gap-2">
-                <span class="text-sm text-gray-600 font-medium">Tri :</span>
-                <div class="flex gap-1">
-                    <button onclick="updatePublicRaceFilter('sort', 'desc')" id="filterSortDesc"
-                        class="px-3 py-1.5 text-sm rounded-full bg-green-600 text-white border border-green-600">
-                        <i class="fas fa-arrow-down mr-1"></i> Récentes
-                    </button>
-                    <button onclick="updatePublicRaceFilter('sort', 'asc')" id="filterSortAsc"
-                        class="px-3 py-1.5 text-sm rounded-full border border-green-200 hover:bg-green-50 transition">
-                        <i class="fas fa-arrow-up mr-1"></i> Anciennes
-                    </button>
+            <div id="publicRacesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Les courses seront chargées ici dynamiquement -->
+                <div class="col-span-1 md:col-span-2 lg:col-span-3 text-center py-12">
+                    <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+                    <p class="mt-2 text-gray-500">Chargement des courses...</p>
                 </div>
             </div>
         </div>
-
-        <div id="publicRacesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <!-- Les courses seront chargées ici dynamiquement -->
-            <div class="col-span-1 md:col-span-2 lg:col-span-3 text-center py-12">
-                <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
-                <p class="mt-2 text-gray-500">Chargement des courses...</p>
-            </div>
-        </div>
-    </div>
     </div>
 
     <!-- Modal de déconnexion automatique -->
