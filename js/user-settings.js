@@ -245,7 +245,7 @@ if (typeof window.openModal === 'undefined') {
     };
 }
 
-function initSettingsLogic() {
+async function initSettingsLogic() {
     const pseudoForm = document.getElementById('updatePseudoForm');
     const resetBtn = document.getElementById('btnSendPasswordReset');
     const msgContainer = document.getElementById('settingsMessageContainer');
@@ -261,7 +261,14 @@ function initSettingsLogic() {
     const prefShowStatsBtn = document.getElementById('prefShowStatsBtn');
 
     // Vérifier si l'utilisateur est invité
-    const isInvite = sessionStorage.getItem('authLevel') === 'invite';
+    let isInvite = false;
+    if (typeof window.isInviteUser === 'function') {
+        isInvite = await window.isInviteUser();
+    } else {
+        // Fallback si isInvite.js n'est pas encore chargé
+        console.warn('window.isInviteUser not available, using sessionStorage fallback');
+        isInvite = sessionStorage.getItem('authLevel') === 'invite';
+    }
 
     // Désactiver les contrôles pour les invités (sauf le bouton reset password)
     if (isInvite) {
@@ -627,7 +634,14 @@ window.openUserSettings = async function () {
     if (emailDisplay) emailDisplay.textContent = user.email;
 
     // Vérifier si l'utilisateur est invité et afficher le notice
-    const isInvite = sessionStorage.getItem('authLevel') === 'invite';
+    let isInvite = false;
+    if (typeof window.isInviteUser === 'function') {
+        isInvite = await window.isInviteUser();
+    } else {
+        // Fallback si isInvite.js n'est pas encore chargé
+        console.warn('window.isInviteUser not available in openUserSettings, using sessionStorage fallback');
+        isInvite = sessionStorage.getItem('authLevel') === 'invite';
+    }
     if (inviteNotice) {
         if (isInvite) {
             inviteNotice.classList.remove('hidden');

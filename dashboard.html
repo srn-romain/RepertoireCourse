@@ -1315,6 +1315,7 @@
     </footer>
 
     <script src="js/firebase-config.js"></script>
+    <script src="js/isInvite.js"></script>
     <script src="js/advanced-filters.js"></script>
     <script src="js/pdf-generator.js"></script>
     <script>
@@ -1332,22 +1333,6 @@
                 // Configuration des collections pour l'utilisateur connecté
                 console.log("Utilisateur connecté:", user.uid);
                 usersCollection = db.collection('users');
-
-                // Définition globale de la méthode de vérification invité
-                window.checkIfInviteUser = async function (userObj) {
-                    if (!userObj) return false;
-                    // Check custom claims
-                    try {
-                        const token = await userObj.getIdTokenResult();
-                        if (token.claims.invite) return true;
-                    } catch (e) { }
-                    // Check doc
-                    try {
-                        const d = await db.collection('users').doc(userObj.uid).get();
-                        if (d.exists && d.data().role === 'invite') return true;
-                    } catch (e) { }
-                    return sessionStorage.getItem('authLevel') === 'invite';
-                };
 
                 // --- AUTO-RÉPARATION : Vérifier et créer le document utilisateur s'il manque ---
                 try {
@@ -1378,7 +1363,7 @@
                 }
 
                 // Vérifier si c'est un compte invité
-                const isInviteUser = await window.checkIfInviteUser(user);
+                const isInviteUser = await window.isInviteUser();
 
                 if (isInviteUser) {
                     console.log("Mode Invité détecté");
@@ -1579,42 +1564,19 @@
             },
 
             /**
-             * Vérifier si l'utilisateur est invité (version synchrone)
+             * Vérifier si l'utilisateur est invité (version synchrone - DEPRECATED)
+             * Utilisez window.isInviteUser() à la place
              */
             isInvite: () => {
                 return sessionStorage.getItem('authLevel') === 'invite';
             },
 
             /**
-             * Vérifier si l'utilisateur est invité (version async - vérifie Firebase)
+             * Vérifier si l'utilisateur est invité (version async)
+             * Utilise désormais la fonction globale window.isInviteUser()
              */
             isInviteAsync: async () => {
-                const user = auth.currentUser;
-                if (!user) {
-                    return sessionStorage.getItem('authLevel') === 'invite';
-                }
-
-                // Vérifier les custom claims d'abord
-                try {
-                    const idTokenResult = await user.getIdTokenResult();
-                    if (idTokenResult.claims.invite === true) {
-                        return true;
-                    }
-                } catch (error) {
-                    console.error('Erreur lors de la vérification des custom claims:', error);
-                }
-
-                // Sinon vérifier dans la collection users
-                try {
-                    const userDoc = await usersCollection.doc(user.uid).get();
-                    if (userDoc.exists && userDoc.data().role === 'invite') {
-                        return true;
-                    }
-                } catch (error) {
-                    console.error('Erreur lors de la vérification du rôle invite:', error);
-                }
-
-                return sessionStorage.getItem('authLevel') === 'invite';
+                return await window.isInviteUser();
             },
 
             /**
@@ -6582,7 +6544,7 @@
                             const d = await db.collection('users').doc(user.uid).get();
                             if (d.exists && d.data().role === 'invite') return true;
                         } catch (e) { }
-                        return sessionStorage.getItem('authLevel') === 'invite';
+                        return await window.isInviteUser();
                     })();
 
                     // Masquer le bouton de sauvegarde pour les comptes invités
