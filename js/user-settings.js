@@ -379,6 +379,18 @@ async function initSettingsLogic() {
     const tutorialTooltip = document.getElementById('tutorialDisabledTooltip');
 
     if (tutorialBtn) {
+        // Vérifier si on est sur index.html
+        const isOnIndexPage = window.location.pathname.includes('index.html') ||
+            window.location.pathname === '/' ||
+            window.location.pathname.endsWith('/');
+
+        if (isOnIndexPage) {
+            tutorialBtn.disabled = true;
+            if (tutorialTooltip) {
+                tutorialTooltip.textContent = 'Le tutoriel est uniquement disponible depuis le tableau de bord des courses';
+            }
+        }
+
         tutorialBtn.addEventListener('click', function () {
             if (!this.disabled) {
                 closeSettingsModal();
