@@ -79,7 +79,7 @@
             target: '#userSettingsBtn',
             title: 'Paramètres du compte ⚙️',
             content: 'Gérez vos paramètres : modifier votre pseudo, configurer la confidentialité de vos courses publiques, personnaliser l\'interface, et bien plus.',
-            position: 'left'
+            position: 'bottom'
         },
         {
             target: '#logoutBtn',
