@@ -1,9 +1,20 @@
 /**
  * js/admin-stats.js
- * Affichage des statistiques administrateur sur la page index.html
+ * Affichage des statistiques administrateur avec Carte OpenStreetMap
  */
 
 let currentAdminFilter = 'all'; // 'all' ou 'past'
+
+// Variables globales pour la carte
+let adminMap = null;
+let geoCache = {};
+
+// Charger le cache au démarrage
+try {
+    geoCache = JSON.parse(localStorage.getItem('raceLocationGeoCache') || '{}');
+} catch (e) {
+    geoCache = {};
+}
 
 // Liste des IDs des éléments de stats pour le loading
 const ADMIN_STAT_IDS = [
@@ -34,9 +45,9 @@ window.updateAdminStatsFilter = async function (filter) {
 
     const btnAll = document.getElementById('btnAdminFilterAll');
     const btnPast = document.getElementById('btnAdminFilterPast');
-    const buttons = [btnAll, btnPast].filter(b => b); // Filtrer si null
+    const buttons = [btnAll, btnPast].filter(b => b);
 
-    // 1. Mise à jour visuelle immédiate des boutons (Style Actif/Inactif)
+    // 1. Mise à jour visuelle immédiate
     if (btnAll && btnPast) {
         if (filter === 'all') {
             btnAll.className = 'px-3 py-1 text-sm rounded-full bg-red-600 text-white font-bold transition shadow-sm';
@@ -47,13 +58,13 @@ window.updateAdminStatsFilter = async function (filter) {
         }
     }
 
-    // 2. Geler les boutons (UI Loading State)
+    // 2. Geler les boutons
     buttons.forEach(btn => {
         btn.disabled = true;
         btn.classList.add('opacity-50', 'cursor-not-allowed');
     });
 
-    // 3. Charger les stats (avec loading visible)
+    // 3. Charger les stats
     await loadAdminStats();
 
     // 4. Dégeler les boutons
@@ -64,35 +75,20 @@ window.updateAdminStatsFilter = async function (filter) {
 };
 
 async function loadAdminStats() {
-    // Vérifier si l'utilisateur est admin
-    if (typeof window.isAdminUser !== 'function') {
-        return;
-    }
-
-    // Note: isAdminUser peut prendre un peu de temps, mais on ne veut pas montrer le bloc loading avant de savoir
+    if (typeof window.isAdminUser !== 'function') return;
     const isAdmin = await window.isAdminUser();
-    if (!isAdmin) {
-        return;
-    }
+    if (!isAdmin) return;
 
-    // Afficher la section admin
     const adminSection = document.getElementById('adminStatsSection');
-    if (!adminSection) {
-        return;
-    }
+    if (!adminSection) return;
     adminSection.classList.remove('hidden');
 
-    // DÉBUT DU CHARGEMENT VISUEL
     setAdminStatsLoading(true);
 
     try {
-        // Récupérer toutes les courses publiques de tous les utilisateurs
         const allRacesSnapshot = await db.collectionGroup('races').get();
-
-        // Récupérer tous les utilisateurs
         const usersSnapshot = await db.collection('users').get();
 
-        // Initialiser l'objet de stats
         const stats = {
             totalUsers: 0,
             activeUsers: 0,
@@ -105,7 +101,6 @@ async function loadAdminStats() {
             totalElevation: 0,
             averageRacesPerUser: 0,
             usersWithWishlist: 0,
-            // New Stats
             totalPrice: 0,
             priceCount: 0,
             totalTimeSeconds: 0,
@@ -118,88 +113,59 @@ async function loadAdminStats() {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
 
-        // Compter les utilisateurs
         const userRaceCount = {};
         usersSnapshot.forEach(doc => {
             stats.totalUsers++;
             userRaceCount[doc.id] = 0;
         });
 
-        // Analyser les courses
+        // Set pour stocker les lieux uniques pour la carte
+        const uniqueLocations = new Set();
+
         allRacesSnapshot.forEach(doc => {
             const race = doc.data();
             const userId = doc.ref.parent.parent?.id;
 
-            // --- FILTRAGE ---
             const raceDate = new Date(race.date);
             raceDate.setHours(0, 0, 0, 0);
 
+            // --- FILTRE ---
             if (currentAdminFilter === 'past') {
                 if (raceDate >= today) return;
             }
 
-            // Si on passe le filtre, on compte
+            // Stats de base
             stats.totalRaces++;
-
             if (userId && userRaceCount.hasOwnProperty(userId)) {
                 userRaceCount[userId]++;
             }
 
-            // Public/Private
-            if (race.public === true) {
-                stats.publicRaces++;
-            } else {
-                stats.privateRaces++;
-            }
+            if (race.public === true) stats.publicRaces++; else stats.privateRaces++;
+            if (raceDate >= today) stats.upcomingRaces++; else stats.pastRaces++;
 
-            // Upcoming/Past
-            if (raceDate >= today) {
-                stats.upcomingRaces++;
-            } else {
-                stats.pastRaces++;
-            }
-
-            // Distance et dénivelé
             if (race.distance) {
                 const dist = parseFloat(race.distance.toString().replace(',', '.'));
-                if (!isNaN(dist)) {
-                    stats.totalKm += dist;
-                }
+                if (!isNaN(dist)) stats.totalKm += dist;
             }
-
             if (race.elevation) {
                 const elev = parseFloat(race.elevation.toString().replace(',', '.'));
-                if (!isNaN(elev)) {
-                    stats.totalElevation += elev;
-                }
+                if (!isNaN(elev)) stats.totalElevation += elev;
             }
 
-            // --- NOUVELLES STATS ---
-
-            // 1. Terrain
             if (race.terrain) {
                 const t = race.terrain.trim().toLowerCase();
                 if (t) stats.terrains[t] = (stats.terrains[t] || 0) + 1;
             }
-
-            // 2. Prix
             if (race.price) {
                 const p = parseFloat(race.price);
-                if (!isNaN(p)) {
-                    stats.totalPrice += p;
-                    stats.priceCount++;
-                }
+                if (!isNaN(p)) { stats.totalPrice += p; stats.priceCount++; }
             }
-
-            // 3. Temps de course (Durée)
             if (race.time && /^\d{2}:\d{2}:\d{2}$/.test(race.time)) {
                 const parts = race.time.split(':');
                 const secs = parseInt(parts[0]) * 3600 + parseInt(parts[1]) * 60 + parseInt(parts[2]);
                 stats.totalTimeSeconds += secs;
                 stats.timeCount++;
             }
-
-            // 4. Heure de départ (race.hour)
             if (race.hour) {
                 const parts = race.hour.split(':');
                 if (parts.length >= 2) {
@@ -211,76 +177,61 @@ async function loadAdminStats() {
                     }
                 }
             }
-        });
 
-        // Compter les utilisateurs actifs
-        Object.values(userRaceCount).forEach(count => {
-            if (count > 0) {
-                stats.activeUsers++;
+            // CARTE : Collecter les lieux
+            if (race.location && typeof race.location === 'string' && race.location.trim().length > 2) {
+                uniqueLocations.add(race.location.trim());
             }
         });
 
-        // Moyenne de courses par utilisateur actif
+        // Fin Calcul Users
+        Object.values(userRaceCount).forEach(count => {
+            if (count > 0) stats.activeUsers++;
+        });
         if (stats.activeUsers > 0) {
             stats.averageRacesPerUser = (stats.totalRaces / stats.activeUsers).toFixed(1);
         }
 
-        // Compter les utilisateurs avec wishlist
+        // Wishlists
         const wishlistPromises = [];
         for (const uid of Object.keys(userRaceCount)) {
-            wishlistPromises.push(
-                db.collection('users').doc(uid).collection('wishlist').get()
-                    .then(snapshot => snapshot.size)
-            );
+            wishlistPromises.push(db.collection('users').doc(uid).collection('wishlist').get().then(s => s.size));
         }
-        const wishlistCounts = await Promise.all(wishlistPromises);
-        stats.usersWithWishlist = wishlistCounts.filter(count => count > 0).length;
+        const wCounts = await Promise.all(wishlistPromises);
+        stats.usersWithWishlist = wCounts.filter(c => c > 0).length;
+        const totalWItems = wCounts.reduce((a, b) => a + b, 0);
+        const avgWItems = stats.usersWithWishlist > 0 ? (totalWItems / stats.usersWithWishlist).toFixed(1) : 0;
 
-        // Calculer la moyenne d'items par wishlist
-        const totalWishlistItems = wishlistCounts.reduce((sum, count) => sum + count, 0);
-        const avgWishlistItems = stats.usersWithWishlist > 0
-            ? (totalWishlistItems / stats.usersWithWishlist).toFixed(1)
-            : 0;
-
-        // Statistiques temporelles utilisateurs
+        // Last Login (Exclure Admin)
         let lastLoginDate = null;
         let lastLoginUser = null;
-
         usersSnapshot.forEach(doc => {
-            const userData = doc.data();
-
-            // Exclure l'admin des stats de dernière connexion
-            if (userData.role === 'admin') return;
-
-            if (userData.lastLogin) {
-                const loginDate = userData.lastLogin.toDate ? userData.lastLogin.toDate() : new Date(userData.lastLogin);
-                if (!lastLoginDate || loginDate > lastLoginDate) {
-                    lastLoginDate = loginDate;
-                    lastLoginUser = userData.pseudo || userData.email?.split('@')[0] || 'Utilisateur';
+            const u = doc.data();
+            if (u.role === 'admin') return;
+            if (u.lastLogin) {
+                const d = u.lastLogin.toDate ? u.lastLogin.toDate() : new Date(u.lastLogin);
+                if (!lastLoginDate || d > lastLoginDate) {
+                    lastLoginDate = d;
+                    lastLoginUser = u.pseudo || u.email?.split('@')[0] || 'User';
                 }
             }
         });
 
-        // --- CALCULS FINAUX NOUVELLES STATS ---
+        // --- PREPARATION AFFICHAGE ---
 
-        // Top Terrain -> Répartition % (Liste complète directe)
+        // Terrain (Full list, small text)
         let topTerrainFull = "N/A";
-        const totalTerrains = Object.values(stats.terrains).reduce((a, b) => a + b, 0);
-
-        if (totalTerrains > 0) {
-            const sortedTerrains = Object.entries(stats.terrains).sort((a, b) => b[1] - a[1]);
-            // Format: "Route (60%), Trail (40%)"
-            const parts = sortedTerrains.map(([t, count]) => {
-                const pct = Math.round((count / totalTerrains) * 100);
+        const totalTypes = Object.values(stats.terrains).reduce((a, b) => a + b, 0);
+        if (totalTypes > 0) {
+            const sorted = Object.entries(stats.terrains).sort((a, b) => b[1] - a[1]);
+            topTerrainFull = sorted.map(([t, c]) => {
+                const pct = Math.round((c / totalTypes) * 100);
                 return `${t.charAt(0).toUpperCase() + t.slice(1)} (${pct}%)`;
-            });
-            topTerrainFull = parts.join(', '); // La liste complète
+            }).join(', ');
         }
 
-        // Prix Moyen
         const avgPrice = stats.priceCount > 0 ? (stats.totalPrice / stats.priceCount).toFixed(2) + ' €' : '0 €';
 
-        // Temps Moyen
         let avgTimeStr = "0h";
         if (stats.timeCount > 0) {
             const avgSecs = Math.round(stats.totalTimeSeconds / stats.timeCount);
@@ -289,7 +240,6 @@ async function loadAdminStats() {
             avgTimeStr = `${hrs}h${mins > 0 ? mins.toString().padStart(2, '0') : ''}`;
         }
 
-        // Heure Moyenne
         let favStart = "N/A";
         if (stats.startHourCount > 0) {
             const avgMins = Math.round(stats.totalStartMinutes / stats.startHourCount);
@@ -298,44 +248,31 @@ async function loadAdminStats() {
             favStart = `${h}h${m.toString().padStart(2, '0')}`;
         }
 
-        // Formater les dates
         const formatDate = (date, name) => {
             if (!date) return 'Aucune donnée';
-            const now = new Date();
-            const diffMs = now - date;
-            const diffMins = Math.floor(diffMs / 60000);
-            const diffHours = Math.floor(diffMs / 3600000);
-            const diffDays = Math.floor(diffMs / 86400000);
-
-            let timeAgo = '';
-            if (diffMins < 1) timeAgo = "À l'instant";
-            else if (diffMins < 60) timeAgo = `Il y a ${diffMins} min`;
-            else if (diffHours < 24) timeAgo = `Il y a ${diffHours}h`;
-            else if (diffDays < 7) timeAgo = `Il y a ${diffDays}j`;
-            else timeAgo = date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
-
-            return name ? `${timeAgo} (${name})` : timeAgo;
+            const diffMs = new Date() - date;
+            const mins = Math.floor(diffMs / 60000);
+            if (mins < 60) return `${mins} min (${name})`;
+            return `${date.toLocaleDateString()} (${name})`;
         };
 
-        // --- AFFICHAGE (Remplacement des spinners par les valeurs) ---
+        // --- AFFICHAGE DOM ---
+        const setText = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
 
-        const setText = (id, val) => {
-            const el = document.getElementById(id);
-            if (el) el.textContent = val;
-        };
-
-        setText('adminStatTotalUsers', stats.totalUsers.toLocaleString('fr-FR'));
-        setText('adminStatActiveUsers', stats.activeUsers.toLocaleString('fr-FR'));
-        setText('adminStatTotalRaces', stats.totalRaces.toLocaleString('fr-FR'));
-        setText('adminStatPublicRaces', stats.publicRaces.toLocaleString('fr-FR'));
-        setText('adminStatPrivateRaces', stats.privateRaces.toLocaleString('fr-FR'));
-        setText('adminStatUpcomingRaces', stats.upcomingRaces.toLocaleString('fr-FR'));
-        setText('adminStatPastRaces', stats.pastRaces.toLocaleString('fr-FR'));
-        setText('adminStatTotalKm', Math.round(stats.totalKm).toLocaleString('fr-FR'));
-        setText('adminStatTotalElevation', Math.round(stats.totalElevation).toLocaleString('fr-FR'));
+        setText('adminStatTotalUsers', stats.totalUsers.toLocaleString());
+        setText('adminStatActiveUsers', stats.activeUsers.toLocaleString());
+        setText('adminStatTotalRaces', stats.totalRaces.toLocaleString());
+        setText('adminStatPublicRaces', stats.publicRaces.toLocaleString());
+        setText('adminStatPrivateRaces', stats.privateRaces.toLocaleString());
+        setText('adminStatUpcomingRaces', stats.upcomingRaces.toLocaleString());
+        setText('adminStatPastRaces', stats.pastRaces.toLocaleString());
+        setText('adminStatTotalKm', Math.round(stats.totalKm).toLocaleString());
+        setText('adminStatTotalElevation', Math.round(stats.totalElevation).toLocaleString());
         setText('adminStatAvgRacesPerUser', stats.averageRacesPerUser);
+        setText('adminStatUsersWithWishlist', stats.usersWithWishlist.toLocaleString());
+        setText('adminStatAvgWishlistItems', avgWItems);
+        setText('adminStatLastLogin', formatDate(lastLoginDate, lastLoginUser));
 
-        // New stats DOM update
         const elTerrain = document.getElementById('adminStatTerrain');
         const elPrice = document.getElementById('adminStatPrice');
         const elTime = document.getElementById('adminStatTime');
@@ -345,22 +282,105 @@ async function loadAdminStats() {
             elTerrain.textContent = topTerrainFull;
             elTerrain.className = "text-xs font-bold text-gray-800 break-words";
         }
-
         if (elPrice) elPrice.textContent = avgPrice;
         if (elTime) elTime.textContent = avgTimeStr;
         if (elStartHour) elStartHour.textContent = favStart;
 
-        setText('adminStatUsersWithWishlist', stats.usersWithWishlist.toLocaleString('fr-FR'));
-        setText('adminStatAvgWishlistItems', avgWishlistItems);
-        setText('adminStatLastLogin', formatDate(lastLoginDate, lastLoginUser));
+        // --- INITIALISER LA CARTE (Async) ---
+        // On ne pèse pas sur le thread principal pour les stats, on charge la carte après
+        initAdminMap(Array.from(uniqueLocations));
 
     } catch (error) {
-        console.error('Erreur lors du chargement des statistiques admin:', error);
-        // En cas d'erreur, on pourrait retirer les spinners ou afficher "Erreur"
+        console.error('Erreur stats admin:', error);
     }
 }
 
-// Charger les stats admin au chargement de la page initial
+// Fonction asynchrone pour gérer la carte et le géocodage progressif
+async function initAdminMap(locations) {
+    // Vérifier si Leaflet est chargé
+    if (typeof L === 'undefined') {
+        const statusEl = document.getElementById('mapLoadingStatus');
+        if (statusEl) statusEl.textContent = "Erreur : Leaflet non chargé.";
+        return;
+    }
+
+    const mapId = 'adminRacesMap';
+    const mapContainer = document.getElementById(mapId);
+    if (!mapContainer) return;
+
+    // Status
+    const statusEl = document.getElementById('mapLoadingStatus');
+    if (statusEl) statusEl.textContent = `${locations.length} lieux détectés. Initialisation...`;
+
+    // Init Map si pas encore fait
+    if (!adminMap) {
+        // Centre France approximatif, Zoom 5
+        adminMap = L.map(mapId).setView([46.60, 1.88], 5);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap',
+            maxZoom: 18
+        }).addTo(adminMap);
+    } else {
+        // Nettoyer marqueurs existants
+        adminMap.eachLayer(layer => {
+            if (layer instanceof L.CircleMarker || layer instanceof L.Marker) {
+                adminMap.removeLayer(layer);
+            }
+        });
+    }
+
+    let resolvedCount = 0;
+
+    // Fonction Helper Delay
+    const delay = ms => new Promise(res => setTimeout(res, ms));
+
+    // Boucle de traitement des lieux
+    for (const locationName of locations) {
+        let coords = geoCache[locationName.toLowerCase().trim()];
+
+        if (!coords) {
+            // Pas en cache -> Appel API Nominatim
+            if (statusEl) statusEl.textContent = `Géocodage en cours : ${locationName}...`;
+
+            try {
+                // Rate limit : attendre 1.1s
+                await delay(1100);
+
+                const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(locationName)},France&limit=1`;
+                const response = await fetch(url, {
+                    headers: { 'User-Agent': 'CourseAppAdmin/1.0' } // Politess header
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data && data.length > 0) {
+                        coords = { lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon) };
+                        // Save cache
+                        geoCache[locationName.toLowerCase().trim()] = coords;
+                        localStorage.setItem('raceLocationGeoCache', JSON.stringify(geoCache));
+                    }
+                }
+            } catch (e) {
+                console.warn(`Erreur géocodage ${locationName}`, e);
+            }
+        }
+
+        // Si on a des coordonnées, on affiche
+        if (coords) {
+            L.circleMarker([coords.lat, coords.lon], {
+                color: 'green',
+                fillColor: '#22c55e', // green-500
+                fillOpacity: 0.8,
+                radius: 6
+            }).bindPopup(`<b>${locationName.toUpperCase()}</b>`).addTo(adminMap);
+            resolvedCount++;
+        }
+    }
+
+    if (statusEl) statusEl.textContent = `Carte à jour : ${resolvedCount} lieux affichés.`;
+}
+
+
 document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
         if (typeof auth !== 'undefined') {
