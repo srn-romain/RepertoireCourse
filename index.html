@@ -237,6 +237,80 @@
                     <i class="fas fa-running mr-1"></i>
                     <span id="totalCommunityKm">Calcul en cours...</span>
                 </p>
+
+                <!-- Section Admin : Statistiques détaillées (visible uniquement pour l'admin) -->
+                <div id="adminStatsSection" class="hidden mt-8 max-w-5xl mx-auto">
+                    <div class="bg-red-50 border-2 border-red-200 rounded-xl p-6 shadow-lg">
+                        <div class="flex items-center justify-center mb-4">
+                            <i class="fas fa-user-shield text-red-600 text-2xl mr-3"></i>
+                            <h3 class="text-xl font-bold text-red-800">Statistiques Administrateur</h3>
+                        </div>
+
+                        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                            <!-- Utilisateurs -->
+                            <div class="bg-white rounded-lg p-4 text-center border border-red-100">
+                                <p class="text-2xl font-bold text-blue-600" id="adminStatTotalUsers">0</p>
+                                <p class="text-xs text-gray-600 mt-1">Utilisateurs inscrits</p>
+                            </div>
+                            <div class="bg-white rounded-lg p-4 text-center border border-red-100">
+                                <p class="text-2xl font-bold text-green-600" id="adminStatActiveUsers">0</p>
+                                <p class="text-xs text-gray-600 mt-1">Utilisateurs actifs</p>
+                            </div>
+
+                            <!-- Courses -->
+                            <div class="bg-white rounded-lg p-4 text-center border border-red-100">
+                                <p class="text-2xl font-bold text-purple-600" id="adminStatTotalRaces">0</p>
+                                <p class="text-xs text-gray-600 mt-1">Courses totales</p>
+                            </div>
+                            <div class="bg-white rounded-lg p-4 text-center border border-red-100">
+                                <p class="text-2xl font-bold text-green-600" id="adminStatPublicRaces">0</p>
+                                <p class="text-xs text-gray-600 mt-1">Courses publiques</p>
+                            </div>
+                            <div class="bg-white rounded-lg p-4 text-center border border-red-100">
+                                <p class="text-2xl font-bold text-gray-600" id="adminStatPrivateRaces">0</p>
+                                <p class="text-xs text-gray-600 mt-1">Courses privées</p>
+                            </div>
+                            <div class="bg-white rounded-lg p-4 text-center border border-red-100">
+                                <p class="text-2xl font-bold text-yellow-600" id="adminStatUpcomingRaces">0</p>
+                                <p class="text-xs text-gray-600 mt-1">Courses à venir</p>
+                            </div>
+                            <div class="bg-white rounded-lg p-4 text-center border border-red-100">
+                                <p class="text-2xl font-bold text-indigo-600" id="adminStatPastRaces">0</p>
+                                <p class="text-xs text-gray-600 mt-1">Courses passées</p>
+                            </div>
+
+                            <!-- Distances -->
+                            <div class="bg-white rounded-lg p-4 text-center border border-red-100">
+                                <p class="text-2xl font-bold text-red-600" id="adminStatTotalKm">0</p>
+                                <p class="text-xs text-gray-600 mt-1">Km totaux</p>
+                            </div>
+                            <div class="bg-white rounded-lg p-4 text-center border border-red-100">
+                                <p class="text-2xl font-bold text-orange-600" id="adminStatTotalElevation">0</p>
+                                <p class="text-xs text-gray-600 mt-1">D+ total (m)</p>
+                            </div>
+
+                            <!-- Moyennes -->
+                            <div class="bg-white rounded-lg p-4 text-center border border-red-100">
+                                <p class="text-2xl font-bold text-teal-600" id="adminStatAvgRacesPerUser">0</p>
+                                <p class="text-xs text-gray-600 mt-1">Courses/utilisateur</p>
+                            </div>
+                            <div class="bg-white rounded-lg p-4 text-center border border-red-100">
+                                <p class="text-2xl font-bold text-pink-600" id="adminStatUsersWithWishlist">0</p>
+                                <p class="text-xs text-gray-600 mt-1">Utilisateurs avec wishlist</p>
+                            </div>
+                            <div class="bg-white rounded-lg p-4 text-center border border-red-100">
+                                <p class="text-2xl font-bold text-cyan-600" id="adminStatAvgWishlistItems">0</p>
+                                <p class="text-xs text-gray-600 mt-1">Items/wishlist (moy.)</p>
+                            </div>
+
+                            <!-- Statistiques temporelles -->
+                            <div class="bg-white rounded-lg p-4 text-center border border-red-100 col-span-full">
+                                <p class="text-sm font-bold text-blue-600" id="adminStatLastLogin">-</p>
+                                <p class="text-xs text-gray-600 mt-1">Dernière connexion</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
 
@@ -740,10 +814,12 @@
 
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     <script src="js/firebase-config.js"></script>
+    <script src="js/isAdmin.js"></script>
 
     <!-- Auth Modals & Logic (Injects Login/Signup Modals) -->
     <script src="js/modal-auth.js"></script>
     <script src="js/public-races.js"></script>
+    <script src="js/admin-stats.js"></script>
     <script src="js/user-settings.js"></script>
 
     <!-- Vérifier si déconnexion automatique -->
