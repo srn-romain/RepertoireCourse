@@ -2719,11 +2719,10 @@
             document.getElementById('racePhoto').value = '';
             document.getElementById('previewImage').src = '';
             document.getElementById('previewImage').classList.add('hidden');
-            document.getElementById('photoPlaceholder').classList.remove('hidden'); // Wait, need correct ID refs. 
-            // Correct IDs are photoPlaceholder, previewImage, etc. using getElementById to be safe or assuming global vars.
-            // Using getElementById is safer.
+            document.getElementById('photoPlaceholder').classList.add('hidden'); // Hide placeholder to show upload UI
+
             const pH = document.getElementById('photoPlaceholder');
-            if (pH) pH.classList.remove('hidden');
+            if (pH) pH.classList.add('hidden');
             const rP = document.getElementById('removePhoto');
             if (rP) rP.classList.add('hidden');
 
@@ -4058,7 +4057,6 @@
                 // Si on modifie une course existante
                 const currentRace = races.find(r => r.id === id);
 
-                // Si photoData est null et qu'il y avait une photo avant, on retire la photo
                 // Si photoData est null et qu'il y avait une photo avant, on retire la photo
                 // MAIS SEULEMENT SI aucune image automatique n'a été trouvée (raceData.photo serait défini)
                 if (photoData === null && currentRace && currentRace.photo && !raceData.photo) {
