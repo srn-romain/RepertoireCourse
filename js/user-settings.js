@@ -524,17 +524,42 @@ async function initSettingsLogic() {
     }
 
     // Gestion Reset Password
+    let passwordResetConfirmPending = false;
     if (resetBtn) {
         resetBtn.addEventListener('click', async () => {
             const user = firebase.auth().currentUser;
             if (!user || !user.email) return;
 
-            // Confirmation
-            if (!confirm(`Envoyer un email de réinitialisation à ${user.email} ?`)) return;
+            // Si pas encore en attente de confirmation
+            if (!passwordResetConfirmPending) {
+                passwordResetConfirmPending = true;
+                resetBtn.innerHTML = '<i class="fas fa-check"></i> Confirmer l\'envoi';
+                resetBtn.classList.remove('border-red-200', 'bg-red-50', 'text-red-600', 'hover:bg-red-100');
+                resetBtn.classList.add('border-orange-200', 'bg-orange-50', 'text-orange-600', 'hover:bg-orange-100');
+
+                showMessage(`Cliquez à nouveau pour envoyer un email à ${user.email}`, 'warning');
+
+                // Réinitialiser après 5 secondes si pas de confirmation
+                setTimeout(() => {
+                    if (passwordResetConfirmPending) {
+                        passwordResetConfirmPending = false;
+                        resetBtn.innerHTML = '<i class="fas fa-key"></i> Réinitialiser le mot de passe';
+                        resetBtn.classList.remove('border-orange-200', 'bg-orange-50', 'text-orange-600', 'hover:bg-orange-100');
+                        resetBtn.classList.add('border-red-200', 'bg-red-50', 'text-red-600', 'hover:bg-red-100');
+                    }
+                }, 5000);
+                return;
+            }
+
+            // Confirmation validée, envoi de l'email
+            passwordResetConfirmPending = false;
+            resetBtn.innerHTML = '<i class="fas fa-key"></i> Réinitialiser le mot de passe';
+            resetBtn.classList.remove('border-orange-200', 'bg-orange-50', 'text-orange-600', 'hover:bg-orange-100');
+            resetBtn.classList.add('border-red-200', 'bg-red-50', 'text-red-600', 'hover:bg-red-100');
 
             try {
                 await firebase.auth().sendPasswordResetEmail(user.email);
-                showMessage(`Email envoyé à ${user.email} ! Vérifiez vos spams. (Peut prendre 5-10 min)`);
+                showMessage(`Email envoyé à ${user.email} ! Vérifiez vos spams. (Peut prendre 5-10 min)`, 'success');
             } catch (error) {
                 console.error("Erreur reset password:", error);
                 showMessage("Erreur lors de l'envoi de l'email.", "error");
