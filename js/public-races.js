@@ -125,9 +125,6 @@ async function loadPublicRaces() {
         // Cache object
         const userCache = {};
 
-        // Stats Counters
-        const statsCount = { count: 0, upcoming: 0, km: 0 };
-
         for (const doc of snapshot.docs) {
             const race = { id: doc.id, ...doc.data() };
 
