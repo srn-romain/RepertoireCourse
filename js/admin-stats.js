@@ -5,14 +5,38 @@
 
 let currentAdminFilter = 'all'; // 'all' ou 'past'
 
+// Liste des IDs des éléments de stats pour le loading
+const ADMIN_STAT_IDS = [
+    'adminStatTotalUsers', 'adminStatActiveUsers',
+    'adminStatTotalRaces', 'adminStatPublicRaces', 'adminStatPrivateRaces',
+    'adminStatUpcomingRaces', 'adminStatPastRaces',
+    'adminStatTotalKm', 'adminStatTotalElevation',
+    'adminStatAvgRacesPerUser',
+    'adminStatUsersWithWishlist', 'adminStatAvgWishlistItems',
+    'adminStatLastLogin',
+    'adminStatTerrain', 'adminStatPrice', 'adminStatTime', 'adminStatStartHour'
+];
+
+// Fonction pour afficher/masquer le chargement sur les cartes
+function setAdminStatsLoading(isLoading) {
+    ADMIN_STAT_IDS.forEach(id => {
+        const el = document.getElementById(id);
+        if (el && isLoading) {
+            // On met un spinner gris discret
+            el.innerHTML = '<i class="fas fa-circle-notch fa-spin text-gray-300 text-sm"></i>';
+        }
+    });
+}
+
 // Fonction globale pour changer le filtre
-window.updateAdminStatsFilter = function (filter) {
+window.updateAdminStatsFilter = async function (filter) {
     currentAdminFilter = filter;
 
-    // Update UI Buttons
     const btnAll = document.getElementById('btnAdminFilterAll');
     const btnPast = document.getElementById('btnAdminFilterPast');
+    const buttons = [btnAll, btnPast].filter(b => b); // Filtrer si null
 
+    // 1. Mise à jour visuelle immédiate des boutons (Style Actif/Inactif)
     if (btnAll && btnPast) {
         if (filter === 'all') {
             btnAll.className = 'px-3 py-1 text-sm rounded-full bg-red-600 text-white font-bold transition shadow-sm';
@@ -23,8 +47,20 @@ window.updateAdminStatsFilter = function (filter) {
         }
     }
 
-    // Reload stats
-    loadAdminStats();
+    // 2. Geler les boutons (UI Loading State)
+    buttons.forEach(btn => {
+        btn.disabled = true;
+        btn.classList.add('opacity-50', 'cursor-not-allowed');
+    });
+
+    // 3. Charger les stats (avec loading visible)
+    await loadAdminStats();
+
+    // 4. Dégeler les boutons
+    buttons.forEach(btn => {
+        btn.disabled = false;
+        btn.classList.remove('opacity-50', 'cursor-not-allowed');
+    });
 };
 
 async function loadAdminStats() {
@@ -33,6 +69,7 @@ async function loadAdminStats() {
         return;
     }
 
+    // Note: isAdminUser peut prendre un peu de temps, mais on ne veut pas montrer le bloc loading avant de savoir
     const isAdmin = await window.isAdminUser();
     if (!isAdmin) {
         return;
@@ -43,8 +80,10 @@ async function loadAdminStats() {
     if (!adminSection) {
         return;
     }
-
     adminSection.classList.remove('hidden');
+
+    // DÉBUT DU CHARGEMENT VISUEL
+    setAdminStatsLoading(true);
 
     try {
         // Récupérer toutes les courses publiques de tous les utilisateurs
@@ -53,7 +92,7 @@ async function loadAdminStats() {
         // Récupérer tous les utilisateurs
         const usersSnapshot = await db.collection('users').get();
 
-        // Calculer les statistiques
+        // Initialiser l'objet de stats
         const stats = {
             totalUsers: 0,
             activeUsers: 0,
@@ -278,19 +317,23 @@ async function loadAdminStats() {
             return name ? `${timeAgo} (${name})` : timeAgo;
         };
 
-        // Afficher les statistiques
-        document.getElementById('adminStatTotalUsers').textContent = stats.totalUsers.toLocaleString('fr-FR');
-        document.getElementById('adminStatActiveUsers').textContent = stats.activeUsers.toLocaleString('fr-FR');
+        // --- AFFICHAGE (Remplacement des spinners par les valeurs) ---
 
-        // Stats filtrables
-        document.getElementById('adminStatTotalRaces').textContent = stats.totalRaces.toLocaleString('fr-FR');
-        document.getElementById('adminStatPublicRaces').textContent = stats.publicRaces.toLocaleString('fr-FR');
-        document.getElementById('adminStatPrivateRaces').textContent = stats.privateRaces.toLocaleString('fr-FR');
-        document.getElementById('adminStatUpcomingRaces').textContent = stats.upcomingRaces.toLocaleString('fr-FR');
-        document.getElementById('adminStatPastRaces').textContent = stats.pastRaces.toLocaleString('fr-FR');
-        document.getElementById('adminStatTotalKm').textContent = Math.round(stats.totalKm).toLocaleString('fr-FR');
-        document.getElementById('adminStatTotalElevation').textContent = Math.round(stats.totalElevation).toLocaleString('fr-FR');
-        document.getElementById('adminStatAvgRacesPerUser').textContent = stats.averageRacesPerUser;
+        const setText = (id, val) => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = val;
+        };
+
+        setText('adminStatTotalUsers', stats.totalUsers.toLocaleString('fr-FR'));
+        setText('adminStatActiveUsers', stats.activeUsers.toLocaleString('fr-FR'));
+        setText('adminStatTotalRaces', stats.totalRaces.toLocaleString('fr-FR'));
+        setText('adminStatPublicRaces', stats.publicRaces.toLocaleString('fr-FR'));
+        setText('adminStatPrivateRaces', stats.privateRaces.toLocaleString('fr-FR'));
+        setText('adminStatUpcomingRaces', stats.upcomingRaces.toLocaleString('fr-FR'));
+        setText('adminStatPastRaces', stats.pastRaces.toLocaleString('fr-FR'));
+        setText('adminStatTotalKm', Math.round(stats.totalKm).toLocaleString('fr-FR'));
+        setText('adminStatTotalElevation', Math.round(stats.totalElevation).toLocaleString('fr-FR'));
+        setText('adminStatAvgRacesPerUser', stats.averageRacesPerUser);
 
         // New stats DOM update
         const elTerrain = document.getElementById('adminStatTerrain');
@@ -298,11 +341,8 @@ async function loadAdminStats() {
         const elTime = document.getElementById('adminStatTime');
         const elStartHour = document.getElementById('adminStatStartHour');
 
-        // Affichage simple sans hover, mais en petit (text-xs)
         if (elTerrain) {
             elTerrain.textContent = topTerrainFull;
-            // On force les classes CSS pour garantir la petite taille et éviter les débordements
-            // Note : on écrase les classes potentiellement mises dans index.html
             elTerrain.className = "text-xs font-bold text-gray-800 break-words";
         }
 
@@ -310,16 +350,17 @@ async function loadAdminStats() {
         if (elTime) elTime.textContent = avgTimeStr;
         if (elStartHour) elStartHour.textContent = favStart;
 
-        document.getElementById('adminStatUsersWithWishlist').textContent = stats.usersWithWishlist.toLocaleString('fr-FR');
-        document.getElementById('adminStatAvgWishlistItems').textContent = avgWishlistItems;
-
-        document.getElementById('adminStatLastLogin').textContent = formatDate(lastLoginDate, lastLoginUser);
+        setText('adminStatUsersWithWishlist', stats.usersWithWishlist.toLocaleString('fr-FR'));
+        setText('adminStatAvgWishlistItems', avgWishlistItems);
+        setText('adminStatLastLogin', formatDate(lastLoginDate, lastLoginUser));
 
     } catch (error) {
         console.error('Erreur lors du chargement des statistiques admin:', error);
+        // En cas d'erreur, on pourrait retirer les spinners ou afficher "Erreur"
     }
 }
 
+// Charger les stats admin au chargement de la page initial
 document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
         if (typeof auth !== 'undefined') {
