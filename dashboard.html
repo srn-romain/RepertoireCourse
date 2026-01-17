@@ -4059,7 +4059,9 @@
                 const currentRace = races.find(r => r.id === id);
 
                 // Si photoData est null et qu'il y avait une photo avant, on retire la photo
-                if (photoData === null && currentRace && currentRace.photo) {
+                // Si photoData est null et qu'il y avait une photo avant, on retire la photo
+                // MAIS SEULEMENT SI aucune image automatique n'a été trouvée (raceData.photo serait défini)
+                if (photoData === null && currentRace && currentRace.photo && !raceData.photo) {
                     // On supprime explicitement la photo
                     raceData.photo = firebase.firestore.FieldValue.delete();
                 } else if (photoData) {
@@ -4194,14 +4196,22 @@
             racePhoto.value = '';
             previewImage.src = '';
             previewImage.classList.add('hidden');
-            // Masquer le placeholder en mode édition, l'afficher seulement en mode ajout
+
             const raceId = document.getElementById('raceId').value;
+
+            // Masquer le placeholder en mode édition, l'afficher seulement en mode ajout
             if (!raceId) {
                 // Mode ajout : afficher le placeholder
                 photoPlaceholder.classList.remove('hidden');
             } else {
                 // Mode édition : masquer le placeholder
                 photoPlaceholder.classList.add('hidden');
+
+                // Pré-cocher la case de recherche auto en mode édition pour une meilleure UX
+                const autoCheckbox = document.getElementById('autoImageCheckbox');
+                if (autoCheckbox) {
+                    autoCheckbox.checked = true;
+                }
             }
             removePhoto.classList.add('hidden');
             checkAutoImageConditions(); // Vérifier si on doit réafficher le message
