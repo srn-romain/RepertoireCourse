@@ -212,7 +212,7 @@
             </div>
             <div class="flex gap-2">
                 <a href="index.html" class="text-green-600 hover:text-green-800 transition flex items-center"
-                   title="Retour à l'accueil">
+                    title="Retour à l'accueil">
                     <i class="fas fa-home text-xl"></i>
                 </a>
                 <button id="changeUserBtn"
@@ -1406,33 +1406,32 @@
                 // --- AUTO-RÉPARATION : Vérifier et créer le document utilisateur s'il manque ---
                 try {
                     const userDocRef = usersCollection.doc(user.uid);
-                    userDocRef.get().then((docSnapshot) => {
-                        // Si le document n'existe pas, ou s'il manque l'email (hors compte admin/spécial déjà bien configuré)
-                        if (!docSnapshot.exists || (user.email && !docSnapshot.data().email)) {
-                            console.log("Réparation du profil utilisateur en cours...");
+                    const docSnapshot = await userDocRef.get();
 
-                            // On ne touche pas au rôle s'il existe déjà
-                            const updateData = {
-                                email: user.email,
-                                lastLogin: firebase.firestore.FieldValue.serverTimestamp()
-                            };
+                    // Si le document n'existe pas, ou s'il manque l'email
+                    if (!docSnapshot.exists || (user.email && !docSnapshot.data().email)) {
+                        console.log("Réparation du profil utilisateur en cours...");
 
-                            if (!docSnapshot.exists) {
-                                updateData.role = 'user'; // Rôle par défaut à la création
-                                updateData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
-                            }
+                        // On ne touche pas au rôle s'il existe déjà
+                        const updateData = {
+                            email: user.email,
+                            lastLogin: firebase.firestore.FieldValue.serverTimestamp()
+                        };
 
-                            userDocRef.set(updateData, { merge: true })
-                                .then(() => console.log("✅ Profil utilisateur synchronisé dans Firestore."))
-                                .catch(err => console.error("❌ Erreur sync profil:", err));
+                        if (!docSnapshot.exists) {
+                            updateData.role = 'user'; // Rôle par défaut à la création
+                            updateData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
                         }
-                    });
+
+                        await userDocRef.set(updateData, { merge: true });
+                        console.log("✅ Profil utilisateur synchronisé dans Firestore.");
+                    }
                 } catch (e) {
                     console.error("Erreur check profil:", e);
                 }
 
-                // Vérifier si c'est un compte invité
-                const isInviteUser = await window.isInviteUser(user);
+                // Vérifier si c'est un compte invité (APRÈS la réparation)
+                const isInviteUser = await window.isInviteUser();
 
                 if (isInviteUser) {
                     console.log("Mode Invité détecté");

@@ -5,50 +5,26 @@
  */
 
 /**
- * Vérifie si l'utilisateur connecté est un invité
- * @param {Object} [providedUser] - Objet utilisateur Firebase optionnel (pour éviter d'attendre l'auth si déjà dispo)
- * @returns {Promise<boolean>} True si l'utilisateur est invité, false sinon
+ * Vérifie si l'utilisateur connecté est un invité en lisant directement le champ 'role' dans Firestore
+ * @returns {Promise<boolean>} True si role === 'invite', false sinon
  */
-window.isInviteUser = function (providedUser) {
-    // Logique de vérification interne réutilisable
-    const checkStatus = async (user) => {
-        if (!user) {
-            return sessionStorage.getItem('authLevel') === 'invite';
-        }
+window.isInviteUser = async function () {
+    const user = firebase.auth().currentUser;
 
-        // 1. Check Custom Claims
-        try {
-            const idTokenResult = await user.getIdTokenResult();
-            if (idTokenResult.claims.invite === true) {
-                return true;
-            }
-        } catch (error) {
-            console.error('Erreur check claims:', error);
-        }
-
-        // 2. Check Firestore
-        try {
-            const userDoc = await db.collection('users').doc(user.uid).get();
-            if (userDoc.exists && userDoc.data().role === 'invite') {
-                return true;
-            }
-        } catch (error) {
-            console.error('Erreur check role DB:', error);
-        }
-
-        return sessionStorage.getItem('authLevel') === 'invite';
-    };
-
-    // Si on a déjà l'utilisateur, on vérifie directement
-    if (providedUser) {
-        return checkStatus(providedUser);
+    if (!user) {
+        return false;
     }
 
-    // Sinon on attend l'état de l'auth
-    return new Promise((resolve) => {
-        const unsubscribe = firebase.auth().onAuthStateChanged(async (user) => {
-            unsubscribe();
-            resolve(await checkStatus(user));
-        });
-    });
+    try {
+        const userDoc = await db.collection('users').doc(user.uid).get();
+        if (userDoc.exists) {
+            const role = userDoc.data().role;
+            console.log(`[isInvite] Role de l'utilisateur ${user.email}: ${role}`);
+            return role === 'invite';
+        }
+    } catch (error) {
+        console.error('[isInvite] Erreur lors de la vérification du rôle:', error);
+    }
+
+    return false;
 };

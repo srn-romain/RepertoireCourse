@@ -219,9 +219,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Initialiser la logique une fois l'utilisateur authentifié
-    firebase.auth().onAuthStateChanged((user) => {
-        initSettingsLogic(user);
+    // Attendre que l'auth soit prête avant d'initialiser les paramètres
+    firebase.auth().onAuthStateChanged(async (user) => {
+        if (user) {
+            // Petit délai pour laisser le dashboard réparer le profil si nécessaire
+            await new Promise(resolve => setTimeout(resolve, 500));
+            initSettingsLogic();
+        }
     });
 });
 
@@ -259,7 +263,7 @@ if (typeof window.openModal === 'undefined') {
     };
 }
 
-async function initSettingsLogic(currentUser) {
+async function initSettingsLogic() {
     const pseudoForm = document.getElementById('updatePseudoForm');
     const resetBtn = document.getElementById('btnSendPasswordReset');
     const msgContainer = document.getElementById('settingsMessageContainer');
@@ -277,11 +281,11 @@ async function initSettingsLogic(currentUser) {
     // Vérifier si l'utilisateur est invité
     let isInvite = false;
     if (typeof window.isInviteUser === 'function') {
-        isInvite = await window.isInviteUser(currentUser);
+        isInvite = await window.isInviteUser();
+        console.log('[user-settings] isInvite:', isInvite);
     } else {
         // Fallback si isInvite.js n'est pas encore chargé
-        console.warn('window.isInviteUser not available, using sessionStorage fallback');
-        isInvite = sessionStorage.getItem('authLevel') === 'invite';
+        console.warn('window.isInviteUser not available');
     }
 
     // Désactiver les contrôles pour les invités (sauf le bouton reset password)
