@@ -219,7 +219,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    initSettingsLogic();
+    // Initialiser la logique une fois l'utilisateur authentifié
+    firebase.auth().onAuthStateChanged((user) => {
+        initSettingsLogic(user);
+    });
 });
 
 // Fonction spécifique de fermeture pour gérer le reload
@@ -256,7 +259,7 @@ if (typeof window.openModal === 'undefined') {
     };
 }
 
-async function initSettingsLogic() {
+async function initSettingsLogic(currentUser) {
     const pseudoForm = document.getElementById('updatePseudoForm');
     const resetBtn = document.getElementById('btnSendPasswordReset');
     const msgContainer = document.getElementById('settingsMessageContainer');
@@ -274,7 +277,7 @@ async function initSettingsLogic() {
     // Vérifier si l'utilisateur est invité
     let isInvite = false;
     if (typeof window.isInviteUser === 'function') {
-        isInvite = await window.isInviteUser();
+        isInvite = await window.isInviteUser(currentUser);
     } else {
         // Fallback si isInvite.js n'est pas encore chargé
         console.warn('window.isInviteUser not available, using sessionStorage fallback');
