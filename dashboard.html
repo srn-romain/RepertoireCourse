@@ -5857,6 +5857,14 @@
 
             let html = '';
 
+            // Message informatif si l'option "inclure futur" est activée
+            if (window.statsIncludeFuture) {
+                html += `<div class="mb-4 bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-blue-800 flex items-center gap-2">
+                    <i class="fas fa-info-circle text-blue-500 text-lg"></i>
+                    <span>Les statistiques présentées prennent en compte des courses dans le futur.</span>
+                </div>`;
+            }
+
             // Statistiques générales et Records
             html += `<div class="bg-green-50 p-4 rounded-lg mb-6"><h4 class="font-bold text-green-800 mb-3">Statistiques générales et Records</h4>`;
             html += `<ul class="list-disc list-inside space-y-2">`;
