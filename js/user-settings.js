@@ -63,6 +63,10 @@ const userSettingsModalHTML = `
                         <input type="checkbox" id="prefShowDay" class="w-4 h-4 text-green-600 rounded focus:ring-green-500">
                         <span class="ml-2 text-sm text-gray-700">Afficher le jour précis (ex: 12 mars)</span>
                     </label>
+                    <label class="flex items-center cursor-pointer">
+                        <input type="checkbox" id="prefHideLikeCount" class="w-4 h-4 text-green-600 rounded focus:ring-green-500">
+                        <span class="ml-2 text-sm text-gray-700">Masquer le nombre de J'aime (pour les visiteurs)</span>
+                    </label>
                     <div class="pt-2 border-t border-gray-200 mt-2">
                         <p class="text-xs text-green-600 font-medium"><i class="fas fa-check-circle mr-1"></i>Les modifications sont automatiquement enregistrées.</p>
                     </div>
@@ -273,6 +277,7 @@ async function initSettingsLogic() {
     const prefShowCity = document.getElementById('prefShowCity');
     const prefShowFavorite = document.getElementById('prefShowFavorite');
     const prefShowDay = document.getElementById('prefShowDay');
+    const prefHideLikeCount = document.getElementById('prefHideLikeCount');
 
     // Checkboxes UI preferences
     const prefShowImportBtn = document.getElementById('prefShowImportBtn');
@@ -303,7 +308,7 @@ async function initSettingsLogic() {
         }
 
         // Désactiver toutes les checkboxes de confidentialité
-        [prefShowPseudo, prefShowCity, prefShowFavorite, prefShowDay].forEach(cb => {
+        [prefShowPseudo, prefShowCity, prefShowFavorite, prefShowDay, prefHideLikeCount].forEach(cb => {
             if (cb) {
                 cb.disabled = true;
                 cb.classList.add('opacity-50', 'cursor-not-allowed');
@@ -339,7 +344,8 @@ async function initSettingsLogic() {
             showPseudo: prefShowPseudo.checked,
             showCity: prefShowCity.checked,
             showFavorite: prefShowFavorite.checked,
-            showDay: prefShowDay.checked
+            showDay: prefShowDay.checked,
+            hideLikeCount: prefHideLikeCount.checked
         };
 
         try {
@@ -372,7 +378,7 @@ async function initSettingsLogic() {
 
     // Ne pas attacher les listeners si l'utilisateur est invité
     if (!isInvite) {
-        [prefShowPseudo, prefShowCity, prefShowFavorite, prefShowDay].forEach(cb => {
+        [prefShowPseudo, prefShowCity, prefShowFavorite, prefShowDay, prefHideLikeCount].forEach(cb => {
             if (cb) cb.addEventListener('change', savePrivacySettings);
         });
 
@@ -439,6 +445,7 @@ async function initSettingsLogic() {
                     if (prefShowCity) prefShowCity.checked = data.privacy.showCity !== false;
                     if (prefShowFavorite) prefShowFavorite.checked = data.privacy.showFavorite !== false;
                     if (prefShowDay) prefShowDay.checked = data.privacy.showDay !== false;
+                    if (prefHideLikeCount) prefHideLikeCount.checked = data.privacy.hideLikeCount === true;
                 }
 
                 // UI preferences (Default to true if undefined, as buttons were previously visible)
@@ -721,6 +728,7 @@ window.openUserSettings = async function () {
     const prefShowCity = document.getElementById('prefShowCity');
     const prefShowFavorite = document.getElementById('prefShowFavorite');
     const prefShowDay = document.getElementById('prefShowDay');
+    const prefHideLikeCount = document.getElementById('prefHideLikeCount');
 
     if (emailDisplay) emailDisplay.textContent = user.email;
 
@@ -755,6 +763,7 @@ window.openUserSettings = async function () {
             if (prefShowCity) prefShowCity.checked = (p.showCity !== undefined) ? p.showCity : false;
             if (prefShowFavorite) prefShowFavorite.checked = (p.showFavorite !== undefined) ? p.showFavorite : false;
             if (prefShowDay) prefShowDay.checked = (p.showDay !== undefined) ? p.showDay : false;
+            if (prefHideLikeCount) prefHideLikeCount.checked = (p.hideLikeCount !== undefined) ? p.hideLikeCount : false;
 
             // Charger les préférences UI
             const ui = data.uiPreferences || {};

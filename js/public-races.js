@@ -178,6 +178,8 @@ async function loadPublicRaces() {
             }
 
             // === PRIVACY LOGIC ===
+            const currentUser = firebase.auth().currentUser; // Get sync
+            const isOwner = currentUser && (uid === currentUser.uid);
             const privacy = userData.privacy || {};
 
             // 1. Pseudo
@@ -194,6 +196,10 @@ async function loadPublicRaces() {
 
             // 4. Date (Day)
             const showDay = privacy.showDay === true;
+
+            // 5. Hide Like Count
+            const hideLikeCount = privacy.hideLikeCount === true;
+            const shouldShowCount = !hideLikeCount || isOwner || isAdmin;
 
             // === FILTER: Public Race ===
             if (race.public === false) continue;
@@ -256,9 +262,8 @@ async function loadPublicRaces() {
             // === LIKE LOGIC ===
             const likedBy = race.likedBy || [];
             const likeCount = likedBy.length;
-            const currentUser = firebase.auth().currentUser; // Get sync
             const isLiked = currentUser && likedBy.includes(currentUser.uid);
-            const isOwner = currentUser && (uid === currentUser.uid);
+            // isOwner moved up
             const showLikers = isOwner || isAdmin;
             const racePath = doc.ref.path;
 
@@ -274,6 +279,22 @@ async function loadPublicRaces() {
                 ? `<button onclick="event.stopPropagation(); openLikersModal('${racePath}')" class="ml-2 text-xs text-green-600 hover:text-green-800 underline" title="Voir qui a aimé">Voir</button>`
                 : '';
 
+            // Like Button HTML
+            // Button is ALWAYS visible (so visitors can like even if count is hidden).
+            // Count text is hidden if shouldShowCount is false.
+            const likeButtonHtml = `
+                <div class="flex flex-col items-end z-10 like-btn-wrapper relative group/likes">
+                    <div class="flex items-center gap-1">
+                        <button onclick="${likeAction}" 
+                            class="transition flex items-center gap-1 focus:outline-none group/btn pt-1 pr-1"
+                            title="${isLiked ? 'Je n\'aime plus' : 'J\'aime'}">
+                            <i class="${heartClass} text-xl transition-all duration-300 ${likeAnimation} transform group-active/btn:scale-90 group-hover/btn:scale-110"></i>
+                            <span class="text-xs font-bold text-gray-600 like-count-display ml-0.5" data-hidden="${!shouldShowCount}">${shouldShowCount && likeCount > 0 ? likeCount : ''}</span>
+                        </button>
+                        ${likersBtn}
+                    </div>
+                </div>`;
+
             // === CARD CONTENT ===
             raceCard.innerHTML = `
                 <div class="p-6 relative">
@@ -288,17 +309,7 @@ async function loadPublicRaces() {
                             </p>
                         </div>
                          <!-- LIKE BUTTON (Top Right) -->
-                        <div class="flex flex-col items-end z-10 like-btn-wrapper relative group/likes">
-                            <div class="flex items-center gap-1">
-                                <button onclick="${likeAction}" 
-                                    class="bg-white/90 backdrop-blur-sm p-2 rounded-full shadow-sm hover:shadow-md hover:bg-white transition flex items-center gap-1 border border-transparent hover:border-red-100"
-                                    title="${isLiked ? 'Je n\'aime plus' : 'J\'aime'}">
-                                    <i class="${heartClass} text-xl transition-all duration-300 ${likeAnimation} transform group-active:scale-90"></i>
-                                    <span class="text-xs font-bold text-gray-600 like-count-display">${likeCount > 0 ? likeCount : ''}</span>
-                                </button>
-                                ${likersBtn}
-                            </div>
-                        </div>
+                        ${likeButtonHtml}
                     </div>
 
                     <div class="mt-4 flex flex-col gap-2">
@@ -390,7 +401,7 @@ window.toggleRaceLike = async function (racePath, btn) {
     if (wasLiked) {
         icon.classList.remove('fas', 'text-red-500');
         icon.classList.add('far', 'text-gray-400');
-        if (countSpan) {
+        if (countSpan && countSpan.dataset.hidden !== 'true') {
             let c = parseInt(countSpan.innerText) || 0;
             c = Math.max(0, c - 1);
             countSpan.innerText = c > 0 ? c : '';
@@ -400,7 +411,7 @@ window.toggleRaceLike = async function (racePath, btn) {
         icon.classList.add('fas', 'text-red-500');
         icon.classList.add('scale-125');
         setTimeout(() => icon.classList.remove('scale-125'), 200);
-        if (countSpan) {
+        if (countSpan && countSpan.dataset.hidden !== 'true') {
             let c = parseInt(countSpan.innerText) || 0;
             countSpan.innerText = c + 1;
         }
@@ -428,7 +439,7 @@ window.toggleRaceLike = async function (racePath, btn) {
         } else {
             icon.classList.add('far', 'text-gray-400');
             icon.classList.remove('fas', 'text-red-500');
-            if (countSpan) {
+            if (countSpan && countSpan.dataset.hidden !== 'true') {
                 let c = (parseInt(countSpan.innerText) || 0) - 1;
                 countSpan.innerText = c > 0 ? c : '';
             }
