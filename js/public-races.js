@@ -114,6 +114,12 @@ async function loadPublicRaces() {
             .limit(publicRaceFilters.limit) // Limite dynamique
             .get();
 
+        // Check Admin Status centrally to avoid N reads
+        let isAdmin = false;
+        if (typeof window.isAdminUser === 'function') {
+            isAdmin = await window.isAdminUser();
+        }
+
         if (snapshot.empty) {
             grid.innerHTML = '<div class="col-span-full text-center text-gray-500 py-8">Aucune course trouvée.</div>';
             return;
@@ -124,6 +130,14 @@ async function loadPublicRaces() {
 
         // Cache object
         const userCache = {};
+
+        // Helper function to format numbers (distance, elevation)
+        const formatNumber = (val) => {
+            if (!val && val !== 0) return '0';
+            const num = parseFloat(String(val).replace(',', '.'));
+            if (isNaN(num)) return val;
+            return num.toLocaleString('fr-FR', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+        };
 
         for (const doc of snapshot.docs) {
             const race = { id: doc.id, ...doc.data() };
@@ -239,6 +253,28 @@ async function loadPublicRaces() {
                    </span>`
                 : '';
 
+            // === LIKE LOGIC ===
+            const likedBy = race.likedBy || [];
+            const likeCount = likedBy.length;
+            const currentUser = firebase.auth().currentUser; // Get sync
+            const isLiked = currentUser && likedBy.includes(currentUser.uid);
+            const isOwner = currentUser && (uid === currentUser.uid);
+            const showLikers = isOwner || isAdmin;
+            const racePath = doc.ref.path;
+
+            const heartClass = isLiked ? 'fas fa-heart text-red-500' : 'far fa-heart text-gray-400';
+            const likeAnimation = isLiked ? 'pulse-once' : '';
+
+            // Interaction
+            const likeAction = `event.stopPropagation(); toggleRaceLike('${racePath}', this)`;
+            raceCard.setAttribute('ondblclick', `toggleRaceLike('${racePath}', this.querySelector('.like-btn-wrapper'))`);
+
+            // Likers Button (Eye)
+            const likersBtn = (showLikers && likeCount > 0)
+                ? `<button onclick="event.stopPropagation(); openLikersModal('${racePath}')" class="ml-2 text-xs text-green-600 hover:text-green-800 underline" title="Voir qui a aimé">Voir</button>`
+                : '';
+
+            // === CARD CONTENT ===
             raceCard.innerHTML = `
                 <div class="p-6 relative">
                     <div class="flex justify-between items-start">
@@ -251,17 +287,29 @@ async function loadPublicRaces() {
                                 ${dateStr}
                             </p>
                         </div>
+                         <!-- LIKE BUTTON (Top Right) -->
+                        <div class="flex flex-col items-end z-10 like-btn-wrapper relative group/likes">
+                            <div class="flex items-center gap-1">
+                                <button onclick="${likeAction}" 
+                                    class="bg-white/90 backdrop-blur-sm p-2 rounded-full shadow-sm hover:shadow-md hover:bg-white transition flex items-center gap-1 border border-transparent hover:border-red-100"
+                                    title="${isLiked ? 'Je n\'aime plus' : 'J\'aime'}">
+                                    <i class="${heartClass} text-xl transition-all duration-300 ${likeAnimation} transform group-active:scale-90"></i>
+                                    <span class="text-xs font-bold text-gray-600 like-count-display">${likeCount > 0 ? likeCount : ''}</span>
+                                </button>
+                                ${likersBtn}
+                            </div>
+                        </div>
                     </div>
 
                     <div class="mt-4 flex flex-col gap-2">
                         <div class="flex flex-wrap items-center gap-2">
                             <span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full">
                                 <i class="fas fa-ruler-horizontal text-green-500"></i>
-                                ${race.distance || '0'} km
+                                ${formatNumber(race.distance)} km
                             </span>
-                            <span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full">
+                             <span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full">
                                 <i class="fas fa-mountain text-green-500"></i>
-                                +${race.elevation || '0'} m
+                                +${formatNumber(race.elevation)} m
                             </span>
                             ${cityHtml}
                         </div>
@@ -311,6 +359,141 @@ async function loadPublicRaces() {
 }
 
 // Nouvelle fonction pour calculer les stats sur TOUTE la base de données
+// === LIKE SYSTEM HANDLERS ===
+window.toggleRaceLike = async function (racePath, btn) {
+    // 1. Check Auth
+    const user = firebase.auth().currentUser;
+    if (!user) {
+        const modal = document.getElementById('permissionDeniedModal');
+        if (modal) {
+            const msg = document.getElementById('permissionDeniedMessage');
+            if (msg) msg.textContent = "Vous devez être connecté pour aimer une course.";
+            modal.classList.remove('hidden');
+        }
+        return;
+    }
+
+    // Identify UI elements
+    let btnElement = btn;
+    if (btn.classList.contains('like-btn-wrapper')) {
+        btnElement = btn.querySelector('button');
+    }
+    const icon = btnElement.querySelector('i');
+    const countSpan = btnElement.querySelector('.like-count-display');
+
+    if (!icon) return;
+
+    // 2. Toggle UI (Optimistic)
+    const wasLiked = icon.classList.contains('fas');
+    const uid = user.uid;
+
+    if (wasLiked) {
+        icon.classList.remove('fas', 'text-red-500');
+        icon.classList.add('far', 'text-gray-400');
+        if (countSpan) {
+            let c = parseInt(countSpan.innerText) || 0;
+            c = Math.max(0, c - 1);
+            countSpan.innerText = c > 0 ? c : '';
+        }
+    } else {
+        icon.classList.remove('far', 'text-gray-400');
+        icon.classList.add('fas', 'text-red-500');
+        icon.classList.add('scale-125');
+        setTimeout(() => icon.classList.remove('scale-125'), 200);
+        if (countSpan) {
+            let c = parseInt(countSpan.innerText) || 0;
+            countSpan.innerText = c + 1;
+        }
+    }
+
+    // 3. Update DB
+    try {
+        const raceRef = db.doc(racePath);
+        if (wasLiked) {
+            await raceRef.update({
+                likedBy: firebase.firestore.FieldValue.arrayRemove(uid)
+            });
+        } else {
+            await raceRef.update({
+                likedBy: firebase.firestore.FieldValue.arrayUnion(uid)
+            });
+        }
+    } catch (error) {
+        console.error("Error toggling like:", error);
+        // Revert UI on error
+        if (wasLiked) {
+            icon.classList.add('fas', 'text-red-500');
+            icon.classList.remove('far', 'text-gray-400');
+            if (countSpan) countSpan.innerText = (parseInt(countSpan.innerText) || 0) + 1;
+        } else {
+            icon.classList.add('far', 'text-gray-400');
+            icon.classList.remove('fas', 'text-red-500');
+            if (countSpan) {
+                let c = (parseInt(countSpan.innerText) || 0) - 1;
+                countSpan.innerText = c > 0 ? c : '';
+            }
+        }
+        alert("Erreur : Impossible de liker. Vérifiez que vous êtes bien connecté. Si le problème persiste, il s'agit probablement d'une restriction des droits d'accès (règles de sécurité Firestore).");
+    }
+};
+
+// Open Likers Modal
+window.openLikersModal = async function (racePath) {
+    const modal = document.getElementById('likersModal');
+    const content = document.getElementById('likersContent');
+    if (!modal || !content) return;
+
+    // Show Modal with Loader
+    modal.classList.remove('hidden');
+    content.innerHTML = '<div class="flex justify-center py-4"><i class="fas fa-circle-notch fa-spin text-green-500 text-2xl"></i></div>';
+
+    try {
+        const raceDoc = await db.doc(racePath).get();
+        if (!raceDoc.exists) {
+            content.innerHTML = '<p class="text-center text-red-500">Course introuvable.</p>';
+            return;
+        }
+
+        const likedBy = raceDoc.data().likedBy || [];
+        if (likedBy.length === 0) {
+            content.innerHTML = '<p class="text-center text-gray-500 italic">Personne n\'a encore aimé cette course.</p>';
+            return;
+        }
+
+        // Fetch Names
+        const names = [];
+        await Promise.all(likedBy.map(async (uid) => {
+            try {
+                const uDoc = await db.collection('users').doc(uid).get();
+                if (uDoc.exists) {
+                    const d = uDoc.data();
+                    const p = d.pseudo || d.email.split('@')[0];
+                    names.push(p);
+                } else {
+                    names.push("Utilisateur inconnu");
+                }
+            } catch (e) { names.push("Erreur chargement"); }
+        }));
+
+        if (names.length > 0) {
+            content.innerHTML = `<ul class="space-y-2">
+                ${names.map(n => `
+                    <li class="flex items-center gap-2 p-2 rounded-lg bg-green-50 text-green-800">
+                        <i class="fas fa-user-circle text-xl"></i>
+                        <span class="font-medium truncate">${n}</span>
+                    </li>
+                `).join('')}
+            </ul>`;
+        } else {
+            content.innerHTML = '<p class="text-center text-gray-500">Liste vide.</p>';
+        }
+
+    } catch (error) {
+        console.error("Error loading likers modal:", error);
+        content.innerHTML = '<p class="text-center text-red-500">Erreur lors du chargement de la liste.</p>';
+    }
+};
+
 async function fetchGlobalCommunityStats() {
     const totalKmElement = document.getElementById('totalCommunityKm');
     if (!totalKmElement) return;
