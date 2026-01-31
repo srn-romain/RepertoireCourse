@@ -644,7 +644,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
             </svg>
         </button>
-        <div class="relative bg-white rounded-xl shadow-xl w-full max-w-md mx-4 z-10">
+        <div class="relative bg-white rounded-xl shadow-xl w-full max-w-md mx-4 z-10 max-h-[90vh] overflow-y-auto">
             <div class="p-6 modal-content">
                 <button id="closeDetailsBtn" class="absolute top-4 right-4 text-gray-500 hover:text-gray-700">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
@@ -3407,11 +3407,38 @@
             }
             if (detailTerrainText) detailTerrainText.textContent = terrainLabel;
 
-            // Gestion des Badges (Carré de droite)
+            // Gestion des Badges et des J'aime
+            const badgeButton = document.getElementById('BadgeButton');
+            const gridContainer = badgeButton.parentElement;
+
+            // Nettoyage préalable (row supplémentaire)
+            let likesRow = document.getElementById('detailsLikesRow');
+            if (likesRow) likesRow.remove();
+
+            // Reset l'en-tête du bouton Badge (remettre l'icône et le texte d'origine)
+            const badgeTitleP = badgeButton.querySelector('p');
+            badgeTitleP.innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-500" viewBox="0 0 24 24"
+                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <circle cx="12" cy="8" r="7" />
+                    <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88" />
+                </svg>
+                <span>Badge</span>
+            `;
+
+            // Calcul du nombre de J'aime
+            const likeCount = (race.likedBy && Array.isArray(race.likedBy)) ? race.likedBy.length : 0;
+            const likeText = `${likeCount} like${likeCount > 1 ? 's' : ''}`;
+
+            // Vérification des Badges
+            let hasBadges = false;
             let badgeHtml = '/';
+
             if (isAuthenticated() && window.raceBadges && window.raceBadges[race.id]) {
                 const badgeKeys = Object.keys(window.raceBadges[race.id]);
                 if (badgeKeys.length > 0) {
+                    hasBadges = true;
                     // Mapper les clés de badge aux noms lisibles
                     const badgesInfoMap = {
                         hasRPMile: "RP temps",
@@ -3428,7 +3455,41 @@
                     }).join('');
                 }
             }
-            if (detailBadgeText) detailBadgeText.innerHTML = badgeHtml;
+
+            if (hasBadges) {
+                // Cas 1 : Il y a des badges
+                // On affiche les badges normalement dans le carré Badge
+                if (detailBadgeText) detailBadgeText.innerHTML = badgeHtml;
+
+                // On ajoute une nouvelle ligne en dessous pour les J'aime
+                likesRow = document.createElement('div');
+                likesRow.id = 'detailsLikesRow';
+                likesRow.className = 'bg-green-50 p-3 rounded-lg w-full mb-4 border border-green-100';
+                likesRow.innerHTML = `
+                    <p class="text-sm text-green-600 flex items-center gap-2 mb-1">
+                        <i class="fas fa-heart text-green-500"></i>
+                        <span>J'aime (communauté)</span>
+                    </p>
+                    <p class="font-normal text-green-800">${likeText}</p>
+                `;
+                // Insérer après le conteneur grid (qui contient Image + Badge)
+                gridContainer.parentNode.insertBefore(likesRow, gridContainer.nextSibling);
+
+            } else {
+                // Cas 2 : Pas de badges
+                // On utilise l'emplacement du Badge pour afficher les J'aime
+
+                // Modifier le titre
+                badgeTitleP.innerHTML = `
+                    <i class="fas fa-heart text-green-500"></i>
+                    <span>J'aime</span>
+                `;
+
+                // Modifier le contenu
+                if (detailBadgeText) {
+                    detailBadgeText.innerHTML = `<span class="font-normal text-green-800 text-sm">${likeText}</span>`;
+                }
+            }
 
 
             // Créer les placeholders s'ils n'existent pas

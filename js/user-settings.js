@@ -585,7 +585,7 @@ async function initSettingsLogic() {
 
             try {
                 await firebase.auth().sendPasswordResetEmail(user.email);
-                showMessage(`Email envoyé à ${user.email} ! Vérifiez vos spams. (Peut prendre 5-10 min)`, 'success');
+                showMessage(`Email envoyé à ${user.email} ! Vérifiez vos spams.`, 'success');
             } catch (error) {
                 console.error("Erreur reset password:", error);
                 showMessage("Erreur lors de l'envoi de l'email.", "error");
