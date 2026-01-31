@@ -3456,7 +3456,7 @@
 
             // Définir l'icône de cadenas pour les courses privées
             const likesLockIcon = (race.public !== true)
-                ? '<i class="fas fa-lock text-green-500 cursor-help" title="Course privée : ne peut pas recevoir de J\'aime"></i>'
+                ? `<i class="fas fa-lock text-green-500 cursor-pointer" title="Une course privée ne peut pas recevoir de J'aime de la communauté" onclick="event.stopPropagation(); alert('Cette course est privée.\\nElle n\\'est visible que par vous et ne peut donc pas recevoir de J\\'aime de la communauté.')"></i>`
                 : '';
 
             if (hasBadges) {
