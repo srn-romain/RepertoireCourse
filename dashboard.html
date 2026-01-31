@@ -1197,8 +1197,6 @@
         </div>
     </div>
 
-
-
     <!-- Modale confirmation suppression wishlist -->
     <div id="confirmDeleteWishlistModal"
         class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
@@ -3456,6 +3454,11 @@
                 }
             }
 
+            // Définir l'icône de cadenas pour les courses privées
+            const likesLockIcon = (race.public !== true)
+                ? '<i class="fas fa-lock text-green-500 cursor-help" title="Course privée : ne peut pas recevoir de J\'aime"></i>'
+                : '';
+
             if (hasBadges) {
                 // Cas 1 : Il y a des badges
                 // On affiche les badges normalement dans le carré Badge
@@ -3470,7 +3473,7 @@
                         <i class="fas fa-heart text-green-500"></i>
                         <span>J'aime (communauté)</span>
                     </p>
-                    <p class="font-normal text-green-800">${likeText}</p>
+                    <p class="font-normal text-green-800 flex items-center gap-2">${likeText} ${likesLockIcon}</p>
                 `;
                 // Insérer après le conteneur grid (qui contient Image + Badge)
                 gridContainer.parentNode.insertBefore(likesRow, gridContainer.nextSibling);
@@ -3487,7 +3490,7 @@
 
                 // Modifier le contenu
                 if (detailBadgeText) {
-                    detailBadgeText.innerHTML = `<span class="font-normal text-green-800 text-sm">${likeText}</span>`;
+                    detailBadgeText.innerHTML = `<span class="font-normal text-green-800 text-sm flex items-center gap-2">${likeText} ${likesLockIcon}</span>`;
                 }
             }
 
