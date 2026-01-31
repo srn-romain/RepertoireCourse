@@ -120,6 +120,12 @@ async function loadPublicRaces() {
             isAdmin = await window.isAdminUser();
         }
 
+        // Check Invite Status
+        let isInvite = false;
+        if (typeof window.isInviteUser === 'function') {
+            isInvite = await window.isInviteUser();
+        }
+
         if (snapshot.empty) {
             grid.innerHTML = '<div class="col-span-full text-center text-gray-500 py-8">Aucune course trouvée.</div>';
             return;
@@ -272,7 +278,9 @@ async function loadPublicRaces() {
 
             // Interaction
             const likeAction = `event.stopPropagation(); toggleRaceLike('${racePath}', this)`;
-            raceCard.setAttribute('ondblclick', `toggleRaceLike('${racePath}', this.querySelector('.like-btn-wrapper'))`);
+            if (!isInvite) {
+                raceCard.setAttribute('ondblclick', `toggleRaceLike('${racePath}', this.querySelector('.like-btn-wrapper'))`);
+            }
 
             // Likers Button (Eye)
             const likersBtn = (showLikers && likeCount > 0)
@@ -282,12 +290,15 @@ async function loadPublicRaces() {
             // Like Button HTML
             // Button is ALWAYS visible (so visitors can like even if count is hidden).
             // Count text is hidden if shouldShowCount is false.
+            // Disabled for Guests.
+            const likeButtonTitle = isInvite ? "Fonctionnalité désactivée pour le compte invité" : (isLiked ? "Je n'aime plus" : "J'aime");
+
             const likeButtonHtml = `
                 <div class="flex flex-col items-end z-10 like-btn-wrapper relative group/likes">
                     <div class="flex items-center gap-1">
-                        <button onclick="${likeAction}" 
-                            class="transition flex items-center gap-1 focus:outline-none group/btn pt-1 pr-1"
-                            title="${isLiked ? 'Je n\'aime plus' : 'J\'aime'}">
+                        <button onclick="${likeAction}" ${isInvite ? 'disabled' : ''}
+                            class="transition flex items-center gap-1 focus:outline-none group/btn pt-1 pr-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                            title="${likeButtonTitle}">
                             <i class="${heartClass} text-xl transition-all duration-300 ${likeAnimation} transform group-active/btn:scale-90 group-hover/btn:scale-110"></i>
                             <span class="text-xs font-bold text-gray-600 like-count-display ml-0.5" data-hidden="${!shouldShowCount}">${shouldShowCount && likeCount > 0 ? likeCount : ''}</span>
                         </button>
