@@ -283,26 +283,28 @@ async function loadPublicRaces() {
             }
 
             // Likers Button (Eye)
-            const likersBtn = (showLikers && likeCount > 0)
-                ? `<button onclick="event.stopPropagation(); openLikersModal('${racePath}')" class="ml-2 text-xs text-green-600 hover:text-green-800 underline" title="Voir qui a aimé">Voir</button>`
-                : '';
+            // showLikers est true si Owner ou Admin
+            const CounterTag = showLikers ? 'button' : 'span';
+            const counterClickAttr = showLikers ? `onclick="event.stopPropagation(); openLikersModal('${racePath}')"` : '';
+            const counterHoverClass = showLikers ? 'hover:text-green-700 cursor-pointer hover:underline decoration-green-700 underline-offset-2' : '';
 
             // Like Button HTML
-            // Button is ALWAYS visible (so visitors can like even if count is hidden).
-            // Count text is hidden if shouldShowCount is false.
-            // Disabled for Guests.
             const likeButtonTitle = isInvite ? "Fonctionnalité désactivée pour le compte invité" : (isLiked ? "Je n'aime plus" : "J'aime");
 
             const likeButtonHtml = `
                 <div class="flex flex-col items-end z-10 like-btn-wrapper relative group/likes">
                     <div class="flex items-center gap-1">
                         <button onclick="${likeAction}" ${isInvite ? 'disabled' : ''}
-                            class="transition flex items-center gap-1 focus:outline-none group/btn pt-1 pr-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                            class="transition flex items-center gap-1 focus:outline-none group/btn pt-1 disabled:opacity-50 disabled:cursor-not-allowed"
                             title="${likeButtonTitle}">
                             <i class="${heartClass} text-xl transition-all duration-300 ${likeAnimation} transform group-active/btn:scale-90 group-hover/btn:scale-110"></i>
-                            <span class="text-xs font-bold text-gray-600 like-count-display ml-0.5" data-hidden="${!shouldShowCount}">${shouldShowCount && likeCount > 0 ? likeCount : ''}</span>
                         </button>
-                        ${likersBtn}
+                        <${CounterTag} ${counterClickAttr}
+                            class="text-xs font-bold text-gray-600 like-count-display ml-1 min-w-[10px] text-center ${counterHoverClass}" 
+                            title="${showLikers ? 'Voir qui a aimé' : ''}"
+                            data-hidden="${!shouldShowCount}">
+                            ${shouldShowCount && likeCount > 0 ? likeCount : ''}
+                        </${CounterTag}>
                     </div>
                 </div>`;
 
@@ -396,12 +398,11 @@ window.toggleRaceLike = async function (racePath, btn) {
     }
 
     // Identify UI elements
-    let btnElement = btn;
-    if (btn.classList.contains('like-btn-wrapper')) {
-        btnElement = btn.querySelector('button');
-    }
-    const icon = btnElement.querySelector('i');
-    const countSpan = btnElement.querySelector('.like-count-display');
+    const wrapper = btn.classList.contains('like-btn-wrapper') ? btn : btn.closest('.like-btn-wrapper');
+    if (!wrapper) return;
+
+    const icon = wrapper.querySelector('i');
+    const countSpan = wrapper.querySelector('.like-count-display');
 
     if (!icon) return;
 
