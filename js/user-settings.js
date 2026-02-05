@@ -48,20 +48,20 @@ const userSettingsModalHTML = `
                 <h3 class="text-sm font-semibold text-gray-700 mb-3">Confidentialité (Affichage public)</h3>
                 <div class="space-y-3 bg-gray-50 p-4 rounded-lg border border-gray-100">
                     <label class="flex items-center cursor-pointer">
-                        <input type="checkbox" id="prefShowPseudo" class="w-4 h-4 text-green-600 rounded focus:ring-green-500">
+                        <input type="checkbox" id="prefShowPseudo" class="w-4 h-4 text-green-600 rounded focus:ring-green-500" checked>
                         <span class="ml-2 text-sm text-gray-700">Afficher mon pseudo</span>
                     </label>
                     <label class="flex items-center cursor-pointer">
-                        <input type="checkbox" id="prefShowCity" class="w-4 h-4 text-green-600 rounded focus:ring-green-500">
+                        <input type="checkbox" id="prefShowCity" class="w-4 h-4 text-green-600 rounded focus:ring-green-500" checked>
                         <span class="ml-2 text-sm text-gray-700">Afficher la ville de la course</span>
+                    </label>
+                    <label class="flex items-center cursor-pointer">
+                        <input type="checkbox" id="prefShowDay" class="w-4 h-4 text-green-600 rounded focus:ring-green-500" checked>
+                        <span class="ml-2 text-sm text-gray-700">Afficher le jour précis (ex: 12 mars)</span>
                     </label>
                     <label class="flex items-center cursor-pointer">
                         <input type="checkbox" id="prefShowFavorite" class="w-4 h-4 text-green-600 rounded focus:ring-green-500">
                         <span class="ml-2 text-sm text-gray-700">Afficher le statut "Favori"</span>
-                    </label>
-                    <label class="flex items-center cursor-pointer">
-                        <input type="checkbox" id="prefShowDay" class="w-4 h-4 text-green-600 rounded focus:ring-green-500">
-                        <span class="ml-2 text-sm text-gray-700">Afficher le jour précis (ex: 12 mars)</span>
                     </label>
                     <label class="flex items-center cursor-pointer">
                         <input type="checkbox" id="prefHideLikeCount" class="w-4 h-4 text-green-600 rounded focus:ring-green-500">
@@ -443,7 +443,7 @@ async function initSettingsLogic() {
                 if (data.privacy) {
                     if (prefShowPseudo) prefShowPseudo.checked = data.privacy.showPseudo !== false; // Default true if undefined? assuming privacy centric maybe false? let's stick to what's stored.
                     if (prefShowCity) prefShowCity.checked = data.privacy.showCity !== false;
-                    if (prefShowFavorite) prefShowFavorite.checked = data.privacy.showFavorite !== false;
+                    if (prefShowFavorite) prefShowFavorite.checked = data.privacy.showFavorite === true;
                     if (prefShowDay) prefShowDay.checked = data.privacy.showDay !== false;
                     if (prefHideLikeCount) prefHideLikeCount.checked = data.privacy.hideLikeCount === true;
                 }
@@ -760,9 +760,9 @@ window.openUserSettings = async function () {
 
             const p = data.privacy || {};
             if (prefShowPseudo) prefShowPseudo.checked = (p.showPseudo !== undefined) ? p.showPseudo : true;
-            if (prefShowCity) prefShowCity.checked = (p.showCity !== undefined) ? p.showCity : false;
+            if (prefShowCity) prefShowCity.checked = (p.showCity !== undefined) ? p.showCity : true;
             if (prefShowFavorite) prefShowFavorite.checked = (p.showFavorite !== undefined) ? p.showFavorite : false;
-            if (prefShowDay) prefShowDay.checked = (p.showDay !== undefined) ? p.showDay : false;
+            if (prefShowDay) prefShowDay.checked = (p.showDay !== undefined) ? p.showDay : true;
             if (prefHideLikeCount) prefHideLikeCount.checked = (p.hideLikeCount !== undefined) ? p.hideLikeCount : false;
 
             // Charger les préférences UI
