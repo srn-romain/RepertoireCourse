@@ -11,7 +11,7 @@ let geoCache = {};
 
 // Charger le cache au démarrage
 try {
-    geoCache = JSON.parse(localStorage.getItem('raceLocationGeoCache') || '{}');
+    geoCache = JSON.parse(localStorage.getItem('raceLocationGeoCache_v3') || '{}');
 } catch (e) {
     geoCache = {};
 }
@@ -114,16 +114,20 @@ async function loadAdminStats() {
         today.setHours(0, 0, 0, 0);
 
         const userRaceCount = {};
+        const userNames = {};
         usersSnapshot.forEach(doc => {
             stats.totalUsers++;
             userRaceCount[doc.id] = 0;
+            const d = doc.data();
+            userNames[doc.id] = d.pseudo || d.email || 'Utilisateur';
         });
 
-        // Set pour stocker les lieux uniques pour la carte
-        const uniqueLocations = new Set();
+        // Map pour stocker les lieux et les utilisateurs associés : { "Paris": Set("User1", "User2") }
+        const locationUsersMap = {};
 
         allRacesSnapshot.forEach(doc => {
             const race = doc.data();
+            if (race.deleted) return; // Ignorer les courses supprimées
             const userId = doc.ref.parent.parent?.id;
 
             const raceDate = new Date(race.date);
@@ -179,8 +183,18 @@ async function loadAdminStats() {
             }
 
             // CARTE : Collecter les lieux
+            // CARTE : Collecter les lieux et associer l'utilisateur
             if (race.location && typeof race.location === 'string' && race.location.trim().length > 2) {
-                uniqueLocations.add(race.location.trim());
+                const loc = race.location.trim();
+                const uName = userNames[userId];
+
+                // N'afficher sur la carte que si l'utilisateur existe encore (pas de "fantôme")
+                if (uName) {
+                    if (!locationUsersMap[loc]) {
+                        locationUsersMap[loc] = new Set();
+                    }
+                    locationUsersMap[loc].add(uName);
+                }
             }
         });
 
@@ -288,7 +302,7 @@ async function loadAdminStats() {
 
         // --- INITIALISER LA CARTE (Async) ---
         // On ne pèse pas sur le thread principal pour les stats, on charge la carte après
-        initAdminMap(Array.from(uniqueLocations));
+        initAdminMap(locationUsersMap);
 
     } catch (error) {
         console.error('Erreur stats admin:', error);
@@ -296,7 +310,7 @@ async function loadAdminStats() {
 }
 
 // Fonction asynchrone pour gérer la carte et le géocodage progressif
-async function initAdminMap(locations) {
+async function initAdminMap(locationData) {
     // Vérifier si Leaflet est chargé
     if (typeof L === 'undefined') {
         const statusEl = document.getElementById('mapLoadingStatus');
@@ -308,6 +322,9 @@ async function initAdminMap(locations) {
     const mapContainer = document.getElementById(mapId);
     if (!mapContainer) return;
 
+    // Extraire les noms de lieux
+    const locations = Object.keys(locationData);
+
     // Status
     const statusEl = document.getElementById('mapLoadingStatus');
     if (statusEl) statusEl.textContent = `${locations.length} lieux détectés. Initialisation...`;
@@ -315,7 +332,7 @@ async function initAdminMap(locations) {
     // Init Map si pas encore fait
     if (!adminMap) {
         // Centre France approximatif, Zoom 5
-        adminMap = L.map(mapId).setView([46.60, 1.88], 5);
+        adminMap = L.map(mapId, { worldCopyJump: true }).setView([46.60, 1.88], 5);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; OpenStreetMap',
             maxZoom: 18
@@ -334,6 +351,14 @@ async function initAdminMap(locations) {
     // Fonction Helper Delay
     const delay = ms => new Promise(res => setTimeout(res, ms));
 
+    // Définir l'icône une seule fois
+    const dotIcon = L.divIcon({
+        className: 'bg-transparent',
+        html: `<div style="background-color: #22c55e; width: 12px; height: 12px; border-radius: 50%; border: 2px solid green;"></div>`,
+        iconSize: [12, 12],
+        iconAnchor: [6, 6]
+    });
+
     // Boucle de traitement des lieux
     for (const locationName of locations) {
         let coords = geoCache[locationName.toLowerCase().trim()];
@@ -346,7 +371,8 @@ async function initAdminMap(locations) {
                 // Rate limit : attendre 1.1s
                 await delay(1100);
 
-                const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(locationName)},France&limit=1`;
+                // Recherche globale sans forcer la France pour supporter l'étranger
+                const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(locationName)}&limit=1`;
                 const response = await fetch(url, {
                     headers: { 'User-Agent': 'CourseAppAdmin/1.0' } // Politess header
                 });
@@ -357,7 +383,7 @@ async function initAdminMap(locations) {
                         coords = { lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon) };
                         // Save cache
                         geoCache[locationName.toLowerCase().trim()] = coords;
-                        localStorage.setItem('raceLocationGeoCache', JSON.stringify(geoCache));
+                        localStorage.setItem('raceLocationGeoCache_v3', JSON.stringify(geoCache));
                     }
                 }
             } catch (e) {
@@ -367,12 +393,19 @@ async function initAdminMap(locations) {
 
         // Si on a des coordonnées, on affiche
         if (coords) {
-            L.circleMarker([coords.lat, coords.lon], {
-                color: 'green',
-                fillColor: '#22c55e', // green-500
-                fillOpacity: 0.8,
-                radius: 6
-            }).bindPopup(`<b>${locationName.toUpperCase()}</b>`).addTo(adminMap);
+            // Récupérer les utilisateurs pour ce lieu
+            const usersSet = locationData[locationName];
+            const usersList = usersSet ? Array.from(usersSet).join(', ') : '';
+
+            // Utiliser L.marker avec divIcon pour supporter worldCopyJump (les vector layers ne sautent pas)
+            L.marker([coords.lat, coords.lon], { icon: dotIcon })
+                .bindPopup(`<b>${locationName.toUpperCase()}</b><br><span class="text-sm text-gray-600">${usersList}</span>`)
+                .bindTooltip(`<b>${usersList}</b>`, {
+                    direction: 'top',
+                    offset: [0, -5],
+                    className: 'px-2 py-1 bg-black text-white text-xs rounded shadow-lg border-0'
+                })
+                .addTo(adminMap);
             resolvedCount++;
         }
     }
