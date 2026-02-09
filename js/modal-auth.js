@@ -385,6 +385,12 @@ function initAuthLogic() {
                 return;
             }
 
+            const forbiddenPseudos = ['inconnu', 'unknown', 'anonyme', 'anonymous', 'deleted', 'supprimé', 'undefined', 'null', 'admin', 'administrator', 'moderator'];
+            if (forbiddenPseudos.includes(pseudo.trim().toLowerCase())) {
+                showError('signup-error', "Ce pseudo n'est pas autorisé.");
+                return;
+            }
+
             if (pseudo.trim() === "") {
                 showError('signup-error', "Le pseudo est obligatoire.");
                 return;

@@ -513,6 +513,12 @@ async function initSettingsLogic() {
             if (!user) return;
             if (!newPseudo) return;
 
+            const forbiddenPseudos = ['inconnu', 'unknown', 'anonyme', 'anonymous', 'deleted', 'supprimé', 'undefined', 'null', 'admin', 'administrator', 'moderator'];
+            if (forbiddenPseudos.includes(newPseudo.toLowerCase())) {
+                showMessage("Ce pseudo n'est pas autorisé.", "error", "pseudoMessageContainer");
+                return;
+            }
+
             try {
                 // Mise à jour Firestore
                 await db.collection('users').doc(user.uid).update({
