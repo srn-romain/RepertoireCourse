@@ -20,9 +20,9 @@ const authModalsHTML = `
         <form id="loginForm" class="space-y-5">
             <div>
                 <label for="login-email" class="block text-sm font-semibold text-gray-700 mb-1">Identifiant</label>
-                <input type="text" inputmode="email" id="login-email" required 
+                <input type="text" inputmode="email" id="login-email" required autocomplete="username"
                     class="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none transition text-gray-800 placeholder-gray-400"
-                    placeholder="nom@exemple.com">
+                    placeholder="Email">
             </div>
             <div>
                 <label for="login-password" class="block text-sm font-semibold text-gray-700 mb-1">Mot de passe</label>
@@ -67,20 +67,20 @@ const authModalsHTML = `
         <form id="signupForm" class="space-y-4">
             <div>
                 <label for="signup-pseudo" class="block text-sm font-semibold text-gray-700 mb-1">Pseudo</label>
-                <input type="text" id="signup-pseudo" required 
+                <input type="text" id="signup-pseudo" required autocomplete="username"
                     class="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none transition text-gray-800 placeholder-gray-400"
                     placeholder="Votre pseudo">
             </div>
             <div>
                 <label for="signup-email" class="block text-sm font-semibold text-gray-700 mb-1">Adresse Email</label>
-                <input type="email" id="signup-email" required 
+                <input type="email" id="signup-email" required autocomplete="email"
                     class="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none transition text-gray-800 placeholder-gray-400"
                     placeholder="nom@exemple.com">
             </div>
             <div>
                 <label for="signup-password" class="block text-sm font-semibold text-gray-700 mb-1">Mot de passe</label>
                 <div class="relative">
-                    <input type="password" id="signup-password" required minlength="6"
+                    <input type="password" id="signup-password" required minlength="6" autocomplete="new-password"
                         class="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none transition text-gray-800 placeholder-gray-400 pr-10"
                         placeholder="••••••••">
                     <button type="button" id="signup-toggle-password" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 focus:outline-none">
@@ -107,7 +107,7 @@ const authModalsHTML = `
             <div>
                 <label for="signup-confirm-password" class="block text-sm font-semibold text-gray-700 mb-1">Confirmer</label>
                 <div class="relative">
-                    <input type="password" id="signup-confirm-password" required
+                    <input type="password" id="signup-confirm-password" required autocomplete="new-password"
                         class="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none transition text-gray-800 placeholder-gray-400 pr-10"
                         placeholder="••••••••">
                     <button type="button" id="signup-confirm-toggle-password" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 focus:outline-none">
