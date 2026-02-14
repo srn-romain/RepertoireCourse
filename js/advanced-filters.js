@@ -35,14 +35,27 @@
         console.log('[advanced-filters] Initialisation des filtres avancés');
 
         // Gérer la visibilité du panneau en fonction de l'authentification
-        if (advancedFiltersPanel) {
+        function checkAuthAndShowPanel() {
             if (typeof BackendAPI !== 'undefined' && BackendAPI.isAuthenticated && BackendAPI.isAuthenticated()) {
                 advancedFiltersPanel.classList.remove('hidden');
                 console.log('[advanced-filters] Utilisateur authentifié, panneau visible');
+                return true;
             } else {
                 advancedFiltersPanel.classList.add('hidden');
                 console.log('[advanced-filters] Utilisateur non authentifié, panneau caché');
+                return false;
             }
+        }
+
+        if (!checkAuthAndShowPanel()) {
+            // Re-vérifier après un court délai au cas où l'auth Firebase arrive tard
+            const authCheckInterval = setInterval(() => {
+                if (checkAuthAndShowPanel()) {
+                    clearInterval(authCheckInterval);
+                }
+            }, 1000);
+            // Arrêter après 10 secondes pour éviter de tourner indéfiniment
+            setTimeout(() => clearInterval(authCheckInterval), 10000);
         }
 
         // S'assurer que le contenu des filtres est caché au démarrage
