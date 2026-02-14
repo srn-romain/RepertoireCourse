@@ -558,12 +558,12 @@
                     </div>
                     <div class="mb-4">
                         <label class="block text-green-700 mb-2">Accompagnants</label>
-                        <div class="flex gap-2 mb-2">
+                        <div class="flex flex-wrap gap-2 mb-2">
                             <input type="text" id="companionNameInput" placeholder="Nom de l'accompagnant"
-                                class="flex-1 px-3 py-2 border border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
+                                class="flex-1 min-w-[100px] px-3 py-2 border border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
 
                             <!-- Toggle Types -->
-                            <div class="flex bg-gray-100 rounded-lg border border-gray-200 overflow-hidden">
+                            <div class="flex bg-gray-100 rounded-lg border border-gray-200 overflow-hidden shrink-0">
                                 <button type="button" id="typeRunnerBtn"
                                     class="px-3 py-2 hover:bg-white hover:text-green-600 transition text-gray-400"
                                     title="Coureur">
@@ -578,7 +578,7 @@
                             </div>
 
                             <button type="button" id="addCompanionBtn"
-                                class="bg-green-600 text-white px-3 py-2 rounded-lg hover:bg-green-700 transition">
+                                class="bg-green-600 text-white px-3 py-2 rounded-lg hover:bg-green-700 transition shrink-0">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
                                     stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -667,6 +667,7 @@
                         </label>
                     </div>
 
+                    <p id="formGlobalError" class="text-red-500 text-sm mb-4 text-center hidden"></p>
                     <div class="flex justify-end space-x-3">
                         <button type="button" id="cancelBtn"
                             class="px-4 py-2 text-gray-600 hover:text-gray-800 transition">
@@ -4241,9 +4242,14 @@
 
             if (!dateInput || !dateInput.value) return;
 
-            const raceDate = new Date(dateInput.value);
+            // Comparaison de dates en string pour éviter les problèmes de timezone
+            // today est une date locale
             const today = new Date();
             today.setHours(0, 0, 0, 0);
+
+            // Créer la date de la course à minuit heure locale
+            const parts = dateInput.value.split('-');
+            const raceDate = new Date(parts[0], parts[1] - 1, parts[2]);
 
             // Si la course est dans le futur (strictement après aujourd'hui)
             if (raceDate > today) {
@@ -4335,13 +4341,37 @@
             }
 
             // Vérifier le format du temps si rempli
+            // Vérifier le format du temps si rempli
             const timeError = document.getElementById('raceTimeError');
-            timeError.classList.add('hidden');
+            const globalError = document.getElementById('formGlobalError');
+            if (timeError) timeError.classList.add('hidden');
+            if (globalError) globalError.classList.add('hidden');
+
+            const timeRegex = /^\d{2}:\d{2}:\d{2}$/;
+            let timeFormatError = false;
+
+            // Vérifier raceTime
             if (time && time.trim() !== '') {
-                const timeRegex = /^\d{2}:\d{2}:\d{2}$/;
                 if (!timeRegex.test(time)) {
-                    timeError.classList.remove('hidden');
-                    hasErrors = true;
+                    if (timeError) timeError.classList.remove('hidden');
+                    timeFormatError = true;
+                }
+            }
+
+            // Vérifier les autres champs temps (Natation, Vélo, Course à pied)
+            [swimTime, bikeTime, runTime].forEach(t => {
+                if (t && t.trim() !== '') {
+                    if (!timeRegex.test(t)) {
+                        timeFormatError = true;
+                    }
+                }
+            });
+
+            if (timeFormatError) {
+                hasErrors = true;
+                if (globalError) {
+                    globalError.textContent = "Format de temps incorrect (HH:MM:SS attendu)";
+                    globalError.classList.remove('hidden');
                 }
             }
 
@@ -5830,64 +5860,42 @@
         };
 
         // --- Auto-format pour le champ temps (hh:mm:ss) ---
-        const raceTimeInput = document.getElementById('raceTime');
+        // --- Auto-format pour le champ temps (hh:mm:ss) ---
         const raceDateInput = document.getElementById('raceDate');
+        const timeInputs = ['raceTime', 'raceSwimTime', 'raceBikeTime', 'raceRunTime'];
 
-        // Gérer le formatage automatique du temps
-        raceTimeInput.addEventListener('input', function (e) {
-            // Ne pas formater si le champ est désactivé
-            if (raceTimeInput.disabled) return;
+        timeInputs.forEach(id => {
+            const input = document.getElementById(id);
+            if (!input) return;
 
-            let value = raceTimeInput.value.replace(/[^0-9]/g, ''); // Garde uniquement les chiffres
-            if (value.length > 6) value = value.slice(0, 6);
-            let formatted = '';
-            if (value.length > 0) {
-                formatted = value.substring(0, 2);
-            }
-            if (value.length > 2) {
-                formatted += ':' + value.substring(2, 4);
-            }
-            if (value.length > 4) {
-                formatted += ':' + value.substring(4, 6);
-            }
-            raceTimeInput.value = formatted;
+            input.addEventListener('input', function (e) {
+                // Ne pas formater si le champ est désactivé
+                if (input.disabled) return;
 
-            // Masquer l'erreur si l'utilisateur corrige
-            document.getElementById('raceTimeError').classList.add('hidden');
+                let value = input.value.replace(/[^0-9]/g, ''); // Garde uniquement les chiffres
+                if (value.length > 6) value = value.slice(0, 6);
+                let formatted = '';
+                if (value.length > 0) {
+                    formatted = value.substring(0, 2);
+                }
+                if (value.length > 2) {
+                    formatted += ':' + value.substring(2, 4);
+                }
+                if (value.length > 4) {
+                    formatted += ':' + value.substring(4, 6);
+                }
+                input.value = formatted;
+
+                // Masquer l'erreur si l'utilisateur corrige (pour raceTime)
+                if (id === 'raceTime') {
+                    const err = document.getElementById('raceTimeError');
+                    if (err) err.classList.add('hidden');
+                }
+            });
         });
 
-        // Fonction pour gérer l'état du champ temps selon la date
-        function updateTimeFieldState() {
-            if (!raceDateInput.value) {
-                // Pas de date sélectionnée : réactiver le champ
-                raceTimeInput.disabled = false;
-                raceTimeInput.classList.remove('bg-gray-100', 'cursor-not-allowed');
-                return;
-            }
-
-            const selectedDate = new Date(raceDateInput.value);
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            selectedDate.setHours(0, 0, 0, 0);
-
-            if (selectedDate > today) {
-                // Date dans le futur : remplir avec 00:00:00 et désactiver
-                raceTimeInput.value = '00:00:00';
-                raceTimeInput.disabled = true;
-                raceTimeInput.classList.add('bg-gray-100', 'cursor-not-allowed');
-            } else {
-                // Date dans le passé ou aujourd'hui : réactiver le champ
-                raceTimeInput.disabled = false;
-                raceTimeInput.classList.remove('bg-gray-100', 'cursor-not-allowed');
-                // Si le champ était à 00:00:00 et qu'on change pour une date passée, le vider seulement si on est en mode ajout
-                if (raceTimeInput.value === '00:00:00' && !document.getElementById('raceId').value) {
-                    raceTimeInput.value = '';
-                }
-            }
-        }
-
-        // Gérer l'état du champ temps selon la date
-        raceDateInput.addEventListener('change', updateTimeFieldState);
+        // Note: La fonction updateTimeFieldState est définie plus haut (vers ligne 4230)
+        // et l'écouteur d'événement sur raceDate est également configuré là-bas.
 
         // Masquer les messages d'erreur quand l'utilisateur commence à remplir les champs
         const raceNameInput = document.getElementById('raceName');
@@ -6203,7 +6211,13 @@
             const racesWithPricePerKm = pastRaces
                 .map(race => {
                     const price = parseFloat(race.price) || 0;
-                    const distance = parseFloat(race.distance) || 0;
+                    let distance = parseFloat(race.distance) || 0;
+
+                    if (race.terrain === 'triathlon') {
+                        distance += (parseFloat(race.swimDistance) || 0) / 1000;
+                        distance += parseFloat(race.bikeDistance) || 0;
+                    }
+
                     return {
                         race: race,
                         value: (price > 0 && distance > 0) ? (price / distance) : 0
@@ -6220,7 +6234,13 @@
                         return { race: race, value: 0 };
                     }
                     const price = parseFloat(race.price) || 0;
-                    const distance = parseFloat(race.distance) || 0;
+                    let distance = parseFloat(race.distance) || 0;
+
+                    if (race.terrain === 'triathlon') {
+                        distance += (parseFloat(race.swimDistance) || 0) / 1000;
+                        distance += parseFloat(race.bikeDistance) || 0;
+                    }
+
                     const elevation = parseFloat(race.elevation) || 0;
 
                     // On exclut les courses avec 0 de dénivelé pour ce graphique spécifique
