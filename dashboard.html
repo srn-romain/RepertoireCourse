@@ -5384,8 +5384,8 @@
                         // Nettoyer les flags
                         delete raceForm.dataset.wishlistId;
                         delete raceForm.dataset.wishlistConfirmed;
-                    } else {
-                        // Cas 2: Ajout manuel -> Vérifier les doublons potentiels (tous les doublons)
+                    } else if (!id) {
+                        // Cas 2: Ajout manuel (Création uniquement) -> Vérifier les doublons potentiels (tous les doublons)
                         checkWishlistAfterAdd(name);
                     }
 
