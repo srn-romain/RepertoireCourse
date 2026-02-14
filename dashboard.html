@@ -283,13 +283,22 @@
             <div class="relative mb-4">
                 <input type="text" id="searchInput" name="race_search_d1s5"
                     placeholder="Rechercher une course par nom..." autocomplete="chrome-off"
-                    class="w-full px-4 py-2 pr-10 rounded-full border border-green-300 focus:outline-none focus:ring-2 focus:ring-green-500">
+                    class="w-full px-4 py-2 pr-20 rounded-full border border-green-300 focus:outline-none focus:ring-2 focus:ring-green-500">
                 <button id="clearSearchBtn"
-                    class="absolute right-3 top-2.5 text-green-400 hover:text-green-600 transition hidden"
+                    class="absolute right-12 top-2.5 text-green-400 hover:text-green-600 transition hidden"
                     title="Vider la recherche">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                         <path fill-rule="evenodd"
                             d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                            clip-rule="evenodd" />
+                    </svg>
+                </button>
+                <button id="mainSearchBtn"
+                    class="absolute right-3 top-2.5 text-green-600 hover:text-green-800 transition"
+                    title="Lancer la recherche">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd"
+                            d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
                             clip-rule="evenodd" />
                     </svg>
                 </button>
@@ -2030,7 +2039,9 @@
                 applyFilters();
 
                 // Mettre à jour la liste des lieux pour les filtres avancés
-                updateLocationFilter();
+                if (typeof window.populateLocationFilter === 'function') {
+                    window.populateLocationFilter();
+                }
 
                 // Si la modale de stats est ouverte et qu'on attendait le chargement, afficher les stats
                 if (pendingStatsDisplay && !statsModal.classList.contains('hidden')) {
@@ -5349,7 +5360,7 @@
                     return nameMatch;
                 });
             } else {
-                // Si authentifié, on utilise la fonction de filtrage avancée qui gère tout
+                // Si authentifié, on laisse applyAdvancedFilters gérer la recherche globale
                 applyAdvancedFilters();
                 return;
             }
@@ -5370,196 +5381,14 @@
             displayRaces(filteredRaces);
         }
 
-        // Recherche avancée avec filtres (uniquement pour les utilisateurs connectés)
-        function applyAdvancedFilters() {
-            if (!isAuthenticated()) {
-                return;
-            }
 
-            const locationFilter = document.getElementById('filterLocation').value;
-            const priceFilter = document.getElementById('filterPrice').value;
-            const elevationFilter = document.getElementById('filterElevation').value;
-            const distanceFilter = document.getElementById('filterDistance').value;
-            const typeFilter = document.getElementById('filterType').value;
-            const visibilityFilter = document.getElementById('filterVisibility').value;
-            const commentsFilter = document.getElementById('filterComments').value;
-            const companionsFilter = document.getElementById('filterCompanions').value;
-            const nameQuery = (searchInput.value || '').toLowerCase().trim();
+        // ====================================================================
+        // FILTRES AVANCÉS
+        // ====================================================================
+        // La logique des filtres avancés est maintenant gérée par js/advanced-filters.js
+        // Ce fichier expose window.applyAdvancedFilters() et window.populateLocationFilter()
 
-            let filteredRaces = races;
 
-            // Filtrer par nom si une recherche est en cours
-            if (nameQuery) {
-                filteredRaces = filteredRaces.filter(race => {
-                    return (race.name || '').toLowerCase().includes(nameQuery);
-                });
-            }
-
-            // Filtrer par lieu
-            if (locationFilter) {
-                filteredRaces = filteredRaces.filter(race => {
-                    return (race.location || '') === locationFilter;
-                });
-            }
-
-            // Filtrer par fourchette de prix
-            if (priceFilter) {
-                filteredRaces = filteredRaces.filter(race => {
-                    const price = parseFloat(race.price) || 0;
-                    if (priceFilter === '0-20') return price <= 20;
-                    if (priceFilter === '20-40') return price > 20 && price <= 40;
-                    if (priceFilter === '40-60') return price > 40 && price <= 60;
-                    if (priceFilter === '60-80') return price > 60 && price <= 80;
-                    if (priceFilter === '80+') return price > 80;
-                    return true;
-                });
-            }
-
-            // Filtrer par fourchette de dénivelé
-            if (elevationFilter) {
-                filteredRaces = filteredRaces.filter(race => {
-                    let elevation = 0;
-                    if (race.terrain === 'triathlon') {
-                        // Pour le triathlon, on somme bike et run elevation si présents
-                        elevation = (parseInt(race.bikeElevation) || 0) + (parseInt(race.runElevation) || 0);
-                        // Fallback sur race.elevation si les sous-champs sont vides (cas ancienne donnée ou calcul auto raté)
-                        if (elevation === 0) elevation = parseInt(race.elevation) || 0;
-                    } else {
-                        elevation = parseInt(race.elevation) || 0;
-                    }
-
-                    if (elevationFilter === '0-500') return elevation <= 500;
-                    if (elevationFilter === '500-1000') return elevation > 500 && elevation <= 1000;
-                    if (elevationFilter === '1000-1500') return elevation > 1000 && elevation <= 1500;
-                    if (elevationFilter === '1500-2000') return elevation > 1500 && elevation <= 2000;
-                    if (elevationFilter === '2000+') return elevation > 2000;
-                    return true;
-                });
-            }
-
-            // Filtrer par fourchette de distance
-            if (distanceFilter) {
-                filteredRaces = filteredRaces.filter(race => {
-                    let distance = 0;
-                    if (race.terrain === 'triathlon') {
-                        if (race.raceFormat === 'team' && race.raceRelaySport) {
-                            // En relais, on prend la distance du sport choisi
-                            if (race.raceRelaySport === 'swim') distance = (parseFloat(race.swimDistance) || 0) / 1000;
-                            else if (race.raceRelaySport === 'bike') distance = parseFloat(race.bikeDistance) || 0;
-                            else if (race.raceRelaySport === 'run') distance = parseFloat(race.distance) || 0;
-                        } else {
-                            // En solo, on somme tout (km)
-                            distance = ((parseFloat(race.swimDistance) || 0) / 1000) +
-                                (parseFloat(race.bikeDistance) || 0) +
-                                (parseFloat(race.distance) || 0);
-                        }
-                    } else {
-                        distance = parseFloat(race.distance) || 0;
-                    }
-
-                    if (distanceFilter === '0-10') return distance <= 10;
-                    if (distanceFilter === '10-20') return distance > 10 && distance <= 20;
-                    if (distanceFilter === '20-30') return distance > 20 && distance <= 30;
-                    if (distanceFilter === '30-40') return distance > 30 && distance <= 40;
-                    if (distanceFilter === '40-50') return distance > 40 && distance <= 50;
-                    if (distanceFilter === '50+') return distance > 50;
-                    return true;
-                });
-            }
-
-            // Filtrer par type de course
-            if (typeFilter) {
-                filteredRaces = filteredRaces.filter(race => {
-                    return (race.terrain || '') === typeFilter;
-                });
-            }
-
-            // Filtrer par visibilité
-            if (visibilityFilter) {
-                filteredRaces = filteredRaces.filter(race => {
-                    if (visibilityFilter === 'public') return race.public === true;
-                    if (visibilityFilter === 'private') return race.public === false;
-                    return true;
-                });
-            }
-
-            // Filtrer par commentaires
-            if (commentsFilter) {
-                filteredRaces = filteredRaces.filter(race => {
-                    const hasNotes = race.notes && typeof race.notes === 'string' && race.notes.trim() !== '';
-                    if (commentsFilter === 'yes') return hasNotes;
-                    if (commentsFilter === 'no') return !hasNotes;
-                    return true;
-                });
-            }
-
-            // Filtrer par accompagnants
-            if (companionsFilter) {
-                filteredRaces = filteredRaces.filter(race => {
-                    const hasCompanions = race.companions && (
-                        (Array.isArray(race.companions) && race.companions.some(c => (typeof c === 'object' ? c.name : c)?.trim())) ||
-                        (typeof race.companions === 'string' && race.companions.trim() !== '')
-                    );
-                    if (companionsFilter === 'yes') return hasCompanions;
-                    if (companionsFilter === 'no') return !hasCompanions;
-                    return true;
-                });
-            }
-
-            // Appliquer le filtre d'année si nécessaire
-            if (currentYearFilter && currentYearFilter !== 'all') {
-                filteredRaces = filteredRaces.filter(race => {
-                    const raceDate = new Date(race.date);
-                    return raceDate.getFullYear().toString() === currentYearFilter;
-                });
-            }
-
-            // Appliquer le filtre de favoris si nécessaire
-            if (currentFavoritesFilter) {
-                filteredRaces = filteredRaces.filter(race => race.favorite === true);
-            }
-
-            updateStats(filteredRaces);
-            displayRaces(filteredRaces);
-        }
-
-        // Fonction pour réinitialiser les filtres
-        function resetAdvancedFilters() {
-            document.getElementById('filterLocation').value = '';
-            document.getElementById('filterPrice').value = '';
-            document.getElementById('filterElevation').value = '';
-            document.getElementById('filterDistance').value = '';
-            document.getElementById('filterType').value = '';
-            document.getElementById('filterVisibility').value = '';
-            document.getElementById('filterComments').value = '';
-            document.getElementById('filterCompanions').value = '';
-            searchInput.value = '';
-            updateClearSearchButton();
-            searchRaces('');
-        }
-
-        // Fonction pour mettre à jour la liste des lieux
-        function updateLocationFilter() {
-            const locationSelect = document.getElementById('filterLocation');
-            const currentValue = locationSelect.value;
-
-            // Extraire les lieux uniques
-            const locations = [...new Set(races.map(race => race.location).filter(loc => loc && loc.trim() !== ''))].sort();
-
-            // Vider et remplir la liste
-            locationSelect.innerHTML = '<option value="">Tous les lieux</option>';
-            locations.forEach(location => {
-                const option = document.createElement('option');
-                option.value = location;
-                option.textContent = location;
-                locationSelect.appendChild(option);
-            });
-
-            // Restaurer la valeur précédente si elle existe
-            if (currentValue && locations.includes(currentValue)) {
-                locationSelect.value = currentValue;
-            }
-        }
 
         // Écouteur pour le bouton Annuler
         cancelBtn.addEventListener('click', () => {
@@ -5732,14 +5561,40 @@
         // Afficher/masquer le bouton selon le contenu du champ
         searchInput.addEventListener('input', (e) => {
             updateClearSearchButton();
-            searchRaces(e.target.value);
         });
+
+        // Lancer la recherche sur la touche Entrée
+        searchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                if (isAuthenticated()) {
+                    applyAdvancedFilters();
+                } else {
+                    searchRaces(searchInput.value);
+                }
+            }
+        });
+
+        // Lancer la recherche au clic sur la loupe
+        const mainSearchBtn = document.getElementById('mainSearchBtn');
+        if (mainSearchBtn) {
+            mainSearchBtn.addEventListener('click', () => {
+                if (isAuthenticated()) {
+                    applyAdvancedFilters();
+                } else {
+                    searchRaces(searchInput.value);
+                }
+            });
+        }
 
         // Vider le champ de recherche au clic sur la croix
         clearSearchBtn.addEventListener('click', () => {
             searchInput.value = '';
             updateClearSearchButton();
-            searchRaces('');
+            if (isAuthenticated()) {
+                applyAdvancedFilters();
+            } else {
+                searchRaces('');
+            }
         });
 
         // Gérer les boutons de filtres avancés
@@ -5748,6 +5603,14 @@
 
         if (applyFiltersBtn) {
             applyFiltersBtn.addEventListener('click', () => {
+                console.log('[DEBUG] Clic sur bouton Rechercher');
+                // Mettre à jour les valeurs actives des filtres de la deuxième ligne
+                activeTypeFilter = document.getElementById('filterType').value;
+                activeVisibilityFilter = document.getElementById('filterVisibility').value;
+                activeCommentsFilter = document.getElementById('filterComments').value;
+                activeCompanionsFilter = document.getElementById('filterCompanions').value;
+                console.log('[DEBUG] Valeurs stockées:', { activeTypeFilter, activeVisibilityFilter, activeCommentsFilter, activeCompanionsFilter });
+                // Puis appliquer les filtres
                 applyAdvancedFilters();
             });
         }
@@ -5775,15 +5638,7 @@
             });
         }
 
-        // Ajouter des écouteurs onchange pour tous les filtres avancés (Live filter)
-        ['filterLocation', 'filterPrice', 'filterElevation', 'filterDistance', 'filterType', 'filterVisibility', 'filterComments', 'filterCompanions'].forEach(id => {
-            const el = document.getElementById(id);
-            if (el) {
-                el.addEventListener('change', () => {
-                    applyAdvancedFilters();
-                });
-            }
-        });
+        // (Live filter supprimé à la demande de l'utilisateur)
 
         // Gestion de la Wishlist
         // wishlistCollection est défini globalement
@@ -8205,6 +8060,7 @@
             });
         }
     </script>
+    <script src="js/advanced-filters.js"></script>
     <script src="js/user-settings.js"></script>
 </body>
 
