@@ -454,10 +454,11 @@
 
                     <!-- Champs spécifiques Triathlon -->
                     <!-- Triathlon Swim -->
-                    <div class="mb-4 hidden" id="triathlonSwimContainer">
+                    <!-- Triathlon Swim -->
+                    <div class="mb-4 hidden bg-blue-50 p-4 rounded-lg" id="triathlonSwimContainer">
                         <div class="grid grid-cols-2 gap-4">
                             <div>
-                                <label for="raceSwimDistance" class="block text-green-700 mb-2 flex items-center">
+                                <label for="raceSwimDistance" class="block text-blue-700 mb-2 flex items-center">
                                     <span class="w-3 h-3 bg-blue-500 mr-2 inline-block rounded-sm"></span>
                                     Dist. Natation (m)
                                 </label>
@@ -466,7 +467,7 @@
                                     step="1" placeholder="000">
                             </div>
                             <div>
-                                <label for="raceSwimTime" class="block text-green-700 mb-2">Temps Natation</label>
+                                <label for="raceSwimTime" class="block text-blue-700 mb-2">Temps Natation</label>
                                 <input type="text" id="raceSwimTime"
                                     class="w-full px-3 py-2 border border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
                                     placeholder="HH:MM:SS">
@@ -475,10 +476,11 @@
                     </div>
 
                     <!-- Triathlon Bike -->
-                    <div class="mb-4 hidden" id="triathlonBikeContainer">
+                    <!-- Triathlon Bike -->
+                    <div class="mb-4 hidden bg-orange-50 p-4 rounded-lg" id="triathlonBikeContainer">
                         <div class="grid grid-cols-2 gap-4">
                             <div>
-                                <label for="raceBikeDistance" class="block text-green-700 mb-2 flex items-center">
+                                <label for="raceBikeDistance" class="block text-orange-700 mb-2 flex items-center">
                                     <span class="w-3 h-3 bg-orange-500 mr-2 inline-block rounded-sm"></span>
                                     Dist. Vélo (km)
                                 </label>
@@ -487,13 +489,13 @@
                                     step="0.001" placeholder="00">
                             </div>
                             <div>
-                                <label for="raceBikeTime" class="block text-green-700 mb-2">Temps Vélo</label>
+                                <label for="raceBikeTime" class="block text-orange-700 mb-2">Temps Vélo</label>
                                 <input type="text" id="raceBikeTime"
                                     class="w-full px-3 py-2 border border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
                                     placeholder="HH:MM:SS">
                             </div>
                             <div class="col-span-2">
-                                <label for="raceBikeElevation" class="block text-green-700 mb-2">Dénivelé Vélo
+                                <label for="raceBikeElevation" class="block text-orange-700 mb-2">Dénivelé Vélo
                                     (m)</label>
                                 <input type="number" id="raceBikeElevation"
                                     class="w-full px-3 py-2 border border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
@@ -503,7 +505,8 @@
                     </div>
 
                     <!-- Distance & Run Time (Run Time hidden by default) -->
-                    <div class="mb-4">
+                    <!-- Distance & Run Time (Run Time hidden by default) -->
+                    <div class="mb-4" id="raceRunFieldsWrapper">
                         <div class="grid grid-cols-1 gap-4" id="raceDistanceRunGrid">
                             <div>
                                 <label for="raceDistance" class="block text-green-700 mb-2">Distance (km)</label>
@@ -4154,6 +4157,9 @@
             // Find label for running distance (raceDistance)
             const raceDistanceLabel = document.querySelector('label[for="raceDistance"]');
 
+            // New wrapper for Run fields
+            const raceRunFieldsWrapper = document.getElementById('raceRunFieldsWrapper');
+
             if (terrain === 'triathlon') {
                 swimContainer.classList.remove('hidden');
                 bikeContainer.classList.remove('hidden');
@@ -4169,6 +4175,11 @@
                 if (raceDistanceRunGrid) {
                     raceDistanceRunGrid.classList.remove('grid-cols-1');
                     raceDistanceRunGrid.classList.add('grid-cols-2');
+                }
+
+                // Add Green Background for Run Section
+                if (raceRunFieldsWrapper) {
+                    raceRunFieldsWrapper.classList.add('bg-green-50', 'p-4', 'rounded-lg');
                 }
 
                 // Hide standard Total Time input (auto-calculated)
@@ -4192,6 +4203,11 @@
                 if (raceDistanceRunGrid) {
                     raceDistanceRunGrid.classList.remove('grid-cols-2');
                     raceDistanceRunGrid.classList.add('grid-cols-1');
+                }
+
+                // Remove Green Background for Run Section (Standard mode)
+                if (raceRunFieldsWrapper) {
+                    raceRunFieldsWrapper.classList.remove('bg-green-50', 'p-4', 'rounded-lg');
                 }
 
                 // Show standard Total Time input
