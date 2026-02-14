@@ -320,11 +320,11 @@
                             <select id="filterPrice"
                                 class="w-full px-3 py-2 border border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
                                 <option value="">Toutes les fourchettes</option>
-                                <option value="0-20">0-20 €</option>
-                                <option value="20-40">20-40 €</option>
-                                <option value="40-60">40-60 €</option>
-                                <option value="60-80">60-80 €</option>
-                                <option value="80+">+80 €</option>
+                                <option value="0-20">0 à 20 €</option>
+                                <option value="20-40">> 20 à 40 €</option>
+                                <option value="40-60">> 40 à 60 €</option>
+                                <option value="60-80">> 60 à 80 €</option>
+                                <option value="80+">> 80 €</option>
                             </select>
                         </div>
                         <div>
@@ -333,11 +333,11 @@
                             <select id="filterElevation"
                                 class="w-full px-3 py-2 border border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
                                 <option value="">Toutes les fourchettes</option>
-                                <option value="0-500">0-500 m</option>
-                                <option value="500-1000">500-1000 m</option>
-                                <option value="1000-1500">1000-1500 m</option>
-                                <option value="1500-2000">1500-2000 m</option>
-                                <option value="2000+">+2000 m</option>
+                                <option value="0-500">0 à 500 m</option>
+                                <option value="500-1000">> 500 à 1000 m</option>
+                                <option value="1000-1500">> 1000 à 1500 m</option>
+                                <option value="1500-2000">> 1500 à 2000 m</option>
+                                <option value="2000+">> 2000 m</option>
                             </select>
                         </div>
                         <div>
@@ -346,12 +346,12 @@
                             <select id="filterDistance"
                                 class="w-full px-3 py-2 border border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
                                 <option value="">Toutes les fourchettes</option>
-                                <option value="0-10">0-10 km</option>
-                                <option value="10-20">10-20 km</option>
-                                <option value="20-30">20-30 km</option>
-                                <option value="30-40">30-40 km</option>
-                                <option value="40-50">40-50 km</option>
-                                <option value="50+">+50 km</option>
+                                <option value="0-10">0 à 10 km</option>
+                                <option value="10-20">> 10 à 20 km</option>
+                                <option value="20-30">> 20 à 30 km</option>
+                                <option value="30-40">> 30 à 40 km</option>
+                                <option value="40-50">> 40 à 50 km</option>
+                                <option value="50+">> 50 km</option>
                             </select>
                         </div>
                         <div>
@@ -383,8 +383,20 @@
                                 <option value="no">Sans notes</option>
                             </select>
                         </div>
+                        <div>
+                            <label class="block text-sm font-medium text-green-700 mb-2">Accompagnants</label>
+                            <select id="filterCompanions"
+                                class="w-full px-3 py-2 border border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
+                                <option value="">Tout</option>
+                                <option value="yes">Avec accompagnants</option>
+                                <option value="no">Sans accompagnants</option>
+                            </select>
+                        </div>
                     </div>
-                    <div class="flex gap-3 justify-end">
+                    <div class="flex items-center gap-3 justify-end">
+                        <div id="filterResultsCount" class="mr-auto text-sm text-green-700 font-medium">
+                            <!-- X courses affichées sur Y -->
+                        </div>
                         <button id="resetFiltersBtn"
                             class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition-colors">
                             Réinitialiser les filtres
@@ -2953,6 +2965,14 @@
 
         // Display races
         function displayRaces(racesToDisplay) {
+            // Mettre à jour le compteur de résultats
+            const resultsCountEl = document.getElementById('filterResultsCount');
+            if (resultsCountEl && typeof races !== 'undefined') {
+                const currentCount = racesToDisplay.length;
+                const totalCount = races.length;
+                resultsCountEl.textContent = `${currentCount} course${currentCount > 1 ? 's' : ''} affichée${currentCount > 1 ? 's' : ''} sur ${totalCount}`;
+            }
+
             // Calculer les badges pour toutes les courses (pour s'assurer qu'ils sont à jour)
             if (isAuthenticated()) {
                 window.raceBadges = calculateRaceBadges(races);
@@ -5329,90 +5349,9 @@
                     return nameMatch;
                 });
             } else {
-                // Si authentifié, rechercher dans tous les champs possibles
-                filteredRaces = races.filter(race => {
-                    // Nom de la course
-                    const nameMatch = (race.name || '').toLowerCase().includes(q);
-
-                    // Lieu
-                    const locationMatch = (race.location || '').toLowerCase().includes(q);
-
-                    // Notes
-                    const notesMatch = (race.notes || '').toLowerCase().includes(q);
-
-                    // Site web
-                    const websiteMatch = (race.website || '').toLowerCase().includes(q);
-
-                    // URL GPX
-                    const gpxUrlMatch = (race.gpxUrl || '').toLowerCase().includes(q);
-
-                    // Distance (recherche numérique et texte)
-                    const distanceNum = parseFloat(race.distance) || 0;
-                    const distanceStr = String(race.distance || '');
-                    const distanceMatch = distanceNum.toString().includes(q) ||
-                        distanceStr.toLowerCase().includes(q);
-
-                    // Dénivelé (recherche numérique et texte)
-                    const elevationNum = parseInt(race.elevation) || 0;
-                    const elevationStr = String(race.elevation || '');
-                    const elevationMatch = elevationNum.toString().includes(q) ||
-                        elevationStr.toLowerCase().includes(q);
-
-                    // Temps
-                    const timeMatch = String(race.time || '').toLowerCase().includes(q);
-
-                    // Prix (recherche numérique et texte) - seulement pour les admins
-                    let priceMatch = false;
-                    if (isAdmin()) {
-                        const priceNum = parseFloat(race.price) || 0;
-                        const priceStr = String(race.price || '');
-                        priceMatch = priceNum.toString().includes(q) ||
-                            priceStr.toLowerCase().includes(q);
-                    }
-
-                    // Heure
-                    const hourMatch = (race.hour || '').toLowerCase().includes(q);
-
-                    // Date (format français et ISO)
-                    let dateMatch = false;
-                    if (race.date) {
-                        const raceDate = new Date(race.date);
-                        const dateFr = raceDate.toLocaleDateString('fr-FR', {
-                            day: 'numeric',
-                            month: 'long',
-                            year: 'numeric'
-                        }).toLowerCase();
-                        const dateFrShort = raceDate.toLocaleDateString('fr-FR', {
-                            day: 'numeric',
-                            month: 'numeric',
-                            year: 'numeric'
-                        }).toLowerCase();
-                        const dateISO = raceDate.toISOString().split('T')[0];
-                        const year = raceDate.getFullYear().toString();
-                        const month = (raceDate.getMonth() + 1).toString();
-                        const day = raceDate.getDate().toString();
-
-                        dateMatch = dateFr.includes(q) ||
-                            dateFrShort.includes(q) ||
-                            dateISO.includes(q) ||
-                            year.includes(q) ||
-                            month.includes(q) ||
-                            day.includes(q);
-                    }
-
-                    // Retourner true si au moins un champ correspond
-                    // Pour les invités, on exclut le prix de la recherche
-                    if (isAdmin()) {
-                        return nameMatch || locationMatch || notesMatch || websiteMatch ||
-                            gpxUrlMatch || distanceMatch || elevationMatch || timeMatch ||
-                            priceMatch || hourMatch || dateMatch;
-                    } else {
-                        // Pour les invités, recherche sans le prix
-                        return nameMatch || locationMatch || notesMatch || websiteMatch ||
-                            gpxUrlMatch || distanceMatch || elevationMatch || timeMatch ||
-                            hourMatch || dateMatch;
-                    }
-                });
+                // Si authentifié, on utilise la fonction de filtrage avancée qui gère tout
+                applyAdvancedFilters();
+                return;
             }
 
             // Appliquer les filtres (année et favoris)
@@ -5444,6 +5383,7 @@
             const typeFilter = document.getElementById('filterType').value;
             const visibilityFilter = document.getElementById('filterVisibility').value;
             const commentsFilter = document.getElementById('filterComments').value;
+            const companionsFilter = document.getElementById('filterCompanions').value;
             const nameQuery = (searchInput.value || '').toLowerCase().trim();
 
             let filteredRaces = races;
@@ -5466,11 +5406,11 @@
             if (priceFilter) {
                 filteredRaces = filteredRaces.filter(race => {
                     const price = parseFloat(race.price) || 0;
-                    if (priceFilter === '0-20') return price < 20;
-                    if (priceFilter === '20-40') return price >= 20 && price < 40;
-                    if (priceFilter === '40-60') return price >= 40 && price < 60;
-                    if (priceFilter === '60-80') return price >= 60 && price < 80;
-                    if (priceFilter === '80+') return price >= 80;
+                    if (priceFilter === '0-20') return price <= 20;
+                    if (priceFilter === '20-40') return price > 20 && price <= 40;
+                    if (priceFilter === '40-60') return price > 40 && price <= 60;
+                    if (priceFilter === '60-80') return price > 60 && price <= 80;
+                    if (priceFilter === '80+') return price > 80;
                     return true;
                 });
             }
@@ -5488,11 +5428,11 @@
                         elevation = parseInt(race.elevation) || 0;
                     }
 
-                    if (elevationFilter === '0-500') return elevation < 500;
-                    if (elevationFilter === '500-1000') return elevation >= 500 && elevation < 1000;
-                    if (elevationFilter === '1000-1500') return elevation >= 1000 && elevation < 1500;
-                    if (elevationFilter === '1500-2000') return elevation >= 1500 && elevation < 2000;
-                    if (elevationFilter === '2000+') return elevation >= 2000;
+                    if (elevationFilter === '0-500') return elevation <= 500;
+                    if (elevationFilter === '500-1000') return elevation > 500 && elevation <= 1000;
+                    if (elevationFilter === '1000-1500') return elevation > 1000 && elevation <= 1500;
+                    if (elevationFilter === '1500-2000') return elevation > 1500 && elevation <= 2000;
+                    if (elevationFilter === '2000+') return elevation > 2000;
                     return true;
                 });
             }
@@ -5517,12 +5457,12 @@
                         distance = parseFloat(race.distance) || 0;
                     }
 
-                    if (distanceFilter === '0-10') return distance < 10;
-                    if (distanceFilter === '10-20') return distance >= 10 && distance < 20;
-                    if (distanceFilter === '20-30') return distance >= 20 && distance < 30;
-                    if (distanceFilter === '30-40') return distance >= 30 && distance < 40;
-                    if (distanceFilter === '40-50') return distance >= 40 && distance < 50;
-                    if (distanceFilter === '50+') return distance >= 50;
+                    if (distanceFilter === '0-10') return distance <= 10;
+                    if (distanceFilter === '10-20') return distance > 10 && distance <= 20;
+                    if (distanceFilter === '20-30') return distance > 20 && distance <= 30;
+                    if (distanceFilter === '30-40') return distance > 30 && distance <= 40;
+                    if (distanceFilter === '40-50') return distance > 40 && distance <= 50;
+                    if (distanceFilter === '50+') return distance > 50;
                     return true;
                 });
             }
@@ -5546,9 +5486,22 @@
             // Filtrer par commentaires
             if (commentsFilter) {
                 filteredRaces = filteredRaces.filter(race => {
-                    const hasNotes = race.notes && race.notes.trim() !== '';
+                    const hasNotes = race.notes && typeof race.notes === 'string' && race.notes.trim() !== '';
                     if (commentsFilter === 'yes') return hasNotes;
                     if (commentsFilter === 'no') return !hasNotes;
+                    return true;
+                });
+            }
+
+            // Filtrer par accompagnants
+            if (companionsFilter) {
+                filteredRaces = filteredRaces.filter(race => {
+                    const hasCompanions = race.companions && (
+                        (Array.isArray(race.companions) && race.companions.some(c => (typeof c === 'object' ? c.name : c)?.trim())) ||
+                        (typeof race.companions === 'string' && race.companions.trim() !== '')
+                    );
+                    if (companionsFilter === 'yes') return hasCompanions;
+                    if (companionsFilter === 'no') return !hasCompanions;
                     return true;
                 });
             }
@@ -5559,6 +5512,11 @@
                     const raceDate = new Date(race.date);
                     return raceDate.getFullYear().toString() === currentYearFilter;
                 });
+            }
+
+            // Appliquer le filtre de favoris si nécessaire
+            if (currentFavoritesFilter) {
+                filteredRaces = filteredRaces.filter(race => race.favorite === true);
             }
 
             updateStats(filteredRaces);
@@ -5574,6 +5532,7 @@
             document.getElementById('filterType').value = '';
             document.getElementById('filterVisibility').value = '';
             document.getElementById('filterComments').value = '';
+            document.getElementById('filterCompanions').value = '';
             searchInput.value = '';
             updateClearSearchButton();
             searchRaces('');
@@ -5815,6 +5774,16 @@
                 }
             });
         }
+
+        // Ajouter des écouteurs onchange pour tous les filtres avancés (Live filter)
+        ['filterLocation', 'filterPrice', 'filterElevation', 'filterDistance', 'filterType', 'filterVisibility', 'filterComments', 'filterCompanions'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.addEventListener('change', () => {
+                    applyAdvancedFilters();
+                });
+            }
+        });
 
         // Gestion de la Wishlist
         // wishlistCollection est défini globalement
