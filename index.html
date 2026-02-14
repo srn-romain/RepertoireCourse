@@ -653,6 +653,46 @@
                     </div>
                 </section>
 
+                <!-- Triathlon & Relais -->
+                <section class="mb-8">
+                    <h4 class="text-xl font-bold text-green-700 mb-3 flex items-center gap-2">
+                        <i class="fas fa-swimmer text-green-600"></i> Spécial : Triathlon & Relais
+                    </h4>
+                    <div class="bg-white border border-blue-100 rounded-lg p-4 shadow-sm space-y-4">
+
+                        <!-- Triathlon -->
+                        <div>
+                            <h5 class="font-bold text-blue-800 mb-2 flex items-center gap-2">
+                                🏊‍♂️🚴‍♂️🏃‍♂️ Triathlon
+                            </h5>
+                            <p class="text-sm text-gray-600 mb-2">En sélectionnant le type "Triathlon", détaillez chaque
+                                épreuve :</p>
+                            <ul class="text-xs text-gray-600 ml-4 space-y-1">
+                                <li>• <strong>Natation :</strong> Distance (m) et Temps</li>
+                                <li>• <strong>Vélo :</strong> Distance (km), Dénivelé (m) et Temps</li>
+                                <li>• <strong>Course à pied :</strong> Distance (km), Dénivelé (m) et Temps</li>
+                            </ul>
+                        </div>
+
+                        <hr class="border-blue-100">
+
+                        <!-- Relais -->
+                        <div>
+                            <h5 class="font-bold text-blue-800 mb-2 flex items-center gap-2">
+                                <i class="fas fa-users"></i> Courses en Relais
+                            </h5>
+                            <p class="text-sm text-gray-600 mb-2">Gérez les courses d'équipe avec précision :</p>
+                            <ul class="text-xs text-gray-600 ml-4 space-y-1">
+                                <li>• <strong>Relais Classique :</strong> Utilisez le "Tableau de Relais" pour ajouter
+                                    chaque segment (distance, dénivelé, temps) individuellement.</li>
+                                <li>• <strong>Triathlon en Relais :</strong> Sélectionnez "En équipe (Relais)" puis
+                                    choisissez votre discipline (Nageur, Cycliste ou Coureur) pour n'enregistrer que
+                                    votre partie.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+
                 <!-- Statistiques -->
                 <section class="mb-8">
                     <h4 class="text-xl font-bold text-green-700 mb-3 flex items-center gap-2">
@@ -756,21 +796,23 @@
                         <i class="fas fa-heart text-green-600"></i> Interactions Sociales
                     </h4>
                     <div class="bg-white border border-red-100 rounded-lg p-4 shadow-sm">
-                        <p class="text-sm text-gray-600 mb-3">Encouragez les autres coureurs !</p>
+                        <p class="text-sm text-gray-600 mb-3">Encouragez les autres coureurs et créez du lien !</p>
                         <ul class="space-y-2 text-sm text-gray-600">
                             <li class="flex items-start gap-2">
                                 <i class="fas fa-check-circle text-green-600 mt-0.5"></i>
-                                <span>Aimez les courses qui vous inspirent via le bouton <i
-                                        class="fas fa-heart text-red-500"></i></span>
+                                <span><strong>Aimer :</strong> Cliquez sur le cœur <i
+                                        class="fas fa-heart text-red-500"></i> pour féliciter une performance.</span>
                             </li>
                             <li class="flex items-start gap-2">
                                 <i class="fas fa-check-circle text-green-600 mt-0.5"></i>
-                                <span>Le propriétaire de la course voit qui a aimé.</span>
+                                <span><strong>Voir les "J'aime" :</strong> Cliquez sur le compteur de "J'aime" pour voir
+                                    la liste des personnes qui ont aimé la course.</span>
                             </li>
                             <li class="flex items-start gap-2">
                                 <i class="fas fa-info-circle text-blue-600 mt-0.5"></i>
-                                <span>Vous pouvez <strong>masquer le nombre de J'aime</strong> sur VOS courses dans les
-                                    paramètres de compte (Confidentialité).</span>
+                                <span><strong>Confidentialité :</strong> Vous pouvez <strong>masquer le nombre de
+                                        J'aime</strong> sur VOS courses dans les paramètres de compte (visible
+                                    uniquement par vous).</span>
                             </li>
                         </ul>
                     </div>
@@ -783,25 +825,55 @@
                     </h4>
                     <div class="bg-white border border-green-100 rounded-lg p-4 shadow-sm">
                         <p class="text-sm text-gray-600 mb-3">Accédez aux paramètres via l'icône <i
-                                class="fas fa-cog text-gray-600"></i> dans le bandeau de connexion :</p>
+                                class="fas fa-cog text-gray-600"></i> dans le bandeau de connexion (ou "Compte" sur
+                            mobile). Vous y trouverez :</p>
+
                         <div class="space-y-3">
-                            <div class="bg-gray-50 p-3 rounded">
-                                <p class="font-semibold text-gray-800 text-sm mb-1">👤 Modifier le Pseudo</p>
-                                <p class="text-xs text-gray-600">Changez votre nom d'affichage public</p>
+                            <!-- Profil -->
+                            <div class="bg-gray-50 p-3 rounded border border-gray-100">
+                                <p class="font-semibold text-gray-800 text-sm mb-1 flex items-center gap-2"><i
+                                        class="fas fa-user-edit text-green-600"></i> Profil</p>
+                                <p class="text-xs text-gray-600">Modifiez votre pseudo pour l'affichage public.</p>
                             </div>
-                            <div class="bg-gray-50 p-3 rounded">
-                                <p class="font-semibold text-gray-800 text-sm mb-1">🔒 Confidentialité</p>
-                                <p class="text-xs text-gray-600">Gérez l'affichage de vos infos et masquez le compteur
-                                    de J'aime</p>
+
+                            <!-- Confidentialité -->
+                            <div class="bg-gray-50 p-3 rounded border border-gray-100">
+                                <p class="font-semibold text-gray-800 text-sm mb-1 flex items-center gap-2"><i
+                                        class="fas fa-user-secret text-green-600"></i> Confidentialité</p>
+                                <p class="text-xs text-gray-600 mb-1">Contrôlez ce que les autres voient sur vos courses
+                                    publiques :</p>
+                                <ul class="text-xs text-gray-600 list-disc ml-4 space-y-0.5">
+                                    <li>Afficher/Masquer votre pseudo</li>
+                                    <li>Afficher/Masquer la ville de la course</li>
+                                    <li>Afficher/Masquer le jour précis (ex: 12 mars)</li>
+                                    <li>Afficher/Masquer le label "Favori"</li>
+                                    <li>Masquer le compteur de "J'aime"</li>
+                                </ul>
                             </div>
-                            <div class="bg-gray-50 p-3 rounded">
-                                <p class="font-semibold text-gray-800 text-sm mb-1">⚙️ Préférences d'interface</p>
-                                <p class="text-xs text-gray-600">Affichez ou masquez les boutons "Import" et
-                                    "Statistiques" selon vos besoins</p>
+
+                            <!-- Interface -->
+                            <div class="bg-gray-50 p-3 rounded border border-gray-100">
+                                <p class="font-semibold text-gray-800 text-sm mb-1 flex items-center gap-2"><i
+                                        class="fas fa-sliders-h text-green-600"></i> Préférences d'interface</p>
+                                <p class="text-xs text-gray-600 mb-1">Simplifiez votre tableau de bord en affichant
+                                    uniquement ce dont vous avez besoin :</p>
+                                <ul class="text-xs text-gray-600 list-disc ml-4 space-y-0.5">
+                                    <li>Afficher/Masquer le bouton "Importer mes données"</li>
+                                    <li>Afficher/Masquer le bouton "Statistiques"</li>
+                                </ul>
                             </div>
-                            <div class="bg-gray-50 p-3 rounded">
-                                <p class="font-semibold text-gray-800 text-sm mb-1">🔑 Sécurité</p>
-                                <p class="text-xs text-gray-600">Réinitialisez votre mot de passe par email</p>
+
+                            <!-- Actions -->
+                            <div class="bg-gray-50 p-3 rounded border border-gray-100">
+                                <p class="font-semibold text-gray-800 text-sm mb-1 flex items-center gap-2"><i
+                                        class="fas fa-tools text-green-600"></i> Actions & Aide</p>
+                                <ul class="text-xs text-gray-600 space-y-1">
+                                    <li class="flex items-center gap-2"><i
+                                            class="fas fa-graduation-cap text-blue-500"></i> <strong>Tutoriel :</strong>
+                                        Relancez le guide interactif (depuis le tableau de bord uniquement).</li>
+                                    <li class="flex items-center gap-2"><i class="fas fa-key text-red-500"></i>
+                                        <strong>Sécurité :</strong> Réinitialisez votre mot de passe.</li>
+                                </ul>
                             </div>
                         </div>
                     </div>
