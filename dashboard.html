@@ -646,7 +646,31 @@
                             step="0.01" min="0" placeholder="00,00">
                     </div>
                     <div class="mb-4">
-                        <label for="raceGpxUrl" class="block text-green-700 mb-2">Lien GPX</label>
+                        <div class="flex items-end justify-between mb-2">
+                            <label for="raceGpxUrl" class="block text-green-700">Lien GPX</label>
+                            <span
+                                class="text-xs text-gray-400 underline hover:text-green-600 cursor-pointer transition select-none"
+                                onclick="document.getElementById('gpxHelpBox').classList.toggle('hidden')">
+                                Comment trouver ce lien ?
+                            </span>
+                        </div>
+
+                        <!-- Bulle d'aide (cachée par défaut) -->
+                        <div id="gpxHelpBox"
+                            class="hidden mb-3 bg-green-50 border border-green-200 p-3 rounded-lg relative shadow-sm">
+                            <!-- Flèche vers le lien -->
+                            <div
+                                class="absolute -top-1.5 right-12 w-3 h-3 bg-green-50 border-t border-l border-green-200 transform rotate-45">
+                            </div>
+
+                            <p class="text-xs text-green-800">
+                                Sur le site de votre parcours (Strava, OpenRunner...), faites un clic droit sur le
+                                bouton de téléchargement GPX, choisissez "Copier le lien", et collez-le ici.<br>
+                                <span class="opacity-75 italic">Note : Il faut un lien direct vers le fichier
+                                    .gpx</span>
+                            </p>
+                        </div>
+
                         <input type="url" id="raceGpxUrl" name="raceGpxUrl"
                             class="w-full px-3 py-2 border border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
                             placeholder="https://exemple.com/gpx">
