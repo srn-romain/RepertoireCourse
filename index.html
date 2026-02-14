@@ -135,6 +135,26 @@
         </div>
     </div>
 
+    <!-- Nouveauté Février 2026 -->
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8 mt-8 relative z-20">
+        <div
+            class="bg-indigo-100 border-l-4 border-indigo-500 text-indigo-900 p-4 rounded shadow-lg max-w-3xl mx-auto flex items-start gap-4 animate-fade-in-up">
+            <div class="bg-indigo-200 rounded-full p-2 shrink-0">
+                <i class="fas fa-bullhorn text-indigo-600 text-xl"></i>
+            </div>
+            <div>
+                <h3 class="font-bold text-lg mb-1">Nouveauté Février 2026 ! <span
+                        class="text-xs bg-indigo-600 text-white px-2 py-0.5 rounded-full ml-2">New</span></h3>
+                <p class="font-semibold mb-1">Gestion des triathlons et des courses en relai !</p>
+                <div class="text-sm text-indigo-800 bg-indigo-50 p-2 rounded border border-indigo-200 mt-2">
+                    <p class="font-semibold text-xs uppercase text-indigo-400 mb-1">Comment l'utiliser ?</p>
+                    <p>En sélectionnant <span class="font-bold">"Relai"</span> ou <span
+                            class="font-bold">"Triathlon"</span> dans les modales de gestion de vos courses.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Features Section -->
     <div id="features" class="py-16">
         <div class="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -146,998 +166,1042 @@
                     course à pied.</p>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <!-- Feature 1 -->
-                <div class="feature-card p-6">
-                    <div
-                        class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4 text-green-600">
-                        <i class="fas fa-list-ul text-xl"></i>
-                    </div>
-                    <h3 class="text-lg text-green-800 mb-2">Journal Complet</h3>
-                    <p class="text-gray-600 text-sm">Gardez une trace de toutes vos courses avec détails, photos, et
-                        notes personnelles.</p>
-                </div>
-
-                <!-- Feature 2 -->
-                <div class="feature-card p-6">
-                    <div
-                        class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4 text-green-600">
-                        <i class="fas fa-chart-line text-xl"></i>
-                    </div>
-                    <h3 class="text-lg text-green-800 mb-2">Statistiques Avancées</h3>
-                    <p class="text-gray-600 text-sm">Visualisez votre progression, km parcourus et dénivelé via des
-                        graphiques interactifs.</p>
-                </div>
-
-                <!-- Feature 3 -->
-                <div class="feature-card p-6">
-                    <div
-                        class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4 text-green-600">
-                        <i class="fas fa-award text-xl"></i>
-                    </div>
-                    <h3 class="text-lg text-green-800 mb-2">Badges & Succès</h3>
-                    <p class="text-gray-600 text-sm">Débloquez des badges uniques en atteignant vos objectifs et records
-                        personnels.</p>
-                </div>
-
-                <!-- Feature 4 -->
-                <div class="feature-card p-6">
-                    <div
-                        class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4 text-green-600">
-                        <i class="fas fa-heart text-xl"></i>
-                    </div>
-                    <h3 class="text-lg text-green-800 mb-2">Wishlist</h3>
-                    <p class="text-gray-600 text-sm">Listez les courses de vos rêves et cochez-les une fois réalisées.
-                    </p>
-                </div>
-
-                <!-- Feature 5 -->
-                <div class="feature-card p-6">
-                    <div
-                        class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4 text-green-600">
-                        <i class="fas fa-file-pdf text-xl"></i>
-                    </div>
-                    <h3 class="text-lg text-green-800 mb-2">Export PDF</h3>
-                    <p class="text-gray-600 text-sm">Générez des rapports PDF de vos courses pour partager vos
-                        performances.</p>
-                </div>
-
-                <!-- Feature 6 -->
-                <div class="feature-card p-6">
-                    <div
-                        class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4 text-green-600">
-                        <i class="fas fa-users text-xl"></i>
-                    </div>
-                    <h3 class="text-lg text-green-800 mb-2">Communauté</h3>
-                    <p class="text-gray-600 text-sm">
-                        Trouvez la course qui vous motive et encouragez les autres
-                        avec un "J'aime" !
-                    </p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Public Races Section -->
-    <div id="publicRacesSection" class="py-6">
-        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
-
-            <!-- Statistiques de la Communauté (Dynamique) -->
-            <div class="text-center mb-6" id="communityStatsHeader">
-                <span
-                    class="bg-green-100 text-green-800 text-sm px-3 py-1 rounded-full uppercase tracking-wider mt-2 mb-4">Communauté</span>
-                <h2 class="text-3xl text-green-800 mt-2 mb-4">Les dernières courses</h2>
-                <p class="text-gray-600 max-w-2xl mx-auto">Découvrez les performances collectives des coureurs.</p>
-
-                <!-- Message discret : Total KM communauté -->
-                <p id="communityKmMessage" class="text-sm text-gray-500 mt-2 italic">
-                    <i class="fas fa-running mr-1"></i>
-                    <span id="totalCommunityKm">Calcul en cours...</span>
-                </p>
-
-                <!-- Section Admin : Statistiques détaillées (visible uniquement pour l'admin) -->
-                <div id="adminStatsSection" class="hidden mt-8 max-w-5xl mx-auto">
-                    <div class="bg-red-50 border-2 border-red-200 rounded-xl p-6 shadow-lg">
-                        <div class="flex items-center justify-center mb-4">
-                            <i class="fas fa-user-shield text-red-600 text-2xl mr-3"></i>
-                            <h3 class="text-xl font-bold text-red-800">Statistiques Administrateur</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <!-- Feature 1: Journal (Green) -->
+                    <div class="feature-card p-6">
+                        <div
+                            class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4 text-green-600">
+                            <i class="fas fa-list-ul text-xl"></i>
                         </div>
+                        <h3 class="text-lg font-bold text-green-800 mb-2">Journal Complet</h3>
+                        <p class="text-gray-600 text-sm">Gardez une trace de toutes vos courses avec détails, photos, et
+                            notes personnelles.</p>
+                    </div>
 
-                        <!-- FILTRES ADMIN -->
-                        <div class="flex justify-center gap-2 mb-6">
-                            <button onclick="updateAdminStatsFilter('all')" id="btnAdminFilterAll"
-                                class="px-3 py-1 text-sm rounded-full bg-red-600 text-white font-bold transition shadow-sm">Tout</button>
-                            <button onclick="updateAdminStatsFilter('past')" id="btnAdminFilterPast"
-                                class="px-3 py-1 text-sm rounded-full bg-white text-red-600 border border-red-200 hover:bg-red-50 transition shadow-sm">Courses
-                                passées</button>
+                    <!-- Feature 2: Statistiques (Blue) -->
+                    <div class="feature-card p-6">
+                        <div
+                            class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-4 text-blue-600">
+                            <i class="fas fa-chart-line text-xl"></i>
                         </div>
+                        <h3 class="text-lg font-bold text-blue-800 mb-2">Statistiques Avancées</h3>
+                        <p class="text-gray-600 text-sm">Visualisez votre progression, km parcourus et dénivelé via des
+                            graphiques interactifs.</p>
+                    </div>
 
-                        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                            <!-- Utilisateurs -->
-                            <div class="bg-white rounded-lg p-4 text-center border border-red-100">
-                                <p class="text-2xl font-bold text-blue-600" id="adminStatTotalUsers">0</p>
-                                <p class="text-xs text-gray-600 mt-1">Utilisateurs inscrits</p>
-                            </div>
-                            <div class="bg-white rounded-lg p-4 text-center border border-red-100">
-                                <p class="text-2xl font-bold text-green-600" id="adminStatActiveUsers">0</p>
-                                <p class="text-xs text-gray-600 mt-1">Utilisateurs actifs</p>
-                            </div>
-
-                            <!-- Courses -->
-                            <div class="bg-white rounded-lg p-4 text-center border border-red-100">
-                                <p class="text-2xl font-bold text-purple-600" id="adminStatTotalRaces">0</p>
-                                <p class="text-xs text-gray-600 mt-1">Courses totales</p>
-                            </div>
-                            <div class="bg-white rounded-lg p-4 text-center border border-red-100">
-                                <p class="text-2xl font-bold text-green-600" id="adminStatPublicRaces">0</p>
-                                <p class="text-xs text-gray-600 mt-1">Courses publiques</p>
-                            </div>
-                            <div class="bg-white rounded-lg p-4 text-center border border-red-100">
-                                <p class="text-2xl font-bold text-gray-600" id="adminStatPrivateRaces">0</p>
-                                <p class="text-xs text-gray-600 mt-1">Courses privées</p>
-                            </div>
-                            <div class="bg-white rounded-lg p-4 text-center border border-red-100">
-                                <p class="text-2xl font-bold text-yellow-600" id="adminStatUpcomingRaces">0</p>
-                                <p class="text-xs text-gray-600 mt-1">Courses à venir</p>
-                            </div>
-                            <div class="bg-white rounded-lg p-4 text-center border border-red-100">
-                                <p class="text-2xl font-bold text-indigo-600" id="adminStatPastRaces">0</p>
-                                <p class="text-xs text-gray-600 mt-1">Courses passées</p>
-                            </div>
-
-                            <!-- Distances -->
-                            <div class="bg-white rounded-lg p-4 text-center border border-red-100">
-                                <p class="text-2xl font-bold text-red-600" id="adminStatTotalKm">0</p>
-                                <p class="text-xs text-gray-600 mt-1">Km totaux</p>
-                            </div>
-                            <div class="bg-white rounded-lg p-4 text-center border border-red-100">
-                                <p class="text-2xl font-bold text-orange-600" id="adminStatTotalElevation">0</p>
-                                <p class="text-xs text-gray-600 mt-1">D+ total (m)</p>
-                            </div>
-
-                            <!-- Moyennes -->
-                            <div class="bg-white rounded-lg p-4 text-center border border-red-100">
-                                <p class="text-2xl font-bold text-teal-600" id="adminStatAvgRacesPerUser">0</p>
-                                <p class="text-xs text-gray-600 mt-1">Courses/utilisateur</p>
-                            </div>
-                            <div class="bg-white rounded-lg p-4 text-center border border-red-100">
-                                <p class="text-2xl font-bold text-pink-600" id="adminStatUsersWithWishlist">0</p>
-                                <p class="text-xs text-gray-600 mt-1">Utilisateurs avec wishlist</p>
-                            </div>
-
-                            <!-- AUTRES STATS -->
-                            <div class="bg-white rounded-lg p-4 text-center border border-red-100">
-                                <p class="text-2xl font-bold text-gray-800" id="adminStatTerrain">N/A</p>
-                                <p class="text-xs text-gray-600 mt-1">Répartition Terrain</p>
-                            </div>
-                            <div class="bg-white rounded-lg p-4 text-center border border-red-100">
-                                <p class="text-2xl font-bold text-blue-500" id="adminStatPrice">0 €</p>
-                                <p class="text-xs text-gray-600 mt-1">Prix Moyen</p>
-                            </div>
-                            <div class="bg-white rounded-lg p-4 text-center border border-red-100">
-                                <p class="text-2xl font-bold text-indigo-500" id="adminStatTime">0h</p>
-                                <p class="text-xs text-gray-600 mt-1">Temps Moyen</p>
-                            </div>
-                            <div class="bg-white rounded-lg p-4 text-center border border-red-100">
-                                <p class="text-2xl font-bold text-gray-800" id="adminStatStartHour">N/A</p>
-                                <p class="text-xs text-gray-600 mt-1">Heure Moyenne</p>
-                            </div>
-                            <div class="bg-white rounded-lg p-4 text-center border border-red-100">
-                                <p class="text-2xl font-bold text-cyan-600" id="adminStatAvgWishlistItems">0</p>
-                                <p class="text-xs text-gray-600 mt-1">Items/wishlist (moy.)</p>
-                            </div>
-
-                            <!-- Statistiques temporelles -->
-                            <div class="bg-white rounded-lg p-4 text-center border border-red-100 col-span-full">
-                                <p class="text-sm font-bold text-blue-600" id="adminStatLastLogin">-</p>
-                                <p class="text-xs text-gray-600 mt-1">Dernière connexion</p>
-                            </div>
+                    <!-- Feature 3: Badges (Purple) -->
+                    <div class="feature-card p-6">
+                        <div
+                            class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mb-4 text-purple-600">
+                            <i class="fas fa-award text-xl"></i>
                         </div>
+                        <h3 class="text-lg font-bold text-purple-800 mb-2">Badges & Succès</h3>
+                        <p class="text-gray-600 text-sm">Débloquez des badges uniques en atteignant vos objectifs et
+                            records
+                            personnels.</p>
                     </div>
 
-                    <!-- CARTE ADMIN -->
-                    <div class="mt-6 bg-white rounded-xl p-4 border border-red-100 shadow-sm">
-                        <h4 class="text-sm font-bold text-red-800 mb-2 flex items-center gap-2">
-                            <i class="fas fa-map-marked-alt"></i> Carte des courses
-                        </h4>
-                        <p id="mapLoadingStatus" class="text-xs text-gray-500 mb-2 italic">En attente...</p>
-                        <div id="adminRacesMap" class="w-full h-80 rounded-lg bg-gray-100 z-0 border border-gray-200">
+                    <!-- Feature Relai (Indigo) -->
+                    <div class="feature-card p-6">
+                        <div
+                            class="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center mb-4 text-indigo-600">
+                            <i class="fas fa-users-cog text-xl"></i>
                         </div>
+                        <h3 class="text-lg font-bold text-indigo-800 mb-2">Courses en Relai</h3>
+                        <p class="text-gray-600 text-sm">Gérez vos équipes avec un tableau dédié pour chaque relayeur et
+                            segment.</p>
                     </div>
 
-                    <!-- Leaflet CDN -->
-                    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-                        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
-                    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-                        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-                </div>
-            </div>
-
-
-            <!-- Séparateur -->
-            <div class="max-w-4xl mx-auto mb-6">
-                <hr class="border-t border-green-100">
-            </div>
-
-            <!-- Barre de filtres -->
-            <div class="mb-8 flex flex-wrap items-center justify-center gap-3">
-                <!-- Nombre de courses -->
-                <div class="flex items-center gap-2">
-                    <span class="text-sm text-gray-600 font-medium">Afficher :</span>
-                    <div class="flex gap-1">
-                        <button onclick="updatePublicRaceFilter('limit', 15)" id="filterLimit15"
-                            class="px-3 py-1.5 text-sm rounded-full bg-green-600 text-white border border-green-600">
-                            15
-                        </button>
-                        <button onclick="updatePublicRaceFilter('limit', 30)" id="filterLimit30"
-                            class="px-3 py-1.5 text-sm rounded-full border border-green-200 hover:bg-green-50 transition">
-                            30
-                        </button>
-                        <button onclick="updatePublicRaceFilter('limit', 60)" id="filterLimit60"
-                            class="px-3 py-1.5 text-sm rounded-full border border-green-200 hover:bg-green-50 transition">
-                            60
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Statut -->
-                <div class="flex items-center gap-2">
-                    <span class="text-sm text-gray-600 font-medium">Statut :</span>
-                    <div class="flex gap-1">
-                        <button onclick="updatePublicRaceFilter('status', 'all')" id="filterStatusAll"
-                            class="px-3 py-1.5 text-sm rounded-full bg-green-600 text-white border border-green-600">
-                            Toutes
-                        </button>
-                        <button onclick="updatePublicRaceFilter('status', 'upcoming')" id="filterStatusUpcoming"
-                            class="px-3 py-1.5 text-sm rounded-full border border-green-200 hover:bg-green-50 transition">
-                            À venir
-                        </button>
-                        <button onclick="updatePublicRaceFilter('status', 'past')" id="filterStatusPast"
-                            class="px-3 py-1.5 text-sm rounded-full border border-green-200 hover:bg-green-50 transition">
-                            Passées
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Tri -->
-                <div class="flex items-center gap-2">
-                    <span class="text-sm text-gray-600 font-medium">Tri :</span>
-                    <div class="flex gap-1">
-                        <button onclick="updatePublicRaceFilter('sort', 'desc')" id="filterSortDesc"
-                            class="px-3 py-1.5 text-sm rounded-full bg-green-600 text-white border border-green-600">
-                            <i class="fas fa-arrow-down mr-1"></i> Récentes
-                        </button>
-                        <button onclick="updatePublicRaceFilter('sort', 'asc')" id="filterSortAsc"
-                            class="px-3 py-1.5 text-sm rounded-full border border-green-200 hover:bg-green-50 transition">
-                            <i class="fas fa-arrow-up mr-1"></i> Anciennes
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <div id="publicRacesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <!-- Les courses seront chargées ici dynamiquement -->
-                <div class="col-span-1 md:col-span-2 lg:col-span-3 text-center py-12">
-                    <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
-                    <p class="mt-2 text-gray-500">Chargement des courses...</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal de déconnexion automatique -->
-    <div id="autoLogoutModal" class="modal hidden fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"
-        style="backdrop-filter: blur(5px); z-index: 50;">
-        <div class="modal-content bg-white p-6 rounded-lg shadow-lg max-w-md w-full mx-4">
-            <div class="text-center">
-                <div class="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <i class="fas fa-clock text-orange-600 text-2xl"></i>
-                </div>
-                <h2 class="text-xl font-bold text-orange-800 mb-3">Déconnexion automatique</h2>
-                <p class="text-gray-600 mb-6">
-                    Vous avez été déconnecté en raison d'une période d'inactivité prolongée pour des raisons de
-                    sécurité.
-                </p>
-                <button onclick="closeAutoLogoutModal()"
-                    class="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded transition">
-                    J'ai compris
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal Permissions refusées -->
-    <div id="permissionDeniedModal"
-        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden" style="z-index: 100;">
-        <div class="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-xl font-semibold text-green-600">Permissions insuffisantes</h3>
-                <button onclick="closePermissionDeniedModal()" class="text-gray-500 hover:text-gray-700">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
-            </div>
-            <div class="mb-6">
-                <div class="flex items-center justify-center mb-4">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-green-500" fill="none"
-                        viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                    </svg>
-                </div>
-                <p id="permissionDeniedMessage" class="text-gray-700 text-center">
-                    Vous devez être connecté pour utiliser les filtres. Veuillez vous connecter ou créer un compte.
-                </p>
-            </div>
-            <div class="flex justify-end gap-3">
-                <button onclick="closePermissionDeniedModal()"
-                    class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-6 py-2 rounded-lg transition-colors">
-                    Annuler
-                </button>
-                <button onclick="openModal('loginModal'); closePermissionDeniedModal();"
-                    class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg transition-colors">
-                    Se connecter
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal des J'aime (Likers) -->
-    <div id="likersModal" class="fixed inset-0 flex items-center justify-center hidden modal" style="z-index: 200;">
-        <div class="absolute inset-0 bg-black bg-opacity-50 blur-bg" onclick="closeModal('likersModal')"></div>
-        <div class="relative bg-white rounded-xl shadow-xl w-full max-w-sm mx-4 z-10 flex flex-col max-h-[80vh]">
-            <div
-                class="p-4 border-b border-green-100 flex justify-between items-center bg-green-50 rounded-t-xl shrink-0">
-                <h3 class="text-lg font-bold text-green-800 mb-0 flex items-center gap-2">
-                    <i class="fas fa-heart text-red-500"></i> Ils ont aimé cette course
-                </h3>
-                <button onclick="closeModal('likersModal')" class="text-gray-400 hover:text-gray-600 transition">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="p-4 overflow-y-auto custom-scrollbar flex-1" id="likersContent">
-                <div class="flex justify-center py-4">
-                    <i class="fas fa-circle-notch fa-spin text-green-500 text-2xl"></i>
-                </div>
-            </div>
-            <div class="p-3 border-t border-gray-100 text-center bg-gray-50 rounded-b-xl">
-                <button onclick="closeModal('likersModal')"
-                    class="text-sm text-green-600 hover:text-green-800 font-medium">
-                    Fermer
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Footer -->
-    <footer class="py-8 mt-auto text-center text-green-900 opacity-50 text-sm font-medium">
-        <div class="container mx-auto px-4">
-            <p>&copy; 2026 Carnet de Courses. Tous droits réservés.</p>
-            <p class="mt-1">Développé avec ♡ et avec (un peu) d'IA par <a
-                    href="https://www.linkedin.com/in/romain-sieurin/" target="_blank"
-                    class="font-semibold hover:underline">Romain SIEURIN</a></p>
-        </div>
-    </footer>
-
-    <!-- Firebase SDK & Auth Check -->
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-
-    <!-- Manuel Modal (Style Dashboard) -->
-    <div id="manualModal" class="fixed inset-0 flex items-center justify-center z-50 hidden modal">
-        <div class="absolute inset-0 bg-black bg-opacity-50 blur-bg" onclick="closeModal('manualModal')"></div>
-        <div class="relative bg-white rounded-xl shadow-xl w-full max-w-5xl mx-4 z-10 flex flex-col max-h-[90vh]">
-            <!-- Header -->
-            <div
-                class="p-6 border-b border-green-100 flex justify-between items-center bg-gradient-to-r from-green-50 to-white rounded-t-xl shrink-0">
-                <h3 class="text-2xl font-bold text-green-800 mb-0 flex items-center gap-2">
-                    <i class="fas fa-book-open"></i> Manuel Utilisateur
-                </h3>
-                <button onclick="closeModal('manualModal')" class="text-gray-400 hover:text-gray-600 transition">
-                    <i class="fas fa-times text-xl"></i>
-                </button>
-            </div>
-
-            <!-- Content -->
-            <div class="p-8 overflow-y-auto custom-scrollbar">
-                <!-- Intro -->
-                <section class="mb-8">
-                    <h4 class="text-xl font-bold text-green-700 mb-3 flex items-center gap-2">
-                        <i class="fas fa-info-circle text-green-600"></i> Introduction
-                    </h4>
-                    <div class="bg-green-50 border-l-4 border-green-500 p-4 rounded-r-lg mb-4">
-                        <p class="text-gray-700 leading-relaxed">
-                            <strong class="text-green-800">Carnet de Courses</strong> est votre compagnon idéal pour
-                            centraliser, analyser et partager vos performances sportives.
-                            Que vous soyez coureur débutant ou confirmé, cette application vous aide à suivre votre
-                            progression et à atteindre vos objectifs.
+                    <!-- Feature 4: Wishlist (Pink) -->
+                    <div class="feature-card p-6">
+                        <div
+                            class="w-12 h-12 bg-pink-100 rounded-full flex items-center justify-center mb-4 text-pink-600">
+                            <i class="fas fa-heart text-xl"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-pink-800 mb-2">Wishlist</h3>
+                        <p class="text-gray-600 text-sm">Listez les courses de vos rêves et cochez-les une fois
+                            réalisées.
                         </p>
                     </div>
-                </section>
 
-                <!-- Connexion -->
-                <section class="mb-8">
-                    <h4 class="text-xl font-bold text-green-700 mb-3 flex items-center gap-2">
-                        <i class="fas fa-sign-in-alt text-green-600"></i> Connexion
-                    </h4>
-                    <div>
-                        <div class="bg-white border border-green-100 rounded-lg p-4 shadow-sm">
-                            <h5 class="font-bold text-green-800 mb-2 flex items-center gap-2">
-                                <i class="fas fa-user-plus text-green-600"></i> Compte Personnel
-                            </h5>
-                            <p class="text-sm text-gray-600 mb-2">Créez votre compte avec email et mot de passe pour des
-                                fonctionnalités complètes :</p>
-                            <ul class="text-sm text-gray-600 space-y-1 ml-4">
-                                <li>✓ Sauvegarde cloud sécurisée</li>
-                                <li>✓ Synchronisation multi-appareils</li>
-                                <li>✓ Données privées par défaut</li>
-                                <li>✓ Export et sauvegarde</li>
-                            </ul>
+                    <!-- Feature 5: Export PDF (Red) -->
+                    <div class="feature-card p-6">
+                        <div
+                            class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-4 text-red-600">
+                            <i class="fas fa-file-pdf text-xl"></i>
                         </div>
+                        <h3 class="text-lg font-bold text-red-800 mb-2">Export PDF</h3>
+                        <p class="text-gray-600 text-sm">Générez des rapports PDF de vos courses pour partager vos
+                            performances.</p>
                     </div>
-                </section>
 
-                <!-- Interface principale -->
-                <section class="mb-8">
-                    <h4 class="text-xl font-bold text-green-700 mb-3 flex items-center gap-2">
-                        <i class="fas fa-desktop text-green-600"></i> Interface Principale
-                    </h4>
-                    <div class="bg-white border border-green-100 rounded-lg overflow-hidden shadow-sm">
-                        <img src="img/app_generale.png" alt="Interface générale" class="w-full h-auto">
-                        <div class="p-4 bg-gray-50">
-                            <p class="text-sm text-gray-600">
-                                <strong>Vue d'ensemble :</strong> L'interface principale affiche votre tableau de bord
-                                avec statistiques, graphiques et liste de courses.
-                            </p>
+                    <!-- Feature 6: Communauté (Teal) -->
+                    <div class="feature-card p-6">
+                        <div
+                            class="w-12 h-12 bg-teal-100 rounded-full flex items-center justify-center mb-4 text-teal-600">
+                            <i class="fas fa-users text-xl"></i>
                         </div>
+                        <h3 class="text-lg font-bold text-teal-800 mb-2">Communauté</h3>
+                        <p class="text-gray-600 text-sm">
+                            Trouvez la course qui vous motive et encouragez les autres
+                            avec un "J'aime" !
+                        </p>
                     </div>
-                </section>
 
-                <!-- Gestion des courses -->
-                <section class="mb-8">
-                    <h4 class="text-xl font-bold text-green-700 mb-3 flex items-center gap-2">
-                        <i class="fas fa-running text-green-600"></i> Gestion des Courses
-                    </h4>
+                    <!-- Feature Triathlon (Orange) -->
+                    <div class="feature-card p-6">
+                        <div
+                            class="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mb-4 text-orange-600">
+                            <i class="fas fa-swimmer text-xl"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-orange-800 mb-2">Gestion Triathlon</h3>
+                        <p class="text-gray-600 text-sm">Suivez vos performances détaillées en natation, vélo et course
+                            à
+                            pied.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-                    <div class="space-y-4">
-                        <!-- Ajouter une course -->
-                        <div class="bg-white border border-green-100 rounded-lg p-4 shadow-sm">
-                            <h5 class="font-bold text-green-800 mb-2 flex items-center gap-2">
-                                <i class="fas fa-plus-circle text-green-600"></i> Ajouter une Course
-                            </h5>
-                            <p class="text-sm text-gray-600 mb-2">Cliquez sur le bouton <span
-                                    class="px-2 py-1 bg-green-600 text-white text-xs rounded-full">+ Nouvelle
-                                    Course</span> en haut du tableau de bord.</p>
-                            <div class="bg-gray-50 rounded p-3 mt-2">
-                                <p class="text-xs font-semibold text-gray-700 mb-2">Informations disponibles :</p>
-                                <div class="grid md:grid-cols-2 gap-2 text-xs text-gray-600">
-                                    <div>• Nom de la course <span class="text-red-500">*</span></div>
-                                    <div>• Date <span class="text-red-500">*</span></div>
-                                    <div>• Distance (km) <span class="text-red-500">*</span></div>
-                                    <div>• Dénivelé (m+)</div>
-                                    <div>• Temps de course</div>
-                                    <div>• Lieu / Ville</div>
-                                    <div>• Photo (JPG, PNG)</div>
-                                    <div>• Image automatique (Web/Nom)</div>
-                                    <div>• Fichier GPX</div>
-                                    <div>• Notes personnelles</div>
-                                    <div>• Statut favori</div>
-                                    <div>• Partage public</div>
-                                    <div>• Accompagnants</div>
+        <!-- Public Races Section -->
+        <div id="publicRacesSection" class="py-6">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+
+                <!-- Statistiques de la Communauté (Dynamique) -->
+                <div class="text-center mb-6" id="communityStatsHeader">
+                    <span
+                        class="bg-green-100 text-green-800 text-sm px-3 py-1 rounded-full uppercase tracking-wider mt-2 mb-4">Communauté</span>
+                    <h2 class="text-3xl text-green-800 mt-2 mb-4">Les dernières courses</h2>
+                    <p class="text-gray-600 max-w-2xl mx-auto">Découvrez les performances collectives des coureurs.</p>
+
+                    <!-- Message discret : Total KM communauté -->
+                    <p id="communityKmMessage" class="text-sm text-gray-500 mt-2 italic">
+                        <i class="fas fa-running mr-1"></i>
+                        <span id="totalCommunityKm">Calcul en cours...</span>
+                    </p>
+
+                    <!-- Section Admin : Statistiques détaillées (visible uniquement pour l'admin) -->
+                    <div id="adminStatsSection" class="hidden mt-8 max-w-5xl mx-auto">
+                        <div class="bg-red-50 border-2 border-red-200 rounded-xl p-6 shadow-lg">
+                            <div class="flex items-center justify-center mb-4">
+                                <i class="fas fa-user-shield text-red-600 text-2xl mr-3"></i>
+                                <h3 class="text-xl font-bold text-red-800">Statistiques Administrateur</h3>
+                            </div>
+
+                            <!-- FILTRES ADMIN -->
+                            <div class="flex justify-center gap-2 mb-6">
+                                <button onclick="updateAdminStatsFilter('all')" id="btnAdminFilterAll"
+                                    class="px-3 py-1 text-sm rounded-full bg-red-600 text-white font-bold transition shadow-sm">Tout</button>
+                                <button onclick="updateAdminStatsFilter('past')" id="btnAdminFilterPast"
+                                    class="px-3 py-1 text-sm rounded-full bg-white text-red-600 border border-red-200 hover:bg-red-50 transition shadow-sm">Courses
+                                    passées</button>
+                            </div>
+
+                            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                                <!-- Utilisateurs -->
+                                <div class="bg-white rounded-lg p-4 text-center border border-red-100">
+                                    <p class="text-2xl font-bold text-blue-600" id="adminStatTotalUsers">0</p>
+                                    <p class="text-xs text-gray-600 mt-1">Utilisateurs inscrits</p>
+                                </div>
+                                <div class="bg-white rounded-lg p-4 text-center border border-red-100">
+                                    <p class="text-2xl font-bold text-green-600" id="adminStatActiveUsers">0</p>
+                                    <p class="text-xs text-gray-600 mt-1">Utilisateurs actifs</p>
+                                </div>
+
+                                <!-- Courses -->
+                                <div class="bg-white rounded-lg p-4 text-center border border-red-100">
+                                    <p class="text-2xl font-bold text-purple-600" id="adminStatTotalRaces">0</p>
+                                    <p class="text-xs text-gray-600 mt-1">Courses totales</p>
+                                </div>
+                                <div class="bg-white rounded-lg p-4 text-center border border-red-100">
+                                    <p class="text-2xl font-bold text-green-600" id="adminStatPublicRaces">0</p>
+                                    <p class="text-xs text-gray-600 mt-1">Courses publiques</p>
+                                </div>
+                                <div class="bg-white rounded-lg p-4 text-center border border-red-100">
+                                    <p class="text-2xl font-bold text-gray-600" id="adminStatPrivateRaces">0</p>
+                                    <p class="text-xs text-gray-600 mt-1">Courses privées</p>
+                                </div>
+                                <div class="bg-white rounded-lg p-4 text-center border border-red-100">
+                                    <p class="text-2xl font-bold text-yellow-600" id="adminStatUpcomingRaces">0</p>
+                                    <p class="text-xs text-gray-600 mt-1">Courses à venir</p>
+                                </div>
+                                <div class="bg-white rounded-lg p-4 text-center border border-red-100">
+                                    <p class="text-2xl font-bold text-indigo-600" id="adminStatPastRaces">0</p>
+                                    <p class="text-xs text-gray-600 mt-1">Courses passées</p>
+                                </div>
+
+                                <!-- Distances -->
+                                <div class="bg-white rounded-lg p-4 text-center border border-red-100">
+                                    <p class="text-2xl font-bold text-red-600" id="adminStatTotalKm">0</p>
+                                    <p class="text-xs text-gray-600 mt-1">Km totaux</p>
+                                </div>
+                                <div class="bg-white rounded-lg p-4 text-center border border-red-100">
+                                    <p class="text-2xl font-bold text-orange-600" id="adminStatTotalElevation">0</p>
+                                    <p class="text-xs text-gray-600 mt-1">D+ total (m)</p>
+                                </div>
+
+                                <!-- Moyennes -->
+                                <div class="bg-white rounded-lg p-4 text-center border border-red-100">
+                                    <p class="text-2xl font-bold text-teal-600" id="adminStatAvgRacesPerUser">0</p>
+                                    <p class="text-xs text-gray-600 mt-1">Courses/utilisateur</p>
+                                </div>
+                                <div class="bg-white rounded-lg p-4 text-center border border-red-100">
+                                    <p class="text-2xl font-bold text-pink-600" id="adminStatUsersWithWishlist">0</p>
+                                    <p class="text-xs text-gray-600 mt-1">Utilisateurs avec wishlist</p>
+                                </div>
+
+                                <!-- AUTRES STATS -->
+                                <div class="bg-white rounded-lg p-4 text-center border border-red-100">
+                                    <p class="text-2xl font-bold text-gray-800" id="adminStatTerrain">N/A</p>
+                                    <p class="text-xs text-gray-600 mt-1">Répartition Terrain</p>
+                                </div>
+                                <div class="bg-white rounded-lg p-4 text-center border border-red-100">
+                                    <p class="text-2xl font-bold text-blue-500" id="adminStatPrice">0 €</p>
+                                    <p class="text-xs text-gray-600 mt-1">Prix Moyen</p>
+                                </div>
+                                <div class="bg-white rounded-lg p-4 text-center border border-red-100">
+                                    <p class="text-2xl font-bold text-indigo-500" id="adminStatTime">0h</p>
+                                    <p class="text-xs text-gray-600 mt-1">Temps Moyen</p>
+                                </div>
+                                <div class="bg-white rounded-lg p-4 text-center border border-red-100">
+                                    <p class="text-2xl font-bold text-gray-800" id="adminStatStartHour">N/A</p>
+                                    <p class="text-xs text-gray-600 mt-1">Heure Moyenne</p>
+                                </div>
+                                <div class="bg-white rounded-lg p-4 text-center border border-red-100">
+                                    <p class="text-2xl font-bold text-cyan-600" id="adminStatAvgWishlistItems">0</p>
+                                    <p class="text-xs text-gray-600 mt-1">Items/wishlist (moy.)</p>
+                                </div>
+
+                                <!-- Statistiques temporelles -->
+                                <div class="bg-white rounded-lg p-4 text-center border border-red-100 col-span-full">
+                                    <p class="text-sm font-bold text-blue-600" id="adminStatLastLogin">-</p>
+                                    <p class="text-xs text-gray-600 mt-1">Dernière connexion</p>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Modifier/Supprimer -->
-                        <div class="grid md:grid-cols-2 gap-4">
-                            <div class="bg-white border border-blue-100 rounded-lg p-4 shadow-sm">
-                                <h5 class="font-bold text-blue-800 mb-2 flex items-center gap-2">
-                                    <i class="fas fa-edit text-blue-600"></i> Modifier
-                                </h5>
-                                <p class="text-sm text-gray-600">Cliquez sur l'icône <i
-                                        class="fas fa-pencil-alt text-blue-600"></i> dans une carte de course pour
-                                    modifier ses informations.</p>
+                        <!-- CARTE ADMIN -->
+                        <div class="mt-6 bg-white rounded-xl p-4 border border-red-100 shadow-sm">
+                            <h4 class="text-sm font-bold text-red-800 mb-2 flex items-center gap-2">
+                                <i class="fas fa-map-marked-alt"></i> Carte des courses
+                            </h4>
+                            <p id="mapLoadingStatus" class="text-xs text-gray-500 mb-2 italic">En attente...</p>
+                            <div id="adminRacesMap"
+                                class="w-full h-80 rounded-lg bg-gray-100 z-0 border border-gray-200">
                             </div>
-                            <div class="bg-white border border-red-100 rounded-lg p-4 shadow-sm">
-                                <h5 class="font-bold text-red-800 mb-2 flex items-center gap-2">
-                                    <i class="fas fa-trash text-red-600"></i> Supprimer
+                        </div>
+
+                        <!-- Leaflet CDN -->
+                        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+                            integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+                        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+                            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+                    </div>
+                </div>
+
+
+                <!-- Séparateur -->
+                <div class="max-w-4xl mx-auto mb-6">
+                    <hr class="border-t border-green-100">
+                </div>
+
+                <!-- Barre de filtres -->
+                <div class="mb-8 flex flex-wrap items-center justify-center gap-3">
+                    <!-- Nombre de courses -->
+                    <div class="flex items-center gap-2">
+                        <span class="text-sm text-gray-600 font-medium">Afficher :</span>
+                        <div class="flex gap-1">
+                            <button onclick="updatePublicRaceFilter('limit', 15)" id="filterLimit15"
+                                class="px-3 py-1.5 text-sm rounded-full bg-green-600 text-white border border-green-600">
+                                15
+                            </button>
+                            <button onclick="updatePublicRaceFilter('limit', 30)" id="filterLimit30"
+                                class="px-3 py-1.5 text-sm rounded-full border border-green-200 hover:bg-green-50 transition">
+                                30
+                            </button>
+                            <button onclick="updatePublicRaceFilter('limit', 60)" id="filterLimit60"
+                                class="px-3 py-1.5 text-sm rounded-full border border-green-200 hover:bg-green-50 transition">
+                                60
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Statut -->
+                    <div class="flex items-center gap-2">
+                        <span class="text-sm text-gray-600 font-medium">Statut :</span>
+                        <div class="flex gap-1">
+                            <button onclick="updatePublicRaceFilter('status', 'all')" id="filterStatusAll"
+                                class="px-3 py-1.5 text-sm rounded-full bg-green-600 text-white border border-green-600">
+                                Toutes
+                            </button>
+                            <button onclick="updatePublicRaceFilter('status', 'upcoming')" id="filterStatusUpcoming"
+                                class="px-3 py-1.5 text-sm rounded-full border border-green-200 hover:bg-green-50 transition">
+                                À venir
+                            </button>
+                            <button onclick="updatePublicRaceFilter('status', 'past')" id="filterStatusPast"
+                                class="px-3 py-1.5 text-sm rounded-full border border-green-200 hover:bg-green-50 transition">
+                                Passées
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Tri -->
+                    <div class="flex items-center gap-2">
+                        <span class="text-sm text-gray-600 font-medium">Tri :</span>
+                        <div class="flex gap-1">
+                            <button onclick="updatePublicRaceFilter('sort', 'desc')" id="filterSortDesc"
+                                class="px-3 py-1.5 text-sm rounded-full bg-green-600 text-white border border-green-600">
+                                <i class="fas fa-arrow-down mr-1"></i> Récentes
+                            </button>
+                            <button onclick="updatePublicRaceFilter('sort', 'asc')" id="filterSortAsc"
+                                class="px-3 py-1.5 text-sm rounded-full border border-green-200 hover:bg-green-50 transition">
+                                <i class="fas fa-arrow-up mr-1"></i> Anciennes
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="publicRacesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Les courses seront chargées ici dynamiquement -->
+                    <div class="col-span-1 md:col-span-2 lg:col-span-3 text-center py-12">
+                        <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+                        <p class="mt-2 text-gray-500">Chargement des courses...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal de déconnexion automatique -->
+        <div id="autoLogoutModal"
+            class="modal hidden fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"
+            style="backdrop-filter: blur(5px); z-index: 50;">
+            <div class="modal-content bg-white p-6 rounded-lg shadow-lg max-w-md w-full mx-4">
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-clock text-orange-600 text-2xl"></i>
+                    </div>
+                    <h2 class="text-xl font-bold text-orange-800 mb-3">Déconnexion automatique</h2>
+                    <p class="text-gray-600 mb-6">
+                        Vous avez été déconnecté en raison d'une période d'inactivité prolongée pour des raisons de
+                        sécurité.
+                    </p>
+                    <button onclick="closeAutoLogoutModal()"
+                        class="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded transition">
+                        J'ai compris
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Permissions refusées -->
+        <div id="permissionDeniedModal"
+            class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden"
+            style="z-index: 100;">
+            <div class="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-semibold text-green-600">Permissions insuffisantes</h3>
+                    <button onclick="closePermissionDeniedModal()" class="text-gray-500 hover:text-gray-700">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+                <div class="mb-6">
+                    <div class="flex items-center justify-center mb-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-green-500" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                    </div>
+                    <p id="permissionDeniedMessage" class="text-gray-700 text-center">
+                        Vous devez être connecté pour utiliser les filtres. Veuillez vous connecter ou créer un compte.
+                    </p>
+                </div>
+                <div class="flex justify-end gap-3">
+                    <button onclick="closePermissionDeniedModal()"
+                        class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-6 py-2 rounded-lg transition-colors">
+                        Annuler
+                    </button>
+                    <button onclick="openModal('loginModal'); closePermissionDeniedModal();"
+                        class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg transition-colors">
+                        Se connecter
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal des J'aime (Likers) -->
+        <div id="likersModal" class="fixed inset-0 flex items-center justify-center hidden modal" style="z-index: 200;">
+            <div class="absolute inset-0 bg-black bg-opacity-50 blur-bg" onclick="closeModal('likersModal')"></div>
+            <div class="relative bg-white rounded-xl shadow-xl w-full max-w-sm mx-4 z-10 flex flex-col max-h-[80vh]">
+                <div
+                    class="p-4 border-b border-green-100 flex justify-between items-center bg-green-50 rounded-t-xl shrink-0">
+                    <h3 class="text-lg font-bold text-green-800 mb-0 flex items-center gap-2">
+                        <i class="fas fa-heart text-red-500"></i> Ils ont aimé cette course
+                    </h3>
+                    <button onclick="closeModal('likersModal')" class="text-gray-400 hover:text-gray-600 transition">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="p-4 overflow-y-auto custom-scrollbar flex-1" id="likersContent">
+                    <div class="flex justify-center py-4">
+                        <i class="fas fa-circle-notch fa-spin text-green-500 text-2xl"></i>
+                    </div>
+                </div>
+                <div class="p-3 border-t border-gray-100 text-center bg-gray-50 rounded-b-xl">
+                    <button onclick="closeModal('likersModal')"
+                        class="text-sm text-green-600 hover:text-green-800 font-medium">
+                        Fermer
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="py-8 mt-auto text-center text-green-900 opacity-50 text-sm font-medium">
+            <div class="container mx-auto px-4">
+                <p>&copy; 2026 Carnet de Courses. Tous droits réservés.</p>
+                <p class="mt-1">Développé avec ♡ et avec (un peu) d'IA par <a
+                        href="https://www.linkedin.com/in/romain-sieurin/" target="_blank"
+                        class="font-semibold hover:underline">Romain SIEURIN</a></p>
+            </div>
+        </footer>
+
+        <!-- Firebase SDK & Auth Check -->
+        <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+
+        <!-- Manuel Modal (Style Dashboard) -->
+        <div id="manualModal" class="fixed inset-0 flex items-center justify-center z-50 hidden modal">
+            <div class="absolute inset-0 bg-black bg-opacity-50 blur-bg" onclick="closeModal('manualModal')"></div>
+            <div class="relative bg-white rounded-xl shadow-xl w-full max-w-5xl mx-4 z-10 flex flex-col max-h-[90vh]">
+                <!-- Header -->
+                <div
+                    class="p-6 border-b border-green-100 flex justify-between items-center bg-gradient-to-r from-green-50 to-white rounded-t-xl shrink-0">
+                    <h3 class="text-2xl font-bold text-green-800 mb-0 flex items-center gap-2">
+                        <i class="fas fa-book-open"></i> Manuel Utilisateur
+                    </h3>
+                    <button onclick="closeModal('manualModal')" class="text-gray-400 hover:text-gray-600 transition">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+
+                <!-- Content -->
+                <div class="p-8 overflow-y-auto custom-scrollbar">
+                    <!-- Intro -->
+                    <section class="mb-8">
+                        <h4 class="text-xl font-bold text-green-700 mb-3 flex items-center gap-2">
+                            <i class="fas fa-info-circle text-green-600"></i> Introduction
+                        </h4>
+                        <div class="bg-green-50 border-l-4 border-green-500 p-4 rounded-r-lg mb-4">
+                            <p class="text-gray-700 leading-relaxed">
+                                <strong class="text-green-800">Carnet de Courses</strong> est votre compagnon idéal pour
+                                centraliser, analyser et partager vos performances sportives.
+                                Que vous soyez coureur débutant ou confirmé, cette application vous aide à suivre votre
+                                progression et à atteindre vos objectifs.
+                            </p>
+                        </div>
+                    </section>
+
+                    <!-- Connexion -->
+                    <section class="mb-8">
+                        <h4 class="text-xl font-bold text-green-700 mb-3 flex items-center gap-2">
+                            <i class="fas fa-sign-in-alt text-green-600"></i> Connexion
+                        </h4>
+                        <div>
+                            <div class="bg-white border border-green-100 rounded-lg p-4 shadow-sm">
+                                <h5 class="font-bold text-green-800 mb-2 flex items-center gap-2">
+                                    <i class="fas fa-user-plus text-green-600"></i> Compte Personnel
                                 </h5>
-                                <p class="text-sm text-gray-600">Cliquez sur l'icône <i
-                                        class="fas fa-trash text-red-600"></i> et confirmez la suppression définitive.
+                                <p class="text-sm text-gray-600 mb-2">Créez votre compte avec email et mot de passe pour
+                                    des
+                                    fonctionnalités complètes :</p>
+                                <ul class="text-sm text-gray-600 space-y-1 ml-4">
+                                    <li>✓ Sauvegarde cloud sécurisée</li>
+                                    <li>✓ Synchronisation multi-appareils</li>
+                                    <li>✓ Données privées par défaut</li>
+                                    <li>✓ Export et sauvegarde</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Interface principale -->
+                    <section class="mb-8">
+                        <h4 class="text-xl font-bold text-green-700 mb-3 flex items-center gap-2">
+                            <i class="fas fa-desktop text-green-600"></i> Interface Principale
+                        </h4>
+                        <div class="bg-white border border-green-100 rounded-lg overflow-hidden shadow-sm">
+                            <img src="img/app_generale.png" alt="Interface générale" class="w-full h-auto">
+                            <div class="p-4 bg-gray-50">
+                                <p class="text-sm text-gray-600">
+                                    <strong>Vue d'ensemble :</strong> L'interface principale affiche votre tableau de
+                                    bord
+                                    avec statistiques, graphiques et liste de courses.
                                 </p>
                             </div>
                         </div>
-                    </div>
-                </section>
+                    </section>
 
-                <!-- Triathlon & Relais -->
-                <section class="mb-8">
-                    <h4 class="text-xl font-bold text-green-700 mb-3 flex items-center gap-2">
-                        <i class="fas fa-swimmer text-green-600"></i> Spécial : Triathlon & Relais
-                    </h4>
-                    <div class="bg-white border border-blue-100 rounded-lg p-4 shadow-sm space-y-4">
+                    <!-- Gestion des courses -->
+                    <section class="mb-8">
+                        <h4 class="text-xl font-bold text-green-700 mb-3 flex items-center gap-2">
+                            <i class="fas fa-running text-green-600"></i> Gestion des Courses
+                        </h4>
 
-                        <!-- Triathlon -->
-                        <div>
-                            <h5 class="font-bold text-blue-800 mb-2 flex items-center gap-2">
-                                🏊‍♂️🚴‍♂️🏃‍♂️ Triathlon
-                            </h5>
-                            <p class="text-sm text-gray-600 mb-2">En sélectionnant le type "Triathlon", détaillez chaque
-                                épreuve :</p>
-                            <ul class="text-xs text-gray-600 ml-4 space-y-1">
-                                <li>• <strong>Natation :</strong> Distance (m) et Temps</li>
-                                <li>• <strong>Vélo :</strong> Distance (km), Dénivelé (m) et Temps</li>
-                                <li>• <strong>Course à pied :</strong> Distance (km), Dénivelé (m) et Temps</li>
-                            </ul>
-                        </div>
-
-                        <hr class="border-blue-100">
-
-                        <!-- Relais -->
-                        <div>
-                            <h5 class="font-bold text-blue-800 mb-2 flex items-center gap-2">
-                                <i class="fas fa-users"></i> Courses en Relais
-                            </h5>
-                            <p class="text-sm text-gray-600 mb-2">Gérez les courses d'équipe avec précision :</p>
-                            <ul class="text-xs text-gray-600 ml-4 space-y-1">
-                                <li>• <strong>Relais Classique :</strong> Utilisez le "Tableau de Relais" pour ajouter
-                                    chaque segment (distance, dénivelé, temps) individuellement.</li>
-                                <li>• <strong>Triathlon en Relais :</strong> Sélectionnez "En équipe (Relais)" puis
-                                    choisissez votre discipline (Nageur, Cycliste ou Coureur) pour n'enregistrer que
-                                    votre partie.</li>
-                            </ul>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- Statistiques -->
-                <section class="mb-8">
-                    <h4 class="text-xl font-bold text-green-700 mb-3 flex items-center gap-2">
-                        <i class="fas fa-chart-line text-green-600"></i> Statistiques & Analyses
-                    </h4>
-                    <div class="bg-white border border-green-100 rounded-lg overflow-hidden shadow-sm">
-                        <img src="img/stat.png" alt="Statistiques" class="w-full h-auto">
-                        <div class="p-4 bg-gray-50">
-                            <p class="text-sm text-gray-600 mb-3">
-                                <strong>Graphiques interactifs :</strong> Visualisez votre progression avec plusieurs
-                                types de graphiques.
-                            </p>
-                            <div class="grid md:grid-cols-2 gap-2 text-xs text-gray-600">
-                                <div>📊 Distance par mois/année</div>
-                                <div>⛰️ Dénivelé cumulé</div>
-                                <div>📈 Évolution du nombre de courses</div>
-                                <div>🏃 Vitesse moyenne par période</div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- Badges -->
-                <section class="mb-8">
-                    <h4 class="text-xl font-bold text-green-700 mb-3 flex items-center gap-2">
-                        <i class="fas fa-award text-green-600"></i> Badges & Succès
-                    </h4>
-                    <div class="bg-white border border-purple-100 rounded-lg p-4 shadow-sm">
-                        <p class="text-sm text-gray-600 mb-2">Débloquez des badges spéciaux pour célébrer vos exploits
-                            (Record Vitesse, Max Dénivelé, etc.).</p>
-                        <div class="grid grid-cols-2 gap-2 text-xs text-purple-800 mb-3">
-                            <div class="bg-purple-50 p-2 rounded flex items-center gap-2"><i class="fas fa-bolt"></i>
-                                Record Vitesse</div>
-                            <div class="bg-purple-50 p-2 rounded flex items-center gap-2"><i
-                                    class="fas fa-mountain"></i> Max Dénivelé</div>
-                            <div class="bg-purple-50 p-2 rounded flex items-center gap-2"><i
-                                    class="fas fa-euro-sign"></i> Course la + chère</div>
-                            <div class="bg-purple-50 p-2 rounded flex items-center gap-2"><i class="fas fa-route"></i>
-                                Plus Longue Distance</div>
-                        </div>
-                        <p class="text-xs text-gray-500 italic">Note : Le bouton "Badges" apparaît sur votre tableau de
-                            bord automatiquement dès que vous obtenez votre premier badge.</p>
-                    </div>
-                </section>
-
-                <!-- Recherche avancée -->
-                <section class="mb-8">
-                    <h4 class="text-xl font-bold text-green-700 mb-3 flex items-center gap-2">
-                        <i class="fas fa-search text-green-600"></i> Recherche Avancée
-                    </h4>
-                    <div class="bg-white border border-green-100 rounded-lg p-4 shadow-sm">
-                        <p class="text-sm text-gray-600 mb-3">Filtrez vos courses selon plusieurs critères
-                            simultanés :
-                        </p>
-                        <div class="grid md:grid-cols-3 gap-3">
-                            <div class="bg-green-50 p-3 rounded">
-                                <p class="font-semibold text-green-800 text-sm mb-1">📅 Par Date</p>
-                                <p class="text-xs text-gray-600">Année, mois, période personnalisée</p>
-                            </div>
-                            <div class="bg-blue-50 p-3 rounded">
-                                <p class="font-semibold text-blue-800 text-sm mb-1">📏 Par Distance</p>
-                                <p class="text-xs text-gray-600">5km, 10km, semi, marathon, ultra</p>
-                            </div>
-                            <div class="bg-purple-50 p-3 rounded">
-                                <p class="font-semibold text-purple-800 text-sm mb-1">📍 Par Lieu</p>
-                                <p class="text-xs text-gray-600">Ville, région, pays</p>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- Wishlist -->
-                <section class="mb-8">
-                    <h4 class="text-xl font-bold text-green-700 mb-3 flex items-center gap-2">
-                        <i class="fas fa-heart text-green-600"></i> Wishlist
-                    </h4>
-                    <div class="bg-white border border-blue-100 rounded-lg p-4 shadow-sm">
-                        <p class="text-sm text-gray-600 mb-3">Planifiez vos courses futures et suivez leur
-                            réalisation :
-                        </p>
-                        <ul class="space-y-2 text-sm text-gray-600">
-                            <li class="flex items-start gap-2">
-                                <i class="fas fa-check-circle text-green-600 mt-0.5"></i>
-                                <span>Ajoutez des courses à votre liste de souhaits</span>
-                            </li>
-                            <li class="flex items-start gap-2">
-                                <i class="fas fa-check-circle text-green-600 mt-0.5"></i>
-                                <span>Cochez-les une fois réalisées</span>
-                            </li>
-                            <li class="flex items-start gap-2">
-                                <i class="fas fa-check-circle text-green-600 mt-0.5"></i>
-                                <span>Suivez votre progression d'objectifs</span>
-                            </li>
-                        </ul>
-                    </div>
-                </section>
-
-                <!-- Interactions -->
-                <section class="mb-8">
-                    <h4 class="text-xl font-bold text-green-700 mb-3 flex items-center gap-2">
-                        <i class="fas fa-heart text-green-600"></i> Interactions Sociales
-                    </h4>
-                    <div class="bg-white border border-red-100 rounded-lg p-4 shadow-sm">
-                        <p class="text-sm text-gray-600 mb-3">Encouragez les autres coureurs et créez du lien !</p>
-                        <ul class="space-y-2 text-sm text-gray-600">
-                            <li class="flex items-start gap-2">
-                                <i class="fas fa-check-circle text-green-600 mt-0.5"></i>
-                                <span><strong>Aimer :</strong> Cliquez sur le cœur <i
-                                        class="fas fa-heart text-red-500"></i> pour féliciter une performance.</span>
-                            </li>
-                            <li class="flex items-start gap-2">
-                                <i class="fas fa-check-circle text-green-600 mt-0.5"></i>
-                                <span><strong>Voir les "J'aime" :</strong> Cliquez sur le compteur de "J'aime" pour voir
-                                    la liste des personnes qui ont aimé la course.</span>
-                            </li>
-                            <li class="flex items-start gap-2">
-                                <i class="fas fa-info-circle text-blue-600 mt-0.5"></i>
-                                <span><strong>Confidentialité :</strong> Vous pouvez <strong>masquer le nombre de
-                                        J'aime</strong> sur VOS courses dans les paramètres de compte (visible
-                                    uniquement par vous).</span>
-                            </li>
-                        </ul>
-                    </div>
-                </section>
-
-                <!-- Paramètres -->
-                <section class="mb-8">
-                    <h4 class="text-xl font-bold text-green-700 mb-3 flex items-center gap-2">
-                        <i class="fas fa-cog text-green-600"></i> Paramètres du Compte
-                    </h4>
-                    <div class="bg-white border border-green-100 rounded-lg p-4 shadow-sm">
-                        <p class="text-sm text-gray-600 mb-3">Accédez aux paramètres via l'icône <i
-                                class="fas fa-cog text-gray-600"></i> dans le bandeau de connexion (ou "Compte" sur
-                            mobile). Vous y trouverez :</p>
-
-                        <div class="space-y-3">
-                            <!-- Profil -->
-                            <div class="bg-gray-50 p-3 rounded border border-gray-100">
-                                <p class="font-semibold text-gray-800 text-sm mb-1 flex items-center gap-2"><i
-                                        class="fas fa-user-edit text-green-600"></i> Profil</p>
-                                <p class="text-xs text-gray-600">Modifiez votre pseudo pour l'affichage public.</p>
+                        <div class="space-y-4">
+                            <!-- Ajouter une course -->
+                            <div class="bg-white border border-green-100 rounded-lg p-4 shadow-sm">
+                                <h5 class="font-bold text-green-800 mb-2 flex items-center gap-2">
+                                    <i class="fas fa-plus-circle text-green-600"></i> Ajouter une Course
+                                </h5>
+                                <p class="text-sm text-gray-600 mb-2">Cliquez sur le bouton <span
+                                        class="px-2 py-1 bg-green-600 text-white text-xs rounded-full">+ Nouvelle
+                                        Course</span> en haut du tableau de bord.</p>
+                                <div class="bg-gray-50 rounded p-3 mt-2">
+                                    <p class="text-xs font-semibold text-gray-700 mb-2">Informations disponibles :</p>
+                                    <div class="grid md:grid-cols-2 gap-2 text-xs text-gray-600">
+                                        <div>• Nom de la course <span class="text-red-500">*</span></div>
+                                        <div>• Date <span class="text-red-500">*</span></div>
+                                        <div>• Distance (km) <span class="text-red-500">*</span></div>
+                                        <div>• Dénivelé (m+)</div>
+                                        <div>• Temps de course</div>
+                                        <div>• Lieu / Ville</div>
+                                        <div>• Photo (JPG, PNG)</div>
+                                        <div>• Image automatique (Web/Nom)</div>
+                                        <div>• Fichier GPX</div>
+                                        <div>• Notes personnelles</div>
+                                        <div>• Statut favori</div>
+                                        <div>• Partage public</div>
+                                        <div>• Accompagnants</div>
+                                    </div>
+                                </div>
                             </div>
 
-                            <!-- Confidentialité -->
-                            <div class="bg-gray-50 p-3 rounded border border-gray-100">
-                                <p class="font-semibold text-gray-800 text-sm mb-1 flex items-center gap-2"><i
-                                        class="fas fa-user-secret text-green-600"></i> Confidentialité</p>
-                                <p class="text-xs text-gray-600 mb-1">Contrôlez ce que les autres voient sur vos courses
-                                    publiques :</p>
-                                <ul class="text-xs text-gray-600 list-disc ml-4 space-y-0.5">
-                                    <li>Afficher/Masquer votre pseudo</li>
-                                    <li>Afficher/Masquer la ville de la course</li>
-                                    <li>Afficher/Masquer le jour précis (ex: 12 mars)</li>
-                                    <li>Afficher/Masquer le label "Favori"</li>
-                                    <li>Masquer le compteur de "J'aime"</li>
+                            <!-- Modifier/Supprimer -->
+                            <div class="grid md:grid-cols-2 gap-4">
+                                <div class="bg-white border border-blue-100 rounded-lg p-4 shadow-sm">
+                                    <h5 class="font-bold text-blue-800 mb-2 flex items-center gap-2">
+                                        <i class="fas fa-edit text-blue-600"></i> Modifier
+                                    </h5>
+                                    <p class="text-sm text-gray-600">Cliquez sur l'icône <i
+                                            class="fas fa-pencil-alt text-blue-600"></i> dans une carte de course pour
+                                        modifier ses informations.</p>
+                                </div>
+                                <div class="bg-white border border-red-100 rounded-lg p-4 shadow-sm">
+                                    <h5 class="font-bold text-red-800 mb-2 flex items-center gap-2">
+                                        <i class="fas fa-trash text-red-600"></i> Supprimer
+                                    </h5>
+                                    <p class="text-sm text-gray-600">Cliquez sur l'icône <i
+                                            class="fas fa-trash text-red-600"></i> et confirmez la suppression
+                                        définitive.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Triathlon & Relais -->
+                    <section class="mb-8">
+                        <h4 class="text-xl font-bold text-green-700 mb-3 flex items-center gap-2">
+                            <i class="fas fa-swimmer text-green-600"></i> Spécial : Triathlon & Relais
+                        </h4>
+                        <div class="bg-white border border-blue-100 rounded-lg p-4 shadow-sm space-y-4">
+
+                            <!-- Triathlon -->
+                            <div>
+                                <h5 class="font-bold text-blue-800 mb-2 flex items-center gap-2">
+                                    🏊‍♂️🚴‍♂️🏃‍♂️ Triathlon
+                                </h5>
+                                <p class="text-sm text-gray-600 mb-2">En sélectionnant le type "Triathlon", détaillez
+                                    chaque
+                                    épreuve :</p>
+                                <ul class="text-xs text-gray-600 ml-4 space-y-1">
+                                    <li>• <strong>Natation :</strong> Distance (m) et Temps</li>
+                                    <li>• <strong>Vélo :</strong> Distance (km), Dénivelé (m) et Temps</li>
+                                    <li>• <strong>Course à pied :</strong> Distance (km), Dénivelé (m) et Temps</li>
                                 </ul>
                             </div>
 
-                            <!-- Interface -->
-                            <div class="bg-gray-50 p-3 rounded border border-gray-100">
-                                <p class="font-semibold text-gray-800 text-sm mb-1 flex items-center gap-2"><i
-                                        class="fas fa-sliders-h text-green-600"></i> Préférences d'interface</p>
-                                <p class="text-xs text-gray-600 mb-1">Simplifiez votre tableau de bord en affichant
-                                    uniquement ce dont vous avez besoin :</p>
-                                <ul class="text-xs text-gray-600 list-disc ml-4 space-y-0.5">
-                                    <li>Afficher/Masquer le bouton "Importer mes données"</li>
-                                    <li>Afficher/Masquer le bouton "Statistiques"</li>
-                                </ul>
-                            </div>
+                            <hr class="border-blue-100">
 
-                            <!-- Actions -->
-                            <div class="bg-gray-50 p-3 rounded border border-gray-100">
-                                <p class="font-semibold text-gray-800 text-sm mb-1 flex items-center gap-2"><i
-                                        class="fas fa-tools text-green-600"></i> Actions & Aide</p>
-                                <ul class="text-xs text-gray-600 space-y-1">
-                                    <li class="flex items-center gap-2"><i
-                                            class="fas fa-graduation-cap text-blue-500"></i> <strong>Tutoriel :</strong>
-                                        Relancez le guide interactif (depuis le tableau de bord uniquement).</li>
-                                    <li class="flex items-center gap-2"><i class="fas fa-key text-red-500"></i>
-                                        <strong>Sécurité :</strong> Réinitialisez votre mot de passe.</li>
+                            <!-- Relais -->
+                            <div>
+                                <h5 class="font-bold text-blue-800 mb-2 flex items-center gap-2">
+                                    <i class="fas fa-users"></i> Courses en Relais
+                                </h5>
+                                <p class="text-sm text-gray-600 mb-2">Gérez les courses d'équipe avec précision :</p>
+                                <ul class="text-xs text-gray-600 ml-4 space-y-1">
+                                    <li>• <strong>Relais Classique :</strong> Utilisez le "Tableau de Relais" pour
+                                        ajouter
+                                        chaque segment (distance, dénivelé, temps) individuellement.</li>
+                                    <li>• <strong>Triathlon en Relais :</strong> Sélectionnez "En équipe (Relais)" puis
+                                        choisissez votre discipline (Nageur, Cycliste ou Coureur) pour n'enregistrer que
+                                        votre partie.</li>
                                 </ul>
                             </div>
                         </div>
-                    </div>
-                </section>
+                    </section>
 
-                <!-- Export & Backup -->
-                <section class="mb-8">
-                    <h4 class="text-xl font-bold text-green-700 mb-3 flex items-center gap-2">
-                        <i class="fas fa-download text-green-600"></i> Export, Sauvegarde & Import
-                    </h4>
-                    <div class="grid md:grid-cols-2 gap-4">
+                    <!-- Statistiques -->
+                    <section class="mb-8">
+                        <h4 class="text-xl font-bold text-green-700 mb-3 flex items-center gap-2">
+                            <i class="fas fa-chart-line text-green-600"></i> Statistiques & Analyses
+                        </h4>
+                        <div class="bg-white border border-green-100 rounded-lg overflow-hidden shadow-sm">
+                            <img src="img/stat.png" alt="Statistiques" class="w-full h-auto">
+                            <div class="p-4 bg-gray-50">
+                                <p class="text-sm text-gray-600 mb-3">
+                                    <strong>Graphiques interactifs :</strong> Visualisez votre progression avec
+                                    plusieurs
+                                    types de graphiques.
+                                </p>
+                                <div class="grid md:grid-cols-2 gap-2 text-xs text-gray-600">
+                                    <div>📊 Distance par mois/année</div>
+                                    <div>⛰️ Dénivelé cumulé</div>
+                                    <div>📈 Évolution du nombre de courses</div>
+                                    <div>🏃 Vitesse moyenne par période</div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Badges -->
+                    <section class="mb-8">
+                        <h4 class="text-xl font-bold text-green-700 mb-3 flex items-center gap-2">
+                            <i class="fas fa-award text-green-600"></i> Badges & Succès
+                        </h4>
+                        <div class="bg-white border border-purple-100 rounded-lg p-4 shadow-sm">
+                            <p class="text-sm text-gray-600 mb-2">Débloquez des badges spéciaux pour célébrer vos
+                                exploits
+                                (Record Vitesse, Max Dénivelé, etc.).</p>
+                            <div class="grid grid-cols-2 gap-2 text-xs text-purple-800 mb-3">
+                                <div class="bg-purple-50 p-2 rounded flex items-center gap-2"><i
+                                        class="fas fa-bolt"></i>
+                                    Record Vitesse</div>
+                                <div class="bg-purple-50 p-2 rounded flex items-center gap-2"><i
+                                        class="fas fa-mountain"></i> Max Dénivelé</div>
+                                <div class="bg-purple-50 p-2 rounded flex items-center gap-2"><i
+                                        class="fas fa-euro-sign"></i> Course la + chère</div>
+                                <div class="bg-purple-50 p-2 rounded flex items-center gap-2"><i
+                                        class="fas fa-route"></i>
+                                    Plus Longue Distance</div>
+                            </div>
+                            <p class="text-xs text-gray-500 italic">Note : Le bouton "Badges" apparaît sur votre tableau
+                                de
+                                bord automatiquement dès que vous obtenez votre premier badge.</p>
+                        </div>
+                    </section>
+
+                    <!-- Recherche avancée -->
+                    <section class="mb-8">
+                        <h4 class="text-xl font-bold text-green-700 mb-3 flex items-center gap-2">
+                            <i class="fas fa-search text-green-600"></i> Recherche Avancée
+                        </h4>
                         <div class="bg-white border border-green-100 rounded-lg p-4 shadow-sm">
-                            <h5 class="font-bold text-green-800 mb-2 flex items-center gap-2">
-                                <i class="fas fa-file-export text-green-600"></i> Export & Backup
-                            </h5>
-                            <p class="text-sm text-gray-600">Sauvegardez toutes vos données (courses + wishlist)
-                                :</p>
-                            <ul class="text-xs text-gray-600 ml-4 mt-2 space-y-1">
-                                <li>• Format JSON universel</li>
-                                <li class="flex items-center gap-1">• Bouton <svg xmlns="http://www.w3.org/2000/svg"
-                                        class="h-4 w-4 text-green-600 inline" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fill-rule="evenodd"
-                                            d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
-                                            clip-rule="evenodd" />
-                                    </svg> dans la barre de statut</li>
+                            <p class="text-sm text-gray-600 mb-3">Filtrez vos courses selon plusieurs critères
+                                simultanés :
+                            </p>
+                            <div class="grid md:grid-cols-3 gap-3">
+                                <div class="bg-green-50 p-3 rounded">
+                                    <p class="font-semibold text-green-800 text-sm mb-1">📅 Par Date</p>
+                                    <p class="text-xs text-gray-600">Année, mois, période personnalisée</p>
+                                </div>
+                                <div class="bg-blue-50 p-3 rounded">
+                                    <p class="font-semibold text-blue-800 text-sm mb-1">📏 Par Distance</p>
+                                    <p class="text-xs text-gray-600">5km, 10km, semi, marathon, ultra</p>
+                                </div>
+                                <div class="bg-purple-50 p-3 rounded">
+                                    <p class="font-semibold text-purple-800 text-sm mb-1">📍 Par Lieu</p>
+                                    <p class="text-xs text-gray-600">Ville, région, pays</p>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Wishlist -->
+                    <section class="mb-8">
+                        <h4 class="text-xl font-bold text-green-700 mb-3 flex items-center gap-2">
+                            <i class="fas fa-heart text-green-600"></i> Wishlist
+                        </h4>
+                        <div class="bg-white border border-blue-100 rounded-lg p-4 shadow-sm">
+                            <p class="text-sm text-gray-600 mb-3">Planifiez vos courses futures et suivez leur
+                                réalisation :
+                            </p>
+                            <ul class="space-y-2 text-sm text-gray-600">
+                                <li class="flex items-start gap-2">
+                                    <i class="fas fa-check-circle text-green-600 mt-0.5"></i>
+                                    <span>Ajoutez des courses à votre liste de souhaits</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <i class="fas fa-check-circle text-green-600 mt-0.5"></i>
+                                    <span>Cochez-les une fois réalisées</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <i class="fas fa-check-circle text-green-600 mt-0.5"></i>
+                                    <span>Suivez votre progression d'objectifs</span>
+                                </li>
                             </ul>
                         </div>
-                        <div class="bg-white border border-teal-100 rounded-lg p-4 shadow-sm">
-                            <h5 class="font-bold text-teal-800 mb-2 flex items-center gap-2">
-                                <i class="fas fa-file-import text-teal-600"></i> Import Données
-                            </h5>
-                            <p class="text-sm text-gray-600">Restaurez vos données depuis un fichier JSON.</p>
-                            <ul class="text-xs text-gray-600 ml-4 mt-2 space-y-1">
-                                <li>• Importe courses et wishlist</li>
-                                <li>• Courses publiques par défaut</li>
-                                <li>• Caché par défaut (activer dans Compte)</li>
+                    </section>
+
+                    <!-- Interactions -->
+                    <section class="mb-8">
+                        <h4 class="text-xl font-bold text-green-700 mb-3 flex items-center gap-2">
+                            <i class="fas fa-heart text-green-600"></i> Interactions Sociales
+                        </h4>
+                        <div class="bg-white border border-red-100 rounded-lg p-4 shadow-sm">
+                            <p class="text-sm text-gray-600 mb-3">Encouragez les autres coureurs et créez du lien !</p>
+                            <ul class="space-y-2 text-sm text-gray-600">
+                                <li class="flex items-start gap-2">
+                                    <i class="fas fa-check-circle text-green-600 mt-0.5"></i>
+                                    <span><strong>Aimer :</strong> Cliquez sur le cœur <i
+                                            class="fas fa-heart text-red-500"></i> pour féliciter une
+                                        performance.</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <i class="fas fa-check-circle text-green-600 mt-0.5"></i>
+                                    <span><strong>Voir les "J'aime" :</strong> Cliquez sur le compteur de "J'aime" pour
+                                        voir
+                                        la liste des personnes qui ont aimé la course.</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <i class="fas fa-info-circle text-blue-600 mt-0.5"></i>
+                                    <span><strong>Confidentialité :</strong> Vous pouvez <strong>masquer le nombre de
+                                            J'aime</strong> sur VOS courses dans les paramètres de compte (visible
+                                        uniquement par vous).</span>
+                                </li>
                             </ul>
                         </div>
-                        <div class="bg-white border border-red-100 rounded-lg p-4 shadow-sm md:col-span-2">
-                            <h5 class="font-bold text-red-800 mb-2 flex items-center gap-2">
-                                <i class="fas fa-file-pdf text-red-600"></i> Export PDF
-                            </h5>
-                            <p class="text-sm text-gray-600">Générez un rapport PDF esthétique de vos courses
-                                pour
-                                partager vos performances.</p>
-                        </div>
-                    </div>
-                </section>
+                    </section>
 
-                <!-- Communauté -->
-                <section class="mb-8">
-                    <h4 class="text-xl font-bold text-green-700 mb-3 flex items-center gap-2">
-                        <i class="fas fa-users text-green-600"></i> Communauté
-                    </h4>
-                    <div class="bg-white border border-green-100 rounded-lg p-4 shadow-sm">
-                        <p class="text-sm text-gray-600 mb-3">Partagez vos exploits avec la communauté :</p>
-                        <ul class="space-y-2 text-sm text-gray-600">
-                            <li class="flex items-start gap-2">
-                                <i class="fas fa-globe text-green-600 mt-0.5"></i>
-                                <span>Activez le partage public pour chaque course individuellement</span>
-                            </li>
-                            <li class="flex items-start gap-2">
-                                <i class="fas fa-eye text-blue-600 mt-0.5"></i>
-                                <span>Consultez les courses des autres coureurs sur la page d'accueil</span>
-                            </li>
-                            <li class="flex items-start gap-2">
-                                <i class="fas fa-filter text-purple-600 mt-0.5"></i>
-                                <span>Filtrez par statut (À venir / Passées) et nombre de résultats</span>
-                            </li>
-                        </ul>
-                    </div>
-                </section>
+                    <!-- Paramètres -->
+                    <section class="mb-8">
+                        <h4 class="text-xl font-bold text-green-700 mb-3 flex items-center gap-2">
+                            <i class="fas fa-cog text-green-600"></i> Paramètres du Compte
+                        </h4>
+                        <div class="bg-white border border-green-100 rounded-lg p-4 shadow-sm">
+                            <p class="text-sm text-gray-600 mb-3">Accédez aux paramètres via l'icône <i
+                                    class="fas fa-cog text-gray-600"></i> dans le bandeau de connexion (ou "Compte" sur
+                                mobile). Vous y trouverez :</p>
 
-                <!-- Astuces -->
-                <section>
-                    <h4 class="text-xl font-bold text-green-700 mb-3 flex items-center gap-2">
-                        <i class="fas fa-lightbulb text-green-600"></i> Astuces & Raccourcis
-                    </h4>
-                    <div class="bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-lg p-4">
-                        <div class="grid md:grid-cols-2 gap-3 text-sm text-gray-700">
-                            <div class="flex items-start gap-2">
-                                <i class="fas fa-star text-yellow-500 mt-0.5"></i>
-                                <span>Marquez vos courses favorites avec l'étoile</span>
-                            </div>
-                            <div class="flex items-start gap-2">
-                                <i class="fas fa-calendar-check text-green-600 mt-0.5"></i>
-                                <span>Activez les rappels d'anniversaire de courses</span>
-                            </div>
-                            <div class="flex items-start gap-2">
-                                <i class="fas fa-camera text-blue-600 mt-0.5"></i>
-                                <span>Ajoutez des photos pour immortaliser vos moments</span>
-                            </div>
-                            <div class="flex items-start gap-2">
-                                <i class="fas fa-graduation-cap text-green-600 mt-0.5"></i>
-                                <span>Besoin d'aide ? Lancez le tuto guidé dans le menu Compte</span>
-                            </div>
-                            <div class="flex items-start gap-2">
-                                <i class="fas fa-magic text-blue-500 mt-0.5"></i>
-                                <span>Pas de photo ? Laissez l'app chercher pour vous !</span>
-                            </div>
-                            <div class="flex items-start gap-2">
-                                <i class="fas fa-route text-purple-600 mt-0.5"></i>
-                                <span>Importez vos traces GPX pour visualiser votre parcours</span>
+                            <div class="space-y-3">
+                                <!-- Profil -->
+                                <div class="bg-gray-50 p-3 rounded border border-gray-100">
+                                    <p class="font-semibold text-gray-800 text-sm mb-1 flex items-center gap-2"><i
+                                            class="fas fa-user-edit text-green-600"></i> Profil</p>
+                                    <p class="text-xs text-gray-600">Modifiez votre pseudo pour l'affichage public.</p>
+                                </div>
+
+                                <!-- Confidentialité -->
+                                <div class="bg-gray-50 p-3 rounded border border-gray-100">
+                                    <p class="font-semibold text-gray-800 text-sm mb-1 flex items-center gap-2"><i
+                                            class="fas fa-user-secret text-green-600"></i> Confidentialité</p>
+                                    <p class="text-xs text-gray-600 mb-1">Contrôlez ce que les autres voient sur vos
+                                        courses
+                                        publiques :</p>
+                                    <ul class="text-xs text-gray-600 list-disc ml-4 space-y-0.5">
+                                        <li>Afficher/Masquer votre pseudo</li>
+                                        <li>Afficher/Masquer la ville de la course</li>
+                                        <li>Afficher/Masquer le jour précis (ex: 12 mars)</li>
+                                        <li>Afficher/Masquer le label "Favori"</li>
+                                        <li>Masquer le compteur de "J'aime"</li>
+                                    </ul>
+                                </div>
+
+                                <!-- Interface -->
+                                <div class="bg-gray-50 p-3 rounded border border-gray-100">
+                                    <p class="font-semibold text-gray-800 text-sm mb-1 flex items-center gap-2"><i
+                                            class="fas fa-sliders-h text-green-600"></i> Préférences d'interface</p>
+                                    <p class="text-xs text-gray-600 mb-1">Simplifiez votre tableau de bord en affichant
+                                        uniquement ce dont vous avez besoin :</p>
+                                    <ul class="text-xs text-gray-600 list-disc ml-4 space-y-0.5">
+                                        <li>Afficher/Masquer le bouton "Importer mes données"</li>
+                                        <li>Afficher/Masquer le bouton "Statistiques"</li>
+                                    </ul>
+                                </div>
+
+                                <!-- Actions -->
+                                <div class="bg-gray-50 p-3 rounded border border-gray-100">
+                                    <p class="font-semibold text-gray-800 text-sm mb-1 flex items-center gap-2"><i
+                                            class="fas fa-tools text-green-600"></i> Actions & Aide</p>
+                                    <ul class="text-xs text-gray-600 space-y-1">
+                                        <li class="flex items-center gap-2"><i
+                                                class="fas fa-graduation-cap text-blue-500"></i> <strong>Tutoriel
+                                                :</strong>
+                                            Relancez le guide interactif (depuis le tableau de bord uniquement).</li>
+                                        <li class="flex items-center gap-2"><i class="fas fa-key text-red-500"></i>
+                                            <strong>Sécurité :</strong> Réinitialisez votre mot de passe.
+                                        </li>
+                                    </ul>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </section>
+                    </section>
+
+                    <!-- Export & Backup -->
+                    <section class="mb-8">
+                        <h4 class="text-xl font-bold text-green-700 mb-3 flex items-center gap-2">
+                            <i class="fas fa-download text-green-600"></i> Export, Sauvegarde & Import
+                        </h4>
+                        <div class="grid md:grid-cols-2 gap-4">
+                            <div class="bg-white border border-green-100 rounded-lg p-4 shadow-sm">
+                                <h5 class="font-bold text-green-800 mb-2 flex items-center gap-2">
+                                    <i class="fas fa-file-export text-green-600"></i> Export & Backup
+                                </h5>
+                                <p class="text-sm text-gray-600">Sauvegardez toutes vos données (courses + wishlist)
+                                    :</p>
+                                <ul class="text-xs text-gray-600 ml-4 mt-2 space-y-1">
+                                    <li>• Format JSON universel</li>
+                                    <li class="flex items-center gap-1">• Bouton <svg xmlns="http://www.w3.org/2000/svg"
+                                            class="h-4 w-4 text-green-600 inline" viewBox="0 0 20 20"
+                                            fill="currentColor">
+                                            <path fill-rule="evenodd"
+                                                d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
+                                                clip-rule="evenodd" />
+                                        </svg> dans la barre de statut</li>
+                                </ul>
+                            </div>
+                            <div class="bg-white border border-teal-100 rounded-lg p-4 shadow-sm">
+                                <h5 class="font-bold text-teal-800 mb-2 flex items-center gap-2">
+                                    <i class="fas fa-file-import text-teal-600"></i> Import Données
+                                </h5>
+                                <p class="text-sm text-gray-600">Restaurez vos données depuis un fichier JSON.</p>
+                                <ul class="text-xs text-gray-600 ml-4 mt-2 space-y-1">
+                                    <li>• Importe courses et wishlist</li>
+                                    <li>• Courses publiques par défaut</li>
+                                    <li>• Caché par défaut (activer dans Compte)</li>
+                                </ul>
+                            </div>
+                            <div class="bg-white border border-red-100 rounded-lg p-4 shadow-sm md:col-span-2">
+                                <h5 class="font-bold text-red-800 mb-2 flex items-center gap-2">
+                                    <i class="fas fa-file-pdf text-red-600"></i> Export PDF
+                                </h5>
+                                <p class="text-sm text-gray-600">Générez un rapport PDF esthétique de vos courses
+                                    pour
+                                    partager vos performances.</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Communauté -->
+                    <section class="mb-8">
+                        <h4 class="text-xl font-bold text-green-700 mb-3 flex items-center gap-2">
+                            <i class="fas fa-users text-green-600"></i> Communauté
+                        </h4>
+                        <div class="bg-white border border-green-100 rounded-lg p-4 shadow-sm">
+                            <p class="text-sm text-gray-600 mb-3">Partagez vos exploits avec la communauté :</p>
+                            <ul class="space-y-2 text-sm text-gray-600">
+                                <li class="flex items-start gap-2">
+                                    <i class="fas fa-globe text-green-600 mt-0.5"></i>
+                                    <span>Activez le partage public pour chaque course individuellement</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <i class="fas fa-eye text-blue-600 mt-0.5"></i>
+                                    <span>Consultez les courses des autres coureurs sur la page d'accueil</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <i class="fas fa-filter text-purple-600 mt-0.5"></i>
+                                    <span>Filtrez par statut (À venir / Passées) et nombre de résultats</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </section>
+
+                    <!-- Astuces -->
+                    <section>
+                        <h4 class="text-xl font-bold text-green-700 mb-3 flex items-center gap-2">
+                            <i class="fas fa-lightbulb text-green-600"></i> Astuces & Raccourcis
+                        </h4>
+                        <div class="bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-lg p-4">
+                            <div class="grid md:grid-cols-2 gap-3 text-sm text-gray-700">
+                                <div class="flex items-start gap-2">
+                                    <i class="fas fa-star text-yellow-500 mt-0.5"></i>
+                                    <span>Marquez vos courses favorites avec l'étoile</span>
+                                </div>
+                                <div class="flex items-start gap-2">
+                                    <i class="fas fa-calendar-check text-green-600 mt-0.5"></i>
+                                    <span>Activez les rappels d'anniversaire de courses</span>
+                                </div>
+                                <div class="flex items-start gap-2">
+                                    <i class="fas fa-camera text-blue-600 mt-0.5"></i>
+                                    <span>Ajoutez des photos pour immortaliser vos moments</span>
+                                </div>
+                                <div class="flex items-start gap-2">
+                                    <i class="fas fa-graduation-cap text-green-600 mt-0.5"></i>
+                                    <span>Besoin d'aide ? Lancez le tuto guidé dans le menu Compte</span>
+                                </div>
+                                <div class="flex items-start gap-2">
+                                    <i class="fas fa-magic text-blue-500 mt-0.5"></i>
+                                    <span>Pas de photo ? Laissez l'app chercher pour vous !</span>
+                                </div>
+                                <div class="flex items-start gap-2">
+                                    <i class="fas fa-route text-purple-600 mt-0.5"></i>
+                                    <span>Importez vos traces GPX pour visualiser votre parcours</span>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                </div>
 
             </div>
-
         </div>
-    </div>
 
 
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-    <script src="js/firebase-config.js"></script>
-    <script src="js/isAdmin.js"></script>
-    <script src="js/isInvite.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+        <script src="js/firebase-config.js"></script>
+        <script src="js/isAdmin.js"></script>
+        <script src="js/isInvite.js"></script>
 
-    <!-- Auth Modals & Logic (Injects Login/Signup Modals) -->
-    <script src="js/modal-auth.js"></script>
-    <script src="js/public-races.js"></script>
-    <script src="js/admin-stats.js"></script>
-    <script src="js/user-settings.js"></script>
+        <!-- Auth Modals & Logic (Injects Login/Signup Modals) -->
+        <script src="js/modal-auth.js"></script>
+        <script src="js/public-races.js"></script>
+        <script src="js/admin-stats.js"></script>
+        <script src="js/user-settings.js"></script>
 
-    <!-- Vérifier si déconnexion automatique -->
-    <script>
-        // Vérifier si l'utilisateur a été déconnecté automatiquement
-        function checkAutoLogout() {
-            const autoLoggedOut = sessionStorage.getItem('autoLoggedOut');
-            if (autoLoggedOut === 'true') {
-                // Afficher la modale
-                document.getElementById('autoLogoutModal').classList.remove('hidden');
-                // Retirer le flag pour ne pas afficher à nouveau
-                sessionStorage.removeItem('autoLoggedOut');
+        <!-- Vérifier si déconnexion automatique -->
+        <script>
+            // Vérifier si l'utilisateur a été déconnecté automatiquement
+            function checkAutoLogout() {
+                const autoLoggedOut = sessionStorage.getItem('autoLoggedOut');
+                if (autoLoggedOut === 'true') {
+                    // Afficher la modale
+                    document.getElementById('autoLogoutModal').classList.remove('hidden');
+                    // Retirer le flag pour ne pas afficher à nouveau
+                    sessionStorage.removeItem('autoLoggedOut');
+                }
             }
-        }
 
-        // Fonction pour fermer la modale
-        function closeAutoLogoutModal() {
-            document.getElementById('autoLogoutModal').classList.add('hidden');
-        }
+            // Fonction pour fermer la modale
+            function closeAutoLogoutModal() {
+                document.getElementById('autoLogoutModal').classList.add('hidden');
+            }
 
-        // Fonction pour fermer la modale de permission refusée
-        function closePermissionDeniedModal() {
-            document.getElementById('permissionDeniedModal').classList.add('hidden');
-        }
+            // Fonction pour fermer la modale de permission refusée
+            function closePermissionDeniedModal() {
+                document.getElementById('permissionDeniedModal').classList.add('hidden');
+            }
 
-        // Appeler au chargement de la page
-        window.addEventListener('DOMContentLoaded', checkAutoLogout);
+            // Appeler au chargement de la page
+            window.addEventListener('DOMContentLoaded', checkAutoLogout);
 
-        // Gestion de l'affichage selon l'état de connexion
-        if (typeof auth !== 'undefined') {
-            auth.onAuthStateChanged(async (user) => {
-                const authStatusBar = document.getElementById('authStatusBar');
-                const authStatusText = document.getElementById('authStatusText');
-                const titleLink = document.getElementById('titleLink');
+            // Gestion de l'affichage selon l'état de connexion
+            if (typeof auth !== 'undefined') {
+                auth.onAuthStateChanged(async (user) => {
+                    const authStatusBar = document.getElementById('authStatusBar');
+                    const authStatusText = document.getElementById('authStatusText');
+                    const titleLink = document.getElementById('titleLink');
 
-                // Bouton Hero CTA
-                const heroCtaButton = document.getElementById('heroCtaButton');
-                const accountSettingsBtn = document.getElementById('accountSettingsBtn');
+                    // Bouton Hero CTA
+                    const heroCtaButton = document.getElementById('heroCtaButton');
+                    const accountSettingsBtn = document.getElementById('accountSettingsBtn');
 
-                // Boutons de la barre de statut
-                const disconnectBtn = document.getElementById('disconnectBtn');
-                const connectBtn = document.getElementById('connectBtn');
-                const barSignupBtn = document.getElementById('barSignupBtn');
+                    // Boutons de la barre de statut
+                    const disconnectBtn = document.getElementById('disconnectBtn');
+                    const connectBtn = document.getElementById('connectBtn');
+                    const barSignupBtn = document.getElementById('barSignupBtn');
 
-                if (user) {
-                    // Update Last Login
-                    try {
-                        db.collection('users').doc(user.uid).set({
-                            lastLogin: firebase.firestore.FieldValue.serverTimestamp()
-                        }, { merge: true });
-                    } catch (e) { console.error("Update lastLogin failed", e); }
+                    if (user) {
+                        // Update Last Login
+                        try {
+                            db.collection('users').doc(user.uid).set({
+                                lastLogin: firebase.firestore.FieldValue.serverTimestamp()
+                            }, { merge: true });
+                        } catch (e) { console.error("Update lastLogin failed", e); }
 
-                    // Utilisateur connecté
-                    // État de chargement immédiat - Centré Absolument
-                    if (authStatusText) {
-                        if (authStatusBar) authStatusBar.classList.replace('py-2', 'py-6');
-                        authStatusText.className = "absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 text-sm text-green-800 flex items-center";
-                        authStatusText.innerHTML = `
+                        // Utilisateur connecté
+                        // État de chargement immédiat - Centré Absolument
+                        if (authStatusText) {
+                            if (authStatusBar) authStatusBar.classList.replace('py-2', 'py-6');
+                            authStatusText.className = "absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 text-sm text-green-800 flex items-center";
+                            authStatusText.innerHTML = `
                             <div class="flex items-center text-green-600 animate-pulse">
                                 <i class="fas fa-circle-notch fa-spin mr-2"></i>
                                 <span class="font-medium">Chargement profil...</span>
                             </div>
                          `;
-                        // Désactiver le bouton CTA pendant le chargement
-                        if (heroCtaButton) {
-                            heroCtaButton.disabled = true;
-                            heroCtaButton.classList.add('opacity-50', 'cursor-not-allowed');
-                            heroCtaButton.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Chargement...';
+                            // Désactiver le bouton CTA pendant le chargement
+                            if (heroCtaButton) {
+                                heroCtaButton.disabled = true;
+                                heroCtaButton.classList.add('opacity-50', 'cursor-not-allowed');
+                                heroCtaButton.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Chargement...';
+                            }
                         }
-                    }
 
-                    // Récupération pseudo
-                    let userPseudo = "Utilisateur";
-                    try {
-                        const uDoc = await db.collection('users').doc(user.uid).get();
-                        if (uDoc.exists && uDoc.data().pseudo) {
-                            userPseudo = uDoc.data().pseudo;
-                        }
-                    } catch (e) { console.error(e); }
+                        // Récupération pseudo
+                        let userPseudo = "Utilisateur";
+                        try {
+                            const uDoc = await db.collection('users').doc(user.uid).get();
+                            if (uDoc.exists && uDoc.data().pseudo) {
+                                userPseudo = uDoc.data().pseudo;
+                            }
+                        } catch (e) { console.error(e); }
 
-                    // Affichage Final
-                    if (authStatusText) {
-                        if (authStatusBar) authStatusBar.classList.replace('py-6', 'py-2'); // Rétablir hauteur normale
-                        // Reset du style pour le bandeau standard
-                        authStatusText.className = "text-sm text-green-800";
-                        authStatusText.innerHTML = `
+                        // Affichage Final
+                        if (authStatusText) {
+                            if (authStatusBar) authStatusBar.classList.replace('py-6', 'py-2'); // Rétablir hauteur normale
+                            // Reset du style pour le bandeau standard
+                            authStatusText.className = "text-sm text-green-800";
+                            authStatusText.innerHTML = `
                             <span class="italic font-normal text-gray-600 mr-2">Connecté en tant que</span>
                             <span class="font-bold text-green-800 mr-2">${user.email} (${userPseudo})</span>
                             <button onclick="openUserSettings()" class="text-gray-400 hover:text-green-600 transition" title="Paramètres du compte">
                                 <i class="fas fa-cog"></i>
                             </button>
                         `;
+                        }
+
+                        // Gestion boutons barre
+                        if (disconnectBtn) {
+                            disconnectBtn.classList.remove('hidden');
+                            disconnectBtn.onclick = async () => {
+                                try { await auth.signOut(); window.location.reload(); } catch (e) { console.error(e); }
+                            };
+                        }
+                        if (connectBtn) connectBtn.classList.add('hidden');
+                        if (barSignupBtn) barSignupBtn.classList.add('hidden');
+
+                        if (titleLink) titleLink.href = 'dashboard.html';
+
+                        // Mettre à jour le bouton Hero CTA
+                        if (heroCtaButton) {
+                            heroCtaButton.innerHTML = '<i class="fas fa-chart-line"></i> Accéder à mon carnet';
+                            heroCtaButton.onclick = () => window.location.href = 'dashboard.html';
+                            heroCtaButton.title = "Retourner à votre tableau de bord";
+                            heroCtaButton.classList.remove('bg-green-600', 'hover:bg-green-700', 'opacity-50', 'cursor-not-allowed');
+                            heroCtaButton.classList.add('bg-blue-600', 'hover:bg-blue-700');
+                            heroCtaButton.disabled = false;
+                        }
+                        if (accountSettingsBtn) accountSettingsBtn.classList.remove('hidden');
+                    } else {
+                        // Utilisateur non connecté
+
+                        if (authStatusText) authStatusText.innerHTML = `<span class="italic font-normal text-gray-600 mr-2">Vous n'êtes pas connecté</span>`;
+
+                        // Gestion boutons barre
+                        if (disconnectBtn) disconnectBtn.classList.add('hidden');
+                        if (connectBtn) connectBtn.classList.remove('hidden');
+                        if (barSignupBtn) barSignupBtn.classList.remove('hidden');
+
+                        if (titleLink) titleLink.href = '#';
+                        if (accountSettingsBtn) accountSettingsBtn.classList.add('hidden');
+
+                        // Rétablir le bouton Hero CTA
+                        if (heroCtaButton) {
+                            heroCtaButton.innerHTML = '<i class="fas fa-running"></i> Commencer maintenant';
+                            heroCtaButton.onclick = () => openModal('signupModal');
+                            heroCtaButton.title = "";
+                            heroCtaButton.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+                            heroCtaButton.classList.add('bg-green-600', 'hover:bg-green-700');
+                        }
                     }
-
-                    // Gestion boutons barre
-                    if (disconnectBtn) {
-                        disconnectBtn.classList.remove('hidden');
-                        disconnectBtn.onclick = async () => {
-                            try { await auth.signOut(); window.location.reload(); } catch (e) { console.error(e); }
-                        };
-                    }
-                    if (connectBtn) connectBtn.classList.add('hidden');
-                    if (barSignupBtn) barSignupBtn.classList.add('hidden');
-
-                    if (titleLink) titleLink.href = 'dashboard.html';
-
-                    // Mettre à jour le bouton Hero CTA
-                    if (heroCtaButton) {
-                        heroCtaButton.innerHTML = '<i class="fas fa-chart-line"></i> Accéder à mon carnet';
-                        heroCtaButton.onclick = () => window.location.href = 'dashboard.html';
-                        heroCtaButton.title = "Retourner à votre tableau de bord";
-                        heroCtaButton.classList.remove('bg-green-600', 'hover:bg-green-700', 'opacity-50', 'cursor-not-allowed');
-                        heroCtaButton.classList.add('bg-blue-600', 'hover:bg-blue-700');
-                        heroCtaButton.disabled = false;
-                    }
-                    if (accountSettingsBtn) accountSettingsBtn.classList.remove('hidden');
-                } else {
-                    // Utilisateur non connecté
-
-                    if (authStatusText) authStatusText.innerHTML = `<span class="italic font-normal text-gray-600 mr-2">Vous n'êtes pas connecté</span>`;
-
-                    // Gestion boutons barre
-                    if (disconnectBtn) disconnectBtn.classList.add('hidden');
-                    if (connectBtn) connectBtn.classList.remove('hidden');
-                    if (barSignupBtn) barSignupBtn.classList.remove('hidden');
-
-                    if (titleLink) titleLink.href = '#';
-                    if (accountSettingsBtn) accountSettingsBtn.classList.add('hidden');
-
-                    // Rétablir le bouton Hero CTA
-                    if (heroCtaButton) {
-                        heroCtaButton.innerHTML = '<i class="fas fa-running"></i> Commencer maintenant';
-                        heroCtaButton.onclick = () => openModal('signupModal');
-                        heroCtaButton.title = "";
-                        heroCtaButton.classList.remove('bg-blue-600', 'hover:bg-blue-700');
-                        heroCtaButton.classList.add('bg-green-600', 'hover:bg-green-700');
-                    }
-                }
-            });
-        }
-    </script>
+                });
+            }
+        </script>
 </body>
 
 </html>
