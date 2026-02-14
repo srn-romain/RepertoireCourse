@@ -354,6 +354,35 @@
                                 <option value="50+">+50 km</option>
                             </select>
                         </div>
+                        <div>
+                            <label class="block text-sm font-medium text-green-700 mb-2">Type de course</label>
+                            <select id="filterType"
+                                class="w-full px-3 py-2 border border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
+                                <option value="">Tous les types</option>
+                                <option value="triathlon">Triathlon</option>
+                                <option value="route">Route</option>
+                                <option value="relai">Relai</option>
+                                <option value="trail">Trail</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-green-700 mb-2">Visibilité</label>
+                            <select id="filterVisibility"
+                                class="w-full px-3 py-2 border border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
+                                <option value="">Tout</option>
+                                <option value="public">Publique</option>
+                                <option value="private">Privée</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-green-700 mb-2">Commentaires</label>
+                            <select id="filterComments"
+                                class="w-full px-3 py-2 border border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
+                                <option value="">Tout</option>
+                                <option value="yes">Avec notes</option>
+                                <option value="no">Sans notes</option>
+                            </select>
+                        </div>
                     </div>
                     <div class="flex gap-3 justify-end">
                         <button id="resetFiltersBtn"
@@ -2005,6 +2034,13 @@
                 // Mettre à jour la visibilité du bouton Badges
                 if (typeof updateBadgesButtonVisibility === 'function') {
                     updateBadgesButtonVisibility();
+                }
+
+                // Gérer la visibilité du bouton Anniversaire
+                const anniversaryBtn = document.getElementById('anniversaryBtn');
+                if (anniversaryBtn) {
+                    if (races.length > 0) anniversaryBtn.classList.remove('hidden');
+                    else anniversaryBtn.classList.add('hidden');
                 }
             }).catch((error) => {
                 console.error("Erreur lors du chargement des courses:", error);
@@ -5405,6 +5441,9 @@
             const priceFilter = document.getElementById('filterPrice').value;
             const elevationFilter = document.getElementById('filterElevation').value;
             const distanceFilter = document.getElementById('filterDistance').value;
+            const typeFilter = document.getElementById('filterType').value;
+            const visibilityFilter = document.getElementById('filterVisibility').value;
+            const commentsFilter = document.getElementById('filterComments').value;
             const nameQuery = (searchInput.value || '').toLowerCase().trim();
 
             let filteredRaces = races;
@@ -5439,7 +5478,16 @@
             // Filtrer par fourchette de dénivelé
             if (elevationFilter) {
                 filteredRaces = filteredRaces.filter(race => {
-                    const elevation = parseInt(race.elevation) || 0;
+                    let elevation = 0;
+                    if (race.terrain === 'triathlon') {
+                        // Pour le triathlon, on somme bike et run elevation si présents
+                        elevation = (parseInt(race.bikeElevation) || 0) + (parseInt(race.runElevation) || 0);
+                        // Fallback sur race.elevation si les sous-champs sont vides (cas ancienne donnée ou calcul auto raté)
+                        if (elevation === 0) elevation = parseInt(race.elevation) || 0;
+                    } else {
+                        elevation = parseInt(race.elevation) || 0;
+                    }
+
                     if (elevationFilter === '0-500') return elevation < 500;
                     if (elevationFilter === '500-1000') return elevation >= 500 && elevation < 1000;
                     if (elevationFilter === '1000-1500') return elevation >= 1000 && elevation < 1500;
@@ -5452,13 +5500,55 @@
             // Filtrer par fourchette de distance
             if (distanceFilter) {
                 filteredRaces = filteredRaces.filter(race => {
-                    const distance = parseFloat(race.distance) || 0;
+                    let distance = 0;
+                    if (race.terrain === 'triathlon') {
+                        if (race.raceFormat === 'team' && race.raceRelaySport) {
+                            // En relais, on prend la distance du sport choisi
+                            if (race.raceRelaySport === 'swim') distance = (parseFloat(race.swimDistance) || 0) / 1000;
+                            else if (race.raceRelaySport === 'bike') distance = parseFloat(race.bikeDistance) || 0;
+                            else if (race.raceRelaySport === 'run') distance = parseFloat(race.distance) || 0;
+                        } else {
+                            // En solo, on somme tout (km)
+                            distance = ((parseFloat(race.swimDistance) || 0) / 1000) +
+                                (parseFloat(race.bikeDistance) || 0) +
+                                (parseFloat(race.distance) || 0);
+                        }
+                    } else {
+                        distance = parseFloat(race.distance) || 0;
+                    }
+
                     if (distanceFilter === '0-10') return distance < 10;
                     if (distanceFilter === '10-20') return distance >= 10 && distance < 20;
                     if (distanceFilter === '20-30') return distance >= 20 && distance < 30;
                     if (distanceFilter === '30-40') return distance >= 30 && distance < 40;
                     if (distanceFilter === '40-50') return distance >= 40 && distance < 50;
                     if (distanceFilter === '50+') return distance >= 50;
+                    return true;
+                });
+            }
+
+            // Filtrer par type de course
+            if (typeFilter) {
+                filteredRaces = filteredRaces.filter(race => {
+                    return (race.terrain || '') === typeFilter;
+                });
+            }
+
+            // Filtrer par visibilité
+            if (visibilityFilter) {
+                filteredRaces = filteredRaces.filter(race => {
+                    if (visibilityFilter === 'public') return race.public === true;
+                    if (visibilityFilter === 'private') return race.public === false;
+                    return true;
+                });
+            }
+
+            // Filtrer par commentaires
+            if (commentsFilter) {
+                filteredRaces = filteredRaces.filter(race => {
+                    const hasNotes = race.notes && race.notes.trim() !== '';
+                    if (commentsFilter === 'yes') return hasNotes;
+                    if (commentsFilter === 'no') return !hasNotes;
                     return true;
                 });
             }
@@ -5481,6 +5571,9 @@
             document.getElementById('filterPrice').value = '';
             document.getElementById('filterElevation').value = '';
             document.getElementById('filterDistance').value = '';
+            document.getElementById('filterType').value = '';
+            document.getElementById('filterVisibility').value = '';
+            document.getElementById('filterComments').value = '';
             searchInput.value = '';
             updateClearSearchButton();
             searchRaces('');
@@ -7862,7 +7955,6 @@
 
         // Logique Anniversaire
         anniversaryBtn.addEventListener('click', () => {
-
             const now = new Date();
             let minDiff = Infinity;
             let candidates = [];
@@ -7900,8 +7992,18 @@
             contentDiv.innerHTML = '';
 
             if (candidates.length > 0) {
-                // Trier par date d'origine (du plus vieux au plus récent ou inverse)
+                // Trier par date d'origine (du plus vieux au plus récent)
                 candidates.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+                // Est-ce que c'est aujourd'hui ? (moins de 24h d'écart avec un anniversaire)
+                const isToday = minDiff < (12 * 3600 * 1000); // Tolérance 12h pour considérer "le jour J"
+
+                if (isToday) {
+                    const msg = document.createElement('p');
+                    msg.className = "text-center text-green-600 font-bold mb-4 animate-bounce";
+                    msg.innerHTML = "🎉 Joyeux Anniversaire de Course ! 🎉";
+                    contentDiv.appendChild(msg);
+                }
 
                 candidates.forEach(race => {
                     const raceDate = new Date(race.date);
@@ -7912,17 +8014,21 @@
                     diffMs = Math.abs(diffMs);
 
                     const years = Math.floor(diffMs / (365.25 * 24 * 60 * 60 * 1000));
-                    diffMs -= years * (365.25 * 24 * 60 * 60 * 1000);
-
-                    const days = Math.floor(diffMs / (24 * 60 * 60 * 1000));
-
-                    const prefix = isPast ? "Il y a" : "Dans";
+                    let remainingMs = diffMs - (years * (365.25 * 24 * 60 * 60 * 1000));
+                    const days = Math.floor(remainingMs / (24 * 60 * 60 * 1000));
 
                     const div = document.createElement('div');
                     div.className = "bg-purple-50 p-4 rounded-xl border border-purple-100 flex flex-col gap-2";
 
-                    // Calcul âge course
                     let dateStr = raceDate.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+
+                    let timeDisplay = "";
+                    if (isToday) {
+                        timeDisplay = `<span class="font-bold text-xl">${years} ans</span> tout pile aujourd'hui !`;
+                    } else {
+                        const prefix = isPast ? "Il y a" : "Dans";
+                        timeDisplay = `${prefix} <span class="font-bold text-xl">${years} ans</span> et <span class="font-bold text-xl">${days} jours</span>.`;
+                    }
 
                     div.innerHTML = `
                         <div class="flex justify-between items-start">
@@ -7930,22 +8036,13 @@
                             <span class="text-xs bg-purple-200 text-purple-800 px-2 py-1 rounded-full">${dateStr}</span>
                         </div>
                         <div class="text-purple-700 font-medium text-lg mt-1">
-                            ${prefix} <span class="font-bold text-xl">${years} ans</span> et 
-                            <span class="font-bold text-xl">${days} jours</span>.
+                            ${timeDisplay}
                         </div>
                     `;
                     contentDiv.appendChild(div);
                 });
-
-                // Message contextuel si c'est pile aujourd'hui
-                if (minDiff < (24 * 3600 * 1000)) {
-                    const msg = document.createElement('p');
-                    msg.className = "text-center text-green-600 font-bold mb-4 animate-bounce";
-                    msg.innerHTML = "🎉 Joyeux Anniversaire de Course ! 🎉";
-                    contentDiv.insertBefore(msg, contentDiv.firstChild);
-                }
             } else {
-                contentDiv.innerHTML = "<p class='text-center text-gray-500'>Aucun souvenir trouvé.</p>";
+                contentDiv.innerHTML = "<p class='text-center text-gray-500'>Aucune course enregistrée dans votre répertoire.</p>";
             }
 
             document.getElementById('anniversaryModal').classList.remove('hidden');
