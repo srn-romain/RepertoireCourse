@@ -216,20 +216,21 @@ async function loadAdminStats() {
         const totalWItems = wCounts.reduce((a, b) => a + b, 0);
         const avgWItems = stats.usersWithWishlist > 0 ? (totalWItems / stats.usersWithWishlist).toFixed(1) : 0;
 
-        // Last Login (Exclure Admin)
-        let lastLoginDate = null;
-        let lastLoginUser = null;
+        // Last 5 Logins (Exclure Admin)
+        const allLogins = [];
         usersSnapshot.forEach(doc => {
             const u = doc.data();
             if (u.role === 'admin') return;
             if (u.lastLogin) {
                 const d = u.lastLogin.toDate ? u.lastLogin.toDate() : new Date(u.lastLogin);
-                if (!lastLoginDate || d > lastLoginDate) {
-                    lastLoginDate = d;
-                    lastLoginUser = u.pseudo || u.email?.split('@')[0] || 'User';
-                }
+                const userName = u.pseudo || u.email?.split('@')[0] || 'User';
+                allLogins.push({ date: d, user: userName });
             }
         });
+
+        // Trier par date décroissante
+        allLogins.sort((a, b) => b.date - a.date);
+        const last5Logins = allLogins.slice(0, 5);
 
         // --- PREPARATION AFFICHAGE ---
 
@@ -262,12 +263,8 @@ async function loadAdminStats() {
             favStart = `${h}h${m.toString().padStart(2, '0')}`;
         }
 
-        const formatDate = (date, name) => {
-            if (!date) return 'Aucune donnée';
-            const diffMs = new Date() - date;
-            const mins = Math.floor(diffMs / 60000);
-            if (mins < 60) return `${mins} min (${name})`;
-            return `${date.toLocaleDateString()} (${name})`;
+        const formatFullDate = (date) => {
+            return date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
         };
 
         // --- AFFICHAGE DOM ---
@@ -285,7 +282,23 @@ async function loadAdminStats() {
         setText('adminStatAvgRacesPerUser', stats.averageRacesPerUser);
         setText('adminStatUsersWithWishlist', stats.usersWithWishlist.toLocaleString());
         setText('adminStatAvgWishlistItems', avgWItems);
-        setText('adminStatLastLogin', formatDate(lastLoginDate, lastLoginUser));
+
+        // Affichage des 5 dernières connexions
+        const elLastLogin = document.getElementById('adminStatLastLogin');
+        if (elLastLogin) {
+            if (last5Logins.length > 0) {
+                elLastLogin.innerHTML = last5Logins.map(l =>
+                    `<div class="text-xs border-b border-gray-100 last:border-0 py-1">
+                        <span class="font-semibold text-blue-600">${l.user}</span> 
+                        <span class="text-gray-500 ml-1">${formatFullDate(l.date)}</span>
+                    </div>`
+                ).join('');
+                elLastLogin.classList.remove('text-blue-600', 'font-bold', 'text-sm'); // Reset styles for list
+                elLastLogin.classList.add('text-center');
+            } else {
+                elLastLogin.textContent = "-";
+            }
+        }
 
         const elTerrain = document.getElementById('adminStatTerrain');
         const elPrice = document.getElementById('adminStatPrice');
