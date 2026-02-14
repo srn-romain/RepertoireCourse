@@ -484,7 +484,6 @@
 
                     <!-- Champs spécifiques Triathlon -->
                     <!-- Triathlon Swim -->
-                    <!-- Triathlon Swim -->
                     <div class="mb-4 hidden bg-blue-50 p-4 rounded-lg" id="triathlonSwimContainer">
                         <div class="grid grid-cols-2 gap-4">
                             <div>
@@ -505,7 +504,6 @@
                         </div>
                     </div>
 
-                    <!-- Triathlon Bike -->
                     <!-- Triathlon Bike -->
                     <div class="mb-4 hidden bg-orange-50 p-4 rounded-lg" id="triathlonBikeContainer">
                         <div class="grid grid-cols-2 gap-4">
@@ -534,7 +532,6 @@
                         </div>
                     </div>
 
-                    <!-- Distance & Run Time (Run Time hidden by default) -->
                     <!-- Distance & Run Time (Run Time hidden by default) -->
                     <div class="mb-4" id="raceRunFieldsWrapper">
                         <div class="grid grid-cols-1 gap-4" id="raceDistanceRunGrid">
@@ -4339,7 +4336,13 @@
 
             // Get Relay State
             const isRelay = document.querySelector('input[name="raceFormat"]:checked').value === 'team';
-            const relaySport = document.getElementById('raceRelaySport').value;
+            let relaySport = document.getElementById('raceRelaySport').value;
+
+            // If switching to relay and no sport is selected, default to 'run'
+            if (isRelay && !relaySport) {
+                document.getElementById('raceRelaySport').value = 'run';
+                relaySport = 'run';
+            }
 
             // Nouveaux conteneurs et champs
             const raceDistanceRunGrid = document.getElementById('raceDistanceRunGrid');
