@@ -328,7 +328,39 @@ async function loadPublicRaces() {
                     <div class="mt-4 flex flex-col gap-2">
                         <div class="flex flex-wrap items-center gap-2">
                             ${race.terrain === 'triathlon' ?
-                    `<span class="flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-800 text-xs rounded-full" title="Natation">
+                    (race.raceFormat === 'team' ?
+                        // TRIATHLON RELAY DISPLAY
+                        (race.raceRelaySport === 'swim' ?
+                            `<span class="flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-800 text-xs rounded-full" title="Natation (Relais)">
+                                            <i class="fas fa-swimmer text-blue-500"></i> ${formatNumber(race.swimDistance)}m
+                                         </span>
+                                         <span class="flex items-center gap-1 px-2 py-1 bg-purple-50 text-purple-800 text-xs rounded-full" title="Relais">
+                                            <i class="fas fa-users text-purple-500"></i> Relais
+                                         </span>`
+                            : race.raceRelaySport === 'bike' ?
+                                `<span class="flex items-center gap-1 px-2 py-1 bg-orange-50 text-orange-800 text-xs rounded-full" title="Vélo (Relais)">
+                                            <i class="fas fa-biking text-orange-500"></i> ${formatNumber(race.bikeDistance)}km
+                                         </span>
+                                         <span class="flex items-center gap-1 px-2 py-1 bg-orange-50 text-orange-800 text-xs rounded-full" title="Dénivelé">
+                                            <i class="fas fa-mountain text-orange-500"></i> +${formatNumber(race.bikeElevation)}m
+                                         </span>
+                                         <span class="flex items-center gap-1 px-2 py-1 bg-purple-50 text-purple-800 text-xs rounded-full" title="Relais">
+                                            <i class="fas fa-users text-purple-500"></i> Relais
+                                         </span>`
+                                : // Run
+                                `<span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full" title="Course à pied (Relais)">
+                                            <i class="fas fa-running text-green-500"></i> ${formatNumber(race.distance)}km
+                                         </span>
+                                         <span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full" title="Dénivelé">
+                                            <i class="fas fa-mountain text-green-500"></i> +${formatNumber(race.runElevation)}m
+                                         </span>
+                                         <span class="flex items-center gap-1 px-2 py-1 bg-purple-50 text-purple-800 text-xs rounded-full" title="Relais">
+                                            <i class="fas fa-users text-purple-500"></i> Relais
+                                         </span>`
+                        )
+                        :
+                        // STANDARD TRIATHLON DISPLAY
+                        `<span class="flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-800 text-xs rounded-full" title="Natation">
                                     <i class="fas fa-swimmer text-blue-500"></i> ${formatNumber(race.swimDistance)}m
                                  </span>
                                  <span class="flex items-center gap-1 px-2 py-1 bg-orange-50 text-orange-800 text-xs rounded-full" title="Vélo">
@@ -336,8 +368,9 @@ async function loadPublicRaces() {
                                  </span>
                                  <span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full" title="Course à pied">
                                     <i class="fas fa-running text-green-500"></i> ${formatNumber(race.distance)}km
-                                 </span>`
+                                 </span>`)
                     :
+                    // STANDARD RACE DISPLAY
                     `<span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full">
                                     <i class="fas fa-ruler-horizontal text-green-500"></i> ${formatNumber(race.distance)} km
                                  </span>

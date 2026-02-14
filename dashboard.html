@@ -477,7 +477,7 @@
                                 <option value="">-- Sélectionner --</option>
                                 <option value="swim">Partie Natation</option>
                                 <option value="bike">Partie Vélo</option>
-                                <option value="run">Partie Course à pied</option>
+                                <option value="run" selected>Partie Course à pied</option>
                             </select>
                         </div>
                     </div>
@@ -4358,7 +4358,10 @@
             // Reset all first
             swimContainer.classList.add('hidden');
             bikeContainer.classList.add('hidden');
-            if (raceRunFieldsWrapper) raceRunFieldsWrapper.classList.remove('bg-green-50', 'p-4', 'rounded-lg');
+            if (raceRunFieldsWrapper) {
+                raceRunFieldsWrapper.classList.remove('bg-green-50', 'p-4', 'rounded-lg');
+                raceRunFieldsWrapper.classList.remove('hidden'); // Ensure visible by default
+            }
             if (raceRunTimeContainer) raceRunTimeContainer.classList.add('hidden');
             if (raceRunElevationContainer) raceRunElevationContainer.classList.add('hidden');
             if (relayConfig) relayConfig.classList.add('hidden');
@@ -4372,8 +4375,10 @@
                     // Show only selected sport
                     if (relaySport === 'swim') {
                         swimContainer.classList.remove('hidden');
+                        if (raceRunFieldsWrapper) raceRunFieldsWrapper.classList.add('hidden');
                     } else if (relaySport === 'bike') {
                         bikeContainer.classList.remove('hidden');
+                        if (raceRunFieldsWrapper) raceRunFieldsWrapper.classList.add('hidden');
                     } else if (relaySport === 'run') {
                         setupRunSectionForTriathlon(raceDistanceRunGrid, raceRunTimeContainer, raceRunElevationContainer, raceRunFieldsWrapper, raceDistanceLabel);
                     }
