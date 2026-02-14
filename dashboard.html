@@ -3339,6 +3339,7 @@
             const timeElement = document.getElementById('detailsTime');
             // Pour Triathlon: C'est Bike Elevation. Label et icone doivent changer.
             const timeContainer = timeElement.parentElement;
+            const timeTitle = timeContainer.querySelector('p'); // The <p> containing icon and span
             const timeLabelSpan = timeContainer.querySelector('span');
             const timeIcon = timeContainer.querySelector('i');
 
@@ -3349,6 +3350,15 @@
             raceDateOnlyForTime.setHours(0, 0, 0, 0);
 
             if (race.terrain === 'triathlon') {
+                // Style Orange pour "Dénivelé Vélo"
+                timeContainer.classList.remove('bg-green-50');
+                timeContainer.classList.add('bg-orange-50');
+
+                if (timeTitle) {
+                    timeTitle.classList.remove('text-green-600');
+                    timeTitle.classList.add('text-orange-600');
+                }
+
                 if (timeLabelSpan) timeLabelSpan.textContent = "Dénivelé Vélo";
                 if (timeIcon) timeIcon.className = "fas fa-mountain text-orange-500";
 
@@ -3360,6 +3370,15 @@
                     timeElement.className = "font-semibold text-orange-800";
                 }
             } else {
+                // Style Vert pour "Temps" (Standard)
+                timeContainer.classList.remove('bg-orange-50');
+                timeContainer.classList.add('bg-green-50');
+
+                if (timeTitle) {
+                    timeTitle.classList.remove('text-orange-600');
+                    timeTitle.classList.add('text-green-600');
+                }
+
                 if (timeLabelSpan) timeLabelSpan.textContent = "Temps";
                 if (timeIcon) timeIcon.className = "fas fa-stopwatch text-green-500";
 
@@ -6095,9 +6114,8 @@
             if (pastRaces.length === 0) return null;
 
             // Extraire les valeurs valides pour chaque métrique
-            const distances = pastRaces
-                .map(r => parseFloat(r.distance))
-                .filter(d => !isNaN(d) && d > 0);
+            // Extraire les valeurs valides pour chaque métrique
+            // distances will be calculated later with triathlon logic
 
             const prices = pastRaces
                 .map(r => parseFloat(r.price))
@@ -6115,7 +6133,14 @@
             let longestDistanceRace = null;
             let maxDistance = 0;
             pastRaces.forEach(race => {
-                const dist = parseFloat(race.distance);
+                let dist = parseFloat(race.distance);
+                if (race.terrain === 'triathlon') {
+                    const swim = (parseFloat(race.swimDistance) || 0) / 1000;
+                    const bike = parseFloat(race.bikeDistance) || 0;
+                    const run = parseFloat(race.distance) || 0;
+                    dist = swim + bike + run;
+                }
+
                 if (!isNaN(dist) && dist > maxDistance) {
                     maxDistance = dist;
                     longestDistanceRace = race;
@@ -6135,6 +6160,7 @@
             let highestElevationRace = null;
             let maxElevation = 0;
             pastRaces.forEach(race => {
+                // Pour le triathlon, race.elevation est déjà calculé (Vélo + Run) lors de la sauvegarde/edit
                 const elev = parseFloat(race.elevation);
                 if (!isNaN(elev) && elev > maxElevation) {
                     maxElevation = elev;
@@ -6145,6 +6171,7 @@
             let longestTimeRace = null;
             let maxTime = 0;
             pastRaces.forEach(race => {
+                // Pour le triathlon, race.time est déjà calculé (Swim + Bike + Run) lors de la sauvegarde/edit
                 const time = timeToSeconds(race.time);
                 if (time !== null && time > maxTime) {
                     maxTime = time;
@@ -6153,6 +6180,20 @@
             });
 
             // Calculer les statistiques pour les distances
+            // RECALCULER le tableau distances avec la logique triathlon
+            const distances = pastRaces
+                .map(r => {
+                    let d = parseFloat(r.distance);
+                    if (r.terrain === 'triathlon') {
+                        const swim = (parseFloat(r.swimDistance) || 0) / 1000;
+                        const bike = parseFloat(r.bikeDistance) || 0;
+                        const run = parseFloat(r.distance) || 0;
+                        d = swim + bike + run;
+                    }
+                    return d;
+                })
+                .filter(d => !isNaN(d) && d > 0);
+
             let distanceStats = {};
             if (distances.length > 0) {
                 const sortedDistances = [...distances].sort((a, b) => a - b);
@@ -6266,10 +6307,19 @@
 
             // Préparer les données pour le graphique des distances
             const racesWithDistance = pastRaces
-                .map(race => ({
-                    race: race,
-                    value: parseFloat(race.distance) || 0
-                }))
+                .map(race => {
+                    let val = parseFloat(race.distance) || 0;
+                    if (race.terrain === 'triathlon') {
+                        const swim = (parseFloat(race.swimDistance) || 0) / 1000;
+                        const bike = parseFloat(race.bikeDistance) || 0;
+                        const run = parseFloat(race.distance) || 0;
+                        val = swim + bike + run;
+                    }
+                    return {
+                        race: race,
+                        value: val
+                    };
+                })
                 .filter(r => r.value > 0)
                 .sort((a, b) => b.value - a.value);
 
@@ -6354,10 +6404,28 @@
                 .filter(r => r.value > 0)
                 .sort((a, b) => b.value - a.value);
 
+            // Calculer les statistiques spécifiques au Triathlon
+            let triathlonStats = null;
+            const triRaces = pastRaces.filter(r => r.terrain === 'triathlon');
+            if (triRaces.length > 0) {
+                const totalSwim = triRaces.reduce((sum, r) => sum + (parseInt(r.swimDistance) || 0), 0);
+                const totalBike = triRaces.reduce((sum, r) => sum + (parseFloat(r.bikeDistance) || 0), 0);
+                // Note: r.distance stores the RUN distance for triathlons
+                const totalRun = triRaces.reduce((sum, r) => sum + (parseFloat(r.distance) || 0), 0);
+
+                triathlonStats = {
+                    count: triRaces.length,
+                    avgSwim: Math.round(totalSwim / triRaces.length),
+                    avgBike: Math.round((totalBike / triRaces.length) * 100) / 100,
+                    avgRun: Math.round((totalRun / triRaces.length) * 100) / 100
+                };
+            }
+
             return {
                 totalRaces: pastRaces.length,
                 validRaces: pastRaces,
                 longestDistanceRace,
+                maxDistance, // Added this field
                 highestPriceRace,
                 highestElevationRace,
                 longestTimeRace,
@@ -6371,7 +6439,9 @@
                 racesWithTime,
                 racesWithElevation,
                 racesWithPricePerKm,
-                racesWithPricePerKmWithElevation
+                racesWithPricePerKm,
+                racesWithPricePerKmWithElevation,
+                triathlonStats
             };
         }
 
@@ -6416,7 +6486,8 @@
             html += `<li><strong>Nombre total de courses :</strong> ${stats.totalRaces}</li>`;
 
             if (stats.longestDistanceRace) {
-                html += `<li><strong>Course avec la plus longue distance :</strong> ${getUniqueRaceName(stats.longestDistanceRace, stats.validRaces)} (${stats.longestDistanceRace.distance} km)</li>`;
+                // Use stats.maxDistance as it correctly reflects total distance for triathlons
+                html += `<li><strong>Course avec la plus longue distance :</strong> ${getUniqueRaceName(stats.longestDistanceRace, stats.validRaces)} (${parseFloat(stats.maxDistance).toLocaleString('fr-FR')} km)</li>`;
             }
 
             if (stats.highestPriceRace) {
@@ -6489,6 +6560,17 @@
                 html += `<li><strong>Étendue :</strong> <span class="text-green-600 font-semibold">${secondsToTime(ts.range)}</span></li>`;
                 html += `<li><strong>Écart-type :</strong> <span class="text-green-600 font-semibold">${secondsToTime(ts.standardDeviation)}</span></li>`;
                 html += `<li><strong>Total :</strong> <span class="text-green-600 font-semibold">${secondsToTime(ts.sum)}</span></li>`;
+                html += `</ul></div>`;
+            }
+
+            // Statistiques spécifiques Triathlon
+            if (stats.triathlonStats) {
+                const ts = stats.triathlonStats;
+                html += `<div class="bg-blue-100 p-4 rounded-lg"><h4 class="font-bold text-blue-800 mb-3">Moyennes Triathlon (${ts.count} courses)</h4>`;
+                html += `<ul class="list-disc list-inside space-y-2">`;
+                html += `<li><strong>Natation :</strong> <span class="text-blue-600 font-semibold">${ts.avgSwim} m</span></li>`;
+                html += `<li><strong>Vélo :</strong> <span class="text-blue-600 font-semibold">${ts.avgBike} km</span></li>`;
+                html += `<li><strong>Course à pied :</strong> <span class="text-blue-600 font-semibold">${ts.avgRun} km</span></li>`;
                 html += `</ul></div>`;
             }
 
