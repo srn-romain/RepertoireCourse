@@ -327,15 +327,25 @@ async function loadPublicRaces() {
 
                     <div class="mt-4 flex flex-col gap-2">
                         <div class="flex flex-wrap items-center gap-2">
-                            <span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full">
-                                <i class="fas fa-ruler-horizontal text-green-500"></i>
-                                ${formatNumber(race.distance)} km
-                            </span>
-                             <span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full">
-                                <i class="fas fa-mountain text-green-500"></i>
-                                +${formatNumber(race.elevation)} m
-                            </span>
-                            ${cityHtml}
+                            ${race.terrain === 'triathlon' ?
+                    `<span class="flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-800 text-xs rounded-full" title="Natation">
+                                    <i class="fas fa-swimmer text-blue-500"></i> ${formatNumber(race.swimDistance)}m
+                                 </span>
+                                 <span class="flex items-center gap-1 px-2 py-1 bg-orange-50 text-orange-800 text-xs rounded-full" title="Vélo">
+                                    <i class="fas fa-biking text-orange-500"></i> ${formatNumber(race.bikeDistance)}km
+                                 </span>
+                                 <span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full" title="Course à pied">
+                                    <i class="fas fa-running text-green-500"></i> ${formatNumber(race.distance)}km
+                                 </span>`
+                    :
+                    `<span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full">
+                                    <i class="fas fa-ruler-horizontal text-green-500"></i> ${formatNumber(race.distance)} km
+                                 </span>
+                                 <span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full">
+                                    <i class="fas fa-mountain text-green-500"></i> +${formatNumber(race.elevation)} m
+                                 </span>
+                                 ${cityHtml}`
+                }
                         </div>
                     </div>
 
