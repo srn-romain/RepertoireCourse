@@ -3235,6 +3235,12 @@
 
             const raceDate = new Date(race.date);
 
+            // Define dates globally for this scope as they are used later for speed calculation and display
+            const todayForTime = new Date();
+            todayForTime.setHours(0, 0, 0, 0);
+            const raceDateOnlyForTime = new Date(raceDate);
+            raceDateOnlyForTime.setHours(0, 0, 0, 0);
+
             // Ajout badge selon la date de la course
             const today = new Date();
             today.setHours(0, 0, 0, 0);
@@ -3321,67 +3327,231 @@
             const distanceLabelSpan = distanceLabelContainer ? distanceLabelContainer.querySelector('span') : null;
             const distanceIcon = distanceLabelContainer ? distanceLabelContainer.querySelector('i') : null;
 
-            if (race.terrain === 'triathlon') {
-                if (swimContainer) swimContainer.classList.remove('hidden');
-                if (bikeContainer) bikeContainer.classList.remove('hidden');
+            // Define elements before use
+            const distanceElement = document.getElementById('detailsDistance');
+            const elevationElement = document.getElementById('detailsElevation');
+            const timeElement = document.getElementById('detailsTime');
 
-                // Display Swim Distance and Time
-                if (detailsSwim) {
-                    let swimText = '';
-                    const swimDist = parseFloat(race.swimDistance);
-                    if (!isNaN(swimDist)) {
-                        swimText = swimDist > 999
-                            ? parseFloat((swimDist / 1000).toFixed(2)) + ' km'
-                            : swimDist + ' m';
-                    } else {
-                        swimText = '? m';
+            const elevationContainer = elevationElement.parentElement;
+            const elevationLabelSpan = elevationContainer ? elevationContainer.querySelector('span') : null;
+
+            const timeContainer = timeElement.parentElement;
+            const timeTitle = timeContainer ? timeContainer.querySelector('p') : null;
+            const timeLabelSpan = timeContainer ? timeContainer.querySelector('span') : null;
+            const timeIcon = timeContainer ? timeContainer.querySelector('i') : null;
+
+            // Reset containers visibility and styles (Defaults)
+            // Reset styles for Generic Reused Containers (Distance, Elevation, Time, Terrain) to Default Green
+            [distanceElement.parentElement, elevationElement.parentElement, timeElement.parentElement, document.getElementById('TerrainContainer')].forEach(el => {
+                if (el) {
+                    el.classList.remove('hidden', 'bg-blue-50', 'bg-orange-50', 'bg-green-50');
+                    el.classList.add('bg-green-50'); // Default to green
+
+                    // Reset texts colors
+                    const p = el.querySelector('p');
+                    if (p) {
+                        p.classList.remove('text-blue-600', 'text-orange-600', 'text-green-600');
+                        p.classList.add('text-green-600');
                     }
-                    if (race.swimTime) {
-                        swimText += ' | ' + race.swimTime;
+                    const val = el.querySelector('.font-semibold');
+                    if (val) {
+                        val.classList.remove('text-blue-800', 'text-orange-800', 'text-green-800');
+                        val.classList.add('text-green-800');
                     }
-                    detailsSwim.textContent = swimText;
+                    const icon = el.querySelector('i');
+                    if (icon && el.id !== 'TerrainContainer') icon.className = '';
                 }
+            });
 
-                // Display Bike Distance and Time
-                if (detailsBike) {
-                    let bikeText = (race.bikeDistance || '?') + ' km';
-                    if (race.bikeTime) {
-                        bikeText += ' | ' + race.bikeTime;
-                    }
-                    detailsBike.textContent = bikeText;
-                }
-
-                if (distanceLabelSpan) distanceLabelSpan.textContent = 'Course à pied';
-                if (distanceIcon) {
-                    distanceIcon.className = 'fas fa-running text-green-500';
-                }
-            } else {
-                if (swimContainer) swimContainer.classList.add('hidden');
-                if (bikeContainer) bikeContainer.classList.add('hidden');
-
-                if (distanceLabelSpan) distanceLabelSpan.textContent = 'Distance';
-                if (distanceIcon) {
-                    distanceIcon.className = 'fas fa-ruler-horizontal text-green-500';
-                }
+            // Ensure Static Containers (Swim/Bike) have correct colors (Blue/Orange)
+            if (swimContainer) {
+                swimContainer.classList.remove('bg-green-50', 'bg-orange-50');
+                swimContainer.classList.add('bg-blue-50');
+                const p = swimContainer.querySelector('p');
+                if (p) { stroke = p.classList.remove('text-green-600', 'text-orange-600'); p.classList.add('text-blue-600'); }
+                const val = swimContainer.querySelector('.font-semibold');
+                if (val) { val.classList.remove('text-green-800', 'text-orange-800'); val.classList.add('text-blue-800'); }
+            }
+            if (bikeContainer) {
+                bikeContainer.classList.remove('bg-green-50', 'bg-blue-50');
+                bikeContainer.classList.add('bg-orange-50');
+                const p = bikeContainer.querySelector('p');
+                if (p) { p.classList.remove('text-green-600', 'text-blue-600'); p.classList.add('text-orange-600'); }
+                const val = bikeContainer.querySelector('.font-semibold');
+                if (val) { val.classList.remove('text-green-800', 'text-blue-800'); val.classList.add('text-orange-800'); }
             }
 
-            // Distance avec surlignage si correspond (et Temps Course à pied si Triathlon)
-            const distanceElement = document.getElementById('detailsDistance');
+            const terrainContainer = document.getElementById('TerrainContainer');
+
             if (race.terrain === 'triathlon') {
-                // Spécial Triathlon : Distance + Run Time
-                let runText = '';
-                if (race.distance && race.distance !== '' && !isNaN(race.distance)) {
-                    runText = `${race.distance} km`;
+                const isRelay = race.raceFormat === 'team';
+                const sport = race.raceRelaySport;
+
+                if (isRelay) {
+                    // RELAY LOGIC
+                    if (sport === 'swim') {
+                        // SWIM RELAY (4 items: SwimDist, SwimTime, Loc, Price) - Hide Terrain
+                        if (swimContainer) {
+                            swimContainer.classList.remove('hidden'); // Blue default in HTML but we can force it
+                            // Update content (Dist only)
+                            let swimText = '? m';
+                            const swimDist = parseFloat(race.swimDistance);
+                            if (!isNaN(swimDist)) {
+                                swimText = swimDist > 999 ? parseFloat((swimDist / 1000).toFixed(2)) + ' km' : swimDist + ' m';
+                            }
+                            if (detailsSwim) detailsSwim.textContent = swimText;
+                        }
+                        if (bikeContainer) bikeContainer.classList.add('hidden');
+
+                        // Hide Terrain
+                        if (terrainContainer) terrainContainer.classList.add('hidden');
+
+                        // Hide Distance & Elevation
+                        distanceElement.parentElement.classList.add('hidden');
+                        elevationElement.parentElement.classList.add('hidden');
+
+                        // Use TIME container for Swim Time (Blue)
+                        const timeParent = timeElement.parentElement;
+                        timeParent.classList.remove('bg-green-50');
+                        timeParent.classList.add('bg-blue-50');
+                        timeParent.querySelector('p').classList.replace('text-green-600', 'text-blue-600');
+                        timeElement.className = "font-semibold text-blue-800";
+                        timeParent.querySelector('span').textContent = 'Temps';
+                        timeParent.querySelector('i').className = 'fas fa-stopwatch text-blue-500';
+                        timeElement.textContent = race.swimTime || '/';
+
+                    } else if (sport === 'bike') {
+                        // BIKE RELAY (6 items: BikeDist, BikeTime, BikeElev, Loc, Price, Terrain)
+                        if (swimContainer) swimContainer.classList.add('hidden');
+
+                        if (bikeContainer) {
+                            bikeContainer.classList.remove('hidden');
+                            // Show Dist Only in container
+                            let bikeText = (race.bikeDistance || '?') + ' km';
+                            if (detailsBike) detailsBike.textContent = bikeText;
+                        }
+
+                        // Use DISTANCE container for Bike Time (Orange)
+                        const distParent = distanceElement.parentElement;
+                        distParent.classList.remove('bg-green-50');
+                        distParent.classList.add('bg-orange-50');
+                        distParent.querySelector('p').classList.replace('text-green-600', 'text-orange-600');
+                        distanceElement.className = "font-semibold text-orange-800";
+                        distParent.querySelector('span').textContent = 'Temps';
+                        distParent.querySelector('i').className = 'fas fa-stopwatch text-orange-500';
+                        distanceElement.textContent = race.bikeTime || '/';
+
+                        // Use TIME container for Bike Elev (Orange)
+                        const timeParent = timeElement.parentElement;
+                        timeParent.classList.remove('bg-green-50');
+                        timeParent.classList.add('bg-orange-50');
+                        timeParent.querySelector('p').classList.replace('text-green-600', 'text-orange-600');
+                        timeElement.className = "font-semibold text-orange-800";
+                        timeParent.querySelector('span').textContent = 'Dénivelé';
+                        timeParent.querySelector('i').className = 'fas fa-mountain text-orange-500';
+                        timeElement.textContent = (race.bikeElevation !== null && race.bikeElevation !== undefined) ? `+${race.bikeElevation} m` : '/';
+
+                        // HIDE generic Elevation container (used for Run Elev normally)
+                        elevationElement.parentElement.classList.add('hidden');
+
+                        if (terrainContainer) terrainContainer.classList.remove('hidden');
+
+                    } else if (sport === 'run') {
+                        // RUN RELAY (6 items: RunDist, RunTime, RunElev, Loc, Price, Terrain)
+                        if (swimContainer) swimContainer.classList.add('hidden');
+                        if (bikeContainer) bikeContainer.classList.add('hidden');
+
+                        // DISTANCE container -> Run Dist (Green)
+                        const distParent = distanceElement.parentElement;
+                        distParent.querySelector('span').textContent = 'Distance';
+                        distParent.querySelector('i').className = 'fas fa-running text-green-500';
+                        distanceElement.textContent = (race.distance || '?') + ' km';
+
+                        // TIME container -> Run Time (Green)
+                        const timeParent = timeElement.parentElement;
+                        timeParent.querySelector('span').textContent = 'Temps';
+                        timeParent.querySelector('i').className = 'fas fa-stopwatch text-green-500';
+                        timeElement.textContent = race.runTime || '/';
+                        // Default green styles are already set by reset
+
+                        // ELEVATION container -> Run Elev (Green)
+                        const elevParent = elevationElement.parentElement;
+                        elevParent.querySelector('span').textContent = 'Dénivelé';
+                        elevParent.querySelector('i').className = 'fas fa-mountain text-green-500';
+                        elevationElement.textContent = (race.runElevation !== null && race.runElevation !== undefined) ? `+${race.runElevation} m` : '/';
+
+                        if (terrainContainer) terrainContainer.classList.remove('hidden');
+                    }
+
                 } else {
-                    runText = '? km';
+                    // SOLO TRIATHLON (Standard Logic)
+                    if (swimContainer) swimContainer.classList.remove('hidden');
+                    if (bikeContainer) bikeContainer.classList.remove('hidden');
+                    if (terrainContainer) terrainContainer.classList.remove('hidden');
+
+                    // Swim details
+                    if (detailsSwim) {
+                        let swimText = '';
+                        const swimDist = parseFloat(race.swimDistance);
+                        swimText = !isNaN(swimDist) ? (swimDist > 999 ? parseFloat((swimDist / 1000).toFixed(2)) + ' km' : swimDist + ' m') : '? m';
+                        if (race.swimTime) swimText += ' | ' + race.swimTime;
+                        detailsSwim.textContent = swimText;
+                    }
+
+                    // Bike details
+                    if (detailsBike) {
+                        let bikeText = (race.bikeDistance || '?') + ' km';
+                        if (race.bikeTime) bikeText += ' | ' + race.bikeTime;
+                        detailsBike.textContent = bikeText;
+                    }
+
+                    // Distance -> Run Distance + Run Time
+                    if (distanceLabelSpan) distanceLabelSpan.textContent = 'Course à pied';
+                    if (distanceIcon) distanceIcon.className = 'fas fa-running text-green-500';
+                    let runText = (race.distance || '?') + ' km';
+                    if (race.runTime) runText += ' | ' + race.runTime;
+                    distanceElement.textContent = runText;
+
+                    // Elevation -> Run Elevation (Green)
+                    if (elevationLabelSpan) elevationLabelSpan.textContent = "Dénivelé à pied";
+                    if (race.runElevation !== null && race.runElevation !== undefined) {
+                        elevationElement.textContent = `${race.runElevation} m D+`;
+                    } else {
+                        elevationElement.textContent = '/';
+                    }
+
+                    // Time -> Bike Elevation (Orange Style)
+                    const timeParent = timeElement.parentElement;
+                    timeParent.classList.remove('bg-green-50');
+                    timeParent.classList.add('bg-orange-50');
+                    if (timeTitle) {
+                        timeTitle.classList.remove('text-green-600');
+                        timeTitle.classList.add('text-orange-600');
+                    }
+                    if (timeLabelSpan) timeLabelSpan.textContent = "Dénivelé Vélo";
+                    if (timeIcon) timeIcon.className = "fas fa-mountain text-orange-500";
+                    if (race.bikeElevation !== null && race.bikeElevation !== undefined) {
+                        timeElement.textContent = `${race.bikeElevation} m D+`;
+                        timeElement.className = "font-semibold text-orange-800";
+                    } else {
+                        timeElement.textContent = '/';
+                        timeElement.className = "font-semibold text-orange-800";
+                    }
                 }
-                if (race.runTime) {
-                    runText += ' | ' + race.runTime;
-                }
-                distanceElement.textContent = runText;
             } else {
-                // Comportement standard
-                if (race.distance && race.distance !== '' && !isNaN(race.distance)) {
+                // STANDARD RACE (Non-Triathlon)
+                if (swimContainer) swimContainer.classList.add('hidden');
+                if (bikeContainer) bikeContainer.classList.add('hidden');
+                if (terrainContainer) terrainContainer.classList.remove('hidden');
+
+                if (distanceLabelSpan) distanceLabelSpan.textContent = 'Distance';
+                if (distanceIcon) distanceIcon.className = 'fas fa-ruler-horizontal text-green-500';
+
+                // ... (Original logic for distance, elev, time continues below, but I replaced the whole block)
+                // Wait, I need to restore the logic for Distance/Elevation/Time for non-triathlon cases.
+
+                // Distance
+                if (race.distance && !isNaN(race.distance)) {
                     const distanceText = `${race.distance} km`;
                     if (fieldMatchesSearch(race.distance, searchQuery) || fieldMatchesSearch('km', searchQuery)) {
                         distanceElement.innerHTML = highlightSearchMatch(distanceText, searchQuery);
@@ -3391,26 +3561,10 @@
                 } else {
                     distanceElement.textContent = '/';
                 }
-            }
 
-            // Dénivelé avec surlignage si correspond
-            // Pour Triathlon: C'est "Run Elevation". Le label doit être changé dynamiquement ou le contenu adapté
-            const elevationElement = document.getElementById('detailsElevation');
-            const elevationContainer = elevationElement.parentElement;
-            const elevationLabelSpan = elevationContainer.querySelector('span');
-
-            if (race.terrain === 'triathlon') {
-                if (elevationLabelSpan) elevationLabelSpan.textContent = "Dénivelé à pied";
-
-                if (race.runElevation && !isNaN(race.runElevation)) {
-                    elevationElement.textContent = `${race.runElevation} m D+`;
-                } else {
-                    elevationElement.textContent = '/';
-                }
-            } else {
+                // Elevation
                 if (elevationLabelSpan) elevationLabelSpan.textContent = "Dénivelé";
-
-                if (race.elevation && race.elevation !== '' && !isNaN(race.elevation)) {
+                if (race.elevation && !isNaN(race.elevation)) {
                     const elevationText = `${race.elevation} m D+`;
                     if (fieldMatchesSearch(race.elevation, searchQuery) || fieldMatchesSearch('m', searchQuery) || fieldMatchesSearch('d+', searchQuery)) {
                         elevationElement.innerHTML = highlightSearchMatch(elevationText, searchQuery);
@@ -3420,73 +3574,24 @@
                 } else {
                     elevationElement.textContent = '/';
                 }
-            }
 
-            // Temps avec surlignage si correspond et gestion selon la date
-            const timeElement = document.getElementById('detailsTime');
-            // Pour Triathlon: C'est Bike Elevation. Label et icone doivent changer.
-            const timeContainer = timeElement.parentElement;
-            const timeTitle = timeContainer.querySelector('p'); // The <p> containing icon and span
-            const timeLabelSpan = timeContainer.querySelector('span');
-            const timeIcon = timeContainer.querySelector('i');
-
-            // Define dates globally for this scope as they are used later for speed calculation
-            const todayForTime = new Date();
-            todayForTime.setHours(0, 0, 0, 0);
-            const raceDateOnlyForTime = new Date(raceDate);
-            raceDateOnlyForTime.setHours(0, 0, 0, 0);
-
-            if (race.terrain === 'triathlon') {
-                // Style Orange pour "Dénivelé Vélo"
-                timeContainer.classList.remove('bg-green-50');
-                timeContainer.classList.add('bg-orange-50');
-
-                if (timeTitle) {
-                    timeTitle.classList.remove('text-green-600');
-                    timeTitle.classList.add('text-orange-600');
-                }
-
-                if (timeLabelSpan) timeLabelSpan.textContent = "Dénivelé Vélo";
-                if (timeIcon) timeIcon.className = "fas fa-mountain text-orange-500";
-
-                if (race.bikeElevation && !isNaN(race.bikeElevation)) {
-                    timeElement.textContent = `${race.bikeElevation} m D+`;
-                    timeElement.className = "font-semibold text-orange-800";
-                } else {
-                    timeElement.textContent = '/';
-                    timeElement.className = "font-semibold text-orange-800";
-                }
-            } else {
-                // Style Vert pour "Temps" (Standard)
-                timeContainer.classList.remove('bg-orange-50');
-                timeContainer.classList.add('bg-green-50');
-
-                if (timeTitle) {
-                    timeTitle.classList.remove('text-orange-600');
-                    timeTitle.classList.add('text-green-600');
-                }
-
+                // Time (Standard Green)
                 if (timeLabelSpan) timeLabelSpan.textContent = "Temps";
                 if (timeIcon) timeIcon.className = "fas fa-stopwatch text-green-500";
 
                 let timeDisplay = '';
                 if (raceDateOnlyForTime > todayForTime) {
-                    // Course dans le futur : afficher "À venir"
                     timeDisplay = 'À venir';
                     timeElement.className = 'font-semibold text-yellow-600';
                 } else if (raceDateOnlyForTime.getTime() === todayForTime.getTime()) {
-                    // Course aujourd'hui : vérifier si le temps est complété
                     if (race.time && race.time !== '00:00:00' && race.time.trim() !== '') {
-                        // Temps complété : afficher le temps réel
                         timeDisplay = race.time;
                         timeElement.className = 'font-semibold text-green-800';
                     } else {
-                        // Temps non complété : afficher "En cours"
                         timeDisplay = 'En cours';
                         timeElement.className = 'font-semibold text-green-600';
                     }
                 } else {
-                    // Course passée : afficher le temps normal ou "/" si vide
                     if (race.time && race.time !== '00:00:00' && race.time.trim() !== '') {
                         timeDisplay = race.time;
                     } else {
@@ -3572,8 +3677,8 @@
                 }
             }
 
-            // ADDED: Triathlon stats (Total time and Total Elevation)
-            if (race.terrain === 'triathlon') {
+            // ADDED: Triathlon stats (Total time and Total Elevation), BUT EXCLUDE RELAY
+            if (race.terrain === 'triathlon' && race.raceFormat !== 'team') {
                 if (race.time && race.time !== '00:00:00') {
                     statsList.push({ label: 'Temps total', value: race.time });
                 }
