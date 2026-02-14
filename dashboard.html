@@ -3868,7 +3868,24 @@
             }
 
             // Calculate average speed (pour les courses passées ou le jour J si le temps est complété)
-            const distance = parseFloat(race.distance);
+            // Calculate average speed (pour les courses passées ou le jour J si le temps est complété)
+            let distance = parseFloat(race.distance);
+            let elevation = parseFloat(race.elevation);
+
+            // Gestion spécifique pour le Triathlon Relai : distance et dénivelé de la portion effectuée
+            if (race.terrain === 'triathlon' && race.raceFormat === 'team') {
+                if (race.raceRelaySport === 'swim') {
+                    distance = parseFloat(race.swimDistance) / 1000; // Conversion m -> km
+                    elevation = 0;
+                } else if (race.raceRelaySport === 'bike') {
+                    distance = parseFloat(race.bikeDistance);
+                    elevation = parseFloat(race.bikeElevation);
+                } else if (race.raceRelaySport === 'run') {
+                    // Pour la course à pied, on garde la distance standard (race.distance)
+                    elevation = parseFloat(race.runElevation);
+                }
+            }
+
             const timeStr = race.time;
             const isTodayForSpeed = raceDateOnly.getTime() === todayForTime.getTime();
             const isUpcomingForSpeed = raceDateOnly > todayForTime;
@@ -3884,8 +3901,7 @@
                 statsList.push({ label: 'Prix au km', value: `${pricePerKm.toFixed(2)} €/km` });
 
                 // Prix au km avec dénivelé (100m D+ = 1km plat)
-                if (race.elevation && !isNaN(parseFloat(race.elevation))) {
-                    const elevation = parseFloat(race.elevation);
+                if (!isNaN(elevation) && elevation > 0) {
                     const equivalentDistance = distance + (elevation / 100);
                     const pricePerKmWithElevation = price / equivalentDistance;
                     statsList.push({ label: 'Prix au km (ft. déniv.)', value: `${pricePerKmWithElevation.toFixed(3)} €/km` });
