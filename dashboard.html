@@ -2037,6 +2037,7 @@
 
                 // Exposer races globalement pour advanced-filters.js
                 window.races = races;
+                window.originalRaces = [...races]; // Sauvegarde pour les filtres avancés
 
                 // Remplir le filtre de lieux si la fonction existe
                 if (typeof window.populateLocationFilter === 'function') {
@@ -5613,46 +5614,8 @@
             }
         });
 
-        // Gérer les boutons de filtres avancés
-        const applyFiltersBtn = document.getElementById('applyFiltersBtn');
-        const resetFiltersBtn = document.getElementById('resetFiltersBtn');
-
-        if (applyFiltersBtn) {
-            applyFiltersBtn.addEventListener('click', () => {
-                console.log('[DEBUG] Clic sur bouton Rechercher');
-                // Mettre à jour les valeurs actives des filtres de la deuxième ligne
-                activeTypeFilter = document.getElementById('filterType').value;
-                activeVisibilityFilter = document.getElementById('filterVisibility').value;
-                activeCommentsFilter = document.getElementById('filterComments').value;
-                activeCompanionsFilter = document.getElementById('filterCompanions').value;
-                console.log('[DEBUG] Valeurs stockées:', { activeTypeFilter, activeVisibilityFilter, activeCommentsFilter, activeCompanionsFilter });
-                // Puis appliquer les filtres
-                applyAdvancedFilters();
-            });
-        }
-
-        if (resetFiltersBtn) {
-            resetFiltersBtn.addEventListener('click', () => {
-                resetAdvancedFilters();
-            });
-        }
-
-        // Gérer le repliement/dépliement du panneau de filtres
-        const toggleFiltersBtn = document.getElementById('toggleFiltersBtn');
-        const filtersContent = document.getElementById('filtersContent');
-        const toggleFiltersIcon = document.getElementById('toggleFiltersIcon');
-
-        if (toggleFiltersBtn) {
-            toggleFiltersBtn.addEventListener('click', () => {
-                if (filtersContent.classList.contains('hidden')) {
-                    filtersContent.classList.remove('hidden');
-                    toggleFiltersIcon.classList.add('rotate-180');
-                } else {
-                    filtersContent.classList.add('hidden');
-                    toggleFiltersIcon.classList.remove('rotate-180');
-                }
-            });
-        }
+        // Les écouteurs pour applyFiltersBtn, resetFiltersBtn et toggleFiltersBtn 
+        // sont maintenant gérés directement dans js/advanced-filters.js
 
         // (Live filter supprimé à la demande de l'utilisateur)
 

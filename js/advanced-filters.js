@@ -3,6 +3,7 @@
 // ====================================================================
 
 (function () {
+    let isInitialized = false;
     // Variables pour stocker les filtres actifs de la deuxième ligne
     let activeTypeFilter = '';
     let activeVisibilityFilter = '';
@@ -11,12 +12,16 @@
 
     // Attendre que tout soit chargé
     function initAdvancedFilters() {
+        if (isInitialized) return;
+
         // Vérifier que les dépendances sont disponibles
         if (typeof window.races === 'undefined' || typeof window.displayRaces === 'undefined') {
             console.log('[advanced-filters] En attente des dépendances...');
             setTimeout(initAdvancedFilters, 100);
             return;
         }
+
+        isInitialized = true;
 
         const toggleFiltersBtn = document.getElementById('toggleFiltersBtn');
         const toggleFiltersIcon = document.getElementById('toggleFiltersIcon');
@@ -140,7 +145,12 @@
             console.log('[advanced-filters] Filtres 2ème ligne:', { typeFilter, visibilityFilter, commentsFilter, companionsFilter });
             console.log('[advanced-filters] Recherche:', nameQuery);
 
-            let filteredRaces = [...window.races];
+            // Utiliser les données non filtrées si disponibles
+            // Sinon on risque de filtrer une liste déjà filtrée
+            const sourceRaces = (window.originalRaces && Array.isArray(window.originalRaces)) ? window.originalRaces : window.races;
+
+            // Toujours travailler sur une copie
+            let filteredRaces = [...sourceRaces];
 
             // Filtre par nom
             if (nameQuery) {
