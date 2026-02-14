@@ -3011,41 +3011,50 @@
                             // Relay Mode: Display only the selected sport
                             (() => {
                                 let sportHtml = '';
+                                let itemCount = 0;
                                 if (race.raceRelaySport === 'swim') {
                                     const swimDist = parseFloat(race.swimDistance);
                                     const distDisplay = isNaN(swimDist) ? '?' : (swimDist > 999 ? parseFloat((swimDist / 1000).toFixed(2)) + ' km' : swimDist + ' m');
                                     sportHtml = `<span class="flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-800 text-xs rounded-full" title="Natation (Relais)">
                                             <i class="fas fa-swimmer text-blue-500"></i> ${distDisplay}
                                         </span>`;
+                                    itemCount++;
                                 } else if (race.raceRelaySport === 'bike') {
                                     sportHtml = `<span class="flex items-center gap-1 px-2 py-1 bg-orange-50 text-orange-800 text-xs rounded-full" title="Vélo (Relais)">
                                             <i class="fas fa-biking text-orange-500"></i> ${race.bikeDistance || '?'} km
                                         </span>`;
-                                    if (race.bikeElevation) {
+                                    itemCount++;
+                                    if (race.bikeElevation !== null && race.bikeElevation !== undefined) {
                                         sportHtml += `<span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full" title="Dénivelé Vélo">
                                                 <i class="fas fa-mountain text-green-500"></i> +${race.bikeElevation} m
                                             </span>`;
+                                        itemCount++;
                                     }
                                 } else if (race.raceRelaySport === 'run') {
                                     sportHtml = `<span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full" title="Course à pied (Relais)">
                                             <i class="fas fa-running text-green-500"></i> ${race.distance || '?'} km
                                         </span>`;
-                                    if (race.runElevation) {
+                                    itemCount++;
+                                    if (race.runElevation !== null && race.runElevation !== undefined) {
                                         sportHtml += `<span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full" title="Dénivelé CAP">
                                                 <i class="fas fa-mountain text-green-500"></i> +${race.runElevation} m
                                             </span>`;
+                                        itemCount++;
                                     }
                                 }
 
                                 // Always add location if present
                                 if (locationDisplay) {
-                                    sportHtml += `<span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full hidden md:inline-flex">
+                                    sportHtml += `<span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full">
                                             <i class="fas fa-map-marker-alt text-green-500"></i> ${locationDisplay}
                                         </span>`;
+                                    itemCount++;
                                 }
 
-                                // Add Relay Tag
-                                sportHtml += `<span class="flex items-center gap-1 px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded-full font-bold">Relais</span>`;
+                                // Add Relay Tag ONLY if less than 3 items displayed
+                                if (itemCount < 3) {
+                                    sportHtml += `<span class="flex items-center gap-1 px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded-full font-bold">Relais</span>`;
+                                }
 
                                 return sportHtml;
                             })()
