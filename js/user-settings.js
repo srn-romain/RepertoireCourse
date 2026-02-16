@@ -424,7 +424,7 @@ async function initSettingsLogic() {
             const user = firebase.auth().currentUser;
             if (!user) return;
 
-            if (!confirm("Voulez-vous vraiment supprimer votre photo de profil ?")) return;
+            // Suppression directe sans confirmation demandée
 
             try {
                 profilePicLoading.classList.remove('hidden');
