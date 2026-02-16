@@ -3114,9 +3114,9 @@
                         <span class="text-xs font-bold">${likeCount}</span>
                         
                         <!-- Tooltip qui sera injecté au survol -->
-                        <div class="liker-tooltip hidden absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 bg-white border border-red-100 shadow-xl rounded-lg p-2 z-[70]">
-                            <p class="text-[10px] text-gray-400 mb-1 border-b pb-1">Aimé par :</p>
-                            <ul class="liker-list space-y-1 max-h-32 overflow-y-auto">
+                        <div class="liker-tooltip hidden absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-52 bg-white border border-red-100 shadow-xl rounded-xl p-3 z-[70]">
+                            <p class="text-[10px] text-gray-400 mb-2 border-b pb-1 font-bold uppercase tracking-wider">Aimé par :</p>
+                            <ul class="liker-list space-y-2 max-h-40 overflow-y-auto">
                                 <li class="text-[10px] italic text-gray-400">Chargement...</li>
                             </ul>
                             <div class="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-white border-b border-r border-red-100 transform rotate-45"></div>
@@ -3169,8 +3169,19 @@
                         tooltip.classList.remove('hidden');
 
                         if (uids.length > 0) {
-                            const names = await getLikersPseudos(uids);
-                            list.innerHTML = names.map(n => `<li class="text-[10px] font-semibold text-red-800 flex items-center gap-1"><i class="fas fa-user-circle text-red-300"></i> ${n}</li>`).join('');
+                            try {
+                                const likersInfo = await getLikersInfo(uids);
+                                list.innerHTML = likersInfo.map(info => `
+                                    <li class="flex items-center gap-2">
+                                        <i class="fas fa-user text-[8px] text-gray-300"></i>
+                                        <span class="text-[10px] text-gray-700 font-medium">${info.pseudo}</span>
+                                    </li>
+                                `).join('');
+                            } catch (e) {
+                                list.innerHTML = '<li class="text-[10px] text-red-400">Erreur</li>';
+                            }
+                        } else {
+                            list.innerHTML = '<li class="text-[10px] text-gray-400 italic">Personne</li>';
                         }
                     });
 
@@ -4069,15 +4080,15 @@
                         ${likesLockIcon}
                         
                         <!-- Tooltip -->
-                        <div class="liker-tooltip hidden absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 bg-white border border-red-100 shadow-xl rounded-lg p-2 z-[100]">
-                            <p class="text-[10px] text-gray-400 mb-1 border-b pb-1">Aimé par :</p>
-                            <ul class="liker-list space-y-1 max-h-32 overflow-y-auto">
+                        <div class="liker-tooltip hidden absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-52 bg-white border border-red-100 shadow-xl rounded-xl p-3 z-[100]">
+                            <p class="text-[10px] text-gray-400 mb-2 border-b pb-1 font-bold uppercase tracking-wider">Aimé par :</p>
+                            <ul class="liker-list space-y-2 max-h-40 overflow-y-auto">
                                 <li class="text-[10px] italic text-gray-400">Chargement...</li>
                             </ul>
                             <div class="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-white border-b border-r border-red-100 transform rotate-45"></div>
                         </div>
                     </div>
-                ` : `<span class="font-normal text-green-800 flex items-center gap-2">${likeText} ${likesLockIcon}</span>`;
+                ` : `<span class="font-normal text-green-800 flex items-center gap-2">${likeText}</span>`;
 
                 likesRow.innerHTML = `
                     <p class="text-sm text-green-600 flex items-center gap-2 mb-1">
@@ -4104,9 +4115,9 @@
                             ${likesLockIcon}
                             
                             <!-- Tooltip -->
-                            <div class="liker-tooltip hidden absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 bg-white border border-red-100 shadow-xl rounded-lg p-2 z-[100]">
-                                <p class="text-[10px] text-gray-400 mb-1 border-b pb-1">Aimé par :</p>
-                                <ul class="liker-list space-y-1 max-h-32 overflow-y-auto">
+                            <div class="liker-tooltip hidden absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-52 bg-white border border-red-100 shadow-xl rounded-xl p-3 z-[100]">
+                                <p class="text-[10px] text-gray-400 mb-2 border-b pb-1 font-bold uppercase tracking-wider">Aimé par :</p>
+                                <ul class="liker-list space-y-2 max-h-40 overflow-y-auto">
                                     <li class="text-[10px] italic text-gray-400">Chargement...</li>
                                 </ul>
                                 <div class="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-white border-b border-r border-red-100 transform rotate-45"></div>
@@ -4202,59 +4213,71 @@
             if (race.photo && photoImg) photoImg.src = race.photo;
             if (race.parcours && parcoursImg) parcoursImg.src = race.parcours;
 
-            // Gérer l'affichage du lien site web avec surlignage si correspond
-            let detailsWebsite = document.getElementById('detailsWebsite');
-            if (!detailsWebsite) {
-                detailsWebsite = document.createElement('div');
-                detailsWebsite.id = 'detailsWebsite';
-                detailsWebsite.className = 'text-center mt-2';
-                detailsModal.querySelector('.modal-content').appendChild(detailsWebsite);
-            }
-            if (race.website) {
-                const websiteText = 'Lien vers le site de la course';
-                const websiteLinkText = fieldMatchesSearch(race.website, searchQuery) || fieldMatchesSearch(websiteText, searchQuery)
-                    ? highlightSearchMatch(websiteText, searchQuery)
-                    : websiteText;
-                detailsWebsite.innerHTML = `<a href="${race.website}" target="_blank" rel="noopener" class="underline text-blue-600 hover:text-blue-800 font-semibold">${websiteLinkText}</a>`;
-                detailsWebsite.classList.remove('hidden');
-            } else {
-                detailsWebsite.classList.add('hidden');
-            }
-
-            // Ajouter le lien GPX si présent avec surlignage si correspond
-            let gpxLink = document.getElementById('gpxLink');
+            // --- NOUVELLE GESTION DES LIENS GPX & SITE WEB ---
+            let linksContainer = document.getElementById('detailsLinksContainer');
             const avgInfoEl = document.getElementById('averageSpeedInfo');
 
-            if (!gpxLink) {
-                gpxLink = document.createElement('div');
-                gpxLink.id = 'gpxLink';
-                gpxLink.className = 'mt-2 text-left'; // non centré, aligné à gauche
+            if (!linksContainer) {
+                linksContainer = document.createElement('div');
+                linksContainer.id = 'detailsLinksContainer';
+                linksContainer.className = 'mt-4 mb-4 grid grid-cols-1 gap-3 w-full';
                 if (avgInfoEl && avgInfoEl.parentNode) {
-                    avgInfoEl.parentNode.insertBefore(gpxLink, avgInfoEl.nextSibling);
+                    avgInfoEl.parentNode.insertBefore(linksContainer, avgInfoEl.nextSibling);
                 } else {
-                    detailsModal.querySelector('.modal-content').appendChild(gpxLink);
+                    detailsModal.querySelector('.modal-content').appendChild(linksContainer);
                 }
             }
+            linksContainer.innerHTML = ''; // Nettoyer le conteneur
 
-            if (race.gpxUrl) {
-                const gpxText = 'Voir le gpx';
-                const gpxLinkText = fieldMatchesSearch(race.gpxUrl, searchQuery) || fieldMatchesSearch('gpx', searchQuery)
-                    ? highlightSearchMatch(gpxText, searchQuery)
-                    : gpxText;
+            const hasWebsite = race.website && race.website.trim() !== '';
+            const hasGpx = race.gpxUrl && race.gpxUrl.trim() !== '';
 
-                // Si le rectangle de stats est affiché (statsList >= 2), on affiche un bouton pleine largeur
-                if (statsList.length >= 2) {
-                    gpxLink.className = 'mt-2 w-full mb-4';
-                    gpxLink.innerHTML = `<a href="${race.gpxUrl}" target="_blank" rel="noopener" class="block w-full text-center py-2 px-4 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-semibold no-underline shadow-sm">${gpxLinkText}</a>`;
-                } else {
-                    // Sinon affichage standard
-                    gpxLink.className = 'mt-2 text-left mb-4';
-                    gpxLink.innerHTML = `<a href="${race.gpxUrl}" target="_blank" rel="noopener" class="mb-2 text-green-700 font-semibold underline hover:text-yellow-600 hover:underline cursor-pointer">${gpxLinkText}</a>`;
+            if (hasWebsite || hasGpx) {
+                linksContainer.classList.remove('hidden');
+
+                // On met toujours col-span-1 car on veut l'un sous l'autre
+                const colSpanClass = 'col-span-1';
+
+                // Bouton Site Web
+                if (hasWebsite) {
+                    const websiteText = 'Voir le site de la course';
+                    const websiteLinkText = fieldMatchesSearch(race.website, searchQuery) || fieldMatchesSearch(websiteText, searchQuery)
+                        ? highlightSearchMatch(websiteText, searchQuery)
+                        : websiteText;
+
+                    const webBtn = document.createElement('a');
+                    webBtn.href = race.website;
+                    webBtn.target = '_blank';
+                    webBtn.rel = 'noopener';
+                    webBtn.className = `block w-full text-center py-2.5 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all font-semibold no-underline shadow-sm text-sm ${colSpanClass}`;
+                    webBtn.innerHTML = `<i class="fas fa-external-link-alt mr-2 text-xs"></i>${websiteLinkText}`;
+                    linksContainer.appendChild(webBtn);
                 }
-                gpxLink.classList.remove('hidden');
+
+                // Bouton GPX
+                if (hasGpx) {
+                    const gpxText = 'Voir le GPX';
+                    const gpxLinkText = fieldMatchesSearch(race.gpxUrl, searchQuery) || fieldMatchesSearch('gpx', searchQuery)
+                        ? highlightSearchMatch(gpxText, searchQuery)
+                        : gpxText;
+
+                    const gpxBtn = document.createElement('a');
+                    gpxBtn.href = race.gpxUrl;
+                    gpxBtn.target = '_blank';
+                    gpxBtn.rel = 'noopener';
+                    gpxBtn.className = `block w-full text-center py-2.5 px-4 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all font-semibold no-underline shadow-sm text-sm ${colSpanClass}`;
+                    gpxBtn.innerHTML = `<i class="fas fa-route mr-2 text-xs"></i>${gpxLinkText}`;
+                    linksContainer.appendChild(gpxBtn);
+                }
             } else {
-                gpxLink.classList.add('hidden');
+                linksContainer.classList.add('hidden');
             }
+
+            // Supprimer les anciens conteneurs s'ils traînent
+            const oldWebsite = document.getElementById('detailsWebsite');
+            if (oldWebsite) oldWebsite.remove();
+            const oldGpx = document.getElementById('gpxLink');
+            if (oldGpx) oldGpx.remove();
 
             // Navigation entre les courses
             // Trier les courses de la même manière que dans displayRaces (par date décroissante)
@@ -4386,10 +4409,15 @@
 
                     if (likedByUids.length > 0) {
                         try {
-                            const pseudos = await getLikersPseudos(likedByUids);
-                            list.innerHTML = pseudos.map(p => `<li class="text-[10px] text-gray-700 flex items-center gap-1"><i class="fas fa-user text-[8px] text-gray-300"></i> ${p}</li>`).join('');
+                            const likersInfo = await getLikersInfo(likedByUids);
+                            list.innerHTML = likersInfo.map(info => `
+                                <li class="flex items-center gap-2">
+                                    <i class="fas fa-user text-[8px] text-gray-300"></i>
+                                    <span class="text-[10px] text-gray-700 font-medium">${info.pseudo}</span>
+                                </li>
+                            `).join('');
                         } catch (e) {
-                            list.innerHTML = '<li class="text-[10px] text-red-400">Erreur chargement</li>';
+                            list.innerHTML = '<li class="text-[10px] text-red-400">Erreur</li>';
                         }
                     } else {
                         list.innerHTML = '<li class="text-[10px] text-gray-400 italic">Personne</li>';
@@ -7095,7 +7123,7 @@
         }
 
         const userPseudoCache = {};
-        async function getLikersPseudos(uids) {
+        async function getLikersInfo(uids) {
             if (!uids || uids.length === 0) return [];
             const results = [];
             for (const uid of uids) {
@@ -7104,11 +7132,15 @@
                 } else {
                     try {
                         const doc = await db.collection('users').doc(uid).get();
-                        const p = doc.exists ? (doc.data().pseudo || doc.data().email?.split('@')[0] || "Inconnu") : "Inconnu";
-                        userPseudoCache[uid] = p;
-                        results.push(p);
+                        const data = doc.data() || {};
+                        const info = {
+                            pseudo: data.pseudo || data.email?.split('@')[0] || "Inconnu",
+                            photo: data.photo || null
+                        };
+                        userPseudoCache[uid] = info;
+                        results.push(info);
                     } catch (e) {
-                        results.push("Anonyme");
+                        results.push({ pseudo: "Anonyme", photo: null });
                     }
                 }
             }

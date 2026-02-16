@@ -63,7 +63,7 @@ const adminModalHTML = `
                     <div class="flex flex-col h-full justify-center">
                         <p class="font-bold text-teal-700 mb-1">Engagement</p>
                         <p class="text-gray-600"><span id="adminStatUsersWithWishlist" class="font-bold text-teal-600">0</span> users avec wishlist</p>
-                        <p class="text-[10px] text-gray-500"><span id="adminStatAvgWishlistItems">0</span> items/wishlist (moy.)</p>
+                        <p class="text-[10px] text-gray-500"><span id="adminStatAvgWishlistItems">0</span> items (moy.)</p>
                     </div>
                 </div>
 
@@ -73,6 +73,15 @@ const adminModalHTML = `
                         <p><span class="font-bold text-gray-700">Prix :</span> <span id="adminStatPrice">0 €</span></p>
                         <p><span class="font-bold text-gray-700">Temps :</span> <span id="adminStatTime">0h</span></p>
                         <p><span class="font-bold text-gray-700">Départ :</span> <span id="adminStatStartHour">N/A</span></p>
+                    </div>
+                </div>
+
+                <!-- Commentaires -->
+                <div class="bg-yellow-50 rounded-xl p-4 text-center border border-yellow-100 shadow-sm text-xs col-span-2 md:col-span-1">
+                    <div class="flex flex-col h-full justify-center">
+                        <p class="font-bold text-yellow-700 mb-1">Commentaires</p>
+                        <p class="text-gray-600"><span id="adminStatUsersWithComments" class="font-bold text-yellow-600">0</span> users avec commentaires</p>
+                        <p class="text-[10px] text-yellow-800 italic mt-1 font-medium">dans ses courses</p>
                     </div>
                 </div>
             </div>
@@ -226,6 +235,7 @@ async function loadAdminStatsData() {
             totalElevation: 0,
             averageRacesPerUser: 0,
             usersWithWishlist: 0,
+            usersWithComments: 0,
             totalPrice: 0,
             priceCount: 0,
             totalTimeSeconds: 0,
@@ -240,6 +250,7 @@ async function loadAdminStatsData() {
 
         const userRaceCount = {};
         const userNames = {};
+        const usersWithCommentsSet = new Set();
         usersSnapshot.forEach(doc => {
             stats.totalUsers++;
             userRaceCount[doc.id] = 0;
@@ -261,6 +272,10 @@ async function loadAdminStatsData() {
 
             stats.totalRaces++;
             if (userId && userRaceCount.hasOwnProperty(userId)) userRaceCount[userId]++;
+
+            if (race.notes && race.notes.trim() !== '' && userId) {
+                usersWithCommentsSet.add(userId);
+            }
 
             if (raceDate >= today) {
                 stats.upcomingRaces++;
@@ -323,6 +338,7 @@ async function loadAdminStatsData() {
         stats.usersWithWishlist = wCounts.filter(c => c > 0).length;
         const totalWItems = wCounts.reduce((a, b) => a + b, 0);
         const avgWItems = stats.usersWithWishlist > 0 ? (totalWItems / stats.usersWithWishlist).toFixed(1) : 0;
+        stats.usersWithComments = usersWithCommentsSet.size;
 
         // Last 5 Logins
         const allLogins = [];
@@ -352,6 +368,7 @@ async function loadAdminStatsData() {
         setText('adminStatAvgRacesPerUser', stats.averageRacesPerUser);
         setText('adminStatUsersWithWishlist', stats.usersWithWishlist.toLocaleString());
         setText('adminStatAvgWishlistItems', avgWItems);
+        setText('adminStatUsersWithComments', stats.usersWithComments.toLocaleString());
 
         const avgPrice = stats.priceCount > 0 ? (stats.totalPrice / stats.priceCount).toFixed(2) + ' €' : '0 €';
         setText('adminStatPrice', avgPrice);
