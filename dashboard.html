@@ -27,6 +27,10 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <style>
         body {
             font-family: 'Montserrat', sans-serif;
@@ -1828,9 +1832,14 @@
                                     <span class="italic font-normal text-gray-600 hidden sm:inline text-xs">Connecté en tant que</span>
                                     <span class="font-bold text-green-800 text-xs sm:text-sm">${user.email} (${userPseudo})</span>
                                 </div>
-                                <button id="userSettingsBtn" onclick="openUserSettings()" class="text-gray-400 hover:text-green-600 transition p-1" title="Paramètres du compte">
-                                    <i class="fas fa-cog"></i>
-                                </button>
+                                <div class="flex items-center gap-1">
+                                    <button id="adminPortalBtn" onclick="openAdminModal()" class="hidden text-red-400 hover:text-red-600 transition p-1" title="Portail Administrateur">
+                                        <i class="fas fa-user-shield"></i>
+                                    </button>
+                                    <button id="userSettingsBtn" onclick="openUserSettings()" class="text-gray-400 hover:text-green-600 transition p-1" title="Paramètres du compte">
+                                        <i class="fas fa-cog"></i>
+                                    </button>
+                                </div>
                             </div>
                         `;
                     }
@@ -1841,6 +1850,14 @@
                     }
                     const connectBtn = document.getElementById('connectBtn');
                     if (connectBtn) connectBtn.classList.add('hidden');
+
+                    // Vérifier si Admin pour afficher le bouton Portal
+                    const adminBtn = document.getElementById('adminPortalBtn');
+                    if (adminBtn && typeof window.isAdminUser === 'function') {
+                        window.isAdminUser().then(isAdmin => {
+                            if (isAdmin) adminBtn.classList.remove('hidden');
+                        });
+                    }
                 }
             }
         });
@@ -2817,6 +2834,14 @@
             // Vérifier conditions (affichera le message car mode ajout)
             if (typeof checkAutoImageConditions === 'function') checkAutoImageConditions();
 
+            // Réinitialiser le terrain (affichage standard type 'route' par défaut)
+            const terrainSelect = document.getElementById('raceTerrain');
+            if (terrainSelect) {
+                terrainSelect.value = '';
+                if (typeof updateRelayFieldsVisibility === 'function') updateRelayFieldsVisibility();
+                if (typeof updateTriathlonFieldsVisibility === 'function') updateTriathlonFieldsVisibility();
+            }
+
             // Réinitialiser l'état de la photo
             photoData = null;
             document.getElementById('racePhoto').value = '';
@@ -2841,6 +2866,11 @@
             const compInput = document.getElementById('companionNameInput');
             if (compInput) compInput.value = '';
             if (typeof setCompanionType === 'function') setCompanionType(null);
+
+            // Réinitialiser le tableau des relais
+            if (typeof initRelayTable === 'function') {
+                initRelayTable();
+            }
 
             // Pré-remplissage si données fournies
             if (prefillData) {
@@ -2946,6 +2976,11 @@
                 raceCard.className = 'bg-white rounded-xl overflow-hidden shadow-md card-hover relative group cursor-pointer';
                 // Vérifier s'il y a des badges pour cette course
                 const hasBadges = window.raceBadges && window.raceBadges[race.id] && Object.keys(window.raceBadges[race.id]).length > 0;
+
+                // Calcul des likes et noms (pour le survol)
+                const likedBy = race.likedBy || [];
+                const likeCount = likedBy.length;
+                // En fait, dans dashboard.html, races est déjà chargé.
 
                 raceCard.innerHTML = `
                 <div class="p-6 relative">
@@ -3054,22 +3089,42 @@
                         `}
                     </div>
                 </div>
-                <div class="mt-4 flex space-x-2 items-center">
-                    <button class="edit-race p-2 bg-green-100 text-green-800 rounded-md hover:bg-green-200 transition-colors" data-id="${race.id}" title="Modifier">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                            <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
-                    </button>
-                    <button class="delete-race p-2 bg-red-100 text-red-800 rounded-md hover:bg-red-200 transition-colors" data-id="${race.id}" title="Supprimer">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
-                    </button>
-                    <button class="details-btn p-2 bg-blue-100 text-blue-800 rounded-md hover:bg-blue-200 transition-colors" data-id="${race.id}" title="Détails">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                            <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-                            <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" />
-                    </button>
+                <div class="mt-4 flex flex-wrap justify-between items-center gap-2">
+                    <div class="flex space-x-2 items-center">
+                        <button class="edit-race p-2 bg-green-100 text-green-800 rounded-md hover:bg-green-200 transition-colors" data-id="${race.id}" title="Modifier">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                        </button>
+                        <button class="delete-race p-2 bg-red-100 text-red-800 rounded-md hover:bg-red-200 transition-colors" data-id="${race.id}" title="Supprimer">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+                        </button>
+                        <button class="details-btn p-2 bg-blue-100 text-blue-800 rounded-md hover:bg-blue-200 transition-colors" data-id="${race.id}" title="Détails">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                                <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" />
+                        </button>
+                    </div>
+                    
+                    <!-- LIKES DISPLAY -->
+                    ${race.public === true && likeCount > 0 ? `
+                    <div class="like-hover-trigger flex items-center gap-1 text-red-500 bg-red-50 px-2 py-1 rounded-full cursor-help relative group/likes" 
+                         data-liked-by='${JSON.stringify(likedBy)}'>
+                        <i class="fas fa-heart text-sm"></i>
+                        <span class="text-xs font-bold">${likeCount}</span>
+                        
+                        <!-- Tooltip qui sera injecté au survol -->
+                        <div class="liker-tooltip hidden absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 bg-white border border-red-100 shadow-xl rounded-lg p-2 z-[70]">
+                            <p class="text-[10px] text-gray-400 mb-1 border-b pb-1">Aimé par :</p>
+                            <ul class="liker-list space-y-1 max-h-32 overflow-y-auto">
+                                <li class="text-[10px] italic text-gray-400">Chargement...</li>
+                            </ul>
+                            <div class="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-white border-b border-r border-red-100 transform rotate-45"></div>
+                        </div>
+                    </div>
+                    ` : ''}
                 </div>
-                <div class="absolute bottom-3 right-3 h-28 w-28 group-hover:scale-105 transition-transform duration-300">
+                <div class="absolute bottom-3 right-3 h-28 w-28 group-hover:scale-105 transition-transform duration-300 pointer-events-none">
                     ${hasBadges ? `
                     <div class="absolute -top-3 -right-3 z-20 filter drop-shadow-lg transform rotate-12 hover:rotate-0 transition-transform duration-300">
                          <div class="relative scale-75">
@@ -3103,10 +3158,32 @@
 
                 racesContainer.appendChild(raceCard);
 
-                // Rendre toute la carte cliquable
+                // Gestion du survol des likes
+                const likeTrigger = raceCard.querySelector('.like-hover-trigger');
+                if (likeTrigger) {
+                    likeTrigger.addEventListener('mouseenter', async () => {
+                        const tooltip = likeTrigger.querySelector('.liker-tooltip');
+                        const list = likeTrigger.querySelector('.liker-list');
+                        const uids = JSON.parse(likeTrigger.dataset.likedBy || '[]');
+
+                        tooltip.classList.remove('hidden');
+
+                        if (uids.length > 0) {
+                            const names = await getLikersPseudos(uids);
+                            list.innerHTML = names.map(n => `<li class="text-[10px] font-semibold text-red-800 flex items-center gap-1"><i class="fas fa-user-circle text-red-300"></i> ${n}</li>`).join('');
+                        }
+                    });
+
+                    likeTrigger.addEventListener('mouseleave', () => {
+                        const tooltip = likeTrigger.querySelector('.liker-tooltip');
+                        tooltip.classList.add('hidden');
+                    });
+                }
+
+                // Rendre toute la carte cliquable (sauf si clic sur trigger de likes)
                 raceCard.addEventListener('click', (e) => {
-                    // Ne pas déclencher si on clique sur les boutons d'édition/suppression/détails
-                    if (!e.target.closest('.edit-race') && !e.target.closest('.delete-race') && !e.target.closest('.details-btn')) {
+                    // Ne pas déclencher si on clique sur les boutons d'édition/suppression/détails ou le trigger de likes
+                    if (!e.target.closest('.edit-race') && !e.target.closest('.delete-race') && !e.target.closest('.details-btn') && !e.target.closest('.like-hover-trigger')) {
                         showRaceDetails(race.id);
                     }
                 });
@@ -3678,17 +3755,26 @@
             let distance = parseFloat(race.distance);
             let elevation = parseFloat(race.elevation);
 
-            // Gestion spécifique pour le Triathlon Relai : distance et dénivelé de la portion effectuée
-            if (race.terrain === 'triathlon' && race.raceFormat === 'team') {
-                if (race.raceRelaySport === 'swim') {
-                    distance = parseFloat(race.swimDistance) / 1000; // Conversion m -> km
-                    elevation = 0;
-                } else if (race.raceRelaySport === 'bike') {
-                    distance = parseFloat(race.bikeDistance);
-                    elevation = parseFloat(race.bikeElevation);
-                } else if (race.raceRelaySport === 'run') {
-                    // Pour la course à pied, on garde la distance standard (race.distance)
-                    elevation = parseFloat(race.runElevation);
+            // Gestion spécifique pour le Triathlon Solo et Relai
+            if (race.terrain === 'triathlon') {
+                if (race.raceFormat === 'team') {
+                    if (race.raceRelaySport === 'swim') {
+                        distance = parseFloat(race.swimDistance) / 1000; // Conversion m -> km
+                        elevation = 0;
+                    } else if (race.raceRelaySport === 'bike') {
+                        distance = parseFloat(race.bikeDistance);
+                        elevation = parseFloat(race.bikeElevation);
+                    } else if (race.raceRelaySport === 'run') {
+                        // Pour la course à pied, on garde la distance standard (race.distance)
+                        elevation = parseFloat(race.runElevation);
+                    }
+                } else {
+                    // Solo : Cumuler les 3 distances pour la vitesse moyenne globale
+                    const swimKm = (parseFloat(race.swimDistance) || 0) / 1000;
+                    const bikeKm = parseFloat(race.bikeDistance) || 0;
+                    const runKm = parseFloat(race.distance) || 0;
+                    distance = swimKm + bikeKm + runKm;
+                    // L'élévation est déjà race.elevation (total)
                 }
             }
 
@@ -4559,7 +4645,7 @@
 
         let relayLapsData = []; // { dist: 0, elev: 0, time: '' }
 
-        function initRelayTable(laps = []) {
+        window.initRelayTable = function (laps = []) {
             relayLapsTableBody.innerHTML = '';
             // Minimum 2 lignes ou existantes
             relayLapsData = (laps && laps.length > 0) ? JSON.parse(JSON.stringify(laps)) : [{}, {}];
@@ -6947,11 +7033,35 @@
                 }
             });
         }
+
+        const userPseudoCache = {};
+        async function getLikersPseudos(uids) {
+            if (!uids || uids.length === 0) return [];
+            const results = [];
+            for (const uid of uids) {
+                if (userPseudoCache[uid]) {
+                    results.push(userPseudoCache[uid]);
+                } else {
+                    try {
+                        const doc = await db.collection('users').doc(uid).get();
+                        const p = doc.exists ? (doc.data().pseudo || doc.data().email?.split('@')[0] || "Inconnu") : "Inconnu";
+                        userPseudoCache[uid] = p;
+                        results.push(p);
+                    } catch (e) {
+                        results.push("Anonyme");
+                    }
+                }
+            }
+            return results;
+        }
     </script>
+    <script src="js/isAdmin.js"></script>
+    <script src="js/isInvite.js"></script>
     <script src="js/badges-modal.js"></script>
     <script src="js/stats-modal.js"></script>
     <script src="js/advanced-filters.js"></script>
     <script src="js/user-settings.js"></script>
+    <script src="js/admin-modal.js"></script>
 </body>
 
 </html>

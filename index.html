@@ -11,6 +11,10 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <style>
         body {
             font-family: 'Montserrat', sans-serif;
@@ -98,8 +102,12 @@
             <div class="mt-4 lg:mt-0 w-full lg:w-auto">
                 <div class="flex flex-col lg:flex-row space-y-2 lg:space-y-0 lg:space-x-3 w-full lg:w-auto">
                     <button id="accountSettingsBtn" onclick="openUserSettings()"
-                        class="hidden flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-full transition-colors w-full lg:w-auto whitespace-nowrap cursor-pointer shadow-md">
+                        class="hidden flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-full transition-colors w-full lg:w-auto whitespace-nowrap cursor-pointer shadow-md text-sm">
                         <i class="fas fa-user-cog mr-2"></i> <span>Compte</span>
+                    </button>
+                    <button id="adminPortalBtn" onclick="openAdminModal()"
+                        class="hidden flex items-center justify-center bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-full transition-colors w-full lg:w-auto whitespace-nowrap cursor-pointer shadow-md text-sm">
+                        <i class="fas fa-user-shield mr-2"></i> <span>Admin</span>
                     </button>
                     <button onclick="openModal('manualModal')"
                         class="flex items-center justify-center bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-full transition-colors w-full lg:w-auto whitespace-nowrap cursor-pointer">
@@ -143,15 +151,19 @@
                 <i class="fas fa-bullhorn text-indigo-600 text-xl"></i>
             </div>
             <div>
-                <h3 class="font-bold text-lg mb-1 flex items-center">Nouveauté Février 2026 ! <span
+                <h1 class="font-bold text-lg mb-1 flex items-center">Nouveauté Février 2026 ! <span
                         class="text-xs bg-indigo-600 text-white px-2 py-0.5 rounded-full ml-2 animate-bounce shadow-sm">New</span>
-                </h3>
-                <p class="font-semibold mb-1">Gestion des triathlons et des courses en relai !</p>
-                <div class="text-sm text-indigo-800 bg-indigo-50 p-2 rounded border border-indigo-200 mt-2">
-                    <p class="font-semibold text-xs uppercase text-indigo-400 mb-1">Comment l'utiliser ?</p>
-                    <p>En sélectionnant <span class="font-bold">"Relai"</span> ou <span
-                            class="font-bold">"Triathlon"</span> dans les modales de gestion de vos courses.</p>
-                </div>
+                </h1>
+                <ul
+                    class="text-sm text-indigo-800 bg-indigo-50 p-2 rounded border border-indigo-200 mt-2 list-inside space-y-1">
+                    <li><strong>🖼️ Photos de profil</strong> — personnaliser les comptes depuis la modale de paramètre
+                    </li>
+                    <li><strong>🏊 Gestion Triathlon</strong> — natation, vélo, course</li>
+                    <li><strong>🤝 Courses en Relai</strong> — gérer équipes et segments</li>
+                    <li class="text-xs text-indigo-400 mt-2"><em>Comment l'utiliser ?</em> Sélectionnez <span
+                            class="font-bold">Relai</span> ou <span class="font-bold">Triathlon</span> dans les modales
+                        de gestion des courses.</li>
+                </ul>
             </div>
         </div>
     </div>
@@ -277,122 +289,7 @@
                     <span id="totalCommunityKm">Calcul en cours...</span>
                 </p>
 
-                <!-- Section Admin : Statistiques détaillées (visible uniquement pour l'admin) -->
-                <div id="adminStatsSection" class="hidden mt-8 max-w-5xl mx-auto">
-                    <div class="bg-red-50 border-2 border-red-200 rounded-xl p-6 shadow-lg">
-                        <div class="flex items-center justify-center mb-4">
-                            <i class="fas fa-user-shield text-red-600 text-2xl mr-3"></i>
-                            <h3 class="text-xl font-bold text-red-800">Statistiques Administrateur</h3>
-                        </div>
-
-                        <!-- FILTRES ADMIN -->
-                        <div class="flex justify-center gap-2 mb-6">
-                            <button onclick="updateAdminStatsFilter('all')" id="btnAdminFilterAll"
-                                class="px-3 py-1 text-sm rounded-full bg-red-600 text-white font-bold transition shadow-sm">Tout</button>
-                            <button onclick="updateAdminStatsFilter('past')" id="btnAdminFilterPast"
-                                class="px-3 py-1 text-sm rounded-full bg-white text-red-600 border border-red-200 hover:bg-red-50 transition shadow-sm">Courses
-                                passées</button>
-                        </div>
-
-                        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                            <!-- Utilisateurs -->
-                            <div class="bg-white rounded-lg p-4 text-center border border-red-100">
-                                <p class="text-2xl font-bold text-blue-600" id="adminStatTotalUsers">0</p>
-                                <p class="text-xs text-gray-600 mt-1">Utilisateurs inscrits</p>
-                            </div>
-                            <div class="bg-white rounded-lg p-4 text-center border border-red-100">
-                                <p class="text-2xl font-bold text-green-600" id="adminStatActiveUsers">0</p>
-                                <p class="text-xs text-gray-600 mt-1">Utilisateurs actifs</p>
-                            </div>
-
-                            <!-- Courses -->
-                            <div class="bg-white rounded-lg p-4 text-center border border-red-100">
-                                <p class="text-2xl font-bold text-purple-600" id="adminStatTotalRaces">0</p>
-                                <p class="text-xs text-gray-600 mt-1">Courses totales</p>
-                            </div>
-                            <div class="bg-white rounded-lg p-4 text-center border border-red-100">
-                                <p class="text-2xl font-bold text-green-600" id="adminStatPublicRaces">0</p>
-                                <p class="text-xs text-gray-600 mt-1">Courses publiques</p>
-                            </div>
-                            <div class="bg-white rounded-lg p-4 text-center border border-red-100">
-                                <p class="text-2xl font-bold text-gray-600" id="adminStatPrivateRaces">0</p>
-                                <p class="text-xs text-gray-600 mt-1">Courses privées</p>
-                            </div>
-                            <div class="bg-white rounded-lg p-4 text-center border border-red-100">
-                                <p class="text-2xl font-bold text-yellow-600" id="adminStatUpcomingRaces">0</p>
-                                <p class="text-xs text-gray-600 mt-1">Courses à venir</p>
-                            </div>
-                            <div class="bg-white rounded-lg p-4 text-center border border-red-100">
-                                <p class="text-2xl font-bold text-indigo-600" id="adminStatPastRaces">0</p>
-                                <p class="text-xs text-gray-600 mt-1">Courses passées</p>
-                            </div>
-
-                            <!-- Distances -->
-                            <div class="bg-white rounded-lg p-4 text-center border border-red-100">
-                                <p class="text-2xl font-bold text-red-600" id="adminStatTotalKm">0</p>
-                                <p class="text-xs text-gray-600 mt-1">Km totaux</p>
-                            </div>
-                            <div class="bg-white rounded-lg p-4 text-center border border-red-100">
-                                <p class="text-2xl font-bold text-orange-600" id="adminStatTotalElevation">0</p>
-                                <p class="text-xs text-gray-600 mt-1">D+ total (m)</p>
-                            </div>
-
-                            <!-- Moyennes -->
-                            <div class="bg-white rounded-lg p-4 text-center border border-red-100">
-                                <p class="text-2xl font-bold text-teal-600" id="adminStatAvgRacesPerUser">0</p>
-                                <p class="text-xs text-gray-600 mt-1">Courses/utilisateur</p>
-                            </div>
-                            <div class="bg-white rounded-lg p-4 text-center border border-red-100">
-                                <p class="text-2xl font-bold text-pink-600" id="adminStatUsersWithWishlist">0</p>
-                                <p class="text-xs text-gray-600 mt-1">Utilisateurs avec wishlist</p>
-                            </div>
-
-                            <!-- AUTRES STATS -->
-                            <div class="bg-white rounded-lg p-4 text-center border border-red-100">
-                                <p class="text-2xl font-bold text-gray-800" id="adminStatTerrain">N/A</p>
-                                <p class="text-xs text-gray-600 mt-1">Répartition Terrain</p>
-                            </div>
-                            <div class="bg-white rounded-lg p-4 text-center border border-red-100">
-                                <p class="text-2xl font-bold text-blue-500" id="adminStatPrice">0 €</p>
-                                <p class="text-xs text-gray-600 mt-1">Prix Moyen</p>
-                            </div>
-                            <div class="bg-white rounded-lg p-4 text-center border border-red-100">
-                                <p class="text-2xl font-bold text-indigo-500" id="adminStatTime">0h</p>
-                                <p class="text-xs text-gray-600 mt-1">Temps Moyen</p>
-                            </div>
-                            <div class="bg-white rounded-lg p-4 text-center border border-red-100">
-                                <p class="text-2xl font-bold text-gray-800" id="adminStatStartHour">N/A</p>
-                                <p class="text-xs text-gray-600 mt-1">Heure Moyenne</p>
-                            </div>
-                            <div class="bg-white rounded-lg p-4 text-center border border-red-100">
-                                <p class="text-2xl font-bold text-cyan-600" id="adminStatAvgWishlistItems">0</p>
-                                <p class="text-xs text-gray-600 mt-1">Items/wishlist (moy.)</p>
-                            </div>
-
-                            <!-- Statistiques temporelles -->
-                            <div class="bg-white rounded-lg p-4 text-center border border-red-100 col-span-full">
-                                <p class="text-sm font-bold text-blue-600" id="adminStatLastLogin">-</p>
-                                <p class="text-xs text-gray-600 mt-1">Dernière connexion</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- CARTE ADMIN -->
-                    <div class="mt-6 bg-white rounded-xl p-4 border border-red-100 shadow-sm">
-                        <h4 class="text-sm font-bold text-red-800 mb-2 flex items-center gap-2">
-                            <i class="fas fa-map-marked-alt"></i> Carte des courses
-                        </h4>
-                        <p id="mapLoadingStatus" class="text-xs text-gray-500 mb-2 italic">En attente...</p>
-                        <div id="adminRacesMap" class="w-full h-80 rounded-lg bg-gray-100 z-0 border border-gray-200">
-                        </div>
-                    </div>
-
-                    <!-- Leaflet CDN -->
-                    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-                        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
-                    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-                        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-                </div>
+                <!-- Communauté (Stats Admin retirées) -->
             </div>
 
 
@@ -576,9 +473,9 @@
     <!-- Auth Modals & Logic (Injects Login/Signup Modals) -->
     <script src="js/modal-auth.js"></script>
     <script src="js/public-races.js"></script>
-    <script src="js/admin-stats.js"></script>
     <script src="js/user-settings.js"></script>
     <script src="js/manual-modal.js"></script>
+    <script src="js/admin-modal.js"></script>
 
     <!-- Vérifier si déconnexion automatique -->
     <script>
@@ -694,6 +591,14 @@
                         heroCtaButton.disabled = false;
                     }
                     if (accountSettingsBtn) accountSettingsBtn.classList.remove('hidden');
+
+                    // Vérifier si Admin pour afficher le bouton Portal
+                    const adminBtn = document.getElementById('adminPortalBtn');
+                    if (adminBtn && typeof window.isAdminUser === 'function') {
+                        window.isAdminUser().then(isAdmin => {
+                            if (isAdmin) adminBtn.classList.remove('hidden');
+                        });
+                    }
                 } else {
                     // Utilisateur non connecté
 

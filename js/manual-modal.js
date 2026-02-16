@@ -320,8 +320,13 @@ const manualModalHTML = `
                             <!-- Profil -->
                             <div class="bg-gray-50 p-3 rounded border border-gray-100">
                                 <p class="font-semibold text-gray-800 text-sm mb-1 flex items-center gap-2"><i
-                                        class="fas fa-user-edit text-green-600"></i> Profil</p>
-                                <p class="text-xs text-gray-600">Modifiez votre pseudo pour l'affichage public.</p>
+                                        class="fas fa-user-edit text-green-600"></i> Profil & Photo</p>
+                                <p class="text-xs text-gray-600 mb-2">Personnalisez votre identité sur la plateforme.</p>
+                                <ul class="text-[10px] text-gray-500 list-disc ml-4 space-y-1">
+                                    <li><strong>Pseudo :</strong> Changez votre nom d'affichage public.</li>
+                                    <li><strong>Photo de profil :</strong> Importez une image (max 600 Ko) pour personnaliser votre compte. La photo est stockée de manière sécurisée et s'affiche sur vos courses publiques.</li>
+                                    <li><strong>Avatar par défaut :</strong> Si vous n'avez pas de photo, un avatar coloré est généré automatiquement à partir de votre pseudo.</li>
+                                </ul>
                             </div>
 
                             <!-- Confidentialité -->
