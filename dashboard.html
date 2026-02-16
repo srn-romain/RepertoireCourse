@@ -163,6 +163,44 @@
         .anniversary-behind {
             z-index: 10 !important;
         }
+
+        /* Stats Dashboard Responsive < 770px */
+        @media (max-width: 770px) {
+            #statsText {
+                display: grid !important;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 12px 8px;
+                text-align: center;
+                width: 100%;
+                background: rgba(255, 255, 255, 0.5);
+                padding: 1rem;
+                border-radius: 12px;
+                margin-top: 0.5rem;
+                box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.02);
+            }
+
+            .stat-year,
+            .stat-price {
+                grid-column: span 2;
+            }
+
+            .stat-price {
+                padding-top: 8px;
+                border-top: 1px dashed #d1fae5;
+                margin-top: 4px;
+            }
+
+            .stat-item {
+                display: flex;
+                flex-direction: column;
+                font-size: 0.75rem;
+                color: #065f46;
+            }
+
+            .stat-item span:first-child {
+                font-size: 1rem;
+            }
+        }
     </style>
 </head>
 
@@ -214,43 +252,59 @@
 
     <!-- Barre d'information de connexion -->
     <div id="authStatusBar" class="bg-green-50 border-b border-green-200 py-2 px-4 hidden">
-        <div class="container mx-auto flex justify-between items-center">
-            <div class="flex items-center gap-3">
-                <button id="backupDataBtn" class="text-green-600 hover:text-green-800 transition"
-                    title="Sauvegarder mes données (JSON)">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd"
-                            d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
-                            clip-rule="evenodd" />
-                    </svg>
-                </button>
-                <p id="authStatusText" class="text-sm text-green-800"></p>
+        <div class="container mx-auto flex flex-col md:flex-row justify-between items-center gap-4 md:gap-0">
+            <!-- Zone Information & Sauvegarde -->
+            <div class="flex items-center justify-between w-full md:w-auto gap-4">
+                <div class="flex items-center gap-3">
+                    <button id="backupDataBtn"
+                        class="text-green-600 hover:text-green-800 transition p-2 bg-white md:bg-transparent rounded-full shadow-sm md:shadow-none border border-green-100 md:border-0"
+                        title="Sauvegarder mes données (JSON)">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 md:h-5 md:w-5" viewBox="0 0 20 20"
+                            fill="currentColor">
+                            <path fill-rule="evenodd"
+                                d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
+                                clip-rule="evenodd" />
+                        </svg>
+                    </button>
+                    <p id="authStatusText" class="text-xs md:text-sm text-green-800 font-medium"></p>
+                </div>
             </div>
-            <div class="flex gap-2">
-                <a href="index.html" class="text-green-600 hover:text-green-800 transition flex items-center"
+
+            <!-- Zone Actions & Déconnexion -->
+            <div class="flex flex-col md:flex-row items-center gap-2 w-full md:w-auto">
+                <!-- Bouton Accueil (Pleine largeur sur mobile, vert) -->
+                <a href="index.html"
+                    class="w-full md:w-auto flex items-center justify-center gap-2 px-6 py-1.5 md:py-1 bg-green-600 md:bg-transparent text-white md:text-green-600 border border-green-600 md:border-0 rounded-xl md:rounded-full transition shadow-sm md:shadow-none active:scale-95"
                     title="Retour à l'accueil">
-                    <i class="fas fa-home text-xl"></i>
+                    <i class="fas fa-home text-lg"></i>
+                    <span class="text-[10px] md:text-sm font-bold md:font-medium tracking-tight">Accueil</span>
                 </a>
-                <button id="changeUserBtn"
-                    class="px-3 py-1 bg-blue-100 hover:bg-blue-200 text-blue-800 text-sm rounded-full transition hidden">
-                    <i class="fas fa-exchange-alt mr-1"></i> Changer de carnet
-                </button>
-                <button id="connectBtn"
-                    class="px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-sm rounded-full transition hidden">
-                    Se connecter
-                </button>
+
+                <div class="grid grid-cols-2 md:flex md:flex-row gap-2 w-full md:w-auto">
+                    <!-- Autres boutons Grid -->
+                    <button id="changeUserBtn"
+                        class="px-3 py-2.5 md:py-1 bg-blue-50 md:bg-transparent hover:bg-blue-100 text-blue-800 md:text-blue-600 text-[10px] md:text-sm rounded-xl md:rounded-full border border-blue-100 md:border-0 transition hidden font-bold">
+                        <i class="fas fa-exchange-alt mr-1"></i> <span class="md:inline">Carnet</span>
+                    </button>
+                    <button id="connectBtn"
+                        class="px-3 py-2.5 md:py-1 bg-green-600 hover:bg-green-700 text-white text-[10px] md:text-sm rounded-xl md:rounded-full transition hidden font-bold">
+                        Se connecter
+                    </button>
+                </div>
+
+                <!-- Bouton Déconnexion (Pleine largeur sur mobile) -->
                 <button id="disconnectBtn"
-                    class="px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-sm rounded-full transition hidden">
-                    Se déconnecter
+                    class="w-full md:w-auto px-6 py-1.5 md:py-1 bg-red-50 md:bg-green-600 text-red-600 md:text-white border border-red-100 md:border-0 text-[10px] md:text-sm rounded-xl md:rounded-full transition hidden font-bold md:font-medium shadow-sm active:scale-95">
+                    <i class="fas fa-sign-out-alt md:hidden mr-1"></i> Se déconnecter
                 </button>
             </div>
         </div>
     </div>
     <div class="container mx-auto px-4 py-8">
         <!-- Header -->
-        <header class="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8">
-            <div>
-                <a href="index.html" class="hover:opacity-80 transition">
+        <header class="flex flex-col lg:flex-row justify-between items-center lg:items-center mb-8 gap-4">
+            <div class="w-full lg:w-auto text-center lg:text-left">
+                <a href="index.html" class="inline-block hover:opacity-80 transition">
                     <h1 class="text-3xl md:text-4xl font-bold text-green-800">📊 Carnet de courses</h1>
                 </a>
                 <p id="statsText" class="text-green-600">Chargement des statistiques...</p>
@@ -2268,30 +2322,44 @@
             // Mettre à jour le texte des statistiques
             const statsElement = document.getElementById('statsText');
             let statsHtml = '';
+
             // Affichage du contexte du filtre année
             const isYearFilter = typeof currentYearFilter !== 'undefined' && currentYearFilter !== 'all' && currentYearFilter !== null;
             if (isYearFilter) {
-                statsHtml += '<span class="italic text-green-700 mr-2">Année ' + currentYearFilter + '</span> : ';
+                statsHtml += `<div class="stat-year italic text-green-700 font-medium md:mr-2">Année ${currentYearFilter} :</div>`;
             }
 
-            // Déterminer si on doit flouter le temps total (une seule course dans un filtre par année ET utilisateur non connecté)
+            // Déterminer si on doit flouter le temps total
             const isUserAuthenticated = typeof BackendAPI !== 'undefined' && BackendAPI.isAuthenticated();
             const shouldBlurTime = isYearFilter && totalRaces === 1 && !isUserAuthenticated;
             const timeClass = shouldBlurTime ? 'font-semibold blur-text' : 'font-semibold';
 
-            statsHtml += '<span class="font-semibold">' + totalRaces + '</span> course' + (totalRaces > 1 ? 's' : '') + ' | ' +
-                '<span class="font-semibold">' + totalDistance + '</span> km parcourus | ' +
-                '<span class="font-semibold">' + totalElevation + '</span> m de dénivelé | ' +
-                '<span class="' + timeClass + '">' + formattedTime + '</span> de course';
+            statsHtml += `
+                <div class="stat-item"><span class="font-semibold">${totalRaces}</span> <span>course${totalRaces > 1 ? 's' : ''}</span></div>
+                <div class="stat-item md:before:content-['|'] md:before:mr-3 md:before:opacity-30"><span class="font-semibold">${totalDistance}</span> <span>km parcourus</span></div>
+                <div class="stat-item md:before:content-['|'] md:before:mr-3 md:before:opacity-30"><span class="font-semibold">${totalElevation}</span> <span>m de dénivelé</span></div>
+                <div class="stat-item md:before:content-['|'] md:before:mr-3 md:before:opacity-30"><span class="${timeClass}">${formattedTime}</span> <span>de course</span></div>
+            `;
+
             // Affichage du prix (pour tous les utilisateurs connectés SAUF les invités)
             if (isUserAuthenticated) {
-                // Vérifier si l'utilisateur est invité de manière synchrone via sessionStorage
                 const isInvite = sessionStorage.getItem('authLevel') === 'invite';
                 if (!isInvite) {
-                    statsHtml += ' |\n                <span id="totalPriceStat" class="font-semibold group relative cursor-pointer">\n                    <span class="opacity-40">Prix total</span>\n                    <span class="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-2 py-1 bg-green-700 text-white text-xs rounded shadow-lg hidden group-hover:block z-50 whitespace-nowrap">\n                        ' + totalPrice.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' € dépensés\n                    </span>\n                </span>';
+                    statsHtml += `
+                        <div class="stat-price md:before:content-['|'] md:before:mr-3 md:before:opacity-30">
+                            <span id="totalPriceStat" class="font-semibold group relative cursor-pointer inline-block">
+                                <span class="opacity-40">Prix total</span>
+                                <span class="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-2 py-1 bg-green-700 text-white text-xs rounded shadow-lg hidden group-hover:block z-50 whitespace-nowrap">
+                                    ${totalPrice.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} € dépensés
+                                </span>
+                            </span>
+                        </div>
+                    `;
                 }
             }
+
             statsElement.innerHTML = statsHtml;
+            statsElement.className = "text-green-600 text-sm md:text-base flex flex-wrap items-center justify-center md:justify-start gap-x-3 gap-y-1";
             // Ajout du hover JS si besoin (pour compatibilité)
             const priceStat = document.getElementById('totalPriceStat');
             if (priceStat) {
