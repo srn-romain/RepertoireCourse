@@ -16,6 +16,25 @@ const userSettingsModalHTML = `
             <h2 class="text-xl font-bold text-gray-800 mb-1">Paramètres du compte</h2>
             <p class="text-sm text-gray-500" id="settingsUserEmail"></p>
             
+            <!-- Photo de profil -->
+            <div class="mt-4 flex flex-col items-center">
+                <div class="relative group">
+                    <div id="profileImageContainer" class="w-24 h-24 rounded-full border-4 border-white shadow-lg overflow-hidden bg-gray-100 flex items-center justify-center">
+                        <img id="settingsProfilePic" src="https://ui-avatars.com/api/?name=User&background=random" class="w-full h-full object-cover">
+                        <div id="profilePicLoading" class="hidden absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center text-white">
+                            <i class="fas fa-spinner fa-spin text-2xl"></i>
+                        </div>
+                    </div>
+                    <button id="btnEditProfilePic" class="absolute bottom-0 right-0 bg-green-600 hover:bg-green-700 text-white w-8 h-8 rounded-full flex items-center justify-center shadow-lg transition transform hover:scale-110">
+                        <i class="fas fa-camera text-sm"></i>
+                    </button>
+                    <input type="file" id="inputProfilePic" class="hidden" accept="image/*">
+                </div>
+                <button id="btnDeleteProfilePic" class="hidden mt-2 text-xs text-red-500 hover:text-red-700 font-medium transition">
+                    <i class="fas fa-trash-alt mr-1"></i> Supprimer la photo
+                </button>
+            </div>
+
             <!-- Notice pour les invités -->
             <div id="inviteNotice" class="hidden mt-4 bg-blue-50 border-l-4 border-blue-400 p-3 rounded-r-lg">
                 <p class="text-sm text-blue-800">
@@ -333,6 +352,103 @@ async function initSettingsLogic() {
             deleteAccountBtn.disabled = true;
             deleteAccountBtn.classList.add('opacity-50', 'cursor-not-allowed');
         }
+
+        // Désactiver la photo de profil pour les invités
+        const btnEditProfilePic = document.getElementById('btnEditProfilePic');
+        if (btnEditProfilePic) {
+            btnEditProfilePic.disabled = true;
+            btnEditProfilePic.classList.add('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
+        }
+    }
+
+    // Gestion de la Photo de profil
+    const btnEditProfilePic = document.getElementById('btnEditProfilePic');
+    const inputProfilePic = document.getElementById('inputProfilePic');
+    const btnDeleteProfilePic = document.getElementById('btnDeleteProfilePic');
+    const profilePicImg = document.getElementById('settingsProfilePic');
+    const profilePicLoading = document.getElementById('profilePicLoading');
+
+    if (btnEditProfilePic && inputProfilePic && !isInvite) {
+        btnEditProfilePic.addEventListener('click', () => inputProfilePic.click());
+
+        inputProfilePic.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            // Validation taille (Firestore limit is 1MB total per doc, so 600KB max for image in base64 is safer)
+            if (file.size > 600 * 1024) {
+                showMessage("L'image est trop volumineuse pour le stockage direct (max 600 Ko).", "error");
+                return;
+            }
+
+            const user = firebase.auth().currentUser;
+            if (!user) return;
+
+            try {
+                profilePicLoading.classList.remove('hidden');
+                btnEditProfilePic.disabled = true;
+
+                // Lecture du fichier en Base64
+                const reader = new FileReader();
+                const base64Promise = new Promise((resolve, reject) => {
+                    reader.onload = () => resolve(reader.result);
+                    reader.onerror = reject;
+                });
+                reader.readAsDataURL(file);
+                const base64String = await base64Promise;
+
+                // Mettre à jour Firestore
+                await db.collection('users').doc(user.uid).update({
+                    photoURL: base64String
+                });
+
+                // Mettre à jour l'UI
+                profilePicImg.src = base64String;
+                if (btnDeleteProfilePic) btnDeleteProfilePic.classList.remove('hidden');
+                settingsHasChanged = true;
+
+                showMessage("Photo de profil mise à jour !", "success");
+            } catch (error) {
+                console.error("Erreur traitement photo:", error);
+                showMessage("Erreur lors de l'enregistrement de la photo.", "error");
+            } finally {
+                profilePicLoading.classList.add('hidden');
+                btnEditProfilePic.disabled = false;
+                inputProfilePic.value = ''; // Reset input
+            }
+        });
+    }
+
+    if (btnDeleteProfilePic && !isInvite) {
+        btnDeleteProfilePic.addEventListener('click', async () => {
+            const user = firebase.auth().currentUser;
+            if (!user) return;
+
+            if (!confirm("Voulez-vous vraiment supprimer votre photo de profil ?")) return;
+
+            try {
+                profilePicLoading.classList.remove('hidden');
+
+                // Mettre à jour Firestore
+                await db.collection('users').doc(user.uid).update({
+                    photoURL: firebase.firestore.FieldValue.delete()
+                });
+
+                // Mettre à jour l'UI
+                const userDoc = await db.collection('users').doc(user.uid).get();
+                const currentPseudo = userDoc.exists ? (userDoc.data().pseudo || "User") : "User";
+                profilePicImg.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(currentPseudo)}&background=random`;
+                btnDeleteProfilePic.classList.add('hidden');
+                settingsHasChanged = true;
+
+                showMessage("Photo supprimée avec succès.", "success");
+            } catch (error) {
+                console.error("Erreur suppression photo:", error);
+                showMessage("Erreur lors de la suppression.", "error");
+            } finally {
+                profilePicLoading.classList.add('hidden');
+            }
+        });
     }
 
     // Sauvegarder les préférences au changement
@@ -763,6 +879,20 @@ window.openUserSettings = async function () {
         if (doc.exists) {
             const data = doc.data();
             if (pseudoInput) pseudoInput.value = data.pseudo || "";
+
+            // Photo de profil
+            const profilePicImg = document.getElementById('settingsProfilePic');
+            const btnDeleteProfilePic = document.getElementById('btnDeleteProfilePic');
+            if (profilePicImg) {
+                if (data.photoURL) {
+                    profilePicImg.src = data.photoURL;
+                    if (btnDeleteProfilePic && !isInvite) btnDeleteProfilePic.classList.remove('hidden');
+                } else {
+                    const nameForAvatar = data.pseudo || "User";
+                    profilePicImg.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(nameForAvatar)}&background=random`;
+                    if (btnDeleteProfilePic) btnDeleteProfilePic.classList.add('hidden');
+                }
+            }
 
             const p = data.privacy || {};
             if (prefShowPseudo) prefShowPseudo.checked = (p.showPseudo !== undefined) ? p.showPseudo : true;

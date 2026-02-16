@@ -1743,7 +1743,26 @@
 
                             // Mettre à jour l'UI
                             const authText = document.getElementById('authStatusText');
-                            if (authText) authText.textContent = `Invité (Consultation : ${targetUserEmail})`;
+                            if (authText) {
+                                // Récupérer la photo de l'utilisateur CIBLE
+                                db.collection('users').doc(targetUserId).get().then(doc => {
+                                    let targetPhotoURL = null;
+                                    let targetPseudo = "Utilisateur";
+                                    if (doc.exists) {
+                                        targetPhotoURL = doc.data().photoURL;
+                                        targetPseudo = doc.data().pseudo || doc.data().email.split('@')[0];
+                                    }
+                                    const avatarSrc = targetPhotoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(targetPseudo)}&background=random`;
+                                    authText.innerHTML = `
+                                        <div class="flex items-center gap-2">
+                                            <img src="${avatarSrc}" class="w-6 h-6 rounded-full object-cover border border-blue-200">
+                                            <span class="text-sm">Invité (Consultation : <b>${targetUserEmail}</b>)</span>
+                                        </div>
+                                    `;
+                                }).catch(() => {
+                                    authText.textContent = `Invité (Consultation : ${targetUserEmail})`;
+                                });
+                            }
                         };
 
                         inviteUserLogoutBtn.onclick = () => auth.signOut();
@@ -1786,26 +1805,33 @@
                 if (authStatusBar) {
                     authStatusBar.classList.remove('hidden');
 
-                    // Récupération du pseudo pour l'affichage
-                    let userPseudo = "Utilisateur";
-                    try {
-                        const uDoc = await db.collection('users').doc(user.uid).get();
-                        if (uDoc.exists && uDoc.data().pseudo) {
-                            userPseudo = uDoc.data().pseudo;
-                        }
-                    } catch (e) {
-                        console.error("Erreur récup pseudo", e);
-                    }
-
                     if (authStatusText) {
-                        // On garde le texte spécifique si on est déjà en mode consultation (peu probable au chargement direct mais bon)
-                        // Ici c'est l'initialisation.
+                        // Récupération des données utilisateur complètes
+                        let userPseudo = "Utilisateur";
+                        let userPhotoURL = null;
+                        try {
+                            const uDoc = await db.collection('users').doc(user.uid).get();
+                            if (uDoc.exists) {
+                                userPseudo = uDoc.data().pseudo || "Utilisateur";
+                                userPhotoURL = uDoc.data().photoURL;
+                            }
+                        } catch (e) {
+                            console.error("Erreur récup pseudo/photo", e);
+                        }
+
+                        const avatarSrc = userPhotoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(userPseudo)}&background=random`;
+
                         authStatusText.innerHTML = `
-                            <span class="italic font-normal text-gray-600 mr-2">Connecté en tant que</span>
-                            <span class="font-bold text-green-800 mr-2">${user.email} (${userPseudo})</span>
-                            <button id="userSettingsBtn" onclick="openUserSettings()" class="text-gray-400 hover:text-green-600 transition" title="Paramètres du compte">
-                                <i class="fas fa-cog"></i>
-                            </button>
+                            <div class="flex items-center gap-2">
+                                <img src="${avatarSrc}" class="w-8 h-8 rounded-full object-cover border border-green-200 shadow-sm">
+                                <div class="flex flex-col sm:flex-row sm:items-center sm:gap-1">
+                                    <span class="italic font-normal text-gray-600 hidden sm:inline text-xs">Connecté en tant que</span>
+                                    <span class="font-bold text-green-800 text-xs sm:text-sm">${user.email} (${userPseudo})</span>
+                                </div>
+                                <button id="userSettingsBtn" onclick="openUserSettings()" class="text-gray-400 hover:text-green-600 transition p-1" title="Paramètres du compte">
+                                    <i class="fas fa-cog"></i>
+                                </button>
+                            </div>
                         `;
                     }
 

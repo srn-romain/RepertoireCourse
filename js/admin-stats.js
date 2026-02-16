@@ -224,7 +224,8 @@ async function loadAdminStats() {
             if (u.lastLogin) {
                 const d = u.lastLogin.toDate ? u.lastLogin.toDate() : new Date(u.lastLogin);
                 const userName = u.pseudo || u.email?.split('@')[0] || 'User';
-                allLogins.push({ date: d, user: userName });
+                const userPhoto = u.photoURL || null;
+                allLogins.push({ date: d, user: userName, photoURL: userPhoto });
             }
         });
 
@@ -288,9 +289,15 @@ async function loadAdminStats() {
         if (elLastLogin) {
             if (last5Logins.length > 0) {
                 elLastLogin.innerHTML = last5Logins.map(l =>
-                    `<div class="text-xs border-b border-gray-100 last:border-0 py-1">
-                        <span class="font-semibold text-blue-600">${l.user}</span> 
-                        <span class="text-gray-500 ml-1">${formatFullDate(l.date)}</span>
+                    `<div class="text-xs border-b border-gray-100 last:border-0 py-1 flex items-center gap-2 px-2">
+                        ${l.photoURL ?
+                        `<img src="${l.photoURL}" class="w-5 h-5 rounded-full object-cover border border-blue-100">` :
+                        `<i class="fas fa-user-circle text-blue-400 text-base"></i>`
+                    }
+                        <div class="flex flex-col items-start leading-tight">
+                            <span class="font-semibold text-blue-600">${l.user}</span> 
+                            <span class="text-[10px] text-gray-400">${formatFullDate(l.date)}</span>
+                        </div>
                     </div>`
                 ).join('');
                 elLastLogin.classList.remove('text-blue-600', 'font-bold', 'text-sm'); // Reset styles for list

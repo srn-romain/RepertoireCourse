@@ -165,11 +165,14 @@ async function loadPublicRaces() {
                             if (data && data.pseudo) p = data.pseudo;
                             else if (data && data.email) p = data.email.split('@')[0];
 
+                            // Photo URL Logic
+                            let pic = data.photoURL || null;
+
                             // Privacy Logic
                             let priv = data.privacy || {};
 
                             // Store in cache
-                            userData = { pseudo: p, privacy: priv };
+                            userData = { pseudo: p, privacy: priv, photoURL: pic };
                             userCache[uid] = userData;
                         }
                     } catch (e) {
@@ -385,7 +388,10 @@ async function loadPublicRaces() {
                     <!-- Footer -->
                     <div class="mt-4 pt-3 flex items-center justify-between border-t border-green-50">
                         <span class="text-xs text-gray-500 flex items-center gap-2" title="${ownerPseudoDisplay}">
-                            <i class="fas fa-user-circle text-green-600 text-lg"></i>
+                            ${userData.photoURL ?
+                    `<img src="${userData.photoURL}" class="w-6 h-6 rounded-full object-cover border border-green-200 shadow-sm">` :
+                    `<i class="fas fa-user-circle text-green-600 text-lg"></i>`
+                }
                             <span class="truncate max-w-[150px] font-semibold">${ownerPseudoDisplay}</span>
                         </span>
                         ${race.time ? `<span class="text-sm font-bold text-green-700 font-mono">${race.time}</span>` : ''}
@@ -526,27 +532,31 @@ window.openLikersModal = async function (racePath) {
             return;
         }
 
-        // Fetch Names
-        const names = [];
+        // Fetch Names and Photos
+        const likers = [];
         await Promise.all(likedBy.map(async (uid) => {
             try {
                 const uDoc = await db.collection('users').doc(uid).get();
                 if (uDoc.exists) {
                     const d = uDoc.data();
                     const p = d.pseudo || d.email.split('@')[0];
-                    names.push(p);
+                    const pic = d.photoURL || null;
+                    likers.push({ name: p, photoURL: pic });
                 } else {
-                    names.push("Utilisateur inconnu");
+                    likers.push({ name: "Utilisateur inconnu", photoURL: null });
                 }
-            } catch (e) { names.push("Erreur chargement"); }
+            } catch (e) { likers.push({ name: "Erreur chargement", photoURL: null }); }
         }));
 
-        if (names.length > 0) {
+        if (likers.length > 0) {
             content.innerHTML = `<ul class="space-y-2">
-                ${names.map(n => `
+                ${likers.map(l => `
                     <li class="flex items-center gap-2 p-2 rounded-lg bg-green-50 text-green-800">
-                        <i class="fas fa-user-circle text-xl"></i>
-                        <span class="font-medium truncate">${n}</span>
+                        ${l.photoURL ?
+                    `<img src="${l.photoURL}" class="w-6 h-6 rounded-full object-cover border border-green-200 shadow-sm">` :
+                    `<i class="fas fa-user-circle text-xl"></i>`
+                }
+                        <span class="font-medium truncate">${l.name}</span>
                     </li>
                 `).join('')}
             </ul>`;
