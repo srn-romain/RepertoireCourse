@@ -1319,6 +1319,25 @@
         </div>
     </div>
 
+    <!-- Modal Information Course Privée -->
+    <div id="privateRaceModal" class="fixed inset-0 flex items-center justify-center z-[110] hidden">
+        <div class="absolute inset-0 bg-black bg-opacity-50 blur-bg"></div>
+        <div class="relative bg-white rounded-xl shadow-xl w-full max-w-xs mx-4 z-10 p-6 flex flex-col items-center">
+            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 text-blue-600 mb-4">
+                <i class="fas fa-lock text-xl"></i>
+            </div>
+            <h2 class="text-lg font-bold text-gray-800 mb-2 text-center">Course privée</h2>
+            <p class="text-gray-600 text-center mb-6 text-sm">
+                Cette course est privée. Elle n'est visible que par vous et ne peut donc pas recevoir de J'aime de la
+                communauté.
+            </p>
+            <button onclick="document.getElementById('privateRaceModal').classList.add('hidden');"
+                class="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-semibold">
+                Compris
+            </button>
+        </div>
+    </div>
+
     <!-- Modal d'alerte image manquante ou trop grande -->
     <div id="imageAlertModal" class="fixed inset-0 flex items-center justify-center z-50 hidden">
         <div class="absolute inset-0 bg-black bg-opacity-50 blur-bg"></div>
@@ -4060,7 +4079,7 @@
 
             // Définir l'icône de cadenas pour les courses privées
             const likesLockIcon = (race.public !== true)
-                ? `<i class="fas fa-lock text-green-500 cursor-pointer" title="Une course privée ne peut pas recevoir de J'aime de la communauté" onclick="event.stopPropagation(); alert('Cette course est privée.\\nElle n\\'est visible que par vous et ne peut donc pas recevoir de J\\'aime de la communauté.')"></i>`
+                ? `<i class="fas fa-lock text-green-500 cursor-pointer" title="Une course privée ne peut pas recevoir de J'aime de la communauté" onclick="event.stopPropagation(); document.getElementById('privateRaceModal').classList.remove('hidden');"></i>`
                 : '';
 
             if (hasBadges) {
