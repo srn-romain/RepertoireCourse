@@ -389,7 +389,7 @@ async function loadPublicRaces() {
                     <div class="mt-4 pt-3 flex items-center justify-between border-t border-green-50">
                         <span class="text-xs text-gray-500 flex items-center gap-2" title="${ownerPseudoDisplay}">
                             ${userData.photoURL ?
-                    `<img src="${userData.photoURL}" class="w-6 h-6 rounded-full object-cover border border-green-200 shadow-sm">` :
+                    `<img src="${userData.photoURL}" onclick="event.stopPropagation(); zoomImage('${userData.photoURL}')" class="w-6 h-6 rounded-full object-cover border border-green-200 shadow-sm cursor-zoom-in hover:scale-110 transition-transform">` :
                     `<i class="fas fa-user-circle text-green-600 text-lg"></i>`
                 }
                             <span class="truncate max-w-[150px] font-semibold">${ownerPseudoDisplay}</span>
@@ -400,7 +400,7 @@ async function loadPublicRaces() {
                     <!-- Image -->
                     <div class="absolute bottom-3 right-3 h-28 w-28 group-hover:scale-105 transition-transform duration-300">
                         ${race.photo ?
-                    `<img src="${race.photo}" alt="Photo course" class="h-full w-full object-cover rounded-lg shadow-md border border-green-200" />`
+                    `<img src="${race.photo}" onclick="event.stopPropagation(); zoomImage('${race.photo}')" alt="Photo course" class="h-full w-full object-cover rounded-lg shadow-md border border-green-200 cursor-zoom-in" />`
                     :
                     `<div class="h-full w-full flex flex-col items-center justify-center bg-gray-100 rounded-lg border border-gray-300">
                                 <i class="fas fa-running text-gray-300 text-3xl"></i>
@@ -553,7 +553,7 @@ window.openLikersModal = async function (racePath) {
                 ${likers.map(l => `
                     <li class="flex items-center gap-2 p-2 rounded-lg bg-green-50 text-green-800">
                         ${l.photoURL ?
-                    `<img src="${l.photoURL}" class="w-6 h-6 rounded-full object-cover border border-green-200 shadow-sm">` :
+                    `<img src="${l.photoURL}" onclick="zoomImage('${l.photoURL}')" class="w-6 h-6 rounded-full object-cover border border-green-200 shadow-sm cursor-zoom-in hover:scale-110 transition-transform">` :
                     `<i class="fas fa-user-circle text-xl"></i>`
                 }
                         <span class="font-medium truncate">${l.name}</span>

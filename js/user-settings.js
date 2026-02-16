@@ -20,7 +20,7 @@ const userSettingsModalHTML = `
             <div class="mt-4 flex flex-col items-center">
                 <div class="relative group">
                     <div id="profileImageContainer" class="w-24 h-24 rounded-full border-4 border-white shadow-lg overflow-hidden bg-gray-100 flex items-center justify-center">
-                        <img id="settingsProfilePic" src="https://ui-avatars.com/api/?name=User&background=random" class="w-full h-full object-cover">
+                        <img id="settingsProfilePic" src="https://ui-avatars.com/api/?name=User&background=random" onclick="if(this.src && !this.src.includes('ui-avatars.com')) zoomImage(this.src)" class="w-full h-full object-cover cursor-zoom-in">
                         <div id="profilePicLoading" class="hidden absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center text-white">
                             <i class="fas fa-spinner fa-spin text-2xl"></i>
                         </div>

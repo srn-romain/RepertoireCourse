@@ -451,6 +451,22 @@
         </div>
     </div>
 
+    <!-- Modal Zoom Image -->
+    <div id="imageZoomModal"
+        class="hidden fixed inset-0 z-[1000] flex items-center justify-center bg-black/90 backdrop-blur-sm transition-all duration-300 opacity-0"
+        onclick="closeImageZoom()">
+        <div class="relative max-w-[95vw] max-h-[95vh] flex items-center justify-center"
+            onclick="event.stopPropagation()">
+            <button onclick="closeImageZoom()"
+                class="absolute -top-12 right-0 text-white text-3xl hover:text-green-400 transition-colors p-2">
+                <i class="fas fa-times"></i>
+            </button>
+            <img id="zoomedImage" src="" alt="Zoom"
+                class="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl border-2 border-white/20 transform scale-90 transition-transform duration-300">
+        </div>
+    </div>
+
+
     <!-- Footer -->
     <footer class="py-8 mt-auto text-center text-green-900 opacity-50 text-sm font-medium">
         <div class="container mx-auto px-4">
@@ -500,7 +516,55 @@
             document.getElementById('permissionDeniedModal').classList.add('hidden');
         }
 
+        // Image Zoom Logic
+        function zoomImage(url) {
+            const modal = document.getElementById('imageZoomModal');
+            const img = document.getElementById('zoomedImage');
+            if (!modal || !img) return;
+
+            img.src = url;
+            modal.classList.remove('hidden');
+
+            // Forcer le reflow pour l'animation
+            modal.offsetHeight;
+
+            modal.classList.remove('opacity-0');
+            img.classList.remove('scale-90');
+            img.classList.add('scale-100');
+
+            document.body.style.overflow = 'hidden';
+
+            // Fermeture avec Echap
+            const escHandler = (e) => {
+                if (e.key === 'Escape') {
+                    closeImageZoom();
+                    window.removeEventListener('keydown', escHandler);
+                }
+            };
+            window.addEventListener('keydown', escHandler);
+        }
+
+        function closeImageZoom() {
+            const modal = document.getElementById('imageZoomModal');
+            const img = document.getElementById('zoomedImage');
+            if (!modal || !img) return;
+
+            modal.classList.add('opacity-0');
+            img.classList.remove('scale-100');
+            img.classList.add('scale-90');
+
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                img.src = '';
+                document.body.style.overflow = '';
+            }, 300);
+        }
+
+        window.zoomImage = zoomImage;
+        window.closeImageZoom = closeImageZoom;
+
         // Appeler au chargement de la page
+
         window.addEventListener('DOMContentLoaded', checkAutoLogout);
 
         // Gestion de l'affichage selon l'état de connexion
