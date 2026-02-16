@@ -173,7 +173,7 @@
                 text-align: center;
                 width: 100%;
                 background: rgba(255, 255, 255, 0.5);
-                padding: 1rem;
+                padding: 0.8rem 0.8rem 0.4rem 0.8rem;
                 border-radius: 12px;
                 margin-top: 0.5rem;
                 box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.02);
@@ -302,14 +302,14 @@
     </div>
     <div class="container mx-auto px-4 py-8">
         <!-- Header -->
-        <header class="flex flex-col lg:flex-row justify-between items-center lg:items-center mb-8 gap-4">
+        <header class="flex flex-col lg:flex-row justify-between items-center lg:items-center mb-8 gap-1 lg:gap-4">
             <div class="w-full lg:w-auto text-center lg:text-left">
                 <a href="index.html" class="inline-block hover:opacity-80 transition">
                     <h1 class="text-3xl md:text-4xl font-bold text-green-800">📊 Carnet de courses</h1>
                 </a>
                 <p id="statsText" class="text-green-600">Chargement des statistiques...</p>
             </div>
-            <div class="mt-4 lg:mt-0 w-full lg:w-auto">
+            <div class="mt-0 lg:mt-0 w-full lg:w-auto">
                 <div class="flex flex-col lg:flex-row space-y-2 lg:space-y-0 lg:space-x-3 w-full lg:w-auto">
                     <button id="wishlistBtn"
                         class="flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-full transition w-full lg:w-auto">
@@ -2818,6 +2818,12 @@
         const wishlistCheckYesBtn = document.getElementById('wishlistCheckYesBtn');
         const wishlistCheckCancelBtn = document.getElementById('wishlistCheckCancelBtn');
         const wishlistCheckConfirmBtn = document.getElementById('wishlistCheckConfirmBtn');
+        const closeWishlistCheckModalBtn = document.getElementById('closeWishlistCheckModalBtn');
+
+        // Fermer la modale au clic sur la petite croix
+        closeWishlistCheckModalBtn.addEventListener('click', () => {
+            wishlistCheckModal.classList.add('hidden');
+        });
 
         async function showWishlistCheckModal() {
             // Vérifier d'abord si la wishlist contient des éléments
