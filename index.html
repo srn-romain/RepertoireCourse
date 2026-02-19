@@ -320,7 +320,7 @@
                 </div>
 
                 <!-- Statut -->
-                <div class="flex items-center gap-2">
+                <div class="hidden flex items-center gap-2">
                     <span class="text-sm text-gray-600 font-medium">Statut :</span>
                     <div class="flex gap-1">
                         <button onclick="updatePublicRaceFilter('status', 'all')" id="filterStatusAll"
@@ -339,7 +339,7 @@
                 </div>
 
                 <!-- Tri -->
-                <div class="flex items-center gap-2">
+                <div class="hidden flex items-center gap-2">
                     <span class="text-sm text-gray-600 font-medium">Tri :</span>
                     <div class="flex gap-1">
                         <button onclick="updatePublicRaceFilter('sort', 'desc')" id="filterSortDesc"
@@ -492,8 +492,6 @@
     <script src="js/user-settings.js"></script>
     <script src="js/manual-modal.js"></script>
     <script src="js/admin-modal.js"></script>
-
-    <!-- Vérifier si déconnexion automatique -->
     <script>
         // Vérifier si l'utilisateur a été déconnecté automatiquement
         function checkAutoLogout() {

@@ -353,8 +353,8 @@ async function initAdminMap(locationData) {
     if (!adminMap) {
         // Centre France approximatif, Zoom 5
         adminMap = L.map(mapId, { worldCopyJump: true }).setView([46.60, 1.88], 5);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; OpenStreetMap',
+        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+            attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
             maxZoom: 18
         }).addTo(adminMap);
     } else {

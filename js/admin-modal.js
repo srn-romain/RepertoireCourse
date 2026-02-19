@@ -451,7 +451,9 @@ async function initAdminMap(locationData) {
 
     if (!adminMap) {
         adminMap = L.map('adminRacesMap', { worldCopyJump: true }).setView([46.60, 1.88], 5);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap' }).addTo(adminMap);
+        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+            attribution: 'Tiles &copy; Esri &mdash; Source: Esri'
+        }).addTo(adminMap);
     } else {
         adminMap.eachLayer(layer => { if (layer instanceof L.CircleMarker || layer instanceof L.Marker) adminMap.removeLayer(layer); });
         adminMap.invalidateSize();
