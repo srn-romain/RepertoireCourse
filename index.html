@@ -320,7 +320,7 @@
                 </div>
 
                 <!-- Statut -->
-                <div class="hidden flex items-center gap-2">
+                <div id="publicStatusFilter" class="flex items-center gap-2 hidden">
                     <span class="text-sm text-gray-600 font-medium">Statut :</span>
                     <div class="flex gap-1">
                         <button onclick="updatePublicRaceFilter('status', 'all')" id="filterStatusAll"
@@ -339,7 +339,7 @@
                 </div>
 
                 <!-- Tri -->
-                <div class="hidden flex items-center gap-2">
+                <div id="publicSortFilter" class="flex items-center gap-2 hidden">
                     <span class="text-sm text-gray-600 font-medium">Tri :</span>
                     <div class="flex gap-1">
                         <button onclick="updatePublicRaceFilter('sort', 'desc')" id="filterSortDesc"
@@ -654,11 +654,18 @@
                     }
                     if (accountSettingsBtn) accountSettingsBtn.classList.remove('hidden');
 
-                    // Vérifier si Admin pour afficher le bouton Portal
+                    // Vérifier si Admin pour afficher le bouton Portal et les filtres restreints
                     const adminBtn = document.getElementById('adminPortalBtn');
-                    if (adminBtn && typeof window.isAdminUser === 'function') {
+                    const statusFilter = document.getElementById('publicStatusFilter');
+                    const sortFilter = document.getElementById('publicSortFilter');
+
+                    if (typeof window.isAdminUser === 'function') {
                         window.isAdminUser().then(isAdmin => {
-                            if (isAdmin) adminBtn.classList.remove('hidden');
+                            if (isAdmin) {
+                                if (adminBtn) adminBtn.classList.remove('hidden');
+                                if (statusFilter) statusFilter.classList.remove('hidden');
+                                if (sortFilter) sortFilter.classList.remove('hidden');
+                            }
                         });
                     }
                 } else {
@@ -682,6 +689,12 @@
                         heroCtaButton.classList.remove('bg-blue-600', 'hover:bg-blue-700');
                         heroCtaButton.classList.add('bg-green-600', 'hover:bg-green-700');
                     }
+
+                    // Cacher les filtres admin si non connecté
+                    const statusFilter = document.getElementById('publicStatusFilter');
+                    const sortFilter = document.getElementById('publicSortFilter');
+                    if (statusFilter) statusFilter.classList.add('hidden');
+                    if (sortFilter) sortFilter.classList.add('hidden');
                 }
             });
         }
