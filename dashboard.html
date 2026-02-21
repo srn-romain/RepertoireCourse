@@ -6398,24 +6398,49 @@
             }
         });
 
-        // Fonction pour vérifier les similarités (4 caractères consécutifs ou plus en commun)
+        // Helper pour nettoyer les noms de course des termes génériques pour la comparaison
+        function getMeaningfulName(name) {
+            if (!name) return "";
+            // Liste des termes à ignorer (marathon, relai, course, trail, run, triathlon)
+            const genericTerms = ["marathon", "relai", "relais", "course", "trail", "run", "triathlon"];
+            const words = name.toLowerCase()
+                .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, " ") // Supprimer la ponctuation
+                .split(/\s+/);
+
+            return words.filter(word => {
+                // On garde les mots de plus de 2 lettres qui ne sont pas dans la liste générique
+                return word.length > 2 && !genericTerms.includes(word);
+            }).join(' ').trim();
+        }
+
+        // Fonction pour vérifier les similarités (4 caractères consécutifs ou plus en commun sur les termes significatifs)
         function findSimilarWishlistItems(itemName) {
             const similarItems = [];
-            const itemNameLower = itemName.toLowerCase().trim();
+            const mNew = getMeaningfulName(itemName);
+
+            // Si le nom nettoyé est trop court, on évite les faux positifs sur des termes trop génériques
+            if (!mNew || mNew.length < 3) return similarItems;
 
             // Vérifier chaque élément de la wishlist
             wishlistEditItems.forEach(item => {
-                const existingNameLower = item.name.toLowerCase().trim();
+                const mExisting = getMeaningfulName(item.name);
+                if (!mExisting || mExisting.length < 3) return;
 
-                // Vérifier si 4 caractères consécutifs (côte à côte) ou plus sont communs
+                // 1. Vérification correspondance exacte du sens
+                if (mNew === mExisting) {
+                    similarItems.push(item);
+                    return;
+                }
+
+                // 2. Vérifier si 4 caractères consécutifs ou plus sont communs sur les parties significatives
                 let foundMatch = false;
-                for (let i = 0; i <= itemNameLower.length - 4 && !foundMatch; i++) {
-                    const fourChars = itemNameLower.substring(i, i + 4);
-                    if (existingNameLower.includes(fourChars)) {
+                for (let i = 0; i <= mNew.length - 4 && !foundMatch; i++) {
+                    const fourChars = mNew.substring(i, i + 4);
+                    if (mExisting.includes(fourChars)) {
                         let maxMatch = fourChars;
-                        for (let j = i + 4; j <= itemNameLower.length; j++) {
-                            const longerSubstring = itemNameLower.substring(i, j);
-                            if (existingNameLower.includes(longerSubstring)) {
+                        for (let j = i + 4; j <= mNew.length; j++) {
+                            const longerSubstring = mNew.substring(i, j);
+                            if (mExisting.includes(longerSubstring)) {
                                 maxMatch = longerSubstring;
                             } else {
                                 break;
@@ -6660,32 +6685,31 @@
                 let items = [];
                 querySnapshot.forEach((doc) => { items.push({ id: doc.id, ...doc.data() }); });
 
-                const raceNameLower = raceName.toLowerCase().trim();
+                const mNew = getMeaningfulName(raceName);
                 let foundItems = [];
 
-                // Logique de similarité
+                // Si pas de contenu significatif, on ne déclenche pas d'alerte de doublon
+                if (!mNew || mNew.length < 3) return;
+
                 for (const item of items) {
-                    const itemNameLower = item.name.toLowerCase().trim();
+                    const mExisting = getMeaningfulName(item.name);
+                    if (!mExisting || mExisting.length < 3) continue;
+
                     let isMatch = false;
 
-                    // 1. Correspondance exacte
-                    if (itemNameLower === raceNameLower) {
+                    // 1. Correspondance exacte sur le sens (termes significatifs)
+                    if (mNew === mExisting) {
                         isMatch = true;
                     } else {
-                        // 2. Similarité (substring > 4 chars)
-                        // On cherche une sous-chaine commune significative
-                        // Simplification: si l'un contient l'autre et longueur suffisante
-                        if ((raceNameLower.includes(itemNameLower) && itemNameLower.length > 4) ||
-                            (itemNameLower.includes(raceNameLower) && raceNameLower.length > 4)) {
+                        // 2. Similarité (inclusion ou substring >= 4 chars) sur le sens
+                        if ((mNew.includes(mExisting) && mExisting.length >= 4) ||
+                            (mExisting.includes(mNew) && mNew.length >= 4)) {
                             isMatch = true;
                         } else {
-                            // Check window matching
-                            for (let i = 0; i <= raceNameLower.length - 4 && !isMatch; i++) {
-                                const fourChars = raceNameLower.substring(i, i + 4);
-                                if (itemNameLower.includes(fourChars)) {
-                                    // Vérifier si la correspondance est plus longue
-                                    // Cette logique primitive peut être améliorée mais suffisait avant
-                                    // On garde la logique existante un peu floue mais "large"
+                            // Check window matching sur le sens
+                            for (let i = 0; i <= mNew.length - 4 && !isMatch; i++) {
+                                const fourChars = mNew.substring(i, i + 4);
+                                if (mExisting.includes(fourChars)) {
                                     isMatch = true;
                                 }
                             }
