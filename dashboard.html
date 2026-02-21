@@ -569,7 +569,33 @@
                             <option value="trail">Trail</option>
                             <option value="triathlon">Triathlon</option>
                             <option value="relai">Relai</option>
+                            <option value="hyrox">Hyrox</option>
                         </select>
+                    </div>
+
+                    <!-- Configuration Hyrox -->
+                    <div id="hyroxConfigContainer"
+                        class="mb-4 hidden bg-orange-50 p-4 rounded-lg border border-orange-200">
+                        <h3 class="text-orange-800 font-semibold mb-2">Détails Hyrox</h3>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm text-left text-orange-700">
+                                <thead class="text-xs text-orange-700 uppercase bg-orange-100">
+                                    <tr>
+                                        <th scope="col" class="px-2 py-2">Étape</th>
+                                        <th scope="col" class="px-2 py-2">Temps (HH:MM:SS)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="hyroxTableBody">
+                                    <!-- Les lignes seront générées par JS -->
+                                </tbody>
+                                <tfoot class="bg-orange-100 font-bold">
+                                    <tr>
+                                        <td class="px-2 py-2 text-right">Temps Total</td>
+                                        <td class="px-2 py-2" id="hyroxTotalTime">00:00:00</td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
                     </div>
 
                     <!-- Configuration Relai Standard -->
@@ -742,7 +768,7 @@
                             class="w-full px-3 py-2 border border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
                             step="0.01" min="0" placeholder="00,00">
                     </div>
-                    <div class="mb-4">
+                    <div id="raceGpxContainer" class="mb-4">
                         <div class="flex items-end justify-between mb-2">
                             <label for="raceGpxUrl" class="block text-green-700">Lien GPX</label>
                             <span
@@ -3202,10 +3228,14 @@
                                 <i class="fas fa-ruler-horizontal text-green-500"></i>
                                 ${race.distance || '0'} km
                             </span>
-                            <span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full">
-                                <i class="fas fa-mountain text-green-500"></i>
-                                +${race.elevation || '0'} m
-                            </span>
+                            ${race.terrain === 'hyrox' ? `
+                                <span class="flex items-center gap-1 px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded-full font-bold">Hyrox</span>
+                            ` : `
+                                <span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full">
+                                    <i class="fas fa-mountain text-green-500"></i>
+                                    +${race.elevation || '0'} m
+                                </span>
+                            `}
                             ${locationDisplay ? `<span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full hidden md:inline-flex">
                                 <i class="fas fa-map-marker-alt text-green-500"></i>
                                 ${locationDisplay}
@@ -3879,6 +3909,39 @@
                     </div>
                 `;
                 detailsRelayContainer.innerHTML = relayHtml;
+                detailsRelayContainer.classList.remove('hidden');
+            } else if (race.terrain === 'hyrox' && race.hyroxLaps && race.hyroxLaps.length > 0) {
+                let hyroxHtml = `
+                    <div class="bg-orange-50 p-3 rounded-lg w-full border border-orange-100 mb-4 shadow-sm">
+                        <h4 class="font-bold text-orange-800 text-center mb-3 text-sm border-b border-orange-200 pb-2">Détails Hyrox</h4>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-xs text-left text-orange-800">
+                                <thead class="bg-orange-100 text-orange-900 uppercase font-semibold">
+                                    <tr>
+                                        <th class="px-2 py-1">Étape</th>
+                                        <th class="px-2 py-1">Temps</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-orange-200">
+                `;
+
+                hyroxEvents.forEach((eventName, idx) => {
+                    const lapTime = race.hyroxLaps[idx] || '-';
+                    hyroxHtml += `
+                        <tr class="hover:bg-orange-100 transition-colors">
+                            <td class="px-2 py-1 font-medium text-orange-700">${eventName}</td>
+                            <td class="px-2 py-1 font-mono text-xs">${lapTime}</td>
+                        </tr>
+                    `;
+                });
+
+                hyroxHtml += `
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+                detailsRelayContainer.innerHTML = hyroxHtml;
                 detailsRelayContainer.classList.remove('hidden');
             } else {
                 detailsRelayContainer.innerHTML = '';
@@ -4838,13 +4901,100 @@
         document.getElementById('raceBikeElevation').addEventListener('input', calculateTriathlonTotals);
         document.getElementById('raceRunElevation').addEventListener('input', calculateTriathlonTotals);
 
-        // Add event listener for terrain change
         const raceTerrainSelect = document.getElementById('raceTerrain');
         if (raceTerrainSelect) {
             raceTerrainSelect.addEventListener('change', () => {
                 updateTriathlonFieldsVisibility();
                 updateRelayFieldsVisibility();
+                updateHyroxFieldsVisibility();
             });
+        }
+
+        // ==========================================
+        // GESTION DU MODE HYROX
+        // ==========================================
+        const hyroxEvents = [
+            "Course 1km", "SkiErg 1000m",
+            "Course 1km", "Sled Push 50m",
+            "Course 1km", "Sled Pull 50m",
+            "Course 1km", "Burpee Broad Jumps 80m",
+            "Course 1km", "Rowing 1000m",
+            "Course 1km", "Farmers Carry 200m",
+            "Course 1km", "Sandbag Lunges 100m",
+            "Course 1km", "Wall Balls (75/100 reps)"
+        ];
+
+        const hyroxTableBody = document.getElementById('hyroxTableBody');
+        let hyroxData = []; // Array of times
+
+        window.initHyroxTable = function (times = []) {
+            hyroxTableBody.innerHTML = '';
+            hyroxData = (times && times.length === hyroxEvents.length) ? [...times] : new Array(hyroxEvents.length).fill('');
+
+            hyroxEvents.forEach((eventName, index) => {
+                renderHyroxRow(index, eventName, hyroxData[index]);
+            });
+            calculateHyroxTotals();
+        };
+
+        function renderHyroxRow(index, name, time) {
+            const tr = document.createElement('tr');
+            tr.className = "bg-white border-b hover:bg-orange-50";
+            tr.innerHTML = `
+                <td class="px-2 py-2 font-medium text-orange-900">${name}</td>
+                <td class="px-2 py-2">
+                    <input type="text" class="hyrox-time-input w-32 px-2 py-1 border border-orange-200 rounded text-sm focus:ring-orange-500 focus:border-orange-500" 
+                        value="${time || ''}" placeholder="HH:MM:SS" oninput="handleTimeInput(this); updateHyroxData(${index}, this.value)">
+                </td>
+            `;
+            hyroxTableBody.appendChild(tr);
+        }
+
+        window.updateHyroxData = function (index, value) {
+            hyroxData[index] = value;
+            calculateHyroxTotals();
+        };
+
+        function calculateHyroxTotals() {
+            let totalSeconds = 0;
+            hyroxData.forEach(time => {
+                totalSeconds += timeToSeconds(time);
+            });
+            const totalStr = secondsToTime(totalSeconds);
+            document.getElementById('hyroxTotalTime').textContent = totalStr;
+
+            // On met aussi à jour le champ temps principal si on est en Hyrox
+            if (document.getElementById('raceTerrain').value === 'hyrox') {
+                document.getElementById('raceTime').value = totalStr;
+            }
+        }
+
+        function updateHyroxFieldsVisibility() {
+            const terrain = document.getElementById('raceTerrain').value;
+            const hyroxConfig = document.getElementById('hyroxConfigContainer');
+            const raceTimeContainer = document.getElementById('raceTimeContainer');
+            const raceDistanceWrapper = document.getElementById('raceDistanceRunGrid');
+            const raceElevationContainer = document.getElementById('raceElevationContainer');
+            const raceGpxContainer = document.getElementById('raceGpxContainer');
+
+            if (terrain === 'hyrox') {
+                hyroxConfig.classList.remove('hidden');
+                if (hyroxData.length === 0) initHyroxTable();
+
+                // Masquer les champs inutiles ou redondants
+                if (raceTimeContainer) raceTimeContainer.classList.add('hidden');
+                if (raceDistanceWrapper) raceDistanceWrapper.classList.add('hidden');
+                if (raceElevationContainer) raceElevationContainer.classList.add('hidden');
+                if (raceGpxContainer) raceGpxContainer.classList.add('hidden');
+            } else {
+                hyroxConfig.classList.add('hidden');
+                if (terrain !== 'triathlon' && terrain !== 'relai') {
+                    if (raceTimeContainer) raceTimeContainer.classList.remove('hidden');
+                    if (raceDistanceWrapper) raceDistanceWrapper.classList.remove('hidden');
+                    if (raceElevationContainer) raceElevationContainer.classList.remove('hidden');
+                    if (raceGpxContainer) raceGpxContainer.classList.remove('hidden');
+                }
+            }
         }
 
         // ==========================================
@@ -5014,8 +5164,9 @@
                 initRelayTable();
                 updateRelayFieldsVisibility();
             }
-            // Réinitialiser l'affichage triathlon
+            // Réinitialiser l'affichage triathlon et hyrox
             updateTriathlonFieldsVisibility();
+            updateHyroxFieldsVisibility();
 
             raceModal.classList.remove('hidden');
         }
@@ -5062,6 +5213,11 @@
                 if (typeof initRelayTable === 'function') {
                     initRelayTable(race.relayLaps || []);
                 }
+            } else if (terrain === 'hyrox') {
+                // Populate Hyrox Table
+                if (typeof initHyroxTable === 'function') {
+                    initHyroxTable(race.hyroxLaps || []);
+                }
             } else {
                 // Reset relay fields for non-triathlon races (optional but clean)
                 const radios = document.getElementsByName('raceFormat');
@@ -5073,6 +5229,9 @@
             updateTriathlonFieldsVisibility();
             if (typeof updateRelayFieldsVisibility === 'function') {
                 updateRelayFieldsVisibility();
+            }
+            if (typeof updateHyroxFieldsVisibility === 'function') {
+                updateHyroxFieldsVisibility();
             }
             document.getElementById('raceNotes').value = race.notes || '';
             document.getElementById('racePrice').value = (race.price !== undefined && race.price !== null) ? race.price : '';
@@ -5352,8 +5511,19 @@
                 // Add Relay fields
                 raceFormat: document.querySelector('input[name="raceFormat"]:checked') ? document.querySelector('input[name="raceFormat"]:checked').value : 'solo',
                 raceRelaySport: document.getElementById('raceRelaySport').value,
-                relayLaps: (terrain === 'relai') ? relayLapsData : null
+                relayLaps: (terrain === 'relai') ? relayLapsData : null,
+                hyroxLaps: (terrain === 'hyrox') ? hyroxData : null
             };
+
+            // Set fixed distance for Hyrox
+            if (terrain === 'hyrox') {
+                raceData.distance = 8.00;
+            }
+
+            // Set fixed distance for Hyrox
+            if (terrain === 'hyrox') {
+                raceData.distance = 8.00;
+            }
 
             // Clear unselected sports data for Relay Triathlon
             if (raceData.terrain === 'triathlon' && raceData.raceFormat === 'team') {

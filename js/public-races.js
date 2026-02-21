@@ -375,12 +375,19 @@ async function loadPublicRaces() {
                     :
                     // STANDARD RACE DISPLAY
                     `<span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full">
-                                    <i class="fas fa-ruler-horizontal text-green-500"></i> ${formatNumber(race.distance)} km
-                                 </span>
-                                 <span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full">
-                                    <i class="fas fa-mountain text-green-500"></i> +${formatNumber(race.elevation)} m
-                                 </span>
-                                 ${cityHtml}`
+                        <i class="fas fa-ruler-horizontal text-green-500"></i> ${formatNumber(race.distance)} km
+                     </span>
+                     ${race.terrain === 'hyrox' ? `
+                     <span class="flex items-center gap-1 px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded-full font-bold">Hyrox</span>
+                     ` : `
+                     <span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full">
+                        <i class="fas fa-mountain text-green-500"></i> +${formatNumber(race.elevation)} m
+                     </span>
+                     `}
+                     ${race.terrain === 'relai' ? `
+                     <span class="flex items-center gap-1 px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded-full font-bold">Relais</span>
+                     ` : ''}
+                     ${cityHtml}`
                 }
                         </div>
                     </div>
