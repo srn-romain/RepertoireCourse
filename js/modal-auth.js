@@ -45,6 +45,19 @@ const authModalsHTML = `
             </button>
         </form>
 
+        <!-- SEPARATEUR OU -->
+        <div class="relative flex items-center py-5">
+            <div class="flex-grow border-t border-gray-300"></div>
+            <span class="flex-shrink mx-4 text-gray-400 text-xs font-bold uppercase">OU</span>
+            <div class="flex-grow border-t border-gray-300"></div>
+        </div>
+
+        <!-- GOOGLE LOGIN -->
+        <button type="button" onclick="loginWithGoogle()" class="w-full flex items-center justify-center gap-3 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 font-bold py-3 px-4 rounded-full transition transform hover:scale-[1.02] shadow-sm">
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-5 h-5" alt="Google">
+            <span>Continuer avec Google</span>
+        </button>
+
         <div class="mt-6 text-center text-sm text-gray-600">
             Pas encore de compte ?
             <button onclick="switchModal('loginModal', 'signupModal')" class="text-green-600 font-bold hover:underline cursor-pointer">Créer un compte</button>
@@ -125,6 +138,19 @@ const authModalsHTML = `
             </button>
         </form>
 
+        <!-- SEPARATEUR OU -->
+        <div class="relative flex items-center py-5">
+            <div class="flex-grow border-t border-gray-300"></div>
+            <span class="flex-shrink mx-4 text-gray-400 text-xs font-bold uppercase">OU</span>
+            <div class="flex-grow border-t border-gray-300"></div>
+        </div>
+
+        <!-- GOOGLE SIGNUP -->
+        <button type="button" onclick="loginWithGoogle()" class="w-full flex items-center justify-center gap-3 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 font-bold py-3 px-4 rounded-full transition transform hover:scale-[1.02] shadow-sm">
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-5 h-5" alt="Google">
+            <span>Continuer avec Google</span>
+        </button>
+
         <div class="mt-6 text-center text-sm text-gray-600">
             Déjà un compte ?
             <button onclick="switchModal('signupModal', 'loginModal')" class="text-green-600 font-bold hover:underline cursor-pointer">Se connecter</button>
@@ -160,6 +186,42 @@ window.closeModal = function (modalId) {
 window.switchModal = function (closeId, openId) {
     closeModal(closeId);
     openModal(openId);
+}
+
+window.loginWithGoogle = async function () {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    try {
+        const result = await auth.signInWithPopup(provider);
+        const user = result.user;
+
+        // Ensure user document exists in Firestore
+        const userDocRef = db.collection('users').doc(user.uid);
+        const doc = await userDocRef.get();
+        if (!doc.exists) {
+            await userDocRef.set({
+                email: user.email,
+                pseudo: user.displayName || user.email.split('@')[0],
+                photoURL: user.photoURL,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                lastLogin: firebase.firestore.FieldValue.serverTimestamp(),
+                role: 'user'
+            });
+        } else {
+            // Update last login
+            await userDocRef.update({
+                lastLogin: firebase.firestore.FieldValue.serverTimestamp(),
+                // Optionally update photoURL if not set
+                photoURL: doc.data().photoURL || user.photoURL
+            });
+        }
+
+        window.location.href = 'dashboard.html';
+    } catch (error) {
+        console.error("Google Auth Error:", error);
+        if (error.code !== 'auth/popup-closed-by-user') {
+            alert("Erreur de connexion avec Google : " + error.message);
+        }
+    }
 }
 
 function initAuthLogic() {
