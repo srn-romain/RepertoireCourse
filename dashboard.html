@@ -1765,9 +1765,9 @@
     <footer class="text-center py-6 text-green-900 opacity-50 text-sm mt-8">
         <p style="margin:0;">
             Vous repérez une erreur ? Une question/suggestion ?
-               Remplissez ce formulaire dédié  :
-            <a href="https://docs.google.com/forms/d/e/1FAIpQLSfwn-_yuDIcpBQPzOjowHK_m_dh_No04GOvwDK99KgduHTwCA/viewform?usp=publish-editor" target="_blank"
-               style="color:#065f46; font-weight:bold; text-decoration:underline;">ici</a>
+            Remplissez ce formulaire dédié :
+            <a href="https://docs.google.com/forms/d/e/1FAIpQLSfwn-_yuDIcpBQPzOjowHK_m_dh_No04GOvwDK99KgduHTwCA/viewform?usp=publish-editor"
+                target="_blank" style="color:#065f46; font-weight:bold; text-decoration:underline;">ici</a>
         </p>
         <p>&copy; 2026 Carnet de Courses. Tous droits réservés.</p>
     </footer>
@@ -4938,6 +4938,8 @@
                 renderHyroxRow(index, eventName, hyroxData[index]);
             });
             calculateHyroxTotals();
+            // Appliquer l'état désactivé si la date est dans le futur
+            if (typeof updateTimeFieldState === 'function') updateTimeFieldState();
         };
 
         function renderHyroxRow(index, name, time) {
@@ -5326,6 +5328,16 @@
                     input.placeholder = "Post-course";
                     input.classList.add('bg-gray-100', 'cursor-not-allowed');
                 });
+                // Disable hyrox time inputs
+                document.querySelectorAll('.hyrox-time-input').forEach(input => {
+                    input.value = '';
+                    input.disabled = true;
+                    input.placeholder = "Post-course";
+                    input.classList.add('bg-gray-100', 'cursor-not-allowed');
+                });
+                // Disable hyrox total display
+                const hyroxTotal = document.getElementById('hyroxTotalTime');
+                if (hyroxTotal) hyroxTotal.textContent = 'Post-course';
             } else {
                 if (timeInput) {
                     timeInput.disabled = false;
@@ -5345,6 +5357,15 @@
                     input.placeholder = "HH:MM:SS";
                     input.classList.remove('bg-gray-100', 'cursor-not-allowed');
                 });
+                // Enable hyrox time inputs
+                document.querySelectorAll('.hyrox-time-input').forEach(input => {
+                    input.disabled = false;
+                    input.placeholder = "HH:MM:SS";
+                    input.classList.remove('bg-gray-100', 'cursor-not-allowed');
+                });
+                // Reset hyrox total
+                const hyroxTotal = document.getElementById('hyroxTotalTime');
+                if (hyroxTotal) hyroxTotal.textContent = '00:00:00';
             }
         }
 
@@ -5687,8 +5708,11 @@
                         checkWishlistAfterAdd(name);
                     }
 
-                    // Réinitialiser le formulaire
+                    // Réinitialiser le formulaire et les champs Hyrox
                     raceForm.reset();
+                    if (typeof initHyroxTable === 'function') initHyroxTable();
+                    const hyroxTotalEl = document.getElementById('hyroxTotalTime');
+                    if (hyroxTotalEl) hyroxTotalEl.textContent = '00:00:00';
                 })
                 .catch((error) => {
                     console.error("Erreur lors de la sauvegarde de la course:", error);
@@ -6061,11 +6085,37 @@
         function closeAndResetRaceModal() {
             raceModal.classList.add('hidden');
             raceForm.reset();
+
+            // Réactiver le champ temps principal
             const raceTimeEl = document.getElementById('raceTime');
             if (raceTimeEl) {
                 raceTimeEl.disabled = false;
+                raceTimeEl.placeholder = 'Ex: 01:30:00';
                 raceTimeEl.classList.remove('bg-gray-100', 'cursor-not-allowed');
             }
+
+            // Réactiver les inputs triathlon statiques
+            ['raceSwimTime', 'raceBikeTime', 'raceRunTime'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.disabled = false;
+                    el.placeholder = 'HH:MM:SS';
+                    el.classList.remove('bg-gray-100', 'cursor-not-allowed');
+                }
+            });
+
+            // Réactiver les inputs relay statiques
+            document.querySelectorAll('.relay-time-input').forEach(input => {
+                input.disabled = false;
+                input.placeholder = 'HH:MM:SS';
+                input.classList.remove('bg-gray-100', 'cursor-not-allowed');
+            });
+
+            // Réinitialiser le tableau Hyrox (recrée les inputs dynamiques proprement)
+            if (typeof initHyroxTable === 'function') initHyroxTable();
+            // Les nouveaux inputs hyrox créés par initHyroxTable sont déjà vides et actifs
+            const hyroxTotal = document.getElementById('hyroxTotalTime');
+            if (hyroxTotal) hyroxTotal.textContent = '00:00:00';
         }
         // Exposer sur window pour utilisation depuis le HTML (onclick) et modal-auth.js
         window.checkAndCloseRaceModal = checkAndCloseRaceModal;
