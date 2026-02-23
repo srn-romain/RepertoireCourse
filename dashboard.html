@@ -3231,18 +3231,19 @@
                                 <i class="fas fa-ruler-horizontal text-green-500"></i>
                                 ${race.distance || '0'} km
                             </span>
-                            ${race.terrain === 'hyrox' ? `
-                                <span class="flex items-center gap-1 px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded-full font-bold">Hyrox</span>
-                            ` : `
+                            ${race.terrain !== 'hyrox' ? `
                                 <span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full">
                                     <i class="fas fa-mountain text-green-500"></i>
                                     +${race.elevation || '0'} m
                                 </span>
-                            `}
+                            ` : ''}
                             ${locationDisplay ? `<span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full hidden md:inline-flex">
                                 <i class="fas fa-map-marker-alt text-green-500"></i>
                                 ${locationDisplay}
                             </span>` : ''}
+                            ${race.terrain === 'hyrox' ? `
+                                <span class="flex items-center gap-1 px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded-full font-bold">Hyrox</span>
+                            ` : ''}
                         `}
                     </div>
                 </div>
