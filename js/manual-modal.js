@@ -6,7 +6,7 @@
 const manualModalHTML = `
     <!-- Manuel Modal (Style Dashboard) -->
     <div id="manualModal" class="fixed inset-0 flex items-center justify-center z-50 hidden modal">
-        <div class="absolute inset-0 bg-black bg-opacity-50 blur-bg" onclick="closeModal('manualModal')"></div>
+        <div class="absolute inset-0 bg-black bg-opacity-50 blur-bg"></div>
         <div class="relative bg-white rounded-xl shadow-xl w-full max-w-5xl mx-4 z-10 flex flex-col max-h-[90vh]">
             <!-- Header -->
             <div

@@ -8,7 +8,7 @@ const authModalsHTML = `
 <!-- LOGIN MODAL -->
 <div id="loginModal" class="modal hidden fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm transition-opacity duration-300">
     <div class="modal-content bg-white p-8 w-full max-w-md m-4 rounded-2xl shadow-2xl relative transform scale-100 transition-transform duration-300">
-        <button onclick="closeModal('loginModal')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition">
+        <button onclick="checkAndCloseAuthModal('loginModal')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition">
             <i class="fas fa-times text-xl"></i>
         </button>
 
@@ -68,7 +68,7 @@ const authModalsHTML = `
 <!-- SIGNUP MODAL -->
 <div id="signupModal" class="modal hidden fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm transition-opacity duration-300">
     <div class="modal-content bg-white p-8 w-full max-w-md m-4 rounded-2xl shadow-2xl relative transform scale-100 transition-transform duration-300">
-        <button onclick="closeModal('signupModal')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition">
+        <button onclick="checkAndCloseAuthModal('signupModal')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition">
             <i class="fas fa-times text-xl"></i>
         </button>
 
@@ -159,6 +159,30 @@ const authModalsHTML = `
 </div>
 `;
 
+// Modale de confirmation "modifications non enregistrées"
+const unsavedChangesModalHTML = `
+<div id="unsavedChangesModal" class="fixed inset-0 z-[999] flex items-center justify-center hidden">
+    <div class="absolute inset-0 bg-black bg-opacity-60 backdrop-blur-sm"></div>
+    <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm mx-4 p-6 animate-fadeIn">
+        <div class="flex items-center gap-3 mb-4">
+            <div class="flex-shrink-0 w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center">
+                <i class="fas fa-exclamation-triangle text-amber-500 text-lg"></i>
+            </div>
+            <h3 class="text-lg font-bold text-gray-800">Modifications non enregistrées</h3>
+        </div>
+        <p class="text-gray-600 mb-6 text-sm leading-relaxed">Vous avez commencé à remplir des champs. Voulez-vous vraiment quitter sans enregistrer ?</p>
+        <div class="flex gap-3">
+            <button id="unsavedStayBtn" class="flex-1 px-4 py-2.5 border-2 border-gray-200 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition text-sm">
+                <i class="fas fa-arrow-left mr-1.5"></i> Non, rester
+            </button>
+            <button id="unsavedLeaveBtn" class="flex-1 px-4 py-2.5 bg-red-500 hover:bg-red-600 text-white rounded-xl font-semibold transition text-sm">
+                <i class="fas fa-sign-out-alt mr-1.5"></i> Oui, quitter
+            </button>
+        </div>
+    </div>
+</div>
+`;
+
 // Inject Modals
 document.addEventListener('DOMContentLoaded', () => {
     // Check if modals already exist (avoid duplication)
@@ -168,8 +192,16 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.appendChild(div);
     }
 
+    // Inject unsaved changes modal
+    if (!document.getElementById('unsavedChangesModal')) {
+        const unsavedDiv = document.createElement('div');
+        unsavedDiv.innerHTML = unsavedChangesModalHTML;
+        document.body.appendChild(unsavedDiv);
+    }
+
     // Initialize Logic
     initAuthLogic();
+    initUnsavedChangesModal();
 });
 
 // GLOBAL FUNCTIONS (Available to buttons in HTML)
@@ -225,13 +257,6 @@ window.loginWithGoogle = async function () {
 }
 
 function initAuthLogic() {
-    // Close on click outside
-    window.addEventListener('click', function (e) {
-        if (e.target.classList.contains('modal')) {
-            e.target.classList.add('hidden');
-        }
-    });
-
     // Password Toggles
     function setupToggle(toggleId, inputId, eyeId, eyeOffId) {
         const toggle = document.getElementById(toggleId);
@@ -482,6 +507,73 @@ function initAuthLogic() {
                 else if (error.code === 'auth/invalid-email') msg = "Email invalide.";
                 showError('signup-error', msg);
                 setLoading('signupSubmitBtn', 'signup-loading', false);
+            }
+        });
+    }
+}
+
+/**
+ * Vérifie si des champs sont remplis dans la modale avant de la fermer.
+ * Si oui, affiche une modale de confirmation.
+ */
+window.checkAndCloseAuthModal = function (modalId) {
+    const modal = document.getElementById(modalId);
+    if (!modal) return;
+
+    // Chercher tous les inputs/textareas non vides dans la modale
+    const inputs = modal.querySelectorAll('input[type="text"], input[type="email"], input[type="password"]');
+    let hasDirtyField = false;
+    inputs.forEach(input => {
+        if (input.value.trim() !== '') hasDirtyField = true;
+    });
+
+    if (hasDirtyField) {
+        // Afficher la modale de confirmation
+        const unsavedModal = document.getElementById('unsavedChangesModal');
+        if (unsavedModal) {
+            unsavedModal.classList.remove('hidden');
+            unsavedModal.dataset.targetModal = modalId;
+        }
+    } else {
+        closeModal(modalId);
+    }
+};
+
+/**
+ * Initialise les boutons de la modale "modifications non enregistrées"
+ */
+function initUnsavedChangesModal() {
+    const stayBtn = document.getElementById('unsavedStayBtn');
+    const leaveBtn = document.getElementById('unsavedLeaveBtn');
+    const unsavedModal = document.getElementById('unsavedChangesModal');
+
+    if (stayBtn) {
+        stayBtn.addEventListener('click', () => {
+            if (unsavedModal) unsavedModal.classList.add('hidden');
+        });
+    }
+
+    if (leaveBtn) {
+        leaveBtn.addEventListener('click', () => {
+            if (unsavedModal) {
+                const targetModalId = unsavedModal.dataset.targetModal;
+                const action = unsavedModal.dataset.action;
+                unsavedModal.classList.add('hidden');
+                delete unsavedModal.dataset.action;
+
+                if (targetModalId) {
+                    // Cas sp\u00e9cial : raceModal \u2192 utiliser closeAndResetRaceModal si disponible
+                    if (action === 'resetRaceForm' && typeof closeAndResetRaceModal === 'function') {
+                        closeAndResetRaceModal();
+                    } else {
+                        const targetModal = document.getElementById(targetModalId);
+                        if (targetModal) {
+                            // Vider les champs d'auth avant de fermer
+                            targetModal.querySelectorAll('input[type="text"], input[type="email"], input[type="password"]').forEach(i => i.value = '');
+                        }
+                        closeModal(targetModalId);
+                    }
+                }
             }
         });
     }

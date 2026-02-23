@@ -313,20 +313,6 @@ function setupBadgesListeners() {
     if (closeBtn) {
         closeBtn.onclick = () => { if (modal) modal.classList.add('hidden'); };
     }
-
-    if (modal) {
-        modal.onclick = (e) => {
-            if (e.target === modal || e.target.classList.contains('blur-bg')) {
-                modal.classList.add('hidden');
-            }
-        };
-
-        // Support for blur-bg explicitly if it exists as child
-        const blurBg = modal.querySelector('.blur-bg');
-        if (blurBg) {
-            blurBg.onclick = () => modal.classList.add('hidden');
-        }
-    }
 }
 
 // Export functions to window to ensure backward compatibility

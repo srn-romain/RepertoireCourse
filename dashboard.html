@@ -515,7 +515,7 @@
 
     <!-- Modal d'ajout/édition -->
     <div id="raceModal" class="fixed inset-0 flex items-center justify-center z-50 hidden modal">
-        <div class="absolute inset-0 bg-black bg-opacity-50 blur-bg"></div>
+        <div class="absolute inset-0 bg-black bg-opacity-50 blur-bg" onclick="checkAndCloseRaceModal()"></div>
         <div class="relative bg-white rounded-xl shadow-xl w-full max-w-md mx-4 z-10">
             <div class="p-6 modal-content">
                 <h3 id="modalTitle" class="text-2xl font-bold text-green-800 mb-4">Ajouter une course</h3>
@@ -945,8 +945,7 @@
 
     <!-- Modal de détails -->
     <div id="detailsModal" class="fixed inset-0 z-50 hidden modal overflow-y-auto">
-        <div class="fixed inset-0 bg-black bg-opacity-50 blur-bg"
-            onclick="document.getElementById('detailsModal').classList.add('hidden');"></div>
+        <div class="fixed inset-0 bg-black bg-opacity-50 blur-bg"></div>
         <button id="prevRaceBtn"
             class="fixed md:-translate-x-[296px] top-1/2 left-4 md:left-1/2 md:-translate-x-[280px] transform -translate-y-1/2 text-gray-700 hover:text-gray-900 bg-white rounded-full p-3 shadow-xl hover:bg-gray-50 transition-all disabled:opacity-30 disabled:cursor-not-allowed z-[100]"
             title="Course précédente">
@@ -6021,15 +6020,56 @@
 
 
 
+        // Vérifie si le formulaire de course a des champs remplis avant de fermer
+        function checkAndCloseRaceModal() {
+            const form = document.getElementById('raceForm');
+            if (!form) {
+                raceModal.classList.add('hidden');
+                return;
+            }
+
+            // Chercher les champs texte / number / date / textarea non vides
+            const fields = form.querySelectorAll('input[type="text"], input[type="number"], input[type="date"], input[type="time"], input[type="url"], textarea');
+            let hasDirtyField = false;
+            fields.forEach(field => {
+                const val = field.value.trim();
+                // Pour le champ date, on ignore s'il contient la date par défaut (cas édition)
+                // On vérifie simplement si quelque chose a été saisi
+                if (val !== '' && field.id !== 'raceId') hasDirtyField = true;
+            });
+
+            if (hasDirtyField) {
+                // Afficher la modale de confirmation
+                const unsavedModal = document.getElementById('unsavedChangesModal');
+                if (unsavedModal) {
+                    unsavedModal.classList.remove('hidden');
+                    unsavedModal.dataset.targetModal = 'raceModal';
+                    unsavedModal.dataset.action = 'resetRaceForm';
+                } else {
+                    // Fallback si la modale n'existe pas encore
+                    closeAndResetRaceModal();
+                }
+            } else {
+                closeAndResetRaceModal();
+            }
+        }
+
+        function closeAndResetRaceModal() {
+            raceModal.classList.add('hidden');
+            raceForm.reset();
+            const raceTimeEl = document.getElementById('raceTime');
+            if (raceTimeEl) {
+                raceTimeEl.disabled = false;
+                raceTimeEl.classList.remove('bg-gray-100', 'cursor-not-allowed');
+            }
+        }
+        // Exposer sur window pour utilisation depuis le HTML (onclick) et modal-auth.js
+        window.checkAndCloseRaceModal = checkAndCloseRaceModal;
+        window.closeAndResetRaceModal = closeAndResetRaceModal;
+
         // Écouteur pour le bouton Annuler
         cancelBtn.addEventListener('click', () => {
-            // Fermer le modal
-            raceModal.classList.add('hidden');
-            // Réinitialiser le formulaire
-            raceForm.reset();
-            // Réinitialiser l'état du champ temps
-            raceTimeInput.disabled = false;
-            raceTimeInput.classList.remove('bg-gray-100', 'cursor-not-allowed');
+            checkAndCloseRaceModal();
         });
 
         // Event listeners
@@ -6503,7 +6543,8 @@
             modal.addEventListener('click', (event) => {
                 // Skip wishlistModal as it has its own custom logic for unsaved changes
                 // Skip inviteUserSelectModal to prevent closing by mistake (user request)
-                if (modal.id === 'wishlistModal' || modal.id === 'inviteUserSelectModal') return;
+                // Skip raceModal: handled separately with unsaved changes check
+                if (modal.id === 'wishlistModal' || modal.id === 'inviteUserSelectModal' || modal.id === 'raceModal') return;
 
                 let modalContent = modal.querySelector('.modal-content');
                 // Fallback: if no modal-content class, try to find the main content container (usually the first child div that is not a blur background)
@@ -6519,6 +6560,7 @@
                 }
             });
         });
+
 
         // Initialiser
         // loadRaces() est déjà appelé dans auth.onAuthStateChanged une fois les collections initialisées
