@@ -54,7 +54,7 @@
 <body class="min-h-screen flex flex-col bg-green-50 bg-opacity-90">
 
     <!-- Bandeau de connexion -->
-    <div id="authStatusBar" class="bg-green-50 border-b border-green-200 py-2 px-4 relative">
+    <div id="authStatusBar" class="bg-green-50 border-b border-green-200 py-2 px-4 sticky top-0 z-50">
         <div class="container mx-auto flex justify-between items-center">
             <div class="flex items-center gap-3">
                 <button id="backupDataBtn" class="text-green-600 hover:text-green-800 transition hidden"
@@ -163,7 +163,8 @@
                     <li><strong>🤝 Courses en Relai</strong> - gérer équipes et segments</li>
                     <li class="text-xs text-indigo-400 mt-2"><em>Comment l'utiliser ?</em> Sélectionnez <span
                             class="font-bold">Relai</span>, <span class="font-bold">Triathlon</span> ou
-                        <span class="font-bold">Hyrox</span> dans les modales de gestion des courses.</li>
+                        <span class="font-bold">Hyrox</span> dans les modales de gestion des courses.
+                    </li>
                 </ul>
             </div>
         </div>
@@ -472,9 +473,9 @@
     <footer class="text-center py-6 text-green-900 opacity-50 text-sm mt-8">
         <p style="margin:0;">
             Vous repérez une erreur ? Une question/suggestion ?
-            Remplissez ce formulaire dédié  :
-            <a href="https://docs.google.com/forms/d/e/1FAIpQLSfwn-_yuDIcpBQPzOjowHK_m_dh_No04GOvwDK99KgduHTwCA/viewform?usp=publish-editor" target="_blank"
-               style="color:#065f46; font-weight:bold; text-decoration:underline;">ici</a>
+            Remplissez ce formulaire dédié :
+            <a href="https://docs.google.com/forms/d/e/1FAIpQLSfwn-_yuDIcpBQPzOjowHK_m_dh_No04GOvwDK99KgduHTwCA/viewform?usp=publish-editor"
+                target="_blank" style="color:#065f46; font-weight:bold; text-decoration:underline;">ici</a>
         </p>
         <p>&copy; 2026 Carnet de Courses. Tous droits réservés.</p>
     </footer>
