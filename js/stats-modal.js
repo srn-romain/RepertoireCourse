@@ -265,7 +265,7 @@
             }
 
             // Calculer les statistiques par terrain
-            let terrainStats = { route: 0, trail: 0, triathlon: 0, relai: 0, total: 0 };
+            let terrainStats = { route: 0, trail: 0, triathlon: 0, relai: 0, hyrox: 0, total: 0 };
             pastRaces.forEach(race => {
                 if (race.terrain) {
                     const t = race.terrain.toLowerCase();
@@ -392,6 +392,83 @@
                 };
             }
 
+            // Calculer les statistiques spécifiques Hyrox
+            const hyroxEventNames = [
+                "Course 1km", "SkiErg 1000m",
+                "Course 1km", "Sled Push 50m",
+                "Course 1km", "Sled Pull 50m",
+                "Course 1km", "Burpee Broad Jumps 80m",
+                "Course 1km", "Rowing 1000m",
+                "Course 1km", "Farmers Carry 200m",
+                "Course 1km", "Sandbag Lunges 100m",
+                "Course 1km", "Wall Balls"
+            ];
+            // Noms affichage condensé (uniquement les 8 exercices, index pairs = course 1km)
+            const hyroxExerciseNames = [
+                "SkiErg 1000m", "Sled Push 50m", "Sled Pull 50m", "Burpee Broad Jumps 80m",
+                "Rowing 1000m", "Farmers Carry 200m", "Sandbag Lunges 100m", "Wall Balls"
+            ];
+            let hyroxStats = null;
+            const hyroxRaces = pastRaces.filter(r => r.terrain === 'hyrox');
+            if (hyroxRaces.length > 0) {
+                // Temps totaux (race.time)
+                const hyroxTimes = hyroxRaces
+                    .map(r => timeToSeconds(r.time))
+                    .filter(t => t !== null && t > 0);
+
+                let bestTotalTime = null;
+                let avgTotalTime = null;
+                let bestTotalRace = null;
+                if (hyroxTimes.length > 0) {
+                    bestTotalTime = Math.min(...hyroxTimes);
+                    avgTotalTime = Math.round(hyroxTimes.reduce((a, b) => a + b, 0) / hyroxTimes.length);
+                    bestTotalRace = hyroxRaces.find(r => timeToSeconds(r.time) === bestTotalTime);
+                }
+
+                // Par étape (16 slots : index 0=Course1, 1=SkiErg, 2=Course2, 3=SledPush, ...)
+                const perStep = hyroxEventNames.map((name, idx) => {
+                    const stepTimes = hyroxRaces
+                        .filter(r => r.hyroxLaps && r.hyroxLaps[idx])
+                        .map(r => timeToSeconds(r.hyroxLaps[idx]))
+                        .filter(t => t !== null && t > 0);
+
+                    if (stepTimes.length === 0) return null;
+                    return {
+                        name,
+                        best: Math.min(...stepTimes),
+                        avg: Math.round(stepTimes.reduce((a, b) => a + b, 0) / stepTimes.length),
+                        count: stepTimes.length
+                    };
+                });
+
+                // Agréger les 8 segments "Course 1km" (index 0,2,4,6,8,10,12,14)
+                const runSegments = [0, 2, 4, 6, 8, 10, 12, 14].map(idx => perStep[idx]).filter(Boolean);
+                let runAgg = null;
+                if (runSegments.length > 0) {
+                    const bestRuns = runSegments.map(s => s.best).filter(Boolean);
+                    const avgRuns = runSegments.map(s => s.avg).filter(Boolean);
+                    runAgg = {
+                        best: bestRuns.length > 0 ? Math.min(...bestRuns) : null,
+                        avg: avgRuns.length > 0 ? Math.round(avgRuns.reduce((a, b) => a + b, 0) / avgRuns.length) : null
+                    };
+                }
+
+                // Exercices (index 1,3,5,7,9,11,13,15)
+                const exercises = [1, 3, 5, 7, 9, 11, 13, 15].map((idx, i) => {
+                    const step = perStep[idx];
+                    return step ? { name: hyroxExerciseNames[i], best: step.best, avg: step.avg, count: step.count } : null;
+                }).filter(Boolean);
+
+                hyroxStats = {
+                    count: hyroxRaces.length,
+                    bestTotalTime,
+                    avgTotalTime,
+                    bestTotalRace,
+                    runAgg,
+                    exercises
+                };
+            }
+
             return {
                 totalRaces: pastRaces.length,
                 validRaces: pastRaces,
@@ -411,7 +488,8 @@
                 racesWithElevation,
                 racesWithPricePerKm,
                 racesWithPricePerKmWithElevation,
-                triathlonStats
+                triathlonStats,
+                hyroxStats
             };
         }
 
@@ -554,6 +632,58 @@
                     html += `</ul></div>`;
                 }
 
+                // Statistiques spécifiques Hyrox (en pleine largeur)
+                if (stats.hyroxStats) {
+                    const hs = stats.hyroxStats;
+                    html += `<div class="bg-orange-50 border border-orange-200 p-4 rounded-lg mb-6">`;
+                    html += `<h4 class="font-bold text-orange-800 mb-4 flex items-center gap-2"><span>🏋️ Statistiques Hyrox</span><span class="text-sm font-normal text-orange-600">(${hs.count} course${hs.count > 1 ? 's' : ''})</span></h4>`;
+
+                    // Temps global
+                    html += `<div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">`;
+                    if (hs.bestTotalTime !== null) {
+                        html += `<div class="bg-white rounded-lg p-3 border border-orange-100 shadow-sm">`;
+                        html += `<p class="text-xs text-orange-500 uppercase font-bold tracking-wider mb-1">🏆 Meilleur temps total</p>`;
+                        html += `<p class="text-xl font-bold text-orange-700">${secondsToTime(hs.bestTotalTime)}</p>`;
+                        if (hs.bestTotalRace) html += `<p class="text-xs text-gray-500 mt-1">${hs.bestTotalRace.name}${hs.bestTotalRace.date ? ' (' + new Date(hs.bestTotalRace.date).getFullYear() + ')' : ''}</p>`;
+                        html += `</div>`;
+                    }
+                    if (hs.avgTotalTime !== null) {
+                        html += `<div class="bg-white rounded-lg p-3 border border-orange-100 shadow-sm">`;
+                        html += `<p class="text-xs text-orange-500 uppercase font-bold tracking-wider mb-1">⏱️ Temps moyen total</p>`;
+                        html += `<p class="text-xl font-bold text-orange-600">${secondsToTime(hs.avgTotalTime)}</p>`;
+                        html += `</div>`;
+                    }
+                    html += `</div>`;
+
+                    // Segment Course 1km (aggrégé)
+                    if (hs.runAgg) {
+                        html += `<div class="bg-white rounded-lg p-3 border border-orange-100 shadow-sm mb-3">`;
+                        html += `<p class="text-xs text-orange-500 uppercase font-bold tracking-wider mb-2">🏃 Segments Course 1km</p>`;
+                        html += `<div class="flex gap-4 flex-wrap">`;
+                        if (hs.runAgg.best !== null) html += `<span class="text-sm"><span class="font-semibold text-orange-700">Meilleur :</span> <span class="text-orange-600 font-bold">${secondsToTime(hs.runAgg.best)}</span></span>`;
+                        if (hs.runAgg.avg !== null) html += `<span class="text-sm"><span class="font-semibold text-orange-700">Moyen :</span> <span class="text-orange-600">${secondsToTime(hs.runAgg.avg)}</span></span>`;
+                        html += `</div></div>`;
+                    }
+
+                    // Détail des exercices
+                    if (hs.exercises && hs.exercises.length > 0) {
+                        html += `<p class="text-xs text-orange-500 uppercase font-bold tracking-wider mb-2 mt-3">💪 Exercices</p>`;
+                        html += `<div class="grid grid-cols-1 sm:grid-cols-2 gap-2">`;
+                        hs.exercises.forEach(ex => {
+                            html += `<div class="bg-white rounded-lg p-2.5 border border-orange-100 flex flex-col gap-1">`;
+                            html += `<p class="text-xs font-bold text-orange-800">${ex.name}</p>`;
+                            html += `<div class="flex gap-3 flex-wrap">`;
+                            html += `<span class="text-xs"><span class="text-gray-500">Meilleur :</span> <span class="font-semibold text-orange-700">${secondsToTime(ex.best)}</span></span>`;
+                            html += `<span class="text-xs"><span class="text-gray-500">Moyen :</span> <span class="text-orange-600">${secondsToTime(ex.avg)}</span></span>`;
+                            html += `<span class="text-xs text-gray-400">(${ex.count} course${ex.count > 1 ? 's' : ''})</span>`;
+                            html += `</div></div>`;
+                        });
+                        html += `</div>`;
+                    }
+
+                    html += `</div>`;
+                }
+
                 // Visualisation des terrains (Barre de progression)
                 if (stats.terrainStats && stats.terrainStats.total > 0) {
                     const ts = stats.terrainStats;
@@ -567,7 +697,8 @@
                     if (ts.route > 0) html += `<div class="bg-blue-900 h-full transition-all duration-500" style="width: ${getPercent(ts.route)}%"></div>`;
                     if (ts.trail > 0) html += `<div class="bg-blue-700 h-full transition-all duration-500" style="width: ${getPercent(ts.trail)}%"></div>`;
                     if (ts.triathlon > 0) html += `<div class="bg-blue-500 h-full transition-all duration-500" style="width: ${getPercent(ts.triathlon)}%"></div>`;
-                    if (ts.relai > 0) html += `<div class="bg-blue-300 h-full transition-all duration-500" style="width: ${getPercent(ts.relai)}%"></div>`;
+                    if (ts.relai > 0) html += `<div class="bg-yellow-400 h-full transition-all duration-500" style="width: ${getPercent(ts.relai)}%"></div>`;
+                    if (ts.hyrox > 0) html += `<div class="bg-orange-400 h-full transition-all duration-500" style="width: ${getPercent(ts.hyrox)}%"></div>`;
                     html += `</div>`;
 
                     // Légende avec pourcentages
@@ -575,7 +706,8 @@
                     if (ts.route > 0) html += `<div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-blue-900"></span> Route (${ts.route} - ${getPercent(ts.route).toFixed(1)}%)</div>`;
                     if (ts.trail > 0) html += `<div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-blue-700"></span> Trail (${ts.trail} - ${getPercent(ts.trail).toFixed(1)}%)</div>`;
                     if (ts.triathlon > 0) html += `<div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-blue-500"></span> Triathlon (${ts.triathlon} - ${getPercent(ts.triathlon).toFixed(1)}%)</div>`;
-                    if (ts.relai > 0) html += `<div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-blue-300"></span> Relai (${ts.relai} - ${getPercent(ts.relai).toFixed(1)}%)</div>`;
+                    if (ts.relai > 0) html += `<div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-yellow-400"></span> Relai (${ts.relai} - ${getPercent(ts.relai).toFixed(1)}%)</div>`;
+                    if (ts.hyrox > 0) html += `<div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-orange-400"></span> Hyrox (${ts.hyrox} - ${getPercent(ts.hyrox).toFixed(1)}%)</div>`;
                     html += `</div>`;
 
                     html += `</div>`;
