@@ -68,7 +68,7 @@ const adminModalHTML = `
                 </div>
 
                 <!-- Price/Time -->
-                <div class="bg-gray-50 rounded-xl p-4 text-center border border-gray-100 shadow-sm text-xs">
+                <div class="bg-gray-50 rounded-xl p-4 text-center border border-gray-100 shadow-sm text-xs col-span-2 md:col-span-1">
                     <div class="flex flex-col h-full justify-center">
                         <p><span class="font-bold text-gray-700">Prix :</span> <span id="adminStatPrice">0 €</span></p>
                         <p><span class="font-bold text-gray-700">Temps :</span> <span id="adminStatTime">0h</span></p>
