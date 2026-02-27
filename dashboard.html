@@ -6618,10 +6618,6 @@
             });
         });
 
-
-        // Initialiser
-        // loadRaces() est déjà appelé dans auth.onAuthStateChanged une fois les collections initialisées
-
         // Fermer la modale favoris max
         setTimeout(() => {
             const closeFavBtn = document.getElementById('closeFavoriteAlertBtn');
@@ -6877,7 +6873,6 @@
         }
 
 
-        // Empêche la fermeture par click-outside si input non vide
         // Empêche la fermeture par click-outside si input non vide
         let wishlistMouseDownTarget = null;
         wishlistModal.addEventListener('mousedown', (event) => {

@@ -6,7 +6,7 @@
 const badgesModalHTML = `
     <!-- Modale de Badges -->
     <div id="badgesModal" class="fixed inset-0 flex items-center justify-center z-50 hidden modal">
-        <div class="absolute inset-0 bg-black bg-opacity-50 blur-bg"></div>
+        <div class="absolute inset-0 bg-black bg-opacity-50 blur-bg" id="badgesModalOverlay"></div>
         <div class="relative bg-white rounded-xl shadow-xl w-full max-w-6xl mx-4 z-10 flex flex-col max-h-[90vh]">
             <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-purple-50 rounded-t-xl">
                 <h3 class="text-2xl font-bold text-purple-800 flex items-center gap-2">
@@ -312,6 +312,16 @@ function setupBadgesListeners() {
 
     if (closeBtn) {
         closeBtn.onclick = () => { if (modal) modal.classList.add('hidden'); };
+    }
+
+    // Fermer en cliquant sur l'overlay (en dehors du contenu)
+    if (modal) {
+        modal.addEventListener('click', function (e) {
+            // Ferme si le clic est directement sur le fond, pas sur le contenu blanc (.relative)
+            if (!e.target.closest('.relative.bg-white')) {
+                modal.classList.add('hidden');
+            }
+        });
     }
 }
 
