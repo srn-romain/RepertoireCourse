@@ -1779,6 +1779,14 @@
     <script src="js/tutorial.js"></script>
     <script src="js/pdf-generator.js"></script>
     <script>
+        // Utility function to format distances (max 4 decimal places)
+        function formatDist(d) {
+            if (d === undefined || d === null || d === '' || d === '/') return '0';
+            const num = parseFloat(String(d).replace(',', '.'));
+            if (isNaN(num)) return d;
+            return parseFloat(num.toFixed(4));
+        }
+
         // Références Firebase dynamiques (initialisées après auth)
         let usersCollection = db.collection('users');
         let racesCollection = null;
@@ -3170,7 +3178,7 @@
                                     itemCount++;
                                 } else if (race.raceRelaySport === 'bike') {
                                     sportHtml = `<span class="flex items-center gap-1 px-2 py-1 bg-orange-50 text-orange-800 text-xs rounded-full" title="Vélo (Relais)">
-                                            <i class="fas fa-biking text-orange-500"></i> ${race.bikeDistance || '?'} km
+                                            <i class="fas fa-biking text-orange-500"></i> ${formatDist(race.bikeDistance)} km
                                         </span>`;
                                     itemCount++;
                                     if (race.bikeElevation !== null && race.bikeElevation !== undefined) {
@@ -3181,7 +3189,7 @@
                                     }
                                 } else if (race.raceRelaySport === 'run') {
                                     sportHtml = `<span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full" title="Course à pied (Relais)">
-                                            <i class="fas fa-running text-green-500"></i> ${race.distance || '?'} km
+                                            <i class="fas fa-running text-green-500"></i> ${formatDist(race.distance)} km
                                         </span>`;
                                     itemCount++;
                                     if (race.runElevation !== null && race.runElevation !== undefined) {
@@ -3222,17 +3230,17 @@
                             </span>
                             <span class="flex items-center gap-1 px-2 py-1 bg-orange-50 text-orange-800 text-xs rounded-full" title="Vélo">
                                 <i class="fas fa-biking text-orange-500"></i>
-                                ${race.bikeDistance || '?'} km
+                                ${formatDist(race.bikeDistance)} km
                             </span>
-                            <span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full" title="Course à pied">
-                                <i class="fas fa-running text-green-500"></i>
-                                ${race.distance || '?'} km
-                            </span>
+                             <span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full" title="Course à pied">
+                                 <i class="fas fa-running text-green-500"></i>
+                                 ${formatDist(race.distance)} km
+                             </span>
                         `) : `
-                            <span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full">
-                                <i class="fas fa-ruler-horizontal text-green-500"></i>
-                                ${race.distance || '0'} km
-                            </span>
+                             <span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full">
+                                 <i class="fas fa-ruler-horizontal text-green-500"></i>
+                                 ${formatDist(race.distance)} km
+                             </span>
                             ${race.terrain !== 'hyrox' ? `
                                 <span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full">
                                     <i class="fas fa-mountain text-green-500"></i>
@@ -3634,7 +3642,7 @@
                         if (bikeContainer) {
                             bikeContainer.classList.remove('hidden');
                             // Show Dist Only in container
-                            let bikeText = (race.bikeDistance || '?') + ' km';
+                            let bikeText = formatDist(race.bikeDistance) + ' km';
                             if (detailsBike) detailsBike.textContent = bikeText;
                         }
 
@@ -3672,7 +3680,7 @@
                         const distParent = distanceElement.parentElement;
                         distParent.querySelector('span').textContent = 'Distance';
                         distParent.querySelector('i').className = 'fas fa-running text-green-500';
-                        distanceElement.textContent = (race.distance || '?') + ' km';
+                        distanceElement.textContent = formatDist(race.distance) + ' km';
 
                         // TIME container -> Run Time (Green)
                         const timeParent = timeElement.parentElement;
@@ -3707,7 +3715,7 @@
 
                     // Bike details
                     if (detailsBike) {
-                        let bikeText = (race.bikeDistance || '?') + ' km';
+                        let bikeText = formatDist(race.bikeDistance) + ' km';
                         if (race.bikeTime) bikeText += ' | ' + race.bikeTime;
                         detailsBike.textContent = bikeText;
                     }
@@ -3715,7 +3723,7 @@
                     // Distance -> Run Distance + Run Time
                     if (distanceLabelSpan) distanceLabelSpan.textContent = 'Course à pied';
                     if (distanceIcon) distanceIcon.className = 'fas fa-running text-green-500';
-                    let runText = (race.distance || '?') + ' km';
+                    let runText = formatDist(race.distance) + ' km';
                     if (race.runTime) runText += ' | ' + race.runTime;
                     distanceElement.textContent = runText;
 
@@ -3759,7 +3767,7 @@
 
                 // Distance
                 if (race.distance && !isNaN(race.distance)) {
-                    const distanceText = `${race.distance} km`;
+                    const distanceText = `${formatDist(race.distance)} km`;
                     if (fieldMatchesSearch(race.distance, searchQuery) || fieldMatchesSearch('km', searchQuery)) {
                         distanceElement.innerHTML = highlightSearchMatch(distanceText, searchQuery);
                     } else {
@@ -3901,7 +3909,7 @@
                     relayHtml += `
                         <tr class="hover:bg-green-100 transition-colors">
                             <td class="px-2 py-1 font-medium text-green-700">${idx + 1}</td>
-                            <td class="px-2 py-1">${lap.dist ? parseFloat(lap.dist).toFixed(2) : '-'}</td>
+                            <td class="px-2 py-1">${formatDist(lap.dist)}</td>
                             <td class="px-2 py-1">${lap.elev || '-'}</td>
                             <td class="px-2 py-1 font-mono text-xs">${lap.time || '-'}</td>
                         </tr>
@@ -5114,7 +5122,8 @@
             // Update hidden form fields for Standard Relay
             const terrain = document.getElementById('raceTerrain').value;
             if (terrain === 'relai') {
-                document.getElementById('raceDistance').value = totalDist > 0 ? totalDist : '';
+                const formattedDist = totalDist > 0 ? parseFloat(totalDist.toFixed(4)) : '';
+                document.getElementById('raceDistance').value = formattedDist;
                 document.getElementById('raceElevation').value = totalElev > 0 ? totalElev : '';
                 const timeStr = secondsToTime(totalSeconds);
                 document.getElementById('raceTime').value = timeStr !== '00:00:00' ? timeStr : '';
