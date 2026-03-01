@@ -3549,6 +3549,8 @@
 
             const elevationContainer = elevationElement.parentElement;
             const elevationLabelSpan = elevationContainer ? elevationContainer.querySelector('span') : null;
+            const elevationIcon = elevationContainer ? elevationContainer.querySelector('i') : null;
+
 
             const timeContainer = timeElement.parentElement;
             const timeTitle = timeContainer ? timeContainer.querySelector('p') : null;
@@ -3729,6 +3731,7 @@
 
                     // Elevation -> Run Elevation (Green)
                     if (elevationLabelSpan) elevationLabelSpan.textContent = "Dénivelé à pied";
+                    if (elevationIcon) elevationIcon.className = "fas fa-mountain text-green-500";
                     if (race.runElevation !== null && race.runElevation !== undefined) {
                         elevationElement.textContent = `${race.runElevation} m D+`;
                     } else {
@@ -3779,6 +3782,7 @@
 
                 // Elevation
                 if (elevationLabelSpan) elevationLabelSpan.textContent = "Dénivelé";
+                if (elevationIcon) elevationIcon.className = 'fas fa-mountain text-green-500';
                 if (race.elevation && !isNaN(race.elevation)) {
                     const elevationText = `${race.elevation} m D+`;
                     if (fieldMatchesSearch(race.elevation, searchQuery) || fieldMatchesSearch('m', searchQuery) || fieldMatchesSearch('d+', searchQuery)) {
