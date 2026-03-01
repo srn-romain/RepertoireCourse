@@ -139,9 +139,9 @@ async function loadPublicRaces() {
 
         // Helper function to format numbers (distance, elevation)
         const formatNumber = (val) => {
-            if (!val && val !== 0) return '0';
+            if (!val && val !== 0) return '?';
             const num = parseFloat(String(val).replace(',', '.'));
-            if (isNaN(num)) return val;
+            if (isNaN(num)) return '?';
             return num.toLocaleString('fr-FR', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
         };
 
@@ -332,46 +332,57 @@ async function loadPublicRaces() {
                         <div class="flex flex-wrap items-center gap-2">
                             ${race.terrain === 'triathlon' ?
                     (race.raceFormat === 'team' ?
-                        // TRIATHLON RELAY DISPLAY
-                        (race.raceRelaySport === 'swim' ?
-                            `<span class="flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-800 text-xs rounded-full" title="Natation (Relais)">
-                                            <i class="fas fa-swimmer text-blue-500"></i> ${formatNumber(race.swimDistance)}m
-                                         </span>
-                                         <span class="flex items-center gap-1 px-2 py-1 bg-purple-50 text-purple-800 text-xs rounded-full" title="Relais">
-                                            <i class="fas fa-users text-purple-500"></i> Relais
-                                         </span>`
-                            : race.raceRelaySport === 'bike' ?
-                                `<span class="flex items-center gap-1 px-2 py-1 bg-orange-50 text-orange-800 text-xs rounded-full" title="Vélo (Relais)">
-                                            <i class="fas fa-biking text-orange-500"></i> ${formatNumber(race.bikeDistance)}km
-                                         </span>
-                                         <span class="flex items-center gap-1 px-2 py-1 bg-orange-50 text-orange-800 text-xs rounded-full" title="Dénivelé">
-                                            <i class="fas fa-mountain text-orange-500"></i> +${formatNumber(race.bikeElevation)}m
-                                         </span>
-                                         <span class="flex items-center gap-1 px-2 py-1 bg-purple-50 text-purple-800 text-xs rounded-full" title="Relais">
-                                            <i class="fas fa-users text-purple-500"></i> Relais
-                                         </span>`
-                                : // Run
-                                `<span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full" title="Course à pied (Relais)">
-                                            <i class="fas fa-running text-green-500"></i> ${formatNumber(race.distance)}km
-                                         </span>
-                                         <span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full" title="Dénivelé">
-                                            <i class="fas fa-mountain text-green-500"></i> +${formatNumber(race.runElevation)}m
-                                         </span>
-                                         <span class="flex items-center gap-1 px-2 py-1 bg-purple-50 text-purple-800 text-xs rounded-full" title="Relais">
-                                            <i class="fas fa-users text-purple-500"></i> Relais
-                                         </span>`
-                        )
+                        (() => {
+                            const relaySportVal = (() => {
+                                if (race.raceRelaySport === 'swim') {
+                                    const val = formatNumber(race.swimDistance);
+                                    return `<span class="flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-800 text-xs rounded-full" title="Natation (Relais)">
+                                                        <i class="fas fa-swimmer text-blue-500"></i> ${val}m
+                                                     </span>`;
+                                } else if (race.raceRelaySport === 'bike') {
+                                    const distVal = formatNumber(race.bikeDistance);
+                                    const elevVal = formatNumber(race.bikeElevation);
+                                    let html = `<span class="flex items-center gap-1 px-2 py-1 bg-orange-50 text-orange-800 text-xs rounded-full" title="Vélo (Relais)">
+                                                            <i class="fas fa-biking text-orange-500"></i> ${distVal}km
+                                                         </span>`;
+                                    if (elevVal !== '?') {
+                                        html += `<span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full" title="Dénivelé">
+                                                            <i class="fas fa-mountain text-green-500"></i> +${elevVal}m
+                                                         </span>`;
+                                    }
+                                    return html;
+                                } else { // Run
+                                    const distVal = formatNumber(race.distance);
+                                    const elevVal = formatNumber(race.runElevation);
+                                    let html = `<span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full" title="Course à pied (Relais)">
+                                                            <i class="fas fa-running text-green-500"></i> ${distVal}km
+                                                         </span>`;
+                                    if (elevVal !== '?') {
+                                        html += `<span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full" title="Dénivelé">
+                                                            <i class="fas fa-mountain text-green-500"></i> +${elevVal}m
+                                                         </span>`;
+                                    }
+                                    return html;
+                                }
+                            })();
+                            return `${relaySportVal}
+                                             <span class="flex items-center gap-1 px-2 py-1 bg-purple-50 text-purple-800 text-xs rounded-full" title="Relais">
+                                                <i class="fas fa-users text-purple-500"></i> Relais
+                                             </span>`;
+                        })()
                         :
                         // STANDARD TRIATHLON DISPLAY
-                        `<span class="flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-800 text-xs rounded-full" title="Natation">
-                                    <i class="fas fa-swimmer text-blue-500"></i> ${formatNumber(race.swimDistance)}m
-                                 </span>
+                        `
+                                 <span class="flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-800 text-xs rounded-full" title="Natation">
+                                         <i class="fas fa-swimmer text-blue-500"></i> ${formatNumber(race.swimDistance)}m
+                                     </span>
                                  <span class="flex items-center gap-1 px-2 py-1 bg-orange-50 text-orange-800 text-xs rounded-full" title="Vélo">
-                                    <i class="fas fa-biking text-orange-500"></i> ${formatNumber(race.bikeDistance)}km
-                                 </span>
+                                         <i class="fas fa-biking text-orange-500"></i> ${formatNumber(race.bikeDistance)}km
+                                     </span>
                                  <span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full" title="Course à pied">
-                                    <i class="fas fa-running text-green-500"></i> ${formatNumber(race.distance)}km
-                                 </span>`)
+                                         <i class="fas fa-running text-green-500"></i> ${formatNumber(race.distance)}km
+                                     </span>
+                         `)
                     :
                     // STANDARD RACE DISPLAY
                     `<span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full">

@@ -1781,9 +1781,9 @@
     <script>
         // Utility function to format distances (max 4 decimal places)
         function formatDist(d) {
-            if (d === undefined || d === null || d === '' || d === '/') return '0';
+            if (d === undefined || d === null || d === '' || d === '/') return '?';
             const num = parseFloat(String(d).replace(',', '.'));
-            if (isNaN(num)) return d;
+            if (isNaN(num)) return '?';
             return parseFloat(num.toFixed(4));
         }
 
@@ -3171,14 +3171,14 @@
                                 let itemCount = 0;
                                 if (race.raceRelaySport === 'swim') {
                                     const swimDist = parseFloat(race.swimDistance);
-                                    const distDisplay = isNaN(swimDist) ? '?' : (swimDist > 999 ? parseFloat((swimDist / 1000).toFixed(2)) + ' km' : swimDist + ' m');
+                                    const distDisplay = isNaN(swimDist) ? '? m' : (swimDist > 999 ? parseFloat((swimDist / 1000).toFixed(2)) + ' km' : swimDist + ' m');
                                     sportHtml = `<span class="flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-800 text-xs rounded-full" title="Natation (Relais)">
                                             <i class="fas fa-swimmer text-blue-500"></i> ${distDisplay}
                                         </span>`;
                                     itemCount++;
-                                } else if (race.raceRelaySport === 'bike') {
+                                    const bikeVal = formatDist(race.bikeDistance);
                                     sportHtml = `<span class="flex items-center gap-1 px-2 py-1 bg-orange-50 text-orange-800 text-xs rounded-full" title="Vélo (Relais)">
-                                            <i class="fas fa-biking text-orange-500"></i> ${formatDist(race.bikeDistance)} km
+                                            <i class="fas fa-biking text-orange-500"></i> ${bikeVal} km
                                         </span>`;
                                     itemCount++;
                                     if (race.bikeElevation !== null && race.bikeElevation !== undefined) {
@@ -3187,9 +3187,9 @@
                                             </span>`;
                                         itemCount++;
                                     }
-                                } else if (race.raceRelaySport === 'run') {
+                                    const runVal = formatDist(race.distance);
                                     sportHtml = `<span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full" title="Course à pied (Relais)">
-                                            <i class="fas fa-running text-green-500"></i> ${formatDist(race.distance)} km
+                                            <i class="fas fa-running text-green-500"></i> ${runVal} km
                                         </span>`;
                                     itemCount++;
                                     if (race.runElevation !== null && race.runElevation !== undefined) {
@@ -3222,7 +3222,7 @@
                                 <i class="fas fa-swimmer text-blue-500"></i>
                                 ${(() => {
                                 const swimDist = parseFloat(race.swimDistance);
-                                if (isNaN(swimDist)) return '?';
+                                if (isNaN(swimDist)) return '? m';
                                 return swimDist > 999
                                     ? parseFloat((swimDist / 1000).toFixed(2)) + ' km'
                                     : swimDist + ' m';
@@ -3550,7 +3550,6 @@
             const elevationContainer = elevationElement.parentElement;
             const elevationLabelSpan = elevationContainer ? elevationContainer.querySelector('span') : null;
             const elevationIcon = elevationContainer ? elevationContainer.querySelector('i') : null;
-
 
             const timeContainer = timeElement.parentElement;
             const timeTitle = timeContainer ? timeContainer.querySelector('p') : null;
