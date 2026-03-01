@@ -1580,7 +1580,7 @@
         <div
             class="modal-content bg-white p-6 w-full max-w-lg m-4 rounded-xl shadow-2xl relative border border-purple-100">
             <div class="flex justify-between items-center mb-6">
-                <h3 class="text-2xl font-bold text-purple-800 flex items-center gap-2">
+                <h3 id="anniversaryModalTitle" class="text-2xl font-bold text-purple-800 flex items-center gap-2">
                     <i class="fas fa-history"></i> Souvenirs
                 </h3>
                 <button onclick="document.getElementById('anniversaryModal').classList.add('hidden')"
@@ -7305,6 +7305,15 @@
                 // Est-ce que c'est aujourd'hui ? (moins de 24h d'écart avec un anniversaire)
                 const isToday = minDiff < (12 * 3600 * 1000); // Tolérance 12h pour considérer "le jour J"
 
+                // Définition dynamique du titre de la modale
+                const hasFuture = candidates.some(race => new Date(race.date) > now);
+                const modalTitleElement = document.getElementById('anniversaryModalTitle');
+                if (modalTitleElement) {
+                    modalTitleElement.innerHTML = hasFuture
+                        ? '<i class="fas fa-history"></i> Bientôt'
+                        : '<i class="fas fa-history"></i> Souvenirs';
+                }
+
                 if (isToday) {
                     const msg = document.createElement('p');
                     msg.className = "text-center text-green-600 font-bold mb-4 animate-bounce";
@@ -7331,10 +7340,11 @@
 
                     let timeDisplay = "";
                     if (isToday) {
-                        timeDisplay = `<span class="font-bold text-xl">${years} ans</span> tout pile aujourd'hui !`;
+                        timeDisplay = `<span class="font-bold text-xl">${years} an${years > 1 ? 's' : ''}</span> tout pile aujourd'hui !`;
                     } else {
                         const prefix = isPast ? "Il y a" : "Dans";
-                        timeDisplay = `${prefix} <span class="font-bold text-xl">${years} ans</span> et <span class="font-bold text-xl">${days} jours</span>.`;
+                        const yearStr = years > 0 ? `<span class="font-bold text-xl">${years} an${years > 1 ? 's' : ''}</span> et ` : "";
+                        timeDisplay = `${prefix} ${yearStr}<span class="font-bold text-xl">${days} jour${days > 1 ? 's' : ''}</span>.`;
                     }
 
                     div.innerHTML = `
