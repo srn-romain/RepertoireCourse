@@ -1015,7 +1015,7 @@
                                 <i class="fas fa-mountain text-green-500"></i>
                                 <span>Dénivelé</span>
                             </p>
-                            <div id="elevationWrapper" class="flex items-center font-bold mt-1">
+                            <div id="elevationWrapper" class="flex items-center font-semibold mt-1">
                                 <span id="detailsElevation" class="text-green-800" title="D+"></span>
                                 <span id="detailsElevationSep" class="text-gray-300 mx-1 hidden">|</span>
                                 <span id="detailsElevationNeg" class="text-red-600" title="D-"></span>
@@ -3812,7 +3812,7 @@
 
                 // Affichage D+
                 if (hasDPlus) {
-                    const elevationText = `+${race.elevation} m`;
+                    const elevationText = `D+ ${race.elevation}m`;
                     elevationElement.classList.remove('hidden');
                     if (fieldMatchesSearch(race.elevation, searchQuery) || fieldMatchesSearch('m', searchQuery) || fieldMatchesSearch('+', searchQuery)) {
                         elevationElement.innerHTML = highlightSearchMatch(elevationText, searchQuery);
@@ -3826,7 +3826,7 @@
 
                 // Affichage D-
                 if (hasDMinus) {
-                    const elevationNegText = `-${race.elevationNeg} m`;
+                    const elevationNegText = `D- ${race.elevationNeg}m`;
                     elevationNegElement.classList.remove('hidden');
                     if (fieldMatchesSearch(race.elevationNeg, searchQuery) || fieldMatchesSearch('m', searchQuery) || fieldMatchesSearch('-', searchQuery)) {
                         elevationNegElement.innerHTML = highlightSearchMatch(elevationNegText, searchQuery);
