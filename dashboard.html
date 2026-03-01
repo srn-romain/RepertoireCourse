@@ -608,7 +608,8 @@
                                     <tr>
                                         <th scope="col" class="px-2 py-2 w-10">#</th>
                                         <th scope="col" class="px-2 py-2">Dist. (km)</th>
-                                        <th scope="col" class="px-2 py-2">Dénivelé (m)</th>
+                                        <th scope="col" class="px-2 py-2">D+ (m)</th>
+                                        <th scope="col" class="px-2 py-2">D- (m)</th>
                                         <th scope="col" class="px-2 py-2">Temps</th>
                                         <th scope="col" class="px-2 py-2 w-10"></th>
                                     </tr>
@@ -620,7 +621,8 @@
                                     <tr>
                                         <td class="px-2 py-2">Total</td>
                                         <td class="px-2 py-2" id="relayTotalDist">0</td>
-                                        <td class="px-2 py-2" id="relayTotalElev">0</td>
+                                        <td class="px-2 py-2 text-green-700" id="relayTotalElev">0</td>
+                                        <td class="px-2 py-2 text-red-600" id="relayTotalElevNeg">0</td>
                                         <td class="px-2 py-2" id="relayTotalTime">00:00:00</td>
                                         <td></td>
                                     </tr>
@@ -3953,7 +3955,8 @@
                                     <tr>
                                         <th class="px-2 py-1">N°</th>
                                         <th class="px-2 py-1">Km</th>
-                                        <th class="px-2 py-1">D+</th>
+                                        <th class="px-2 py-1 text-green-700">D+</th>
+                                        <th class="px-2 py-1 text-red-600">D-</th>
                                         <th class="px-2 py-1">Temps</th>
                                     </tr>
                                 </thead>
@@ -3965,7 +3968,8 @@
                         <tr class="hover:bg-green-100 transition-colors">
                             <td class="px-2 py-1 font-medium text-green-700">${idx + 1}</td>
                             <td class="px-2 py-1">${formatDist(lap.dist)}</td>
-                            <td class="px-2 py-1">${lap.elev || '-'}</td>
+                            <td class="px-2 py-1 text-green-700">${lap.elev || '-'}</td>
+                            <td class="px-2 py-1 text-red-600">${lap.elevNeg || '-'}</td>
                             <td class="px-2 py-1 font-mono text-xs">${lap.time || '-'}</td>
                         </tr>
                     `;
@@ -4983,14 +4987,14 @@
         // GESTION DU MODE HYROX
         // ==========================================
         const hyroxEvents = [
-            "Course 1km", "SkiErg 1000m",
-            "Course 1km", "Sled Push 50m",
-            "Course 1km", "Sled Pull 50m",
-            "Course 1km", "Burpee Broad Jumps 80m",
-            "Course 1km", "Rowing 1000m",
-            "Course 1km", "Farmers Carry 200m",
-            "Course 1km", "Sandbag Lunges 100m",
-            "Course 1km", "Wall Balls (75/100 reps)"
+            "1- Course 1km", "SkiErg 1000m",
+            "2- Course 1km", "Sled Push 50m",
+            "3- Course 1km", "Sled Pull 50m",
+            "4- Course 1km", "Burpee Broad Jumps 80m",
+            "5- Course 1km", "Rowing 1000m",
+            "6- Course 1km", "Farmers Carry 200m",
+            "7- Course 1km", "Sandbag Lunges 100m",
+            "8- Course 1km", "Wall Balls (75/100 reps)"
         ];
 
         const hyroxTableBody = document.getElementById('hyroxTableBody');
@@ -5076,7 +5080,7 @@
         const addRelayLapBtn = document.getElementById('addRelayLapBtn');
         const removeRelayLapBtn = document.getElementById('removeRelayLapBtn');
 
-        let relayLapsData = []; // { dist: 0, elev: 0, time: '' }
+        let relayLapsData = []; // { dist: 0, elev: 0, elevNeg: 0, time: '' }
 
         window.initRelayTable = function (laps = []) {
             relayLapsTableBody.innerHTML = '';
@@ -5113,7 +5117,11 @@
                 </td>
                 <td class="px-2 py-2">
                     <input type="number" class="relay-elev-input w-20 px-2 py-1 border rounded text-sm focus:ring-green-500 focus:border-green-500" 
-                        value="${data.elev || ''}" placeholder="m" oninput="updateRelayData(${index}, 'elev', this.value)">
+                        value="${data.elev || ''}" placeholder="D+" oninput="updateRelayData(${index}, 'elev', this.value)">
+                </td>
+                <td class="px-2 py-2">
+                    <input type="number" class="relay-elev-neg-input w-20 px-2 py-1 border rounded text-sm focus:ring-red-500 focus:border-red-500" 
+                        value="${data.elevNeg || ''}" placeholder="D-" oninput="updateRelayData(${index}, 'elevNeg', this.value)">
                 </td>
                 <td class="px-2 py-2">
                     <input type="text" class="relay-time-input w-24 px-2 py-1 border rounded text-sm focus:ring-green-500 focus:border-green-500" 
@@ -5157,21 +5165,25 @@
         function calculateRelayTotals() {
             let totalDist = 0;
             let totalElev = 0;
+            let totalElevNeg = 0;
             let totalSeconds = 0;
 
             relayLapsData.forEach(lap => {
                 totalDist += parseFloat(lap.dist) || 0;
                 totalElev += parseInt(lap.elev) || 0;
+                totalElevNeg += parseInt(lap.elevNeg) || 0;
                 totalSeconds += timeToSeconds(lap.time);
             });
 
             // Update footer
             const distEl = document.getElementById('relayTotalDist');
             const elevEl = document.getElementById('relayTotalElev');
+            const elevNegEl = document.getElementById('relayTotalElevNeg');
             const timeEl = document.getElementById('relayTotalTime');
 
             if (distEl) distEl.textContent = totalDist.toFixed(2) + ' km';
             if (elevEl) elevEl.textContent = totalElev + ' m';
+            if (elevNegEl) elevNegEl.textContent = totalElevNeg + ' m';
             if (timeEl) timeEl.textContent = secondsToTime(totalSeconds);
 
             // Update hidden form fields for Standard Relay
@@ -5180,6 +5192,7 @@
                 const formattedDist = totalDist > 0 ? parseFloat(totalDist.toFixed(4)) : '';
                 document.getElementById('raceDistance').value = formattedDist;
                 document.getElementById('raceElevation').value = totalElev > 0 ? totalElev : '';
+                document.getElementById('raceElevationNeg').value = totalElevNeg > 0 ? totalElevNeg : '';
                 const timeStr = secondsToTime(totalSeconds);
                 document.getElementById('raceTime').value = timeStr !== '00:00:00' ? timeStr : '';
             }
