@@ -1415,11 +1415,9 @@
             <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 text-blue-600 mb-4">
                 <i class="fas fa-lock text-xl"></i>
             </div>
-            <h2 class="text-lg font-bold text-gray-800 mb-2 text-center">Course privée</h2>
-            <p class="text-gray-600 text-center mb-6 text-sm">
-                Cette course est privée. Elle n'est visible que par vous et ne peut donc pas recevoir de J'aime de
-                la
-                communauté.
+            <h2 id="privateRaceModalTitle" class="text-lg font-bold text-gray-800 mb-2 text-center">Course privée</h2>
+            <p id="privateRaceModalText" class="text-gray-600 text-center mb-6 text-sm">
+                Cette course est privée. Elle n'est visible que par vous.
             </p>
             <button onclick="document.getElementById('privateRaceModal').classList.add('hidden');"
                 class="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-semibold">
@@ -3498,7 +3496,7 @@
             const titleElement = document.getElementById('detailsTitle');
 
             // Icône de cadenas si la course n'est pas publique
-            const lockIcon = (race.public !== true) ? '<i class="fas fa-lock text-gray-500 mr-2"></i>' : '';
+            const lockIcon = (race.public !== true) ? '<i class="fas fa-lock text-gray-400 mr-2 cursor-pointer hover:text-gray-600 transition-colors" onclick="showPrivateInfo()" title="Course privée"></i>' : '';
 
             if (fieldMatchesSearch(race.name, searchQuery)) {
                 titleElement.innerHTML = lockIcon + highlightSearchMatch(race.name, searchQuery);
@@ -7613,8 +7611,14 @@
             }, 300);
         }
 
+        function showPrivateInfo() {
+            const modal = document.getElementById('privateRaceModal');
+            if (modal) modal.classList.remove('hidden');
+        }
+
         window.zoomImage = zoomImage;
         window.closeImageZoom = closeImageZoom;
+        window.showPrivateInfo = showPrivateInfo;
     </script>
 
     <script src="js/isAdmin.js"></script>
