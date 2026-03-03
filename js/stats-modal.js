@@ -760,12 +760,76 @@
                 // Statistiques spécifiques Triathlon (en pleine largeur)
                 if (stats.triathlonStats) {
                     const ts = stats.triathlonStats;
-                    html += `<div class="bg-blue-100 p-4 rounded-lg mb-6"><h4 class="font-bold text-blue-800 mb-3">Moyennes Triathlon (${ts.count} courses)</h4>`;
-                    html += `<ul class="list-disc list-inside space-y-2">`;
-                    html += `<li><strong>Natation :</strong> <span class="text-blue-600 font-semibold">${ts.avgSwim} m</span></li>`;
-                    html += `<li><strong>Vélo :</strong> <span class="text-blue-600 font-semibold">${ts.avgBike} km</span></li>`;
-                    html += `<li><strong>Course à pied :</strong> <span class="text-blue-600 font-semibold">${ts.avgRun} km</span></li>`;
-                    html += `</ul></div>`;
+                    // Calculs des totaux à partir des données brutes
+                    const triRaces = stats.validRaces.filter(r => r.terrain === 'triathlon');
+                    const totalSwimM = triRaces.reduce((s, r) => s + (parseInt(r.swimDistance) || 0), 0);
+                    const totalBikeKm = triRaces.reduce((s, r) => s + (parseFloat(r.bikeDistance) || 0), 0);
+                    const totalRunKm = triRaces.reduce((s, r) => s + (parseFloat(r.distance) || 0), 0);
+
+                    html += `<div class="bg-blue-50 border border-blue-100 p-4 rounded-lg mb-6">
+                        <h4 class="font-bold text-blue-800 mb-4 flex items-center gap-2">
+                            <span>🏊‍♂️🚴‍♂️🏃‍♂️</span>
+                            <span>Statistiques Triathlon</span>
+                            <span class="text-sm font-normal text-blue-500">(${ts.count} course${ts.count > 1 ? 's' : ''})</span>
+                        </h4>
+                        <div class="flex flex-col md:flex-row gap-3">
+
+                            <!-- Natation -->
+                            <div class="flex-1 bg-white rounded-lg border border-blue-100 shadow-sm p-3">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <i class="fas fa-swimmer text-blue-500 text-lg"></i>
+                                    <span class="font-bold text-blue-800 text-sm">Natation</span>
+                                </div>
+                                <div class="space-y-1 text-sm">
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-500">Moy.</span>
+                                        <span class="font-semibold text-blue-700">${ts.avgSwim} m</span>
+                                    </div>
+                                    <div class="flex justify-between border-t border-blue-50 pt-1 mt-1">
+                                        <span class="text-gray-400 text-xs">Total</span>
+                                        <span class="text-xs font-semibold text-blue-500">${(totalSwimM / 1000).toLocaleString('fr-FR', { maximumFractionDigits: 1 })} km</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Vélo -->
+                            <div class="flex-1 bg-white rounded-lg border border-orange-100 shadow-sm p-3">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <i class="fas fa-biking text-orange-500 text-lg"></i>
+                                    <span class="font-bold text-orange-800 text-sm">Vélo</span>
+                                </div>
+                                <div class="space-y-1 text-sm">
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-500">Moy.</span>
+                                        <span class="font-semibold text-orange-700">${ts.avgBike} km</span>
+                                    </div>
+                                    <div class="flex justify-between border-t border-orange-50 pt-1 mt-1">
+                                        <span class="text-gray-400 text-xs">Total</span>
+                                        <span class="text-xs font-semibold text-orange-500">${totalBikeKm.toLocaleString('fr-FR', { maximumFractionDigits: 1 })} km</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Course à pied -->
+                            <div class="flex-1 bg-white rounded-lg border border-green-100 shadow-sm p-3">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <i class="fas fa-running text-green-500 text-lg"></i>
+                                    <span class="font-bold text-green-800 text-sm">Course à pied</span>
+                                </div>
+                                <div class="space-y-1 text-sm">
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-500">Moy.</span>
+                                        <span class="font-semibold text-green-700">${ts.avgRun} km</span>
+                                    </div>
+                                    <div class="flex justify-between border-t border-green-50 pt-1 mt-1">
+                                        <span class="text-gray-400 text-xs">Total</span>
+                                        <span class="text-xs font-semibold text-green-500">${totalRunKm.toLocaleString('fr-FR', { maximumFractionDigits: 1 })} km</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>`;
                 }
 
                 // Statistiques spécifiques Hyrox (en pleine largeur)
