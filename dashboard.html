@@ -3692,11 +3692,11 @@
                         timeParent.querySelector('span').textContent = 'Dénivelé';
                         timeParent.querySelector('i').className = 'fas fa-mountain text-orange-500';
                         timeElement.className = "font-semibold text-orange-800 text-sm";
-                        if (race.bikeElevation !== null && race.bikeElevation !== undefined) {
-                            let bikeElevText = `D+ ${race.bikeElevation}m`;
-                            if (race.bikeElevationNeg !== null && race.bikeElevationNeg !== undefined) {
-                                bikeElevText += ` / D- ${race.bikeElevationNeg}m`;
-                            }
+                        const hasBikeElev = race.bikeElevation !== null && race.bikeElevation !== undefined;
+                        const hasBikeElevNeg = race.bikeElevationNeg !== null && race.bikeElevationNeg !== undefined;
+                        if (hasBikeElev || hasBikeElevNeg) {
+                            let bikeElevText = hasBikeElev ? `D+ ${race.bikeElevation}m` : '';
+                            if (hasBikeElevNeg) bikeElevText += (bikeElevText ? ' / ' : '') + `D- ${race.bikeElevationNeg}m`;
                             timeElement.textContent = bikeElevText;
                         } else {
                             timeElement.textContent = '/';
@@ -3730,11 +3730,11 @@
                         elevParent.querySelector('span').textContent = 'Dénivelé';
                         elevParent.querySelector('i').className = 'fas fa-mountain text-green-500';
                         elevationElement.className = "font-semibold text-green-800 text-sm";
-                        if (race.runElevation !== null && race.runElevation !== undefined) {
-                            let runElevText = `D+ ${race.runElevation}m`;
-                            if (race.runElevationNeg !== null && race.runElevationNeg !== undefined) {
-                                runElevText += ` / D- ${race.runElevationNeg}m`;
-                            }
+                        const hasRunElev = race.runElevation !== null && race.runElevation !== undefined;
+                        const hasRunElevNeg = race.runElevationNeg !== null && race.runElevationNeg !== undefined;
+                        if (hasRunElev || hasRunElevNeg) {
+                            let runElevText = hasRunElev ? `D+ ${race.runElevation}m` : '';
+                            if (hasRunElevNeg) runElevText += (runElevText ? ' / ' : '') + `D- ${race.runElevationNeg}m`;
                             elevationElement.textContent = runElevText;
                         } else {
                             elevationElement.textContent = '/';
@@ -3776,11 +3776,11 @@
                     if (elevationLabelSpan) elevationLabelSpan.textContent = "Dénivelé à pied";
                     if (elevationIcon) elevationIcon.className = "fas fa-mountain text-green-500";
                     elevationElement.className = "font-semibold text-green-800 text-sm";
-                    if (race.runElevation !== null && race.runElevation !== undefined) {
-                        let runElevText = `D+ ${race.runElevation}m`;
-                        if (race.runElevationNeg !== null && race.runElevationNeg !== undefined) {
-                            runElevText += ` / D- ${race.runElevationNeg}m`;
-                        }
+                    const hasRunElev2 = race.runElevation !== null && race.runElevation !== undefined;
+                    const hasRunElevNeg2 = race.runElevationNeg !== null && race.runElevationNeg !== undefined;
+                    if (hasRunElev2 || hasRunElevNeg2) {
+                        let runElevText = hasRunElev2 ? `D+ ${race.runElevation}m` : '';
+                        if (hasRunElevNeg2) runElevText += (runElevText ? ' / ' : '') + `D- ${race.runElevationNeg}m`;
                         elevationElement.textContent = runElevText;
                     } else {
                         elevationElement.textContent = '/';
@@ -3797,11 +3797,11 @@
                     if (timeLabelSpan) timeLabelSpan.textContent = "Dénivelé Vélo";
                     if (timeIcon) timeIcon.className = "fas fa-mountain text-orange-500";
                     timeElement.className = "font-semibold text-orange-800 text-sm";
-                    if (race.bikeElevation !== null && race.bikeElevation !== undefined) {
-                        let bikeElevText = `D+ ${race.bikeElevation}m`;
-                        if (race.bikeElevationNeg !== null && race.bikeElevationNeg !== undefined) {
-                            bikeElevText += ` / D- ${race.bikeElevationNeg}m`;
-                        }
+                    const hasBikeElev2 = race.bikeElevation !== null && race.bikeElevation !== undefined;
+                    const hasBikeElevNeg2 = race.bikeElevationNeg !== null && race.bikeElevationNeg !== undefined;
+                    if (hasBikeElev2 || hasBikeElevNeg2) {
+                        let bikeElevText = hasBikeElev2 ? `D+ ${race.bikeElevation}m` : '';
+                        if (hasBikeElevNeg2) bikeElevText += (bikeElevText ? ' / ' : '') + `D- ${race.bikeElevationNeg}m`;
                         timeElement.textContent = bikeElevText;
                     } else {
                         timeElement.textContent = '/';
@@ -3835,11 +3835,11 @@
                 if (elevationLabelSpan) elevationLabelSpan.textContent = "Dénivelé";
                 if (elevationIcon) elevationIcon.className = 'fas fa-mountain text-green-500';
                 elevationElement.className = "font-semibold text-green-800 text-sm";
-                if (race.elevation && !isNaN(race.elevation)) {
-                    let elevText = `D+ ${race.elevation}m`;
-                    if (race.elevationNeg !== null && race.elevationNeg !== undefined && !isNaN(race.elevationNeg)) {
-                        elevText += ` / D- ${race.elevationNeg}m`;
-                    }
+                const hasElev = race.elevation && !isNaN(race.elevation);
+                const hasElevNeg = race.elevationNeg !== null && race.elevationNeg !== undefined && !isNaN(race.elevationNeg);
+                if (hasElev || hasElevNeg) {
+                    let elevText = hasElev ? `D+ ${race.elevation}m` : '';
+                    if (hasElevNeg) elevText += (elevText ? ' / ' : '') + `D- ${race.elevationNeg}m`;
                     elevationElement.textContent = elevText;
                 } else {
                     elevationElement.textContent = '/';
