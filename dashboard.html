@@ -840,6 +840,12 @@
                             placeholder="https://exemple.com">
                     </div>
                     <div class="mb-4">
+                        <label for="raceResultUrl" class="block text-green-700 mb-2">Lien résultats de la course</label>
+                        <input type="url" id="raceResultUrl" name="raceResultUrl"
+                            class="w-full px-3 py-2 border border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                            placeholder="https://exemple.com/resultats">
+                    </div>
+                    <div class="mb-4">
                         <label for="raceNotes" class="block text-green-700 mb-2">Notes</label>
                         <textarea id="raceNotes" rows="3" placeholder="Note course"
                             class="w-full px-3 py-2 border border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"></textarea>
@@ -4528,9 +4534,10 @@
             linksContainer.innerHTML = ''; // Nettoyer le conteneur
 
             const hasWebsite = race.website && race.website.trim() !== '';
+            const hasResultUrl = race.resultUrl && race.resultUrl.trim() !== '';
             const hasGpx = race.gpxUrl && race.gpxUrl.trim() !== '';
 
-            if (hasWebsite || hasGpx) {
+            if (hasWebsite || hasResultUrl || hasGpx) {
                 linksContainer.classList.remove('hidden');
 
                 // On met toujours col-span-1 car on veut l'un sous l'autre
@@ -4550,6 +4557,22 @@
                     webBtn.className = `block w-full text-center py-2.5 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all font-semibold no-underline shadow-sm text-sm ${colSpanClass}`;
                     webBtn.innerHTML = `<i class="fas fa-external-link-alt mr-2 text-xs"></i>${websiteLinkText}`;
                     linksContainer.appendChild(webBtn);
+                }
+
+                // Bouton Résultats
+                if (hasResultUrl) {
+                    const resultText = 'Voir les résultats en ligne';
+                    const resultLinkText = fieldMatchesSearch(race.resultUrl, searchQuery) || fieldMatchesSearch(resultText, searchQuery)
+                        ? highlightSearchMatch(resultText, searchQuery)
+                        : resultText;
+
+                    const resultBtn = document.createElement('a');
+                    resultBtn.href = race.resultUrl;
+                    resultBtn.target = '_blank';
+                    resultBtn.rel = 'noopener';
+                    resultBtn.className = `block w-full text-center py-2.5 px-4 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-all font-semibold no-underline shadow-sm text-sm ${colSpanClass}`;
+                    resultBtn.innerHTML = `<i class="fas fa-trophy mr-2 text-xs"></i>${resultLinkText}`;
+                    linksContainer.appendChild(resultBtn);
                 }
 
                 // Bouton GPX
@@ -5372,6 +5395,7 @@
             document.getElementById('raceNotes').value = race.notes || '';
             document.getElementById('racePrice').value = (race.price !== undefined && race.price !== null) ? race.price : '';
             document.getElementById('raceWebsite').value = race.website || '';
+            document.getElementById('raceResultUrl').value = race.resultUrl || '';
             document.getElementById('raceGpxUrl').value = race.gpxUrl || '';
             document.getElementById('raceFavorite').checked = race.favorite || false;
             document.getElementById('racePublic').checked = (race.public !== undefined) ? race.public : true;
@@ -5545,6 +5569,7 @@
             const notes = document.getElementById('raceNotes').value;
             const price = document.getElementById('racePrice').value;
             const website = document.getElementById('raceWebsite').value.trim();
+            const resultUrl = document.getElementById('raceResultUrl').value.trim();
             const gpxUrl = document.getElementById('raceGpxUrl').value.trim();
 
             // Vérification des champs obligatoires (seulement nom et date maintenant)
@@ -5665,6 +5690,7 @@
                 runElevation: isNaN(runElevation) ? null : runElevation,
                 runElevationNeg: isNaN(runElevationNeg) ? null : runElevationNeg,
                 website,
+                resultUrl,
                 gpxUrl,
                 companions: currentCompanions,
                 favorite: favorite || false,
