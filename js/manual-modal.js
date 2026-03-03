@@ -108,6 +108,8 @@ const manualModalHTML = `
                                     <div>• Statut favori</div>
                                     <div>• Partage public</div>
                                     <div>• Accompagnants</div>
+                                    <div>• Lien site de la course</div>
+                                    <div>• Lien résultats en ligne</div>
                                 </div>
                             </div>
                         </div>
@@ -132,6 +134,31 @@ const manualModalHTML = `
                                 </p>
                             </div>
                         </div>
+                    </div>
+                </section>
+
+                <!-- Liens & Boutons d'accès rapide -->
+                <section class="mb-8">
+                    <h4 class="text-xl font-bold text-green-700 mb-3 flex items-center gap-2">
+                        <i class="fas fa-link text-green-600"></i> Liens & Boutons d'accès rapide
+                    </h4>
+                    <div class="bg-white border border-orange-100 rounded-lg p-4 shadow-sm">
+                        <p class="text-sm text-gray-600 mb-3">Dans la fiche détail d'une course, jusqu'à 3 boutons peuvent apparaître si les liens correspondants sont renseignés dans le formulaire :</p>
+                        <ul class="space-y-2.5 text-sm text-gray-600">
+                            <li class="flex items-start gap-3">
+                                <span class="px-2 py-1 bg-blue-600 text-white rounded text-xs font-semibold shrink-0 mt-0.5"><i class="fas fa-external-link-alt mr-1"></i>Site</span>
+                                <span><strong class="text-gray-800">Voir le site de la course</strong> — s'affiche si le champ <em>Lien site de la course</em> est renseigné.</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <span class="px-2 py-1 bg-orange-500 text-white rounded text-xs font-semibold shrink-0 mt-0.5"><i class="fas fa-trophy mr-1"></i>Résultats</span>
+                                <span><strong class="text-gray-800">Voir les résultats en ligne</strong> — s'affiche si le champ <em>Lien résultats de la course</em> est renseigné. Accès direct au classement officiel.</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <span class="px-2 py-1 bg-green-600 text-white rounded text-xs font-semibold shrink-0 mt-0.5"><i class="fas fa-route mr-1"></i>GPX</span>
+                                <span><strong class="text-gray-800">Voir le GPX</strong> — s'affiche si un lien GPX est renseigné.</span>
+                            </li>
+                        </ul>
+                        <p class="text-xs text-gray-400 italic mt-3">💡 Ces boutons sont visibles uniquement dans la modale de détail d'une course.</p>
                     </div>
                 </section>
 
