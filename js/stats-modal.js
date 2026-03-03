@@ -108,6 +108,10 @@
                 .map(r => parseFloat(r.elevation))
                 .filter(e => !isNaN(e) && e > 0);
 
+            const elevationsNeg = pastRaces
+                .map(r => parseFloat(r.elevationNeg))
+                .filter(e => !isNaN(e) && e > 0);
+
             const times = pastRaces
                 .map(r => timeToSeconds(r.time))
                 .filter(t => t !== null && t > 0);
@@ -143,6 +147,13 @@
             if (elevations.length > 0) {
                 const maxElevation = Math.max(...elevations);
                 highestElevationRace = pastRaces.find(r => parseFloat(r.elevation) === maxElevation);
+            }
+
+            // Course avec le dénivelé négatif le plus élevé
+            let highestElevationNegRace = null;
+            if (elevationsNeg.length > 0) {
+                const maxElevNeg = Math.max(...elevationsNeg);
+                highestElevationNegRace = pastRaces.find(r => parseFloat(r.elevationNeg) === maxElevNeg);
             }
 
             // Courses avec le temps le plus long
@@ -239,6 +250,31 @@
                 };
             }
 
+            // Calculer les statistiques pour les dénivelés négatifs (D-)
+            let elevationNegStats = {};
+            if (elevationsNeg.length > 0) {
+                const sortedElevationsNeg = [...elevationsNeg].sort((a, b) => a - b);
+                const mean = elevationsNeg.reduce((a, b) => a + b, 0) / elevationsNeg.length;
+                const min = Math.min(...elevationsNeg);
+                const max = Math.max(...elevationsNeg);
+                const range = max - min;
+                const median = sortedElevationsNeg.length % 2 === 0
+                    ? (sortedElevationsNeg[sortedElevationsNeg.length / 2 - 1] + sortedElevationsNeg[sortedElevationsNeg.length / 2]) / 2
+                    : sortedElevationsNeg[Math.floor(sortedElevationsNeg.length / 2)];
+                const variance = elevationsNeg.reduce((sum, e) => sum + Math.pow(e - mean, 2), 0) / elevationsNeg.length;
+                const standardDeviation = Math.sqrt(variance);
+
+                elevationNegStats = {
+                    mean: Math.round(mean),
+                    range: Math.round(range),
+                    standardDeviation: Math.round(standardDeviation),
+                    median: Math.round(median),
+                    min: min,
+                    max: max,
+                    sum: Math.round(elevationsNeg.reduce((a, b) => a + b, 0))
+                };
+            }
+
             // Calculer les statistiques pour les temps
             let timeStats = {};
             if (times.length > 0) {
@@ -315,11 +351,20 @@
                 .filter(r => r.value > 0)
                 .sort((a, b) => b.value - a.value);
 
-            // Préparer les données pour le graphique des dénivelés
+            // Préparer les données pour le graphique des dénivelés (D+)
             const racesWithElevation = pastRaces
                 .map(race => ({
                     race: race,
                     value: parseFloat(race.elevation) || 0
+                }))
+                .filter(r => r.value > 0)
+                .sort((a, b) => b.value - a.value);
+
+            // Préparer les données pour le graphique des dénivelés négatifs (D-)
+            const racesWithElevationNeg = pastRaces
+                .map(race => ({
+                    race: race,
+                    value: parseFloat(race.elevationNeg) || 0
                 }))
                 .filter(r => r.value > 0)
                 .sort((a, b) => b.value - a.value);
@@ -476,16 +521,19 @@
                 maxDistance,
                 highestPriceRace,
                 highestElevationRace,
+                highestElevationNegRace,
                 longestTimeRace,
                 distanceStats,
                 priceStats,
                 elevationStats,
+                elevationNegStats,
                 timeStats,
                 terrainStats,
                 racesWithDistance,
                 racesWithPrice,
                 racesWithTime,
                 racesWithElevation,
+                racesWithElevationNeg,
                 racesWithPricePerKm,
                 racesWithPricePerKmWithElevation,
                 triathlonStats,
@@ -551,7 +599,11 @@
                 }
 
                 if (stats.highestElevationRace) {
-                    html += `<li><strong>Plus de dénivelé :</strong> ${getUniqueRaceName(stats.highestElevationRace, stats.validRaces)} (${stats.highestElevationRace.elevation} m D+)</li>`;
+                    html += `<li><strong>Plus de dénivelé D+ :</strong> ${getUniqueRaceName(stats.highestElevationRace, stats.validRaces)} (${stats.highestElevationRace.elevation} m D+)</li>`;
+                }
+
+                if (stats.highestElevationNegRace) {
+                    html += `<li><strong>Plus de dénivelé D- :</strong> ${getUniqueRaceName(stats.highestElevationNegRace, stats.validRaces)} (${stats.highestElevationNegRace.elevationNeg} m D-)</li>`;
                 }
 
                 if (stats.longestTimeRace) {
@@ -593,16 +645,29 @@
                     html += `</ul></div>`;
                 }
 
-                // Statistiques sur les dénivelés
+                // Statistiques sur les dénivelés D+
                 if (stats.elevationStats && Object.keys(stats.elevationStats).length > 0) {
                     const es = stats.elevationStats;
-                    html += `<div class="bg-green-100 p-4 rounded-lg"><h4 class="font-bold text-green-800 mb-3">Statistiques sur les dénivelés</h4>`;
+                    html += `<div class="bg-green-100 p-4 rounded-lg"><h4 class="font-bold text-green-800 mb-3">Dénivelé positif (D+)</h4>`;
                     html += `<ul class="list-disc list-inside space-y-2">`;
+                    html += `<li><strong>Total cumulé :</strong> <span class="text-green-600 font-semibold">${es.sum.toLocaleString('fr-FR')} m</span></li>`;
                     html += `<li><strong>Moyenne :</strong> <span class="text-green-600 font-semibold">${es.mean} m</span></li>`;
                     html += `<li><strong>Médiane :</strong> <span class="text-green-600 font-semibold">${es.median} m</span></li>`;
-                    html += `<li><strong>Étendue :</strong> <span class="text-green-600 font-semibold">${es.range} m</span></li>`;
+                    html += `<li><strong>Max :</strong> <span class="text-green-600 font-semibold">${es.max} m</span></li>`;
                     html += `<li><strong>Écart-type :</strong> <span class="text-green-600 font-semibold">${es.standardDeviation} m</span></li>`;
-                    html += `<li><strong>Total :</strong> <span class="text-green-600 font-semibold">${es.sum} m</span></li>`;
+                    html += `</ul></div>`;
+                }
+
+                // Statistiques sur les dénivelés D-
+                if (stats.elevationNegStats && Object.keys(stats.elevationNegStats).length > 0) {
+                    const en = stats.elevationNegStats;
+                    html += `<div class="bg-blue-50 p-4 rounded-lg border border-blue-100"><h4 class="font-bold text-blue-800 mb-3">Dénivelé négatif (D-)</h4>`;
+                    html += `<ul class="list-disc list-inside space-y-2">`;
+                    html += `<li><strong>Total cumulé :</strong> <span class="text-blue-600 font-semibold">${en.sum.toLocaleString('fr-FR')} m</span></li>`;
+                    html += `<li><strong>Moyenne :</strong> <span class="text-blue-600 font-semibold">${en.mean} m</span></li>`;
+                    html += `<li><strong>Médiane :</strong> <span class="text-blue-600 font-semibold">${en.median} m</span></li>`;
+                    html += `<li><strong>Max :</strong> <span class="text-blue-600 font-semibold">${en.max} m</span></li>`;
+                    html += `<li><strong>Écart-type :</strong> <span class="text-blue-600 font-semibold">${en.standardDeviation} m</span></li>`;
                     html += `</ul></div>`;
                 }
 
@@ -738,7 +803,10 @@
                         html += `<option value="time">des temps</option>`;
                     }
                     if (stats.racesWithElevation && stats.racesWithElevation.length > 0) {
-                        html += `<option value="elevation">des dénivelés</option>`;
+                        html += `<option value="elevation">des dénivelés D+</option>`;
+                    }
+                    if (stats.racesWithElevationNeg && stats.racesWithElevationNeg.length > 0) {
+                        html += `<option value="elevationNeg">des dénivelés D-</option>`;
                     }
                     if (stats.racesWithPricePerKm && stats.racesWithPricePerKm.length > 0 && !isInvite) {
                         html += `<option value="pricePerKm">du prix au km</option>`;
@@ -839,7 +907,13 @@
                 case 'elevation':
                     if (!stats.racesWithElevation || stats.racesWithElevation.length === 0) return;
                     sortedRaces = [...stats.racesWithElevation];
-                    typeLabel = 'dénivelés';
+                    typeLabel = 'dénivelés D+';
+                    unit = 'm';
+                    break;
+                case 'elevationNeg':
+                    if (!stats.racesWithElevationNeg || stats.racesWithElevationNeg.length === 0) return;
+                    sortedRaces = [...stats.racesWithElevationNeg];
+                    typeLabel = 'dénivelés D-';
                     unit = 'm';
                     break;
                 case 'pricePerKm':

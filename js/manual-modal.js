@@ -97,7 +97,8 @@ const manualModalHTML = `
                                     <div>• Nom de la course <span class="text-red-500">*</span></div>
                                     <div>• Date <span class="text-red-500">*</span></div>
                                     <div>• Distance (km) <span class="text-red-500">*</span></div>
-                                    <div>• Dénivelé (m+)</div>
+                                    <div>• Dénivelé positif D+ (m)</div>
+                                    <div>• Dénivelé négatif D- (m)</div>
                                     <div>• Temps de course</div>
                                     <div>• Lieu / Ville</div>
                                     <div>• Photo (JPG, PNG)</div>
@@ -151,8 +152,9 @@ const manualModalHTML = `
                                 épreuve :</p>
                             <ul class="text-xs text-gray-600 ml-4 space-y-1">
                                 <li>• <strong>Natation :</strong> Distance (m) et Temps</li>
-                                <li>• <strong>Vélo :</strong> Distance (km), Dénivelé (m) et Temps</li>
-                                <li>• <strong>Course à pied :</strong> Distance (km), Dénivelé (m) et Temps</li>
+                                <li>• <strong>Vélo :</strong> Distance (km), D+ (m), D- (m) et Temps</li>
+                                <li>• <strong>Course à pied :</strong> Distance (km), D+ (m), D- (m) et Temps</li>
+                                <li class="text-xs text-blue-400 italic">💡 Les totaux D+ et D- sont calculés automatiquement à partir des segments vélo et CAP.</li>
                             </ul>
                         </div>
 
@@ -166,8 +168,7 @@ const manualModalHTML = `
                             <p class="text-sm text-gray-600 mb-2">Gérez les courses d'équipe avec précision :</p>
                             <ul class="text-xs text-gray-600 ml-4 space-y-1">
                                 <li>• <strong>Relais Classique :</strong> Utilisez le "Tableau de Relais" pour
-                                    ajouter
-                                    chaque segment (distance, dénivelé, temps) individuellement.</li>
+                                    ajouter chaque segment avec sa <strong>distance</strong>, son <strong>D+</strong>, son <strong>D-</strong> et son <strong>temps</strong>. Les totaux sont calculés automatiquement.</li>
                                 <li>• <strong>Triathlon en Relais :</strong> Sélectionnez "En équipe (Relais)" puis
                                     choisissez votre discipline (Nageur, Cycliste ou Coureur) pour n'enregistrer que
                                     votre partie.</li>
@@ -191,9 +192,11 @@ const manualModalHTML = `
                             </p>
                             <div class="grid md:grid-cols-2 gap-2 text-xs text-gray-600">
                                 <div>📊 Distance par mois/année</div>
-                                <div>⛰️ Dénivelé cumulé</div>
+                                <div>⛰️ Dénivelé D+ cumulé</div>
+                                <div>📉 Dénivelé D- cumulé</div>
                                 <div>📈 Évolution du nombre de courses</div>
                                 <div>🏃 Vitesse moyenne par période</div>
+                                <div>🏆 Records D+ et D- par course</div>
                             </div>
                         </div>
                     </div>
