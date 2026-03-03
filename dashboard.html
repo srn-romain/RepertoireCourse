@@ -3796,7 +3796,7 @@
                         timeTitle.classList.remove('text-green-600');
                         timeTitle.classList.add('text-orange-600');
                     }
-                    if (timeLabelSpan) timeLabelSpan.textContent = "Dénivelé Vélo";
+                    if (timeLabelSpan) timeLabelSpan.textContent = "Dénivelé vélo";
                     if (timeIcon) timeIcon.className = "fas fa-mountain text-orange-500";
                     timeElement.className = "font-semibold text-orange-800 text-sm";
                     const hasBikeElev2 = race.bikeElevation !== null && race.bikeElevation !== undefined;
@@ -4112,7 +4112,10 @@
                     statsList.push({ label: 'Temps total', value: race.time });
                 }
                 if (race.elevation && !isNaN(race.elevation)) {
-                    statsList.push({ label: 'Dénivelé total', value: `${race.elevation} m D+` });
+                    statsList.push({ label: 'Dénivelé total D+', value: `${race.elevation} m` });
+                }
+                if (race.elevationNeg && !isNaN(race.elevationNeg)) {
+                    statsList.push({ label: 'Dénivelé total D-', value: `${race.elevationNeg} m` });
                 }
             }
 
@@ -4858,8 +4861,8 @@
             const raceRunTimeContainer = document.getElementById('raceRunTimeContainer');
             const raceRunElevationContainer = document.getElementById('raceRunElevationContainer');
             const raceTimeContainer = document.getElementById('raceTimeContainer');
-            // Global Elevation Input to hide
-            const raceElevationContainer = document.getElementById('raceElevation').parentElement;
+            // Global Elevation Container to hide (contient les deux champs D+ et D-)
+            const raceElevationContainer = document.getElementById('raceElevationContainer');
 
             // Find label for running distance (raceDistance)
             const raceDistanceLabel = document.querySelector('label[for="raceDistance"]');
