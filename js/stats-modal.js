@@ -645,30 +645,101 @@
                     html += `</ul></div>`;
                 }
 
-                // Statistiques sur les dénivelés D+
-                if (stats.elevationStats && Object.keys(stats.elevationStats).length > 0) {
-                    const es = stats.elevationStats;
-                    html += `<div class="bg-green-100 p-4 rounded-lg"><h4 class="font-bold text-green-800 mb-3">Dénivelé positif (D+)</h4>`;
-                    html += `<ul class="list-disc list-inside space-y-2">`;
-                    html += `<li><strong>Total cumulé :</strong> <span class="text-green-600 font-semibold">${es.sum.toLocaleString('fr-FR')} m</span></li>`;
-                    html += `<li><strong>Moyenne :</strong> <span class="text-green-600 font-semibold">${es.mean} m</span></li>`;
-                    html += `<li><strong>Médiane :</strong> <span class="text-green-600 font-semibold">${es.median} m</span></li>`;
-                    html += `<li><strong>Max :</strong> <span class="text-green-600 font-semibold">${es.max} m</span></li>`;
-                    html += `<li><strong>Écart-type :</strong> <span class="text-green-600 font-semibold">${es.standardDeviation} m</span></li>`;
-                    html += `</ul></div>`;
-                }
+                // Bloc dénivelé : flip card si D- existe, sinon bloc simple D+
+                const hasElevStats = stats.elevationStats && Object.keys(stats.elevationStats).length > 0;
+                const hasElevNegStats = stats.elevationNegStats && Object.keys(stats.elevationNegStats).length > 0;
 
-                // Statistiques sur les dénivelés D-
-                if (stats.elevationNegStats && Object.keys(stats.elevationNegStats).length > 0) {
-                    const en = stats.elevationNegStats;
-                    html += `<div class="bg-blue-50 p-4 rounded-lg border border-blue-100"><h4 class="font-bold text-blue-800 mb-3">Dénivelé négatif (D-)</h4>`;
-                    html += `<ul class="list-disc list-inside space-y-2">`;
-                    html += `<li><strong>Total cumulé :</strong> <span class="text-blue-600 font-semibold">${en.sum.toLocaleString('fr-FR')} m</span></li>`;
-                    html += `<li><strong>Moyenne :</strong> <span class="text-blue-600 font-semibold">${en.mean} m</span></li>`;
-                    html += `<li><strong>Médiane :</strong> <span class="text-blue-600 font-semibold">${en.median} m</span></li>`;
-                    html += `<li><strong>Max :</strong> <span class="text-blue-600 font-semibold">${en.max} m</span></li>`;
-                    html += `<li><strong>Écart-type :</strong> <span class="text-blue-600 font-semibold">${en.standardDeviation} m</span></li>`;
-                    html += `</ul></div>`;
+                if (hasElevStats || hasElevNegStats) {
+                    if (hasElevStats && hasElevNegStats) {
+                        // === FLIP CARD 3D ===
+                        const es = stats.elevationStats;
+                        const en = stats.elevationNegStats;
+                        html += `
+                        <style>
+                          .elev-flip-scene { perspective: 900px; }
+                          .elev-flip-card {
+                            position: relative; width: 100%; height: 100%;
+                            transform-style: preserve-3d;
+                            transition: transform 0.65s cubic-bezier(0.4, 0.2, 0.2, 1);
+                            min-height: 210px;
+                          }
+                          .elev-flip-card.is-flipped { transform: rotateY(180deg); }
+                          .elev-flip-face {
+                            position: absolute; width: 100%; height: 100%;
+                            backface-visibility: hidden; -webkit-backface-visibility: hidden;
+                            border-radius: 0.5rem; padding: 1rem;
+                            display: flex; flex-direction: column;
+                          }
+                          .elev-flip-face--back { transform: rotateY(180deg); }
+                          @keyframes elev-pulse-flip {
+                            0%,100% { opacity: 1; transform: rotate(0deg) scale(1); }
+                            50% { opacity: 0.6; transform: rotate(180deg) scale(1.15); }
+                          }
+                          .elev-flip-hint { animation: elev-pulse-flip 2s ease-in-out infinite; }
+                        </style>
+                        <div class="elev-flip-scene rounded-lg" style="min-height:210px;">
+                          <div class="elev-flip-card" id="elevFlipCard">
+
+                            <!-- RECTO : D+ -->
+                            <div class="elev-flip-face bg-green-100">
+                              <div class="flex justify-between items-start mb-3">
+                                <h4 class="font-bold text-green-800 flex items-center gap-2">
+                                  <i class="fas fa-mountain text-green-600"></i> Dénivelé positif (D+)
+                                </h4>
+                                <button onclick="document.getElementById('elevFlipCard').classList.toggle('is-flipped')"
+                                  title="Voir le D-"
+                                  class="flex items-center gap-1 text-xs text-green-700 bg-green-200 hover:bg-green-300 px-2 py-1 rounded-full transition cursor-pointer select-none">
+                                  <i class="fas fa-sync-alt elev-flip-hint"></i>
+                                  <span>D-</span>
+                                </button>
+                              </div>
+                              <ul class="list-disc list-inside space-y-2 text-sm flex-1">
+                                <li><strong>Total cumulé :</strong> <span class="text-green-600 font-semibold">${es.sum.toLocaleString('fr-FR')} m</span></li>
+                                <li><strong>Moyenne :</strong> <span class="text-green-600 font-semibold">${es.mean} m</span></li>
+                                <li><strong>Médiane :</strong> <span class="text-green-600 font-semibold">${es.median} m</span></li>
+                                <li><strong>Max :</strong> <span class="text-green-600 font-semibold">${es.max} m</span></li>
+                                <li><strong>Écart-type :</strong> <span class="text-green-600 font-semibold">${es.standardDeviation} m</span></li>
+                              </ul>
+                            </div>
+
+                            <!-- VERSO : D- -->
+                            <div class="elev-flip-face elev-flip-face--back bg-blue-50 border border-blue-100">
+                              <div class="flex justify-between items-start mb-3">
+                                <h4 class="font-bold text-blue-800 flex items-center gap-2">
+                                  <i class="fas fa-mountain text-blue-500"></i> Dénivelé négatif (D-)
+                                </h4>
+                                <button onclick="document.getElementById('elevFlipCard').classList.toggle('is-flipped')"
+                                  title="Voir le D+"
+                                  class="flex items-center gap-1 text-xs text-blue-700 bg-blue-100 hover:bg-blue-200 px-2 py-1 rounded-full transition cursor-pointer select-none">
+                                  <i class="fas fa-sync-alt elev-flip-hint" style="animation-direction:reverse"></i>
+                                  <span>D+</span>
+                                </button>
+                              </div>
+                              <ul class="list-disc list-inside space-y-2 text-sm flex-1">
+                                <li><strong>Total cumulé :</strong> <span class="text-blue-600 font-semibold">${en.sum.toLocaleString('fr-FR')} m</span></li>
+                                <li><strong>Moyenne :</strong> <span class="text-blue-600 font-semibold">${en.mean} m</span></li>
+                                <li><strong>Médiane :</strong> <span class="text-blue-600 font-semibold">${en.median} m</span></li>
+                                <li><strong>Max :</strong> <span class="text-blue-600 font-semibold">${en.max} m</span></li>
+                                <li><strong>Écart-type :</strong> <span class="text-blue-600 font-semibold">${en.standardDeviation} m</span></li>
+                              </ul>
+                            </div>
+
+                          </div>
+                        </div>`;
+                    } else if (hasElevStats) {
+                        // Bloc simple D+ sans D-
+                        const es = stats.elevationStats;
+                        html += `<div class="bg-green-100 p-4 rounded-lg">
+                          <h4 class="font-bold text-green-800 mb-3 flex items-center gap-2"><i class="fas fa-mountain text-green-600"></i> Dénivelé positif (D+)</h4>
+                          <ul class="list-disc list-inside space-y-2">
+                            <li><strong>Total cumulé :</strong> <span class="text-green-600 font-semibold">${es.sum.toLocaleString('fr-FR')} m</span></li>
+                            <li><strong>Moyenne :</strong> <span class="text-green-600 font-semibold">${es.mean} m</span></li>
+                            <li><strong>Médiane :</strong> <span class="text-green-600 font-semibold">${es.median} m</span></li>
+                            <li><strong>Max :</strong> <span class="text-green-600 font-semibold">${es.max} m</span></li>
+                            <li><strong>Écart-type :</strong> <span class="text-green-600 font-semibold">${es.standardDeviation} m</span></li>
+                          </ul>
+                        </div>`;
+                    }
                 }
 
                 // Statistiques sur les temps
