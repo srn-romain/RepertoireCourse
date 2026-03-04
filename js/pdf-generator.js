@@ -69,15 +69,10 @@ async function generateRacePdf(raceId) {
         yPos += 8;
     }
 
-    // Badge "À venir" si applicable
+    // Statut de la course (passée / à venir) — sans tag visible dans le PDF
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    if (raceDate >= today) {
-        doc.setTextColor(255, 193, 7); // Jaune
-        doc.text('À venir', margin, yPos);
-        doc.setTextColor(...textColor);
-        yPos += 8;
-    }
+    const isUpcoming = raceDate >= today;
 
     yPos += 5;
 
@@ -94,9 +89,19 @@ async function generateRacePdf(raceId) {
 
     const info = [
         ['Distance', `${race.distance} km`],
-        ['Dénivelé', `${race.elevation} m D+`],
         ['Temps', race.time || 'Non renseigné']
     ];
+
+    // Dénivelé positif D+
+    if (race.elevation !== undefined && race.elevation !== null && race.elevation !== '') {
+        info.splice(1, 0, ['Dénivelé +', `${race.elevation} m D+`]);
+    }
+
+    // Dénivelé négatif D-
+    if (race.elevationNeg !== undefined && race.elevationNeg !== null && race.elevationNeg !== '') {
+        const dPlusIdx = info.findIndex(([l]) => l === 'Dénivelé +');
+        info.splice(dPlusIdx >= 0 ? dPlusIdx + 1 : 1, 0, ['Dénivelé -', `${race.elevationNeg} m D-`]);
+    }
 
     if (race.terrain) {
         const terrainFormatted = race.terrain.charAt(0).toUpperCase() + race.terrain.slice(1);
@@ -105,6 +110,11 @@ async function generateRacePdf(raceId) {
 
     if (race.price !== undefined && race.price !== null && race.price !== '') {
         info.push(['Prix', `${parseFloat(race.price).toFixed(2)} €`]);
+    }
+
+    // Statut à venir — affiché comme information neutre
+    if (isUpcoming) {
+        info.push(['Statut', 'Course à venir']);
     }
 
     info.forEach(([label, value]) => {
@@ -228,6 +238,7 @@ async function generateRacePdf(raceId) {
     // Liens
     const links = [];
     if (race.website) links.push(['Site web', race.website]);
+    if (race.resultUrl) links.push(['Résultats en ligne', race.resultUrl]);
     if (race.gpxUrl) links.push(['Fichier GPX', race.gpxUrl]);
 
     if (links.length > 0) {
