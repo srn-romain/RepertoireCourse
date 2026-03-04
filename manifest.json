@@ -1,0 +1,46 @@
+{
+    "name": "Carnet de Courses",
+    "short_name": "CarnetCourses",
+    "description": "Suivez, organisez et analysez toutes vos courses sportives : trail, route, triathlon, relai, Hyrox et plus encore.",
+    "start_url": "/RepertoireCourse/index.html",
+    "scope": "/RepertoireCourse/",
+    "display": "standalone",
+    "orientation": "portrait-primary",
+    "theme_color": "#16a34a",
+    "background_color": "#f0fdf4",
+    "lang": "fr",
+    "categories": [
+        "sports",
+        "health",
+        "fitness",
+        "running",
+        "trail",
+        "triathlon",
+        "hyrox",
+        "course",
+        "relai"
+    ],
+    "icons": [
+        {
+            "src": "https://srn-romain.github.io/RepertoireCourse/img/favicon.webp",
+            "sizes": "any",
+            "type": "image/webp",
+            "purpose": "any maskable"
+        }
+    ],
+    "screenshots": [],
+    "shortcuts": [
+        {
+            "name": "Tableau de bord",
+            "short_name": "Dashboard",
+            "description": "Accéder à votre tableau de bord de courses",
+            "url": "/RepertoireCourse/dashboard.html",
+            "icons": [
+                {
+                    "src": "https://srn-romain.github.io/RepertoireCourse/img/favicon.webp",
+                    "sizes": "any"
+                }
+            ]
+        }
+    ]
+}
