@@ -162,7 +162,6 @@ const manualModalHTML = `
                     </div>
                 </section>
 
-
                 <!-- Triathlon & Relais -->
                 <section class="mb-8">
                     <h4 class="text-xl font-bold text-green-700 mb-3 flex items-center gap-2">
