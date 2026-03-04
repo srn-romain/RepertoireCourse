@@ -399,6 +399,9 @@ const manualModalHTML = `
                                     <li class="flex items-center gap-2"><i class="fas fa-key text-red-500"></i>
                                         <strong>Sécurité :</strong> Réinitialisez votre mot de passe.
                                     </li>
+                                    <li class="flex items-center gap-2"><i class="fas fa-user-times text-red-500"></i>
+                                        <strong>Suppression du compte :</strong> Supprimez définitivement votre compte et vos données.
+                                    </li>
                                 </ul>
                             </div>
                         </div>
