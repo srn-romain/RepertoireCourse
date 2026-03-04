@@ -1864,6 +1864,12 @@
                         if (!docSnapshot.exists) {
                             updateData.role = 'user'; // Rôle par défaut à la création
                             updateData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+                            // Valeurs par défaut pour les préférences (sinon showDay apparait décoché)
+                            updateData.privacy = {
+                                showPseudo: true, showCity: true, showFavorite: false,
+                                showDay: true, hideLikeCount: false
+                            };
+                            updateData.uiPreferences = { showImportBtn: false, showStatsBtn: true };
                         }
 
                         await userDocRef.set(updateData, { merge: true });
@@ -3542,7 +3548,9 @@
             if (fieldMatchesSearch(race.name, searchQuery)) {
                 titleElement.innerHTML = lockIcon + highlightSearchMatch(race.name, searchQuery);
             } else {
-                titleElement.innerHTML = lockIcon + race.name;
+                // Sécurité XSS : ne pas injecter race.name directement dans innerHTML
+                titleElement.innerHTML = lockIcon;
+                titleElement.appendChild(document.createTextNode(race.name));
             }
 
             // Ajout de l'heure juste après la date
@@ -5706,11 +5714,6 @@
                 relayLaps: (terrain === 'relai') ? relayLapsData : null,
                 hyroxLaps: (terrain === 'hyrox') ? hyroxData : null
             };
-
-            // Set fixed distance for Hyrox
-            if (terrain === 'hyrox') {
-                raceData.distance = 8.00;
-            }
 
             // Set fixed distance for Hyrox
             if (terrain === 'hyrox') {
