@@ -104,13 +104,36 @@
                 .map(r => parseFloat(r.price))
                 .filter(p => !isNaN(p) && p > 0);
 
+            // Helper : calcule le D+ réel d'une course (relai, triathlon ou standard)
+            function getRealElevation(r) {
+                if (r.terrain === 'relai' && r.relayLaps && r.relayLaps.length > 0) {
+                    return r.relayLaps.reduce((sum, lap) => sum + (parseFloat(lap.elev) || 0), 0);
+                }
+                if (r.terrain === 'triathlon' && r.raceFormat !== 'team') {
+                    return (parseFloat(r.bikeElevation) || 0) + (parseFloat(r.elevation) || 0);
+                }
+                return parseFloat(r.elevation) || 0;
+            }
+
+            // Helper : calcule le D- réel d'une course (relai, triathlon ou standard)
+            function getRealElevationNeg(r) {
+                if (r.terrain === 'relai' && r.relayLaps && r.relayLaps.length > 0) {
+                    return r.relayLaps.reduce((sum, lap) => sum + (parseFloat(lap.elevNeg) || 0), 0);
+                }
+                if (r.terrain === 'triathlon' && r.raceFormat !== 'team') {
+                    return (parseFloat(r.bikeElevationNeg) || 0) + (parseFloat(r.elevationNeg) || 0);
+                }
+                return parseFloat(r.elevationNeg) || 0;
+            }
+
             const elevations = pastRaces
-                .map(r => parseFloat(r.elevation))
+                .map(r => getRealElevation(r))
                 .filter(e => !isNaN(e) && e > 0);
 
             const elevationsNeg = pastRaces
-                .map(r => parseFloat(r.elevationNeg))
+                .map(r => getRealElevationNeg(r))
                 .filter(e => !isNaN(e) && e > 0);
+
 
             const times = pastRaces
                 .map(r => timeToSeconds(r.time))
@@ -146,14 +169,14 @@
             let highestElevationRace = null;
             if (elevations.length > 0) {
                 const maxElevation = Math.max(...elevations);
-                highestElevationRace = pastRaces.find(r => parseFloat(r.elevation) === maxElevation);
+                highestElevationRace = pastRaces.find(r => getRealElevation(r) === maxElevation);
             }
 
             // Course avec le dénivelé négatif le plus élevé
             let highestElevationNegRace = null;
             if (elevationsNeg.length > 0) {
                 const maxElevNeg = Math.max(...elevationsNeg);
-                highestElevationNegRace = pastRaces.find(r => parseFloat(r.elevationNeg) === maxElevNeg);
+                highestElevationNegRace = pastRaces.find(r => getRealElevationNeg(r) === maxElevNeg);
             }
 
             // Courses avec le temps le plus long
@@ -355,7 +378,7 @@
             const racesWithElevation = pastRaces
                 .map(race => ({
                     race: race,
-                    value: parseFloat(race.elevation) || 0
+                    value: getRealElevation(race)
                 }))
                 .filter(r => r.value > 0)
                 .sort((a, b) => b.value - a.value);
@@ -364,10 +387,11 @@
             const racesWithElevationNeg = pastRaces
                 .map(race => ({
                     race: race,
-                    value: parseFloat(race.elevationNeg) || 0
+                    value: getRealElevationNeg(race)
                 }))
                 .filter(r => r.value > 0)
                 .sort((a, b) => b.value - a.value);
+
 
             // Préparer les données pour le graphique Prix au Km
             const racesWithPricePerKm = pastRaces
