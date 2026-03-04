@@ -204,15 +204,68 @@ document.addEventListener('DOMContentLoaded', () => {
     initUnsavedChangesModal();
 });
 
-// GLOBAL FUNCTIONS (Available to buttons in HTML)
+// ─── SCROLL LOCK UNIVERSEL ───────────────────────────────────────────────────
+// Détecte toute modale ouverte (élément `position:fixed` visible avec z-index élevé)
+// et gèle/libère le scroll du body automatiquement.
+
+function updateBodyScroll() {
+    // Sélectionne tout élément fixe qui n'est pas caché
+    const fixedEls = document.querySelectorAll(
+        '.modal:not(.hidden), ' +
+        '[id*="odal"]:not(.hidden), ' +
+        '[id*="ODAL"]:not(.hidden)'
+    );
+    let anyVisible = false;
+    fixedEls.forEach(el => {
+        const style = getComputedStyle(el);
+        if (style.display !== 'none' && style.visibility !== 'hidden' && style.position === 'fixed') {
+            anyVisible = true;
+        }
+    });
+    document.body.style.overflow = anyVisible ? 'hidden' : '';
+}
+
+// Observer universel : déclenche sur tout changement de classe dans le DOM
+(function setupScrollLockObserver() {
+    function init() {
+        const observer = new MutationObserver(() => {
+            updateBodyScroll();
+        });
+        observer.observe(document.body, {
+            attributes: true,
+            attributeFilter: ['class', 'style'],
+            subtree: true
+        });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init(); // DOM déjà prêt
+    }
+})();
+// ─────────────────────────────────────────────────────────────────────────────
+
+let _openModalCount = 0;
+
 window.openModal = function (modalId) {
     const modal = document.getElementById(modalId);
-    if (modal) modal.classList.remove('hidden');
+    if (modal && modal.classList.contains('hidden')) {
+        modal.classList.remove('hidden');
+        _openModalCount++;
+        document.body.style.overflow = 'hidden';
+    } else if (modal) {
+        modal.classList.remove('hidden');
+    }
 }
 
 window.closeModal = function (modalId) {
     const modal = document.getElementById(modalId);
-    if (modal) modal.classList.add('hidden');
+    if (modal && !modal.classList.contains('hidden')) {
+        modal.classList.add('hidden');
+        _openModalCount = Math.max(0, _openModalCount - 1);
+        if (_openModalCount === 0) document.body.style.overflow = '';
+    }
 }
 
 window.switchModal = function (closeId, openId) {
