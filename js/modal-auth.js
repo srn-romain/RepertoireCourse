@@ -548,7 +548,18 @@ function initAuthLogic() {
                     pseudo: pseudo,
                     createdAt: firebase.firestore.FieldValue.serverTimestamp(),
                     lastLogin: firebase.firestore.FieldValue.serverTimestamp(),
-                    role: 'user'
+                    role: 'user',
+                    privacy: {
+                        showPseudo: true,
+                        showCity: true,
+                        showFavorite: false,
+                        showDay: true,
+                        hideLikeCount: false
+                    },
+                    uiPreferences: {
+                        showImportBtn: false,
+                        showStatsBtn: true
+                    }
                 }, { merge: true });
 
                 window.location.href = 'dashboard.html';
