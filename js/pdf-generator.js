@@ -213,7 +213,7 @@ async function generateRacePdf(raceId) {
             doc.setFont(undefined, 'normal');
             const triRows = [
                 {
-                    label: '🏊 Natation',
+                    label: 'Natation',
                     dist: race.swimDistance ? (parseFloat(race.swimDistance) > 999
                         ? `${(parseFloat(race.swimDistance) / 1000).toFixed(2)} km`
                         : `${race.swimDistance} m`) : '—',
@@ -221,7 +221,7 @@ async function generateRacePdf(raceId) {
                     elev: '—'
                 },
                 {
-                    label: '🚴 Vélo',
+                    label: 'Velo',
                     dist: race.bikeDistance ? `${race.bikeDistance} km` : '—',
                     time: race.bikeTime || '—',
                     elev: (() => {
@@ -231,7 +231,7 @@ async function generateRacePdf(raceId) {
                     })()
                 },
                 {
-                    label: '🏃 Course à pied',
+                    label: 'Course a pied',
                     dist: race.distance ? `${race.distance} km` : '—',
                     time: race.runTime || race.time || '—',
                     elev: (() => {
