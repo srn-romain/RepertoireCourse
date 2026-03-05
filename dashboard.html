@@ -4210,8 +4210,8 @@
             const priceElement = document.getElementById('detailsPrice');
             if (isInvite()) {
                 // Pour les invités, afficher une fourchette de prix
-                if (race.price !== undefined && race.price !== null && race.price !== '') {
-                    const price = parseFloat(race.price);
+                const price = parseFloat(race.price);
+                if (race.price !== undefined && race.price !== null && race.price !== '' && !isNaN(price)) {
                     let priceRange = '';
                     if (price < 20) {
                         priceRange = '0-20 €';
@@ -4230,6 +4230,7 @@
                     priceElement.textContent = '/';
                     priceContainer.style.display = '';
                 }
+
             } else if (race.price !== undefined && race.price !== null && race.price !== '') {
                 const priceValue = parseFloat(race.price);
                 if (!isNaN(priceValue)) {
