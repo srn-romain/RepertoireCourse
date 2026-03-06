@@ -12,9 +12,11 @@ const authModalsHTML = `
             <i class="fas fa-times text-xl"></i>
         </button>
 
-        <div class="text-center mb-6">
-            <h2 class="text-2xl font-bold text-green-800 mb-2">Bon retour !</h2>
-            <p class="text-gray-600">Connectez-vous pour accéder à votre carnet.</p>
+        <div id="loginHeader">
+            <div class="text-center mb-6">
+                <h2 class="text-2xl font-bold text-green-800 mb-2">Bon retour !</h2>
+                <p class="text-gray-600">Connectez-vous pour accéder à votre carnet.</p>
+            </div>
         </div>
 
         <form id="loginForm" class="space-y-5">
@@ -35,6 +37,7 @@ const authModalsHTML = `
                         <i class="fas fa-eye-slash hidden" id="login-eye-off"></i>
                     </button>
                 </div>
+                <button type="button" id="btnShowForgotPassword" class="text-xs text-gray-500 hover:text-green-600 underline mt-2 block w-full text-right cursor-pointer">Mot de passe oublié ?</button>
             </div>
 
             <div id="login-error" class="hidden text-red-600 text-sm text-center bg-red-50 p-2 rounded-lg border border-red-200"></div>
@@ -44,6 +47,33 @@ const authModalsHTML = `
                 <i class="fas fa-spinner fa-spin ml-2 hidden" id="login-loading"></i>
             </button>
         </form>
+
+        <!-- FORGOT PASSWORD FORM (HIDDEN) -->
+        <div id="forgotPasswordForm" class="hidden space-y-5">
+            <div class="text-center mb-4">
+                <h3 class="text-xl font-bold text-green-800 mb-1">Mot de passe oublié</h3>
+                <p class="text-sm text-gray-600">Saisissez votre email pour réinitialiser votre mot de passe.</p>
+            </div>
+            <div>
+                <label for="forgot-email" class="block text-sm font-semibold text-gray-700 mb-1">Adresse Email</label>
+                <input type="email" id="forgot-email" 
+                    class="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none transition text-gray-800 placeholder-gray-400"
+                    placeholder="nom@exemple.com">
+            </div>
+            
+            <div id="forgot-error" class="hidden text-red-600 text-sm text-center bg-red-50 p-2 rounded-lg border border-red-200"></div>
+            <div id="forgot-success" class="hidden text-green-600 text-sm text-center bg-green-50 p-2 rounded-lg border border-green-200"></div>
+
+            <button type="button" id="forgotSubmitBtn" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-full transition transform hover:scale-[1.02] shadow-lg flex justify-center items-center">
+                <span>Envoyer le mail</span>
+                <i class="fas fa-spinner fa-spin ml-2 hidden" id="forgot-loading"></i>
+            </button>
+            
+            <button type="button" id="btnBackToLogin" class="w-full text-sm text-gray-500 hover:text-green-600 font-semibold transition cursor-pointer text-center block">
+                <i class="fas fa-arrow-left mr-2"></i>Retour à la connexion
+            </button>
+        </div>
+
 
         <!-- SEPARATEUR OU -->
         <div class="relative flex items-center py-5">
@@ -396,6 +426,107 @@ function initAuthLogic() {
             }
         });
     }
+
+    // FORGOT PASSWORD LOGIC
+    const btnShowForgot = document.getElementById('btnShowForgotPassword');
+    const btnBackToLogin = document.getElementById('btnBackToLogin');
+    const forgotForm = document.getElementById('forgotPasswordForm');
+    const loginFormEl = document.getElementById('loginForm');
+    const forgotSubmitBtn = document.getElementById('forgotSubmitBtn');
+
+    const loginHeader = document.getElementById('loginHeader');
+
+    if (btnShowForgot && forgotForm && loginFormEl && loginHeader) {
+        btnShowForgot.addEventListener('click', () => {
+            loginFormEl.classList.add('hidden');
+            loginHeader.classList.add('hidden');
+            forgotForm.classList.remove('hidden');
+            // Pré-remplir l'email si déjà tapé
+            const loginEmail = document.getElementById('login-email').value;
+            if (loginEmail && loginEmail.includes('@')) {
+                document.getElementById('forgot-email').value = loginEmail;
+            }
+        });
+    }
+
+    if (btnBackToLogin && forgotForm && loginFormEl && loginHeader) {
+        btnBackToLogin.addEventListener('click', () => {
+            forgotForm.classList.add('hidden');
+            loginFormEl.classList.remove('hidden');
+            loginHeader.classList.remove('hidden');
+            const errorEl = document.getElementById('forgot-error');
+            const successEl = document.getElementById('forgot-success');
+            if (errorEl) errorEl.classList.add('hidden');
+            if (successEl) successEl.classList.add('hidden');
+        });
+    }
+
+    if (forgotSubmitBtn) {
+        document.getElementById('forgot-email')?.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                forgotSubmitBtn.click();
+            }
+        });
+
+        forgotSubmitBtn.addEventListener('click', async () => {
+            const email = document.getElementById('forgot-email').value.trim();
+            const errorEl = document.getElementById('forgot-error');
+            const successEl = document.getElementById('forgot-success');
+
+            if (!email) {
+                showError('forgot-error', "Veuillez saisir votre email.");
+                return;
+            }
+
+            if (errorEl) errorEl.classList.add('hidden');
+            if (successEl) successEl.classList.add('hidden');
+            setLoading('forgotSubmitBtn', 'forgot-loading', true);
+
+            try {
+                // 1. Vérifier si le mail est reconnu dans la collection users
+                // .limit(1) est ajouté pour la sécurité et correspondre aux règles Firestore
+                let userExists = true;
+                try {
+                    const userQuery = await db.collection('users').where('email', '==', email).limit(1).get();
+                    if (userQuery.empty) {
+                        userExists = false;
+                    }
+                } catch (permissionError) {
+                    console.warn("Permission Firestore insuffisante pour vérifier l'email, tentative d'envoi direct via Auth.", permissionError);
+                    // Si on n'a pas la permission de lire la collection (ex: règles pas encore déployées), 
+                    // on laisse Firebase Auth gérer l'envoi. On ne bloque pas l'utilisateur.
+                }
+
+                if (!userExists) {
+                    showError('forgot-error', "Cet email n'est pas reconnu.");
+                    setLoading('forgotSubmitBtn', 'forgot-loading', false);
+                    return;
+                }
+
+                // 2. Envoyer le mail de réinitialisation
+                await auth.sendPasswordResetEmail(email);
+
+                // 3. Succès
+                if (successEl) {
+                    successEl.textContent = "Email envoyé ! Vérifiez vos spams.";
+                    successEl.classList.remove('hidden');
+                }
+                setLoading('forgotSubmitBtn', 'forgot-loading', false);
+
+                // On peut aussi vider le champ
+                document.getElementById('forgot-email').value = '';
+
+            } catch (error) {
+                console.error("Forgot password error:", error);
+                let msg = "Erreur lors de l'envoi de l'email.";
+                if (error.code === 'auth/invalid-email') msg = "Email invalide.";
+                showError('forgot-error', msg);
+                setLoading('forgotSubmitBtn', 'forgot-loading', false);
+            }
+        });
+    }
+
 
     // SIGNUP FORM LOGIC WITH PASSWORD STRENGTH
     const signupPasswordInput = document.getElementById('signup-password');
