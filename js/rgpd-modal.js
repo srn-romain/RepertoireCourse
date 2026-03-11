@@ -344,8 +344,8 @@
                 </h3>
                 <p class="text-xs text-gray-600">
                     Nous nous réservons le droit de modifier cette politique pour refléter des évolutions
-                    légales ou fonctionnelles. La date de dernière mise à jour est indiquée en haut de ce document.
-                    En cas de modification substantielle, vous en serez informé(e) lors de votre prochaine connexion.
+                    légales ou fonctionnelles. La date de dernière mise à jour est indiquée en haut et en bas de ce 
+                    document.
                 </p>
             </section>
 
