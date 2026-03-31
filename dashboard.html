@@ -5375,6 +5375,9 @@
             // Réinitialiser l'affichage triathlon et hyrox
             updateTriathlonFieldsVisibility();
             updateHyroxFieldsVisibility();
+            
+            // Réinitialiser l'état des champs temps/classement
+            updateTimeFieldState();
 
             raceModal.classList.remove('hidden');
         }
@@ -5503,7 +5506,8 @@
             const bikeTimeInput = document.getElementById('raceBikeTime');
             const runTimeInput = document.getElementById('raceRunTime');
 
-            if (!dateInput || !dateInput.value) return;
+            if (!dateInput) return;
+            const hasDate = !!dateInput.value;
 
             // Comparaison de dates en string pour éviter les problèmes de timezone
             // today est une date locale
@@ -5515,7 +5519,8 @@
             const raceDate = new Date(parts[0], parts[1] - 1, parts[2]);
 
             // Si la course est dans le futur (strictement après aujourd'hui)
-            if (raceDate > today) {
+            // On désactive seulement si on a une date ET qu'elle est future
+            if (hasDate && raceDate > today) {
                 if (timeInput) {
                     timeInput.value = '';
                     timeInput.disabled = true;
