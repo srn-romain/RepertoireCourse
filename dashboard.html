@@ -791,6 +791,19 @@
                             placeholder="00:00:00">
                         <p id="raceTimeError" class="text-red-500 text-sm mt-1 hidden">Format invalide (HH:MM:SS)</p>
                     </div>
+                    <div class="mb-4" id="raceRankingContainer">
+                        <label class="block text-green-700 mb-2">Classement général</label>
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <input type="number" id="raceRankPos" min="1"
+                                class="w-24 px-3 py-2 border border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                                placeholder="Ex: 76">
+                            <span class="text-green-700 font-medium">sur</span>
+                            <input type="number" id="raceRankTotal" min="1"
+                                class="w-28 px-3 py-2 border border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                                placeholder="1200">
+                            <span class="text-green-700 font-medium">participants</span>
+                        </div>
+                    </div>
                     <div class="mb-4">
                         <label for="raceLocation" class="block text-green-700 mb-2">Lieu</label>
                         <input type="text" id="raceLocation"
@@ -1075,6 +1088,13 @@
                                 <span>Type de Terrain</span>
                             </p>
                             <p id="DetailTerrainText" class="font-semibold text-green-800">/</p>
+                        </div>
+                        <div class="bg-yellow-50 p-3 rounded-lg hidden" id="detailsRankingContainer">
+                            <p class="text-sm text-yellow-600 flex items-center gap-2">
+                                <i class="fas fa-medal text-yellow-500"></i>
+                                <span>Classement</span>
+                            </p>
+                            <p id="detailsRanking" class="font-semibold text-yellow-800"></p>
                         </div>
 
                     </div>
@@ -4250,6 +4270,24 @@
                 priceContainer.style.display = '';
             }
 
+            // Gérer l'affichage du classement
+            const rankingContainer = document.getElementById('detailsRankingContainer');
+            const rankingElement = document.getElementById('detailsRanking');
+            const isRaceUpcoming = raceDateOnlyForTime > todayForTime;
+            if (rankingContainer && rankingElement) {
+                if (isRaceUpcoming) {
+                    rankingContainer.classList.add('hidden');
+                } else if (race.rankPos && race.rankTotal) {
+                    rankingElement.textContent = `${race.rankPos} / ${race.rankTotal}`;
+                    rankingContainer.classList.remove('hidden');
+                } else if (race.rankPos) {
+                    rankingElement.textContent = `${race.rankPos}e`;
+                    rankingContainer.classList.remove('hidden');
+                } else {
+                    rankingContainer.classList.add('hidden');
+                }
+            }
+
             // Gérer l'affichage de la photo
             const photoContainer = document.getElementById('detailsPhotoContainer');
             const photo = document.getElementById('detailsPhoto');
@@ -5353,6 +5391,8 @@
             document.getElementById('raceElevation').value = race.elevation || '';
             document.getElementById('raceElevationNeg').value = race.elevationNeg || '';
             document.getElementById('raceTime').value = race.time;
+            document.getElementById('raceRankPos').value = race.rankPos || '';
+            document.getElementById('raceRankTotal').value = race.rankTotal || '';
             document.getElementById('raceLocation').value = race.location;
             document.getElementById('raceLocation').value = race.location || '';
 
@@ -5482,6 +5522,20 @@
                     timeInput.placeholder = "Disponible après la course";
                     timeInput.classList.add('bg-gray-100', 'cursor-not-allowed');
                 }
+                const rankPosInput = document.getElementById('raceRankPos');
+                const rankTotalInput = document.getElementById('raceRankTotal');
+                if (rankPosInput) {
+                    rankPosInput.value = '';
+                    rankPosInput.disabled = true;
+                    rankPosInput.placeholder = "Post-course";
+                    rankPosInput.classList.add('bg-gray-100', 'cursor-not-allowed');
+                }
+                if (rankTotalInput) {
+                    rankTotalInput.value = '';
+                    rankTotalInput.disabled = true;
+                    rankTotalInput.placeholder = "Post-course";
+                    rankTotalInput.classList.add('bg-gray-100', 'cursor-not-allowed');
+                }
                 [swimTimeInput, bikeTimeInput, runTimeInput].forEach(input => {
                     if (input) {
                         input.value = '';
@@ -5512,6 +5566,18 @@
                     timeInput.disabled = false;
                     timeInput.placeholder = "Ex: 01:30:00";
                     timeInput.classList.remove('bg-gray-100', 'cursor-not-allowed');
+                }
+                const rankPosInputEn = document.getElementById('raceRankPos');
+                const rankTotalInputEn = document.getElementById('raceRankTotal');
+                if (rankPosInputEn) {
+                    rankPosInputEn.disabled = false;
+                    rankPosInputEn.placeholder = "Ex: 42";
+                    rankPosInputEn.classList.remove('bg-gray-100', 'cursor-not-allowed');
+                }
+                if (rankTotalInputEn) {
+                    rankTotalInputEn.disabled = false;
+                    rankTotalInputEn.placeholder = "participants";
+                    rankTotalInputEn.classList.remove('bg-gray-100', 'cursor-not-allowed');
                 }
                 [swimTimeInput, bikeTimeInput, runTimeInput].forEach(input => {
                     if (input) {
@@ -5578,6 +5644,8 @@
             const elevation = parseInt(document.getElementById('raceElevation').value);
             const elevationNeg = parseInt(document.getElementById('raceElevationNeg').value);
             const time = document.getElementById('raceTime').value;
+            const rankPos = document.getElementById('raceRankPos').value;
+            const rankTotal = document.getElementById('raceRankTotal').value;
             const location = document.getElementById('raceLocation').value;
             const terrain = document.getElementById('raceTerrain').value || 'route';
             const notes = document.getElementById('raceNotes').value;
@@ -5690,6 +5758,8 @@
                 elevation,
                 elevationNeg: isNaN(elevationNeg) ? null : elevationNeg,
                 time,
+                rankPos: rankPos ? parseInt(rankPos) : null,
+                rankTotal: rankTotal ? parseInt(rankTotal) : null,
                 swimTime,
                 bikeTime,
                 runTime,
