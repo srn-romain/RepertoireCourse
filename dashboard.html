@@ -5379,12 +5379,30 @@
             // Réinitialiser l'état des champs temps/classement
             updateTimeFieldState();
 
+            // Réinitialiser les messages d'erreur
+            ['raceNameError', 'raceDateError', 'raceTimeError', 'formGlobalError', 'companionError'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.classList.add('hidden');
+                    if (id === 'formGlobalError') el.textContent = '';
+                }
+            });
+
             raceModal.classList.remove('hidden');
         }
 
         function populateEditForm(raceId) {
             const race = races.find(r => r.id === raceId);
             if (!race) return;
+
+            // Réinitialiser les messages d'erreur
+            ['raceNameError', 'raceDateError', 'raceTimeError', 'formGlobalError', 'companionError'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.classList.add('hidden');
+                    if (id === 'formGlobalError') el.textContent = '';
+                }
+            });
 
             document.getElementById('raceId').value = race.id;
             document.getElementById('raceName').value = race.name;
@@ -5705,6 +5723,19 @@
                 if (globalError) {
                     globalError.textContent = "Format de temps incorrect (HH:MM:SS attendu)";
                     globalError.classList.remove('hidden');
+                }
+            }
+
+            // Vérifier le classement (x <= y)
+            if (rankPos && rankTotal) {
+                const rPos = parseInt(rankPos);
+                const rTotal = parseInt(rankTotal);
+                if (rPos > rTotal) {
+                    if (globalError) {
+                        globalError.textContent = "La position ne peut pas être supérieure au nombre total de participants.";
+                        globalError.classList.remove('hidden');
+                    }
+                    hasErrors = true;
                 }
             }
 
