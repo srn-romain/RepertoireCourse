@@ -225,6 +225,7 @@ const manualModalHTML = `
                                 <div>📈 Évolution du nombre de courses</div>
                                 <div>🏃 Vitesse moyenne par période</div>
                                 <div>🏆 Records D+ et D- par course</div>
+                                <div>📈 Courbe d'évolution vitesse & allure</div>
                             </div>
                         </div>
                     </div>

@@ -964,7 +964,7 @@
                     html += `    <div class="flex items-center gap-1.5 text-[10px] md:text-xs font-medium text-blue-900"><span class="w-3 h-0.5 border-t-2 border-dashed border-[#16a34a]"></span> Meilleure perf.</div>`;
                     html += `    <div class="flex items-center gap-1.5 text-[10px] md:text-xs font-medium text-blue-900"><span class="w-3 h-0.5 border-t-2 border-dashed border-[#dc2626]"></span> Moins bonne perf.</div>`;
                     html += `  </div>`;
-                    html += `  <p class="text-[10px] text-blue-400 mt-2 italic text-center">Graphique basé sur ${chronologicalRaces.length} courses. <span class="hidden md:inline">(Glissez horizontalement si besoin)</span></p>`;
+                    html += `  <p class="text-[10px] text-blue-400 mt-2 italic text-center">Graphique basé sur ${chronologicalRaces.length} courses.</p>`;
                     html += `</div>`;
                 }
 
