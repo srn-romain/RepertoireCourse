@@ -19,6 +19,7 @@
         const statsBtn = document.getElementById('statsBtn');
         const closeStatsModal = document.getElementById('closeStatsModal');
         const statsContent = document.getElementById('statsContent');
+        let evolutionChartInstance = null;
 
         // Variable globale pour stocker le mode d'affichage des stats
         // Restaurer depuis localStorage ou utiliser false par défaut
@@ -937,6 +938,32 @@
                     html += `</div>`;
                 }
 
+                // --- ÉVOLUTION DES PERFORMANCES (Graphique en courbe) ---
+                const chronologicalRaces = (stats.validRaces || [])
+                    .filter(r => r.date && r.distance && timeToSeconds(r.time))
+                    .sort((a, b) => new Date(a.date) - new Date(b.date));
+
+                if (chronologicalRaces.length >= 2) {
+                    html += `<div class="bg-blue-50 border border-blue-100 p-4 rounded-lg mb-6 shadow-sm">`;
+                    html += `  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">`;
+                    html += `    <h4 class="font-bold text-blue-800 flex items-center gap-2">`;
+                    html += `      <i class="fas fa-chart-line text-blue-600"></i> Évolution des performances`;
+                    html += `    </h4>`;
+                    html += `    <div class="flex items-center gap-2">`;
+                    html += `      <label for="evolutionMetricSelect" class="text-xs text-blue-700 font-medium whitespace-nowrap">Métrique :</label>`;
+                    html += `      <select id="evolutionMetricSelect" class="px-2 py-1 border-b-2 border-blue-400 bg-transparent text-blue-800 text-sm font-semibold cursor-pointer hover:border-blue-600 focus:outline-none focus:border-blue-600">`;
+                    html += `        <option value="speed">Vitesse moyenne (km/h)</option>`;
+                    html += `        <option value="pace">Allure (min/km)</option>`;
+                    html += `      </select>`;
+                    html += `    </div>`;
+                    html += `  </div>`;
+                    html += `  <div class="relative w-full h-[250px] md:h-[300px] bg-white rounded-lg p-2 border border-blue-100">`;
+                    html += `    <canvas id="evolutionChartCanvas"></canvas>`;
+                    html += `  </div>`;
+                    html += `  <p class="text-[10px] text-blue-400 mt-2 italic text-center">Graphique basé sur ${chronologicalRaces.length} courses chronométrées.</p>`;
+                    html += `</div>`;
+                }
+
                 // Graphique avec liste déroulante
                 const hasChartData = (stats.racesWithDistance && stats.racesWithDistance.length > 0) ||
                     (stats.racesWithPrice && stats.racesWithPrice.length > 0) ||
@@ -1028,6 +1055,18 @@
                             updateChart(chartType, this.value, currentLimit);
                         });
                     });
+                }
+
+                // Initialiser le graphique d'évolution si les données existent
+                if (chronologicalRaces.length >= 2) {
+                    const metricSelect = document.getElementById('evolutionMetricSelect');
+                    if (metricSelect) {
+                        metricSelect.addEventListener('change', function () {
+                            updateEvolutionChart(chronologicalRaces, this.value);
+                        });
+                        // Premier affichage
+                        updateEvolutionChart(chronologicalRaces, metricSelect.value);
+                    }
                 }
             } catch (e) {
                 console.error('[stats-modal] Erreur affichage stats:', e);
@@ -1215,6 +1254,124 @@
                     </div>
                 `;
                 chartContainer.appendChild(div);
+            });
+        }
+
+        // Fonction pour mettre à jour le graphique d'évolution (Chart.js)
+        function updateEvolutionChart(races, metric = 'speed') {
+            const canvas = document.getElementById('evolutionChartCanvas');
+            if (!canvas) return;
+
+            // Détruire l'instance précédente si elle existe
+            if (evolutionChartInstance) {
+                evolutionChartInstance.destroy();
+            }
+
+            const ctx = canvas.getContext('2d');
+            
+            // Préparer les données
+            const labels = races.map(r => {
+                const d = new Date(r.date);
+                return d.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: '2-digit' });
+            });
+            
+            const data = races.map(r => {
+                const dist = parseFloat(r.distance);
+                const seconds = timeToSeconds(r.time);
+                const speed = dist / (seconds / 3600);
+                
+                if (metric === 'speed') {
+                    return parseFloat(speed.toFixed(2));
+                } else {
+                    // Pace in min/km (decimal)
+                    const pace = 60 / speed;
+                    return parseFloat(pace.toFixed(2));
+                }
+            });
+
+            const metricLabel = metric === 'speed' ? 'Vitesse (km/h)' : 'Allure (min/km)';
+            const borderColor = metric === 'speed' ? '#2563eb' : '#059669';
+            const bgColor = metric === 'speed' ? 'rgba(37, 99, 235, 0.1)' : 'rgba(5, 150, 105, 0.1)';
+
+            // Créer le graphique
+            evolutionChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: metricLabel,
+                        data: data,
+                        borderColor: borderColor,
+                        backgroundColor: bgColor,
+                        borderWidth: 2,
+                        pointBackgroundColor: borderColor,
+                        pointRadius: 4,
+                        pointHoverRadius: 6,
+                        tension: 0.3,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                            padding: 10,
+                            titleFont: { size: 12, weight: 'bold' },
+                            bodyFont: { size: 13 },
+                            callbacks: {
+                                title: (context) => {
+                                    const index = context[0].dataIndex;
+                                    const race = races[index];
+                                    return race.name;
+                                },
+                                label: (context) => {
+                                    const val = context.parsed.y;
+                                    const index = context.dataIndex;
+                                    const race = races[index];
+                                    const date = labels[index];
+                                    return [
+                                        `Performance : ${val} ${metric === 'speed' ? 'km/h' : 'min/km'}`,
+                                        `Date : ${date}`,
+                                        `Distance : ${race.distance} km`
+                                    ];
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            },
+                            ticks: {
+                                font: { size: 11 },
+                                callback: function(value) {
+                                    return value + (metric === 'speed' ? ' km/h' : ' min/km');
+                                }
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                font: { size: 10 },
+                                maxRotation: 45,
+                                minRotation: 45
+                            }
+                        }
+                    }
+                }
             });
         }
 
