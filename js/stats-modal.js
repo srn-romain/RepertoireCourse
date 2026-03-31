@@ -960,7 +960,11 @@
                     html += `  <div class="relative w-full h-[250px] md:h-[300px] bg-white rounded-lg p-2 border border-blue-100">`;
                     html += `    <canvas id="evolutionChartCanvas"></canvas>`;
                     html += `  </div>`;
-                    html += `  <p class="text-[10px] text-blue-400 mt-2 italic text-center">Graphique basé sur ${chronologicalRaces.length} courses chronométrées.</p>`;
+                    html += `  <div class="flex flex-wrap justify-center gap-x-4 gap-y-2 mt-3 mb-1">`;
+                    html += `    <div class="flex items-center gap-1.5 text-[10px] md:text-xs font-medium text-blue-900"><span class="w-3 h-0.5 border-t-2 border-dashed border-[#16a34a]"></span> Meilleure perf.</div>`;
+                    html += `    <div class="flex items-center gap-1.5 text-[10px] md:text-xs font-medium text-blue-900"><span class="w-3 h-0.5 border-t-2 border-dashed border-[#dc2626]"></span> Moins bonne perf.</div>`;
+                    html += `  </div>`;
+                    html += `  <p class="text-[10px] text-blue-400 mt-2 italic text-center">Graphique basé sur ${chronologicalRaces.length} courses. <span class="hidden md:inline">(Glissez horizontalement si besoin)</span></p>`;
                     html += `</div>`;
                 }
 
@@ -1289,13 +1293,60 @@
                 }
             });
 
+            // Trouver le meilleur et le pire
+            let bestIndex = -1;
+            let worstIndex = -1;
+            if (data.length > 0) {
+                let bestVal, worstVal;
+                if (metric === 'speed') {
+                    bestVal = Math.max(...data);
+                    worstVal = Math.min(...data);
+                } else {
+                    bestVal = Math.min(...data); // Allure : plus bas est mieux
+                    worstVal = Math.max(...data);
+                }
+                bestIndex = data.indexOf(bestVal);
+                worstIndex = data.lastIndexOf(worstVal);
+            }
+
             const metricLabel = metric === 'speed' ? 'Vitesse (km/h)' : 'Allure (min/km)';
             const borderColor = metric === 'speed' ? '#2563eb' : '#059669';
             const bgColor = metric === 'speed' ? 'rgba(37, 99, 235, 0.1)' : 'rgba(5, 150, 105, 0.1)';
 
+            // Plugin personnalisé pour dessiner les barres verticales Best/Worst
+            const verticalLinePlugin = {
+                id: 'verticalLinePlugin',
+                afterDatasetsDraw(chart) {
+                    const { ctx, chartArea: { top, bottom }, scales: { x } } = chart;
+                    
+                    const drawVLine = (idx, color, label) => {
+                        if (idx === -1) return;
+                        const xPos = x.getPixelForValue(idx);
+                        
+                        ctx.save();
+                        ctx.beginPath();
+                        ctx.setLineDash([6, 4]);
+                        ctx.lineWidth = 3;
+                        ctx.strokeStyle = color;
+                        ctx.moveTo(xPos, top);
+                        ctx.lineTo(xPos, bottom);
+                        ctx.stroke();
+                        ctx.restore();
+                    };
+
+                    if (bestIndex !== -1 && bestIndex !== worstIndex) {
+                        drawVLine(bestIndex, '#16a34a');
+                    }
+                    if (worstIndex !== -1) {
+                        drawVLine(worstIndex, '#dc2626');
+                    }
+                }
+            };
+
             // Créer le graphique
             evolutionChartInstance = new Chart(ctx, {
                 type: 'line',
+                plugins: [verticalLinePlugin],
                 data: {
                     labels: labels,
                     datasets: [{
@@ -1305,8 +1356,11 @@
                         backgroundColor: bgColor,
                         borderWidth: 2,
                         pointBackgroundColor: borderColor,
-                        pointRadius: 4,
-                        pointHoverRadius: 6,
+                        pointRadius: function(context) {
+                            const index = context.dataIndex;
+                            return (index === bestIndex || index === worstIndex) ? 6 : 3;
+                        },
+                        pointHoverRadius: 8,
                         tension: 0.3,
                         fill: true
                     }]
