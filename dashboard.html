@@ -793,15 +793,15 @@
                     </div>
                     <div class="mb-4" id="raceRankingContainer">
                         <label class="block text-green-700 mb-2">Classement général</label>
-                        <div class="flex items-center gap-2 flex-wrap">
+                        <div class="flex items-center gap-2">
                             <input type="number" id="raceRankPos" min="1"
-                                class="w-24 px-3 py-2 border border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                                class="w-20 px-2 py-2 border border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
                                 placeholder="Ex: 76">
                             <span class="text-green-700 font-medium">sur</span>
                             <input type="number" id="raceRankTotal" min="1"
-                                class="w-28 px-3 py-2 border border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                                class="w-20 px-2 py-2 border border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
                                 placeholder="1200">
-                            <span class="text-green-700 font-medium">participants</span>
+                            <span class="text-green-700 font-medium whitespace-nowrap">participants</span>
                         </div>
                     </div>
                     <div class="mb-4">
@@ -5576,7 +5576,6 @@
                 }
                 if (rankTotalInputEn) {
                     rankTotalInputEn.disabled = false;
-                    rankTotalInputEn.placeholder = "participants";
                     rankTotalInputEn.classList.remove('bg-gray-100', 'cursor-not-allowed');
                 }
                 [swimTimeInput, bikeTimeInput, runTimeInput].forEach(input => {
