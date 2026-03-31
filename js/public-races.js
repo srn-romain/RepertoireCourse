@@ -89,7 +89,6 @@ window.updatePublicRaceFilter = function (type, value) {
 
 document.addEventListener('DOMContentLoaded', () => {
     loadPublicRaces();
-    fetchGlobalCommunityStats();
 });
 
 async function loadPublicRaces() {
@@ -588,44 +587,3 @@ window.openLikersModal = async function (racePath) {
         content.innerHTML = '<p class="text-center text-red-500">Erreur lors du chargement de la liste.</p>';
     }
 };
-
-async function fetchGlobalCommunityStats() {
-    const totalKmElement = document.getElementById('totalCommunityKm');
-    if (!totalKmElement) return;
-
-    try {
-        let snapshot;
-        let isPartial = false;
-
-        try {
-            // TENTATIVE 1 : Récupérer TOUTES les courses (Publiques + Privées)
-            snapshot = await db.collectionGroup('races').get();
-        } catch (e) {
-            console.warn("Accès global refusé, repli sur les courses publiques uniquement.");
-            // TENTATIVE 2 : Repli sur les courses publiques uniquement
-            snapshot = await db.collectionGroup('races')
-                .where('public', '==', true)
-                .orderBy('date', 'desc')
-                .get();
-            isPartial = true;
-        }
-
-        let totalKm = 0;
-
-        snapshot.forEach(doc => {
-            const data = doc.data();
-            if (data.distance) {
-                const dist = parseFloat(data.distance.toString().replace(',', '.'));
-                if (!isNaN(dist)) {
-                    totalKm += dist;
-                }
-            }
-        });
-
-        // Mise à jour du texte
-        totalKmElement.innerHTML = `La communauté a pour le moment parcouru <strong>${Math.round(totalKm).toLocaleString('fr-FR')} km</strong> ${isPartial ? '(courses publiques)' : '(total global)'}.`;
-
-    } catch (error) {
-        console.warn("Erreur calcul stats globales:", error);
-    }
-}
