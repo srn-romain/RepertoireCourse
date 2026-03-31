@@ -100,6 +100,7 @@ const manualModalHTML = `
                                     <div>• Dénivelé positif D+ (m)</div>
                                     <div>• Dénivelé négatif D- (m)</div>
                                     <div>• Temps de course</div>
+                                    <div>• Classement (Position/Total)</div>
                                     <div>• Lieu / Ville</div>
                                     <div>• Photo (JPG, PNG)</div>
                                     <div>• Image automatique (Web/Nom)</div>
