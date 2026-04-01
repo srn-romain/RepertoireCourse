@@ -1161,6 +1161,7 @@
                             PDF
                         </button>
                     </div>
+                    <p id="detailsTimestamps" class="text-[10px] text-gray-400 italic mt-3 text-center"></p>
                 </div>
             </div>
         </div>
@@ -4347,6 +4348,40 @@
             // Ancienne logique de bouton bascule image/parcours RESTAURÉE comme demandé.
             // Le Type de Terrain est affiché dans le texte du carré.
 
+            // Gérer les dates de création/modification
+            const timestampsElement = document.getElementById('detailsTimestamps');
+            if (timestampsElement) {
+                let timestampHtml = '';
+                const formatOpts = { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' };
+                
+                let createdStr = '';
+                if (race.createdAt) {
+                    const cDate = (typeof race.createdAt.toDate === 'function') ? race.createdAt.toDate() : new Date(race.createdAt);
+                    if (!isNaN(cDate.getTime())) {
+                        createdStr = `Créée le ${cDate.toLocaleDateString('fr-FR', formatOpts)}`;
+                    }
+                }
+                
+                let updatedStr = '';
+                if (race.updatedAt) {
+                    const uDate = (typeof race.updatedAt.toDate === 'function') ? race.updatedAt.toDate() : new Date(race.updatedAt);
+                    if (!isNaN(uDate.getTime())) {
+                        updatedStr = `Modifiée le ${uDate.toLocaleDateString('fr-FR', formatOpts)}`;
+                    }
+                }
+                
+                if (createdStr) {
+                    timestampHtml = createdStr;
+                    if (updatedStr && updatedStr !== createdStr) {
+                        timestampHtml += ` | ${updatedStr}`;
+                    }
+                } else if (updatedStr) {
+                    timestampHtml = updatedStr;
+                }
+                
+                timestampsElement.textContent = timestampHtml;
+            }
+
             if (parcoursBtn) parcoursBtn.classList.remove('hidden');
 
             const detailTerrainText = document.getElementById('DetailTerrainText');
@@ -5932,18 +5967,15 @@
             // Mettre à jour ou ajouter la course
             let savePromise;
 
-            // Dans la fonction saveRace
             if (id) {
-                // Si on modifie une course existante
+                // Modification
                 const currentRace = races.find(r => r.id === id);
+                raceData.updatedAt = firebase.firestore.FieldValue.serverTimestamp();
 
-                // Si photoData est null et qu'il y avait une photo avant, on retire la photo
-                // MAIS SEULEMENT SI aucune image automatique n'a été trouvée (raceData.photo serait défini)
+                // Gestion des photos/parcours
                 if (photoData === null && currentRace && currentRace.photo && !raceData.photo) {
-                    // On supprime explicitement la photo
                     raceData.photo = firebase.firestore.FieldValue.delete();
                 } else if (photoData) {
-                    // Si une photo est fournie (nouvelle ou conservée), on l'utilise
                     raceData.photo = photoData;
                 }
                 if (parcoursData === null && currentRace && currentRace.parcours) {
@@ -5954,7 +5986,9 @@
 
                 savePromise = racesCollection.doc(id).update(raceData);
             } else {
-                // Si on ajoute une nouvelle course
+                // Création
+                raceData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+                raceData.updatedAt = firebase.firestore.FieldValue.serverTimestamp();
                 if (photoData) {
                     raceData.photo = photoData;
                 }
