@@ -236,12 +236,19 @@ async function loadReviewsCarousel() {
         });
 
         // Dupliquer pour un défilement continu seamless
-        const allReviews = reviews.length > 1 ? [...reviews, ...reviews] : reviews;
+        // On multiplie pour s'assurer que le rail est toujours plus large que l'écran
+        let repeatFactor = 2;
+        if (reviews.length < 5) repeatFactor = 4;
+        if (reviews.length < 3) repeatFactor = 6;
+        
+        const allReviews = [];
+        for(let i=0; i < repeatFactor; i++) allReviews.push(...reviews);
 
         container.innerHTML = allReviews.map(r => buildReviewCard(r)).join('');
 
-        // Ajuster la vitesse selon le nb de cartes
-        const duration = Math.max(20, reviews.length * 5);
+        // Ajuster la vitesse selon le nb de cartes (plus rapide)
+        // 100% = translate(-50%), donc on veut une vitesse constante par rapport au contenu total réel
+        const duration = Math.max(15, reviews.length * 3);
         container.style.animationDuration = `${duration}s`;
 
         // Afficher la section si elle était cachée
