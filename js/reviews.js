@@ -246,9 +246,8 @@ async function loadReviewsCarousel() {
 
         container.innerHTML = allReviews.map(r => buildReviewCard(r)).join('');
 
-        // Ajuster la vitesse selon le nb de cartes (plus rapide)
-        // 100% = translate(-50%), donc on veut une vitesse constante par rapport au contenu total réel
-        const duration = Math.max(15, reviews.length * 3);
+        // Ajuster la vitesse selon le nb de cartes (plus lent)
+        const duration = Math.max(30, reviews.length * 12);
         container.style.animationDuration = `${duration}s`;
 
         // Afficher la section si elle était cachée
