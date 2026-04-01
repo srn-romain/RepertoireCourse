@@ -41,10 +41,15 @@ const reviewFormHTML = `
             <p class="text-right text-xs text-gray-400 mt-0.5"><span id="reviewCharCount">0</span>/250</p>
         </div>
 
-        <!-- Bouton -->
+        <!-- Bouton de publication -->
         <button id="submitReviewBtn"
             class="w-full py-2 bg-yellow-400 hover:bg-yellow-500 text-white font-semibold rounded-lg transition-all shadow-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
             <i class="fas fa-paper-plane"></i> Publier mon avis
+        </button>
+
+        <!-- Bouton de suppression -->
+        <button id="deleteReviewBtn" class="hidden w-full py-1 text-red-400 hover:text-red-600 text-xs font-medium transition-colors flex items-center justify-center gap-1 mt-1">
+            <i class="fas fa-trash-alt"></i> Supprimer mon avis
         </button>
 
         <div id="reviewFormMessage" class="hidden text-xs text-center rounded-lg py-2 px-3 font-medium"></div>
@@ -131,6 +136,8 @@ function initReviewForm() {
                 if (textarea) textarea.value = data.message || '';
                 if (charCount) charCount.textContent = (data.message || '').length;
                 if (submitBtn) submitBtn.innerHTML = '<i class="fas fa-edit"></i> Modifier mon avis';
+                const deleteBtn = document.getElementById('deleteReviewBtn');
+                if (deleteBtn) deleteBtn.classList.remove('hidden');
             }
         }).catch(e => console.warn('Erreur chargement avis:', e));
     }
@@ -180,6 +187,10 @@ function initReviewForm() {
 
                 // Marquer comme modifié pour recharger la page à la fermeture de la modale
                 window.settingsHasChanged = true;
+                
+                // Montrer le bouton de suppression s'il est caché
+                const deleteBtn = document.getElementById('deleteReviewBtn');
+                if (deleteBtn) deleteBtn.classList.remove('hidden');
             } catch (e) {
                 console.error('Erreur soumission avis:', e);
                 showReviewMsg('Erreur lors de la publication. Réessayez.', 'error');
@@ -187,6 +198,46 @@ function initReviewForm() {
                 submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Publier mon avis';
             }
         });
+    }
+
+    // Gérer la suppression
+    const deleteBtn = document.getElementById('deleteReviewBtn');
+    if (deleteBtn) {
+        deleteBtn.onclick = async () => {
+            const user = firebase.auth().currentUser;
+            if (!user) return;
+
+            if (!confirm('Voulez-vous vraiment supprimer votre avis ?')) return;
+
+            deleteBtn.disabled = true;
+            deleteBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Suppression...';
+
+            try {
+                await db.collection('reviews').doc(user.uid).delete();
+                
+                // Reset UI
+                selectedStars = 0;
+                highlightStars(0);
+                if (label) label.textContent = '';
+                if (textarea) textarea.value = '';
+                if (charCount) charCount.textContent = '0';
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Publier mon avis';
+                }
+                deleteBtn.classList.add('hidden');
+                deleteBtn.disabled = false;
+                deleteBtn.innerHTML = '<i class="fas fa-trash-alt"></i> Supprimer mon avis';
+                
+                showReviewMsg('Votre avis a été supprimé.', 'success');
+                window.settingsHasChanged = true;
+            } catch (e) {
+                console.error('Erreur suppression avis:', e);
+                showReviewMsg('Erreur lors de la suppression.', 'error');
+                deleteBtn.disabled = false;
+                deleteBtn.innerHTML = '<i class="fas fa-trash-alt"></i> Supprimer mon avis';
+            }
+        };
     }
 
     function showReviewMsg(msg, type) {
