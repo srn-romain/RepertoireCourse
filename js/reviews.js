@@ -10,10 +10,8 @@
 //  HTML du bloc "Laisser un avis" (injecté dans user-settings)
 // ─────────────────────────────────────────────
 const reviewFormHTML = `
-<hr class="border-gray-100" id="reviewSectionDivider">
-
 <!-- Laisser un avis -->
-<div id="reviewSection">
+<div id="reviewSection" class="mb-4">
     <h3 class="text-sm font-semibold text-gray-700 mb-1 flex items-center gap-2">
         <i class="fas fa-star text-yellow-400"></i> Laisser un avis
     </h3>
@@ -70,14 +68,14 @@ function injectReviewForm() {
     const modal = document.getElementById('userSettingsModal');
     if (!modal) return;
 
-    // Chercher la zone "Actions" (avant la zone danger)
-    const dangerZone = modal.querySelector('.border-red-100');
-    if (!dangerZone) return;
+    // Chercher la zone "Actions"
+    const actionsZone = modal.querySelector('#userSettingsActions');
+    if (!actionsZone) return;
 
-    // Insérer le bloc avis juste avant la zone danger (tous les enfants)
+    // Insérer le bloc avis juste avant la zone d'actions (tous les enfants)
     const template = document.createElement('template');
     template.innerHTML = reviewFormHTML;
-    dangerZone.parentNode.insertBefore(template.content, dangerZone);
+    actionsZone.parentNode.insertBefore(template.content, actionsZone);
 
     initReviewForm();
 }
@@ -152,20 +150,26 @@ function initReviewForm() {
             submitBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Publication...';
 
             try {
-                // Récupérer le pseudo
+                // Récupérer le pseudo et la photo
                 let pseudo = 'Anonyme';
+                let photoURL = '';
                 try {
                     const uDoc = await db.collection('users').doc(currentUser.uid).get();
-                    if (uDoc.exists && uDoc.data().pseudo) pseudo = uDoc.data().pseudo;
+                    if (uDoc.exists) {
+                        const uData = uDoc.data();
+                        if (uData.pseudo) pseudo = uData.pseudo;
+                        if (uData.photoURL) photoURL = uData.photoURL;
+                    }
                 } catch(e) {}
 
                 const reviewData = {
                     stars: selectedStars,
                     message: textarea ? textarea.value.trim() : '',
                     pseudo,
+                    photoURL,
                     uid: currentUser.uid,
                     createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                    approved: true // Auto-approuvé, on peut changer plus tard
+                    approved: true
                 };
 
                 // Utiliser l'UID comme ID de document (1 avis par utilisateur)
@@ -252,9 +256,17 @@ function buildReviewCard(review) {
     const stars = review.stars || 0;
     const filledStars = '★'.repeat(stars);
     const emptyStars = '☆'.repeat(5 - stars);
-    const initials = (review.pseudo || 'A').charAt(0).toUpperCase();
+    const pseudo = review.pseudo || 'Anonyme';
+    const initials = pseudo.charAt(0).toUpperCase();
     const colors = ['bg-green-500', 'bg-blue-500', 'bg-purple-500', 'bg-orange-500', 'bg-pink-500', 'bg-teal-500'];
     const colorClass = colors[initials.charCodeAt(0) % colors.length];
+
+    // Avatar : photo de profil ou initiale colorée
+    const avatarHTML = review.photoURL
+        ? `<div class="relative w-10 h-10 flex-shrink-0">
+               <img src="${escapeHtml(review.photoURL)}" alt="${escapeHtml(pseudo)}" class="w-10 h-10 rounded-full object-cover" onerror="this.parentElement.innerHTML='<div class=\\'w-10 h-10 ${colorClass} rounded-full flex items-center justify-center text-white font-bold text-lg\\'>${initials}</div>'">
+           </div>`
+        : `<div class="w-10 h-10 ${colorClass} rounded-full flex items-center justify-center text-white font-bold text-lg flex-shrink-0">${initials}</div>`;
 
     // Date relative
     let dateStr = '';
@@ -271,11 +283,9 @@ function buildReviewCard(review) {
     return `
     <div class="review-card flex-shrink-0 w-72 bg-white rounded-2xl shadow-md border border-gray-100 p-5 mx-3 flex flex-col gap-3">
         <div class="flex items-center gap-3">
-            <div class="w-10 h-10 ${colorClass} rounded-full flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
-                ${initials}
-            </div>
+            ${avatarHTML}
             <div class="min-w-0">
-                <p class="font-semibold text-gray-800 text-sm truncate">${escapeHtml(review.pseudo || 'Anonyme')}</p>
+                <p class="font-semibold text-gray-800 text-sm truncate">${escapeHtml(pseudo)}</p>
                 <p class="text-yellow-400 text-base leading-none mt-0.5">${filledStars}<span class="text-gray-200">${emptyStars}</span></p>
             </div>
         </div>

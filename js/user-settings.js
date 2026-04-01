@@ -121,7 +121,7 @@ const userSettingsModalHTML = `
             <hr class="border-gray-100">
 
             <!-- Actions rapides -->
-            <div>
+            <div id="userSettingsActions">
                 <label class="block text-sm font-semibold text-gray-700 mb-2">Actions</label>
                 <div class="space-y-2">
                     <div class="relative group">
