@@ -313,28 +313,45 @@ const manualModalHTML = `
                     <h4 class="text-xl font-bold text-green-700 mb-3 flex items-center gap-2">
                         <i class="fas fa-heart text-green-600"></i> Interactions Sociales
                     </h4>
-                    <div class="bg-white border border-red-100 rounded-lg p-4 shadow-sm">
-                        <p class="text-sm text-gray-600 mb-3">Encouragez les autres coureurs et créez du lien !</p>
-                        <ul class="space-y-2 text-sm text-gray-600">
-                            <li class="flex items-start gap-2">
-                                <i class="fas fa-check-circle text-green-600 mt-0.5"></i>
-                                <span><strong>Aimer :</strong> Cliquez sur le cœur <i
-                                        class="fas fa-heart text-red-500"></i> pour féliciter une
-                                    performance.</span>
-                            </li>
-                            <li class="flex items-start gap-2">
-                                <i class="fas fa-check-circle text-green-600 mt-0.5"></i>
-                                <span><strong>Voir les "J'aime" :</strong> Cliquez sur le compteur de "J'aime" pour
-                                    voir
-                                    la liste des personnes qui ont aimé la course.</span>
-                            </li>
-                            <li class="flex items-start gap-2">
-                                <i class="fas fa-info-circle text-blue-600 mt-0.5"></i>
-                                <span><strong>Confidentialité :</strong> Vous pouvez <strong>masquer le nombre de
-                                        J'aime</strong> sur VOS courses dans les paramètres de compte (visible
-                                    uniquement par vous).</span>
-                            </li>
-                        </ul>
+                    <div class="bg-white border border-red-100 rounded-lg p-4 shadow-sm space-y-4">
+                        <div>
+                            <p class="text-sm text-gray-600 mb-3">Encouragez les autres coureurs et créez du lien !</p>
+                            <ul class="space-y-2 text-sm text-gray-600">
+                                <li class="flex items-start gap-2">
+                                    <i class="fas fa-check-circle text-green-600 mt-0.5"></i>
+                                    <span><strong>Aimer :</strong> Cliquez sur le cœur <i
+                                            class="fas fa-heart text-red-500"></i> pour féliciter une
+                                        performance.</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <i class="fas fa-check-circle text-green-600 mt-0.5"></i>
+                                    <span><strong>Voir les "J'aime" :</strong> Cliquez sur le compteur de "J'aime" pour
+                                        voir
+                                        la liste des personnes qui ont aimé la course.</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <i class="fas fa-info-circle text-blue-600 mt-0.5"></i>
+                                    <span><strong>Confidentialité :</strong> Vous pouvez <strong>masquer le nombre de
+                                            J'aime</strong> sur VOS courses dans les paramètres de compte (visible
+                                        uniquement par vous).</span>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <hr class="border-red-50">
+
+                        <!-- Nouveau : Avis -->
+                        <div>
+                            <h5 class="font-bold text-gray-800 mb-2 flex items-center gap-2">
+                                <i class="fas fa-star text-yellow-400"></i> Avis Communautaires
+                            </h5>
+                            <p class="text-sm text-gray-600 mb-2">Partagez votre expérience sur l'application :</p>
+                            <ul class="text-xs text-gray-600 ml-4 space-y-1.5">
+                                <li>• <strong>Comment faire :</strong> Allez dans vos <i class="fas fa-cog"></i> <strong>Paramètres</strong> pour laisser une note (1 à 5 étoiles) et un message.</li>
+                                <li>• <strong>Visibilité :</strong> Votre avis s'affiche dans le carrousel sur la page d'accueil avec votre photo de profil.</li>
+                                <li>• <strong>Gestion :</strong> Vous pouvez modifier ou supprimer votre avis à tout moment depuis vos paramètres.</li>
+                            </ul>
+                        </div>
                     </div>
                 </section>
 
