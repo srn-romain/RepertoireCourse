@@ -603,6 +603,43 @@
         </div>
     </div>
 
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- Section Avis Utilisateurs                                    -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <div id="reviewsSection" class="py-12 bg-gradient-to-b from-white to-gray-50 overflow-hidden">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-8">
+                <span class="bg-yellow-100 text-yellow-800 text-sm px-3 py-1 rounded-full uppercase tracking-wider">Avis</span>
+                <h2 class="text-3xl text-gray-800 mt-3 mb-2 font-bold">Ce qu'ils en pensent</h2>
+                <p class="text-gray-500 max-w-xl mx-auto text-sm">Des vraies personnes, des vrais retours sur l'application.</p>
+            </div>
+        </div>
+
+        <!-- Carrousel infini -->
+        <div class="relative w-full overflow-hidden" style="mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent); -webkit-mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);">
+            <div id="reviewsCarouselTrack" class="flex reviews-scroll">
+                <!-- Les cartes sont injectées par reviews.js -->
+            </div>
+        </div>
+    </div>
+
+    <style>
+        @keyframes reviewsScroll {
+            0%   { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+        .reviews-scroll {
+            animation: reviewsScroll 40s linear infinite;
+            width: max-content;
+        }
+        .reviews-scroll:hover {
+            animation-play-state: paused;
+        }
+        .review-card {
+            min-height: 130px;
+        }
+    </style>
+
     <!-- Public Races Section -->
     <div id="publicRacesSection" class="py-6">
         <div class="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -823,6 +860,7 @@
     <script src="js/modal-auth.js"></script>
     <script src="js/public-races.js"></script>
     <script src="js/user-settings.js"></script>
+    <script src="js/reviews.js"></script>
     <script src="js/manual-modal.js"></script>
     <script src="js/admin-modal.js"></script>
     <script src="js/scroll-lock.js"></script>

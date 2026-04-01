@@ -925,5 +925,10 @@ window.openUserSettings = async function () {
     if (modal) {
         modal.classList.remove('hidden');
         document.body.classList.add('overflow-hidden'); // Freeze background
+
+        // Injecter le formulaire d'avis si disponible
+        if (!isInvite && typeof window.injectReviewForm === 'function') {
+            setTimeout(() => window.injectReviewForm(), 100);
+        }
     }
 }
