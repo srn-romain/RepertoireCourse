@@ -177,6 +177,9 @@ function initReviewForm() {
 
                 showReviewMsg('Votre avis a été publié ! Merci 🎉', 'success');
                 submitBtn.innerHTML = '<i class="fas fa-check"></i> Avis publié !';
+
+                // Marquer comme modifié pour recharger la page à la fermeture de la modale
+                window.settingsHasChanged = true;
             } catch (e) {
                 console.error('Erreur soumission avis:', e);
                 showReviewMsg('Erreur lors de la publication. Réessayez.', 'error');

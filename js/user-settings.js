@@ -210,7 +210,7 @@ const userSettingsModalHTML = `
 </div>
 `;
 
-let settingsHasChanged = false;
+window.settingsHasChanged = false;
 
 document.addEventListener('DOMContentLoaded', () => {
     // Injecter la modale si elle n'existe pas
@@ -262,7 +262,7 @@ window.closeSettingsModal = function () {
 
     document.body.classList.remove('overflow-hidden'); // Unfreeze background
 
-    if (settingsHasChanged) {
+    if (window.settingsHasChanged) {
         window.location.reload();
     }
 }
