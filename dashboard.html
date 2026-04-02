@@ -794,7 +794,8 @@
                     </div>
                     <div class="mb-4 bg-green-50/50 p-3 rounded-lg border border-green-100" id="raceRankingContainer">
                         <label
-                            class="block text-green-700 mb-2 font-semibold border-b border-green-200 pb-1 flex items-center gap-2"><i class="fas fa-medal text-green-600"></i> Classements</label>
+                            class="block text-green-700 mb-2 font-semibold border-b border-green-200 pb-1 flex items-center gap-2"><i
+                                class="fas fa-medal text-green-600"></i> Classements</label>
                         <div class="space-y-4 mt-3">
                             <!-- Classement Général -->
                             <div>
@@ -807,7 +808,8 @@
                                     <input type="number" id="raceRankTotal" min="1"
                                         class="w-20 px-2 py-1.5 border border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-sm shrink-0"
                                         placeholder="1200">
-                                    <span class="text-green-700 font-medium text-xs whitespace-nowrap">participants</span>
+                                    <span
+                                        class="text-green-700 font-medium text-xs whitespace-nowrap">participants</span>
                                 </div>
                             </div>
                             <!-- Classement Catégorie / Genre -->
@@ -822,7 +824,8 @@
                                     <input type="number" id="raceRankGenderTotal" min="1"
                                         class="w-20 px-2 py-1.5 border border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-sm shrink-0"
                                         placeholder="400">
-                                    <span class="text-green-700 font-medium text-xs whitespace-nowrap">participants</span>
+                                    <span
+                                        class="text-green-700 font-medium text-xs whitespace-nowrap">participants</span>
                                 </div>
                             </div>
                         </div>
@@ -1114,7 +1117,8 @@
                         </div>
                         <div class="bg-yellow-50 p-2 rounded-lg hidden col-span-2 flex-col items-center justify-center gap-1"
                             id="detailsRankingContainer">
-                            <p id="detailsRankingTopLabel" class="text-[11px] text-yellow-600 font-semibold uppercase tracking-wider hidden items-center justify-center gap-1.5 w-full">
+                            <p id="detailsRankingTopLabel"
+                                class="text-[11px] text-yellow-600 font-semibold uppercase tracking-wider hidden items-center justify-center gap-1.5 w-full">
                                 <i class="fas fa-medal opacity-75"></i> Classements
                             </p>
                             <div class="flex flex-col sm:flex-row items-center justify-center gap-2 w-full">
@@ -3267,100 +3271,89 @@
                     <span class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">${year}</span>
                 </div>
                 <div class="mt-4 flex flex-col gap-2">
-                    <div class="flex items-center gap-2">
-                        ${race.terrain === 'triathlon' ?
-                        (race.raceFormat === 'team' && race.raceRelaySport ?
-                            // Relay Mode: Display only the selected sport
-                            (() => {
-                                let sportHtml = '';
-                                let itemCount = 0;
+                    <div class="flex items-center gap-2 flex-wrap">
+    ${(() => {
+                        let tagsHtml = '';
+                        const distVal = formatDist(race.distance);
+                        const elevVal = race.elevation || '0';
+                        const locHtml = race.location ? `
+            <span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full">
+                <i class="fas fa-map-marker-alt text-green-500"></i> ${locationDisplay}
+            </span>` : '';
+
+                        // 1. CAS TRIATHLON
+                        if (race.terrain === 'triathlon') {
+                            if (race.raceFormat === 'team') {
+                                // Mode Équipe : Un seul sport
                                 if (race.raceRelaySport === 'swim') {
                                     const swimDist = parseFloat(race.swimDistance);
-                                    const distDisplay = isNaN(swimDist) ? '? m' : (swimDist > 999 ? parseFloat((swimDist / 1000).toFixed(2)) + ' km' : swimDist + ' m');
-                                    sportHtml = `<span class="flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-800 text-xs rounded-full" title="Natation (Relais)">
-                                            <i class="fas fa-swimmer text-blue-500"></i> ${distDisplay}
-                                        </span>`;
-                                    itemCount++;
-                                    const bikeVal = formatDist(race.bikeDistance);
-                                    sportHtml = `<span class="flex items-center gap-1 px-2 py-1 bg-orange-50 text-orange-800 text-xs rounded-full" title="Vélo (Relais)">
-                                            <i class="fas fa-biking text-orange-500"></i> ${bikeVal} km
-                                        </span>`;
-                                    itemCount++;
-                                    if (race.bikeElevation !== null && race.bikeElevation !== undefined) {
-                                        sportHtml += `<span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full" title="Dénivelé Vélo">
-                                                <i class="fas fa-mountain text-green-500"></i> +${race.bikeElevation} m
-                                            </span>`;
-                                        itemCount++;
-                                    }
-                                    const runVal = formatDist(race.distance);
-                                    sportHtml = `<span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full" title="Course à pied (Relais)">
-                                            <i class="fas fa-running text-green-500"></i> ${runVal} km
-                                        </span>`;
-                                    itemCount++;
-                                    if (race.runElevation !== null && race.runElevation !== undefined) {
-                                        sportHtml += `<span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full" title="Dénivelé CAP">
-                                                <i class="fas fa-mountain text-green-500"></i> +${race.runElevation} m
-                                            </span>`;
-                                        itemCount++;
-                                    }
+                                    const swimDisplay = isNaN(swimDist) ? '? m' : (swimDist > 999 ? (swimDist / 1000).toFixed(2) + ' km' : swimDist + ' m');
+                                    tagsHtml = `
+                        <span class="flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-800 text-xs rounded-full"><i class="fas fa-swimmer text-blue-500"></i> ${swimDisplay}</span>
+                        ${locHtml}
+                        <span class="px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded-full font-bold">Triathlon</span>`;
+                                } else if (race.raceRelaySport === 'bike') {
+                                    tagsHtml = `
+                        <span class="flex items-center gap-1 px-2 py-1 bg-orange-50 text-orange-800 text-xs rounded-full"><i class="fas fa-biking text-orange-500"></i> ${formatDist(race.bikeDistance)} km</span>
+                        <span class="flex items-center gap-1 px-2 py-1 bg-orange-50 text-orange-800 text-xs rounded-full"><i class="fas fa-mountain text-orange-500"></i> +${race.bikeElevation || 0} m</span>
+                        ${locHtml}
+                        <span class="px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded-full font-bold">Triathlon</span>`;
+                                } else { // Run
+                                    tagsHtml = `
+                        <span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full"><i class="fas fa-running text-green-500"></i> ${distVal} km</span>
+                        <span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full"><i class="fas fa-mountain text-green-500"></i> +${race.runElevation || 0} m</span>
+                        ${locHtml}
+                        <span class="px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded-full font-bold">Triathlon</span>`;
                                 }
-
-                                // Always add location if present
-                                if (locationDisplay) {
-                                    sportHtml += `<span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full">
-                                            <i class="fas fa-map-marker-alt text-green-500"></i> ${locationDisplay}
-                                        </span>`;
-                                    itemCount++;
-                                }
-
-                                // Add Relay Tag ONLY if less than 3 items displayed
-                                if (itemCount < 3) {
-                                    sportHtml += `<span class="flex items-center gap-1 px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded-full font-bold">Relais</span>`;
-                                }
-
-                                return sportHtml;
-                            })()
-                            :
-                            // Standard Triathlon (Solo)
-                            `
-                            <span class="flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-800 text-xs rounded-full" title="Natation">
-                                <i class="fas fa-swimmer text-blue-500"></i>
-                                ${(() => {
+                            } else {
+                                // Mode Solo : Standard 3 sports
                                 const swimDist = parseFloat(race.swimDistance);
-                                if (isNaN(swimDist)) return '? m';
-                                return swimDist > 999
-                                    ? parseFloat((swimDist / 1000).toFixed(2)) + ' km'
-                                    : swimDist + ' m';
-                            })()}
-                            </span>
-                            <span class="flex items-center gap-1 px-2 py-1 bg-orange-50 text-orange-800 text-xs rounded-full" title="Vélo">
-                                <i class="fas fa-biking text-orange-500"></i>
-                                ${formatDist(race.bikeDistance)} km
-                            </span>
-                             <span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full" title="Course à pied">
-                                 <i class="fas fa-running text-green-500"></i>
-                                 ${formatDist(race.distance)} km
-                             </span>
-                        `) : `
-                             <span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full">
-                                 <i class="fas fa-ruler-horizontal text-green-500"></i>
-                                 ${formatDist(race.distance)} km
-                             </span>
-                            ${race.terrain !== 'hyrox' ? `
-                                <span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full">
-                                    <i class="fas fa-mountain text-green-500"></i>
-                                    +${race.elevation || '0'} m
-                                </span>
-                            ` : ''}
-                            ${locationDisplay ? `<span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full hidden md:inline-flex">
-                                <i class="fas fa-map-marker-alt text-green-500"></i>
-                                ${locationDisplay}
-                            </span>` : ''}
-                            ${race.terrain === 'hyrox' ? `
-                                <span class="flex items-center gap-1 px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded-full font-bold">Hyrox</span>
-                            ` : ''}
-                        `}
-                    </div>
+                                const swimDisplay = isNaN(swimDist) ? '? m' : (swimDist > 999 ? (swimDist / 1000).toFixed(2) + ' km' : swimDist + ' m');
+
+                                tagsHtml = `
+    <span class="flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-800 text-xs rounded-full" title="Natation">
+        <i class="fas fa-swimmer text-blue-500"></i> ${swimDisplay}
+    </span>
+    <span class="flex items-center gap-1 px-2 py-1 bg-orange-50 text-orange-800 text-xs rounded-full" title="Vélo">
+        <i class="fas fa-biking text-orange-500"></i> ${formatDist(race.bikeDistance)} km
+    </span>
+    <span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full" title="Course à pied">
+        <i class="fas fa-running text-green-500"></i> ${distVal} km
+    </span>`;
+                            }
+                        }
+                        // 2. CAS HYROX
+                        else if (race.terrain === 'hyrox') {
+                            tagsHtml = `
+                <span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full"><i class="fas fa-ruler-horizontal text-green-500"></i> ${distVal} km</span>
+                ${locHtml}
+                <span class="px-2 py-1 bg-orange-100 text-orange-800 text-xs rounded-full font-bold">Hyrox</span>`;
+                        }
+                        // 3. CAS RELAI (Standard)
+                        else if (race.terrain === 'relai') {
+                            tagsHtml = `
+                <span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full"><i class="fas fa-ruler-horizontal text-green-500"></i> ${distVal} km</span>
+                <span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full"><i class="fas fa-mountain text-green-500"></i> +${elevVal} m</span>
+                <span class="px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded-full font-bold">Relai</span>`;
+                        }
+                        // 4. CAS TRAIL
+                        else if (race.terrain === 'trail') {
+                            tagsHtml = `
+                <span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full"><i class="fas fa-ruler-horizontal text-green-500"></i> ${distVal} km</span>
+                <span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full"><i class="fas fa-mountain text-green-500"></i> +${elevVal} m</span>
+                <span class="px-2 py-1 bg-emerald-100 text-emerald-800 text-xs rounded-full font-bold">Trail</span>`;
+                        }
+                        // 5. PAR DÉFAUT (ROUTE)
+                        else {
+                            tagsHtml = `
+                <span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full"><i class="fas fa-ruler-horizontal text-green-500"></i> ${distVal} km</span>
+                <span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full"><i class="fas fa-mountain text-green-500"></i> +${elevVal} m</span>
+                ${locHtml}`;
+                        }
+
+                        return tagsHtml;
+                    })()}
+</div>
                 </div>
                 <div class="mt-4 flex flex-wrap justify-between items-center gap-2">
                     <div class="flex space-x-2 items-center">
@@ -4350,7 +4343,7 @@
                         generalWrapper.classList.add('flex');
                         if (race.rankTotal) rankingElement.textContent = `${race.rankPos} / ${race.rankTotal}`;
                         else rankingElement.textContent = `${race.rankPos}e`;
-                        
+
                         if (!hasGender) {
                             // Que Général
                             if (generalTextLabel) {
@@ -4375,7 +4368,7 @@
                     if (rankingSeparator) {
                         if (hasGeneral && hasGender) {
                             rankingSeparator.classList.remove('hidden', 'sm:hidden');
-                            rankingSeparator.classList.add('hidden', 'sm:block'); 
+                            rankingSeparator.classList.add('hidden', 'sm:block');
                         } else {
                             rankingSeparator.classList.remove('sm:block');
                             rankingSeparator.classList.add('hidden');
