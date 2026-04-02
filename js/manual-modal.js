@@ -100,7 +100,7 @@ const manualModalHTML = `
                                     <div>• Dénivelé positif D+ (m)</div>
                                     <div>• Dénivelé négatif D- (m)</div>
                                     <div>• Temps de course</div>
-                                    <div>• Classement (Position/Total)</div>
+                                    <div>• Classements (Général et Genre/Catégorie)</div>
                                     <div>• Lieu / Ville</div>
                                     <div>• Photo (JPG, PNG)</div>
                                     <div>• Image automatique (Web/Nom)</div>
@@ -226,6 +226,7 @@ const manualModalHTML = `
                                 <div>🏃 Vitesse moyenne par période</div>
                                 <div>🏆 Records D+ et D- par course</div>
                                 <div>📈 Courbe d'évolution vitesse & allure</div>
+                                <div>🤖 Prédiction IA de vos prochaines performances</div>
                             </div>
                         </div>
                     </div>

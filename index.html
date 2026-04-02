@@ -198,13 +198,14 @@
             <div class="px-5 py-4">
                 <ul class="space-y-1.5 text-sm text-green-800">
                     <li class="flex items-start gap-2"><span class="text-green-500 mt-0.5">▸</span><span><strong>🏆
-                                Classement </strong> - saisie de votre position relative au nombre total de
-                            participants</span></li>
+                                Classements </strong> - saisie séparée : position Générale et par Catégorie/Genre</span>
+                    </li>
                     <li class="flex items-start gap-2"><span class="text-green-500 mt-0.5">▸</span><span><strong>📈
-                                Évolution perf. </strong> - nouveau graphique en courbe pour suivre votre vitesse et
+                                Évolution & IA </strong> - graphique de perf. avec prédiction IA de la vitesse &
                             allure</span></li>
                     <li class="flex items-start gap-2"><span class="text-green-500 mt-0.5">▸</span><span><strong>⭐
-                                Avis Communauté </strong> - partagez votre expérience via un carrousel interactif sur l'accueil</span></li>
+                                Avis Communauté </strong> - partagez votre expérience via un carrousel interactif sur
+                            l'accueil</span></li>
                 </ul>
             </div>
             <!-- Bouton ouvrir/fermer l'historique -->
@@ -611,14 +612,16 @@
     <div id="reviewsSection" class="py-12 overflow-hidden">
         <div class="container mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-8">
-                <span class="bg-yellow-100 text-yellow-800 text-sm px-3 py-1 rounded-full uppercase tracking-wider">Avis</span>
+                <span
+                    class="bg-yellow-100 text-yellow-800 text-sm px-3 py-1 rounded-full uppercase tracking-wider">Avis</span>
                 <h2 class="text-3xl text-green-800 mt-2 mb-4">Ce qu'ils en pensent</h2>
                 <p class="text-gray-600 max-w-2xl mx-auto">Des vraies personnes, des vrais retours.</p>
             </div>
         </div>
 
         <!-- Carrousel infini -->
-        <div class="relative w-full overflow-hidden" style="mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent); -webkit-mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);">
+        <div class="relative w-full overflow-hidden"
+            style="mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent); -webkit-mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);">
             <div id="reviewsCarouselTrack" class="flex reviews-scroll">
                 <!-- Les cartes sont injectées par reviews.js -->
             </div>
@@ -627,18 +630,26 @@
 
     <style>
         @keyframes reviewsScroll {
-            0%   { transform: translateX(0); }
-            100% { transform: translateX(-50%); }
+            0% {
+                transform: translateX(0);
+            }
+
+            100% {
+                transform: translateX(-50%);
+            }
         }
+
         .reviews-scroll {
             animation: reviewsScroll 40s linear infinite;
             width: max-content;
             padding-top: 1rem;
             padding-bottom: 1rem;
         }
+
         .reviews-scroll:hover {
             animation-play-state: paused;
         }
+
         .review-card {
             min-height: 130px;
         }

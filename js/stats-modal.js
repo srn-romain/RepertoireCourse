@@ -996,7 +996,7 @@
                         html += `      <span class="flex items-center gap-1"><i class="fas fa-robot text-purple-500"></i> Prédiction IA pour la course n°${chronologicalRaces.length + 1} :</span>`;
                         html += `      <div class="flex items-center gap-3">`;
                         html += `        <span title="Vitesse estimée en kilomètres par heure" class="flex items-center gap-1.5 bg-white px-2 py-0.5 rounded border border-purple-100 shadow-sm text-indigo-800 cursor-help"><i class="fas fa-tachometer-alt text-indigo-400"></i> ~${predSpeed.toFixed(2)} km/h</span>`;
-                        html += `        <span title="Allure estimée en minutes par kilomètre" class="flex items-center gap-1.5 bg-white px-2 py-0.5 rounded border border-purple-100 shadow-sm text-purple-800 cursor-help"><i class="fas fa-stopwatch text-purple-400"></i> ~${formattedPace} /km</span>`;
+                        html += `        <span title="Allure estimée en minutes par kilomètre" class="flex items-center gap-1.5 bg-white px-2 py-0.5 rounded border border-purple-100 shadow-sm text-purple-800 cursor-help"><i class="fas fa-stopwatch text-purple-400"></i> ~${formattedPace} min/km</span>`;
                         html += `      </div>`;
                         html += `    </div>`;
                         html += `  </div>`;
