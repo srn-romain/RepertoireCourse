@@ -152,11 +152,25 @@
             // Toujours travailler sur une copie
             let filteredRaces = [...sourceRaces];
 
-            // Filtre par nom
+            // Filtre par mots clés (nom, lieu, date, dénivelé, temps, note, classements)
             if (nameQuery) {
-                filteredRaces = filteredRaces.filter(race =>
-                    (race.name || '').toLowerCase().includes(nameQuery)
-                );
+                filteredRaces = filteredRaces.filter(race => {
+                    const searchStr = `
+                        ${race.name || ''} 
+                        ${race.location || ''} 
+                        ${race.date || ''} 
+                        ${race.elevation || ''} ${race.elevation || ''}m +${race.elevation || ''}m
+                        ${race.distance || ''} ${race.distance || ''}km
+                        ${race.time || ''} 
+                        ${race.rating || ''} 
+                        ${race.notes || ''} 
+                        ${race.rankPos || ''}/${race.rankTotal || ''} 
+                        ${race.rankPos || ''} / ${race.rankTotal || ''}
+                        ${race.rankGenderPos || ''}/${race.rankGenderTotal || ''}
+                        ${race.rankGenderPos || ''} / ${race.rankGenderTotal || ''}
+                    `.toLowerCase();
+                    return searchStr.includes(nameQuery);
+                });
             }
 
             // Filtre par lieu

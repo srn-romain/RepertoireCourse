@@ -6472,10 +6472,23 @@
             let filteredRaces;
 
             if (!userIsAuthenticated) {
-                // Si non authentifié, rechercher uniquement dans le nom
+                // Si non authentifié, rechercher dans tous les champs visibles
                 filteredRaces = races.filter(race => {
-                    const nameMatch = (race.name || '').toLowerCase().includes(q);
-                    return nameMatch;
+                    const searchStr = `
+                        ${race.name || ''} 
+                        ${race.location || ''} 
+                        ${race.date || ''} 
+                        ${race.elevation || ''} ${race.elevation || ''}m +${race.elevation || ''}m
+                        ${race.distance || ''} ${race.distance || ''}km
+                        ${race.time || ''} 
+                        ${race.rating || ''} 
+                        ${race.notes || ''} 
+                        ${race.rankPos || ''}/${race.rankTotal || ''} 
+                        ${race.rankPos || ''} / ${race.rankTotal || ''}
+                        ${race.rankGenderPos || ''}/${race.rankGenderTotal || ''}
+                        ${race.rankGenderPos || ''} / ${race.rankGenderTotal || ''}
+                    `.toLowerCase();
+                    return searchStr.includes(q);
                 });
             } else {
                 // Si authentifié, on laisse applyAdvancedFilters gérer la recherche globale
