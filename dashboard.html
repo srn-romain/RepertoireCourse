@@ -5121,6 +5121,13 @@
                 raceRunFieldsWrapper.classList.remove('bg-green-50', 'p-4', 'rounded-lg');
                 raceRunFieldsWrapper.classList.remove('hidden'); // Ensure visible by default
             }
+            if (raceDistanceRunGrid) {
+                raceDistanceRunGrid.classList.remove('hidden');
+            }
+            const gpxContainer = document.getElementById('raceGpxContainer');
+            if (gpxContainer) {
+                gpxContainer.classList.remove('hidden');
+            }
             if (raceRunTimeContainer) raceRunTimeContainer.classList.add('hidden');
             if (raceRunElevationContainer) raceRunElevationContainer.classList.add('hidden');
             if (relayConfig) relayConfig.classList.add('hidden');
