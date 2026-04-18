@@ -1892,9 +1892,9 @@
     <script>
         // Utility function to format distances (max 4 decimal places)
         function formatDist(d) {
-            if (d === undefined || d === null || d === '' || d === '/') return '?';
+            if (d === undefined || d === null || d === '' || d === '/') return '-';
             const num = parseFloat(String(d).replace(',', '.'));
-            if (isNaN(num)) return '?';
+            if (isNaN(num)) return '-';
             return parseFloat(num.toFixed(4));
         }
 
