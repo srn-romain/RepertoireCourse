@@ -3115,6 +3115,11 @@
             raceForm.reset();
             const rNE = document.getElementById('raceNotesEditor');
             if(rNE) rNE.innerHTML = '';
+            if (typeof toggleBtnActive === 'function') {
+                toggleBtnActive(document.getElementById('btnBold'), false);
+                toggleBtnActive(document.getElementById('btnItalic'), false);
+                toggleBtnActive(document.getElementById('btnUnderline'), false);
+            }
             document.getElementById('raceId').value = '';
 
             // Stocker l'ID de la wishlist si provient de là
@@ -5006,6 +5011,11 @@
                         raceForm.reset();
             const rNE = document.getElementById('raceNotesEditor');
             if(rNE) rNE.innerHTML = '';
+            if (typeof toggleBtnActive === 'function') {
+                toggleBtnActive(document.getElementById('btnBold'), false);
+                toggleBtnActive(document.getElementById('btnItalic'), false);
+                toggleBtnActive(document.getElementById('btnUnderline'), false);
+            }
                         document.getElementById('raceId').value = '';
                         photoData = null;
                         racePhoto.value = '';
@@ -5565,6 +5575,11 @@
             raceForm.reset();
             const rNE = document.getElementById('raceNotesEditor');
             if(rNE) rNE.innerHTML = '';
+            if (typeof toggleBtnActive === 'function') {
+                toggleBtnActive(document.getElementById('btnBold'), false);
+                toggleBtnActive(document.getElementById('btnItalic'), false);
+                toggleBtnActive(document.getElementById('btnUnderline'), false);
+            }
             document.getElementById('raceId').value = '';
 
             // Réinitialiser le tableau des relais
@@ -6207,6 +6222,11 @@
                     raceForm.reset();
             const rNE = document.getElementById('raceNotesEditor');
             if(rNE) rNE.innerHTML = '';
+            if (typeof toggleBtnActive === 'function') {
+                toggleBtnActive(document.getElementById('btnBold'), false);
+                toggleBtnActive(document.getElementById('btnItalic'), false);
+                toggleBtnActive(document.getElementById('btnUnderline'), false);
+            }
                     if (typeof initHyroxTable === 'function') initHyroxTable();
                     const hyroxTotalEl = document.getElementById('hyroxTotalTime');
                     if (hyroxTotalEl) hyroxTotalEl.textContent = '00:00:00';
@@ -6597,6 +6617,11 @@
             raceForm.reset();
             const rNE = document.getElementById('raceNotesEditor');
             if(rNE) rNE.innerHTML = '';
+            if (typeof toggleBtnActive === 'function') {
+                toggleBtnActive(document.getElementById('btnBold'), false);
+                toggleBtnActive(document.getElementById('btnItalic'), false);
+                toggleBtnActive(document.getElementById('btnUnderline'), false);
+            }
 
             // Réactiver le champ temps principal
             const raceTimeEl = document.getElementById('raceTime');
