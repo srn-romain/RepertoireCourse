@@ -899,8 +899,17 @@
                     </div>
                     <div class="mb-4">
                         <label for="raceNotes" class="block text-green-700 mb-2">Notes</label>
-                        <textarea id="raceNotes" rows="3" placeholder="Note course"
-                            class="w-full px-3 py-2 border border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"></textarea>
+                        <div class="flex gap-2 mb-0 p-2 bg-green-50 rounded-t-lg border-x border-t border-green-300">
+                            <button type="button" onclick="document.execCommand('bold', false, null);" class="w-8 h-8 flex items-center justify-center bg-white border border-green-300 rounded hover:bg-green-100 font-bold text-gray-700" title="Gras">B</button>
+                            <button type="button" onclick="document.execCommand('italic', false, null);" class="w-8 h-8 flex items-center justify-center bg-white border border-green-300 rounded hover:bg-green-100 italic text-gray-700" title="Italique">I</button>
+                            <button type="button" onclick="document.execCommand('underline', false, null);" class="w-8 h-8 flex items-center justify-center bg-white border border-green-300 rounded hover:bg-green-100 underline text-gray-700" title="Souligné">S</button>
+                        </div>
+                        <div id="raceNotesEditor" contenteditable="true"
+                            class="w-full px-3 py-2 border border-green-300 rounded-b-lg focus:outline-none focus:ring-2 focus:ring-green-500 min-h-[80px] bg-white text-gray-700 overflow-y-auto whitespace-pre-wrap"
+                            style="max-height: 200px;"
+                            oninput="document.getElementById('raceNotes').value = this.innerHTML"
+                            onblur="document.getElementById('raceNotes').value = this.innerHTML"></div>
+                        <input type="hidden" id="raceNotes" name="raceNotes">
                     </div>
 
 
@@ -4254,13 +4263,12 @@
 
             if (race.notes && race.notes.trim() !== '') {
                 notesSection.classList.remove('hidden');
-
                 notesLabel.textContent = 'Note';
 
-                if (fieldMatchesSearch(race.notes, searchQuery)) {
+                if (fieldMatchesSearch(race.notes, searchQuery) && !race.notes.includes('<')) {
                     notesElement.innerHTML = highlightSearchMatch(race.notes, searchQuery);
                 } else {
-                    notesElement.textContent = race.notes;
+                    notesElement.innerHTML = race.notes;
                 }
             } else {
                 notesSection.classList.add('hidden');
@@ -5646,6 +5654,8 @@
                 updateHyroxFieldsVisibility();
             }
             document.getElementById('raceNotes').value = race.notes || '';
+            const raceNotesEditor = document.getElementById('raceNotesEditor');
+            if (raceNotesEditor) raceNotesEditor.innerHTML = race.notes || '';
             document.getElementById('racePrice').value = (race.price !== undefined && race.price !== null) ? race.price : '';
             document.getElementById('raceWebsite').value = race.website || '';
             document.getElementById('raceResultUrl').value = race.resultUrl || '';
@@ -5851,6 +5861,8 @@
             const rankGenderTotal = document.getElementById('raceRankGenderTotal').value;
             const location = document.getElementById('raceLocation').value;
             const terrain = document.getElementById('raceTerrain').value || 'route';
+            const editor = document.getElementById('raceNotesEditor');
+            if (editor) document.getElementById('raceNotes').value = editor.innerHTML;
             const notes = document.getElementById('raceNotes').value;
             const price = document.getElementById('racePrice').value;
             const website = document.getElementById('raceWebsite').value.trim();

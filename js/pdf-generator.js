@@ -461,8 +461,13 @@ async function generateRacePdf(raceId) {
         doc.setTextColor(...textColor);
         doc.setFont(undefined, 'normal');
 
+        // Extract plain text from HTML and preserve line breaks
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = race.notes.replace(/<br\s*[\/]?>/gi, '\n').replace(/<\/p>|<\/div>/gi, '\n');
+        const cleanNotes = tempDiv.textContent || tempDiv.innerText || '';
+
         // Gérer le texte long avec retour à la ligne
-        const notesLines = doc.splitTextToSize(race.notes, pageWidth - 2 * margin);
+        const notesLines = doc.splitTextToSize(cleanNotes, pageWidth - 2 * margin);
         notesLines.forEach(line => {
             if (yPos > doc.internal.pageSize.getHeight() - 20) {
                 doc.addPage();
