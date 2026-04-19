@@ -105,7 +105,7 @@ const manualModalHTML = `
                                     <div>• Photo (JPG, PNG)</div>
                                     <div>• Image automatique (Web/Nom)</div>
                                     <div>• Fichier GPX</div>
-                                    <div>• Notes personnelles</div>
+                                    <div>• Notes personnelles <span class="text-[10px] text-gray-500">(éditeur riche)</span></div>
                                     <div>• Statut favori</div>
                                     <div>• Partage public</div>
                                     <div>• Accompagnants</div>
