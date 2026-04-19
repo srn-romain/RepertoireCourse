@@ -909,14 +909,16 @@
                     <div class="mb-4">
                         <label for="raceNotes" class="block text-green-700 mb-2">Notes</label>
                         <div class="flex gap-2 mb-0 p-2 bg-green-50 rounded-t-lg border-x border-t border-green-300">
-                            <button type="button" onclick="document.execCommand('bold', false, null);" class="w-8 h-8 flex items-center justify-center bg-white border border-green-300 rounded hover:bg-green-100 font-bold text-gray-700" title="Gras">B</button>
-                            <button type="button" onclick="document.execCommand('italic', false, null);" class="w-8 h-8 flex items-center justify-center bg-white border border-green-300 rounded hover:bg-green-100 italic text-gray-700" title="Italique">I</button>
-                            <button type="button" onclick="document.execCommand('underline', false, null);" class="w-8 h-8 flex items-center justify-center bg-white border border-green-300 rounded hover:bg-green-100 underline text-gray-700" title="Souligné">S</button>
+                            <button type="button" id="btnBold" onpointerdown="event.preventDefault();" onclick="formatNote('bold')" class="w-8 h-8 flex items-center justify-center bg-white border border-green-300 rounded hover:bg-green-100 font-bold text-gray-700 transition-colors" title="Gras">B</button>
+                            <button type="button" id="btnItalic" onpointerdown="event.preventDefault();" onclick="formatNote('italic')" class="w-8 h-8 flex items-center justify-center bg-white border border-green-300 rounded hover:bg-green-100 italic text-gray-700 transition-colors" title="Italique">I</button>
+                            <button type="button" id="btnUnderline" onpointerdown="event.preventDefault();" onclick="formatNote('underline')" class="w-8 h-8 flex items-center justify-center bg-white border border-green-300 rounded hover:bg-green-100 underline text-gray-700 transition-colors" title="Souligné">S</button>
                         </div>
                         <div id="raceNotesEditor" contenteditable="true" data-placeholder="Note course"
                             class="w-full px-3 py-2 border border-green-300 rounded-b-lg focus:outline-none focus:ring-2 focus:ring-green-500 min-h-[120px] bg-white text-gray-700 overflow-y-auto whitespace-pre-wrap resize-y"
-                            oninput="document.getElementById('raceNotes').value = this.innerHTML"
-                            onblur="document.getElementById('raceNotes').value = this.innerHTML"></div>
+                            oninput="document.getElementById('raceNotes').value = this.innerHTML; updateNotesFormatState();"
+                            onkeyup="updateNotesFormatState()"
+                            onpointerup="updateNotesFormatState()"
+                            onblur="document.getElementById('raceNotes').value = this.innerHTML; updateNotesFormatState();"></div>
                         <input type="hidden" id="raceNotes" name="raceNotes">
                     </div>
 
@@ -8126,6 +8128,34 @@
         window.zoomImage = zoomImage;
         window.closeImageZoom = closeImageZoom;
         window.showPrivateInfo = showPrivateInfo;
+
+        // Rich Text Formatting logic
+        function formatNote(command) {
+            document.execCommand(command, false, null);
+            document.getElementById('raceNotesEditor').focus();
+            updateNotesFormatState();
+        }
+
+        function updateNotesFormatState() {
+            const isBold = document.queryCommandState('bold');
+            const isItalic = document.queryCommandState('italic');
+            const isUnderline = document.queryCommandState('underline');
+
+            toggleBtnActive(document.getElementById('btnBold'), isBold);
+            toggleBtnActive(document.getElementById('btnItalic'), isItalic);
+            toggleBtnActive(document.getElementById('btnUnderline'), isUnderline);
+        }
+
+        function toggleBtnActive(btn, isActive) {
+            if (!btn) return;
+            if (isActive) {
+                btn.classList.remove('bg-white', 'text-gray-700', 'border-green-300');
+                btn.classList.add('bg-green-600', 'text-white', 'border-green-700', 'shadow-inner');
+            } else {
+                btn.classList.add('bg-white', 'text-gray-700', 'border-green-300');
+                btn.classList.remove('bg-green-600', 'text-white', 'border-green-700', 'shadow-inner');
+            }
+        }
     </script>
 
     <script src="js/isAdmin.js"></script>
