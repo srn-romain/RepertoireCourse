@@ -3103,6 +3103,8 @@
         function openAddRaceModal(prefillData = null) {
             modalTitle.textContent = 'Ajouter une course';
             raceForm.reset();
+            const rNE = document.getElementById('raceNotesEditor');
+            if(rNE) rNE.innerHTML = '';
             document.getElementById('raceId').value = '';
 
             // Stocker l'ID de la wishlist si provient de là
@@ -4992,6 +4994,8 @@
                     if (isAdmin()) {
                         modalTitle.textContent = 'Ajouter une course';
                         raceForm.reset();
+            const rNE = document.getElementById('raceNotesEditor');
+            if(rNE) rNE.innerHTML = '';
                         document.getElementById('raceId').value = '';
                         photoData = null;
                         racePhoto.value = '';
@@ -5549,6 +5553,8 @@
         function addRace() {
             modalTitle.textContent = 'Ajouter une course';
             raceForm.reset();
+            const rNE = document.getElementById('raceNotesEditor');
+            if(rNE) rNE.innerHTML = '';
             document.getElementById('raceId').value = '';
 
             // Réinitialiser le tableau des relais
@@ -6189,6 +6195,8 @@
 
                     // Réinitialiser le formulaire et les champs Hyrox
                     raceForm.reset();
+            const rNE = document.getElementById('raceNotesEditor');
+            if(rNE) rNE.innerHTML = '';
                     if (typeof initHyroxTable === 'function') initHyroxTable();
                     const hyroxTotalEl = document.getElementById('hyroxTotalTime');
                     if (hyroxTotalEl) hyroxTotalEl.textContent = '00:00:00';
@@ -6577,6 +6585,8 @@
         function closeAndResetRaceModal() {
             raceModal.classList.add('hidden');
             raceForm.reset();
+            const rNE = document.getElementById('raceNotesEditor');
+            if(rNE) rNE.innerHTML = '';
 
             // Réactiver le champ temps principal
             const raceTimeEl = document.getElementById('raceTime');
