@@ -93,9 +93,12 @@
                 if (!race.date) return false;
                 const raceDate = new Date(race.date);
                 raceDate.setHours(0, 0, 0, 0);
+                
                 // Si includeFuture est false, ne prendre que les courses passées
                 // Si includeFuture est true, prendre toutes les courses
-                return includeFuture || raceDate < today;
+                // La règle ajoutée : si un chrono est disponible, alors la course est incluse même aujourd'hui.
+                const hasValidTime = race.time && race.time !== '00:00:00' && race.time.trim() !== '';
+                return includeFuture || raceDate < today || hasValidTime;
             });
 
             if (pastRaces.length === 0) return null;
