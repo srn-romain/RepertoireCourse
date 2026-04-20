@@ -225,7 +225,8 @@ async function loadAdminStats() {
                 const d = u.lastLogin.toDate ? u.lastLogin.toDate() : new Date(u.lastLogin);
                 const userName = u.pseudo || u.email?.split('@')[0] || 'User';
                 const userPhoto = u.photoURL || null;
-                allLogins.push({ date: d, user: userName, photoURL: userPhoto });
+                const userEmail = u.email || '';
+                allLogins.push({ date: d, user: userName, photoURL: userPhoto, email: userEmail });
             }
         });
 
@@ -295,7 +296,7 @@ async function loadAdminStats() {
                         `<i class="fas fa-user-circle text-blue-400 text-base"></i>`
                     }
                         <div class="flex flex-col items-start leading-tight">
-                            <span class="font-semibold text-blue-600">${l.user}</span> 
+                            <span class="font-semibold text-blue-600">${l.user} ${l.email ? `<span class="font-normal text-gray-500">(${l.email})</span>` : ''}</span> 
                             <span class="text-[10px] text-gray-400">${formatFullDate(l.date)}</span>
                         </div>
                     </div>`

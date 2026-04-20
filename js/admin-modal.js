@@ -349,7 +349,8 @@ async function loadAdminStatsData() {
                 const d = u.lastLogin.toDate ? u.lastLogin.toDate() : new Date(u.lastLogin);
                 const userName = u.pseudo || u.email?.split('@')[0] || 'User';
                 const userPhoto = u.photoURL || null;
-                allLogins.push({ date: d, user: userName, photoURL: userPhoto });
+                const userEmail = u.email || '';
+                allLogins.push({ date: d, user: userName, photoURL: userPhoto, email: userEmail });
             }
         });
         allLogins.sort((a, b) => b.date - a.date);
@@ -431,7 +432,7 @@ async function loadAdminStatsData() {
                 <div class="text-xs border-b border-gray-100 last:border-0 py-1 flex items-center gap-2 px-2">
                     ${l.photoURL ? `<img src="${l.photoURL}" class="w-5 h-5 rounded-full object-cover border">` : `<i class="fas fa-user-circle text-blue-400"></i>`}
                     <div class="flex flex-col items-start leading-tight">
-                        <span class="font-semibold text-blue-600">${l.user}</span> 
+                        <span class="font-semibold text-blue-600">${l.user} ${l.email ? `<span class="font-normal text-gray-500">(${l.email})</span>` : ''}</span> 
                         <span class="text-[9px] text-gray-400">${l.date.toLocaleString()}</span>
                     </div>
                 </div>`).join('') || "-";
