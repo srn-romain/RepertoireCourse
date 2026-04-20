@@ -232,7 +232,7 @@ async function loadAdminStats() {
 
         // Trier par date décroissante
         allLogins.sort((a, b) => b.date - a.date);
-        const last5Logins = allLogins.slice(0, 5);
+        const last10Logins = allLogins.slice(0, 10);
 
         // --- PREPARATION AFFICHAGE ---
 
@@ -288,9 +288,10 @@ async function loadAdminStats() {
         // Affichage des 5 dernières connexions
         const elLastLogin = document.getElementById('adminStatLastLogin');
         if (elLastLogin) {
-            if (last5Logins.length > 0) {
-                elLastLogin.innerHTML = last5Logins.map(l =>
+            if (last10Logins.length > 0) {
+                elLastLogin.innerHTML = last10Logins.map((l, index) =>
                     `<div class="text-xs border-b border-gray-100 last:border-0 py-1 flex items-center gap-2 px-2">
+                        <span class="text-[10px] text-gray-400 font-bold w-4 text-left">${index + 1}.</span>
                         ${l.photoURL ?
                         `<img src="${l.photoURL}" class="w-5 h-5 rounded-full object-cover border border-blue-100">` :
                         `<i class="fas fa-user-circle text-blue-400 text-base"></i>`

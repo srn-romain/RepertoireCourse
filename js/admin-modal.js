@@ -118,7 +118,7 @@ const adminModalHTML = `
                 </div>
                 <div class="bg-white border rounded-xl p-4 shadow-sm">
                     <h4 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3 italic">Dernières connexions</h4>
-                    <div id="adminStatLastLogin" class="space-y-1">
+                    <div id="adminStatLastLogin" class="space-y-1 max-h-[200px] overflow-y-auto pr-2">
                         <div class="flex justify-center py-2">
                              <i class="fas fa-circle-notch fa-spin text-gray-300"></i>
                         </div>
@@ -354,7 +354,7 @@ async function loadAdminStatsData() {
             }
         });
         allLogins.sort((a, b) => b.date - a.date);
-        const last5Logins = allLogins.slice(0, 5);
+        const last10Logins = allLogins.slice(0, 10);
 
         // UI Updates
         const setText = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
@@ -428,9 +428,10 @@ async function loadAdminStatsData() {
 
         const elLastLogin = document.getElementById('adminStatLastLogin');
         if (elLastLogin) {
-            elLastLogin.innerHTML = last5Logins.map(l => `
+            elLastLogin.innerHTML = last10Logins.map((l, index) => `
                 <div class="text-xs border-b border-gray-100 last:border-0 py-1 flex items-center gap-2 px-2">
-                    ${l.photoURL ? `<img src="${l.photoURL}" class="w-5 h-5 rounded-full object-cover border">` : `<i class="fas fa-user-circle text-blue-400"></i>`}
+                    <span class="text-[10px] text-gray-400 font-bold w-4 text-left">${index + 1}.</span>
+                    ${l.photoURL ? `<img src="${l.photoURL}" class="w-5 h-5 rounded-full object-cover border">` : `<i class="fas fa-user-circle text-blue-400 text-base"></i>`}
                     <div class="flex flex-col items-start leading-tight">
                         <span class="font-semibold text-blue-600">${l.user} ${l.email ? `<span class="font-normal text-gray-500">(${l.email})</span>` : ''}</span> 
                         <span class="text-[9px] text-gray-400">${l.date.toLocaleString()}</span>
