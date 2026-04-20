@@ -10,27 +10,33 @@ const adminModalHTML = `
         <!-- Header -->
         <div class="flex items-center justify-between mb-6 border-b pb-4">
             <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center text-red-600">
+                <div class="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center text-red-600 shrink-0">
                     <i class="fas fa-user-shield text-xl"></i>
                 </div>
-                <div>
-                    <h2 class="text-2xl font-bold text-gray-800">Portail Administrateur</h2>
-                    <p class="text-xs text-gray-500">Statistiques globales et cartographie</p>
+                <div class="min-w-0">
+                    <h2 class="text-xl md:text-2xl font-bold text-gray-800 truncate">Portail Administrateur</h2>
+                    <p class="text-[10px] md:text-xs text-gray-500">Statistiques globales et cartographie</p>
                 </div>
             </div>
-            <button onclick="closeAdminModal()" class="text-gray-400 hover:text-gray-600 transition p-2">
-                <i class="fas fa-times text-xl"></i>
-            </button>
+            
+            <div class="flex items-center gap-3 md:gap-6">
+                <!-- UI Switch -->
+                <div class="flex items-center gap-2 bg-gray-50 px-2 py-1 md:px-3 md:py-1.5 rounded-full border border-gray-100 shrink-0">
+                    <span class="text-[9px] md:text-xs font-bold text-blue-600 uppercase tracking-tight hidden sm:inline" id="toggleLabel">Toutes</span>
+                    <label class="relative inline-flex items-center cursor-pointer scale-90 md:scale-100">
+                        <input type="checkbox" id="adminPastRacesToggle" class="sr-only peer" onchange="toggleAdminPastRaces(this.checked)">
+                        <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-red-600"></div>
+                    </label>
+                    <span class="text-[9px] md:text-xs font-bold text-red-600 uppercase tracking-tight">Passées</span>
+                </div>
+
+                <button onclick="closeAdminModal()" class="text-gray-400 hover:text-gray-600 transition p-2">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
         </div>
 
         <div id="adminStatsContent">
-            <!-- FILTRES ADMIN -->
-            <div class="flex justify-center gap-2 mb-6">
-                <button onclick="updateAdminStatsFilter('all')" id="btnAdminFilterAll"
-                    class="px-3 py-1 text-sm rounded-full bg-red-600 text-white font-bold transition shadow-sm">Tout</button>
-                <button onclick="updateAdminStatsFilter('past')" id="btnAdminFilterPast"
-                    class="px-3 py-1 text-sm rounded-full bg-white text-red-600 border border-red-200 hover:bg-red-50 transition shadow-sm">Courses passées</button>
-            </div>
 
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <!-- Utilisateurs -->
@@ -186,6 +192,9 @@ const adminModalHTML = `
 let adminMap = null;
 let currentAdminFilter = 'all';
 let geoCache = {};
+let cachedRaces = null;
+let cachedUsers = null;
+let cachedWishlist = null;
 
 function initAdminModal() {
     if (!document.getElementById('adminModal')) {
@@ -209,7 +218,12 @@ window.openAdminModal = async function () {
     modal.classList.remove('hidden');
     document.body.style.overflow = 'hidden';
 
-    await loadAdminStatsData();
+    // Reset toggle UI to match 'all'
+    const toggle = document.getElementById('adminPastRacesToggle');
+    if (toggle) toggle.checked = false;
+    currentAdminFilter = 'all';
+
+    await loadAdminStatsData(true); // Force initial load
 };
 
 window.closeAdminModal = function () {
@@ -220,21 +234,21 @@ window.closeAdminModal = function () {
     }
 };
 
-window.updateAdminStatsFilter = async function (filter) {
-    currentAdminFilter = filter;
-    const btnAll = document.getElementById('btnAdminFilterAll');
-    const btnPast = document.getElementById('btnAdminFilterPast');
-
-    if (btnAll && btnPast) {
-        if (filter === 'all') {
-            btnAll.className = 'px-3 py-1 text-sm rounded-full bg-red-600 text-white font-bold transition shadow-sm';
-            btnPast.className = 'px-3 py-1 text-sm rounded-full bg-white text-red-600 border border-red-200 hover:bg-red-50 transition shadow-sm';
-        } else {
-            btnAll.className = 'px-3 py-1 text-sm rounded-full bg-white text-red-600 border border-red-200 hover:bg-red-50 transition shadow-sm';
-            btnPast.className = 'px-3 py-1 text-sm rounded-full bg-red-600 text-white font-bold transition shadow-sm';
-        }
+window.toggleAdminPastRaces = async function (showOnlyPast) {
+    currentAdminFilter = showOnlyPast ? 'past' : 'all';
+    
+    const labelAll = document.getElementById('toggleLabel');
+    if (labelAll) {
+        labelAll.classList.toggle('text-gray-400', showOnlyPast);
+        labelAll.classList.toggle('text-blue-600', !showOnlyPast);
     }
-    await loadAdminStatsData();
+
+    if (cachedRaces && cachedUsers) {
+        // Reuse cache for efficiency
+        calculateAndRenderStats(cachedRaces, cachedUsers, cachedWishlist);
+    } else {
+        await loadAdminStatsData();
+    }
 };
 
 const ADMIN_STAT_IDS = [
@@ -258,7 +272,7 @@ function setAdminStatsLoading(isLoading) {
     });
 }
 
-async function loadAdminStatsData() {
+async function loadAdminStatsData(forceRefresh = false) {
     if (typeof window.isAdminUser !== 'function') return;
     const isAdmin = await window.isAdminUser();
     if (!isAdmin) return;
@@ -266,8 +280,31 @@ async function loadAdminStatsData() {
     setAdminStatsLoading(true);
 
     try {
-        const allRacesSnapshot = await db.collectionGroup('races').get();
-        const usersSnapshot = await db.collection('users').get();
+        if (forceRefresh || !cachedRaces || !cachedUsers) {
+            const [allRacesSnapshot, usersSnapshot] = await Promise.all([
+                db.collectionGroup('races').get(),
+                db.collection('users').get()
+            ]);
+            cachedRaces = allRacesSnapshot;
+            cachedUsers = usersSnapshot;
+            cachedWishlist = null; // Will be refetched if missing later
+        }
+
+        await calculateAndRenderStats(cachedRaces, cachedUsers, cachedWishlist);
+    } catch (error) {
+        console.error("Error loading admin stats:", error);
+    } finally {
+        setAdminStatsLoading(false);
+    }
+}
+
+async function calculateAndRenderStats(allRacesSnapshot, usersSnapshot, existingWishlist = null) {
+    try {
+        const now = Date.now();
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const todayMs = today.getTime();
+        const dayMs = 24 * 60 * 60 * 1000;
 
         const stats = {
             totalUsers: 0,
@@ -308,12 +345,6 @@ async function loadAdminStatsData() {
             wishlistLast365: 0,
             wishlistPrev365: 0
         };
-
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-
-        const now = today.getTime();
-        const dayMs = 24 * 60 * 60 * 1000;
 
         const userRaceCount = {};
         const userNames = {};
@@ -429,42 +460,63 @@ async function loadAdminStatsData() {
         if (stats.activeUsers > 0) stats.averageRacesPerUser = (stats.totalRaces / stats.activeUsers).toFixed(1);
 
         // Wishlists
-        const wishlistUserIds = new Set();
-        let totalWItems = 0;
+        if (!existingWishlist) {
+            const wishlistUserIds = new Set();
+            let totalWItems = 0;
 
-        const wishlistPromises = Object.keys(userRaceCount).map(async (uid) => {
-            try {
-                const snap = await db.collection('users').doc(uid).collection('wishlist').get();
-                if (!snap.empty) {
-                    wishlistUserIds.add(uid);
-                    snap.forEach(doc => {
-                        const item = doc.data();
-                        totalWItems++;
-                        if (item.date) {
-                            const wDate = new Date(item.date);
-                            wDate.setHours(0, 0, 0, 0);
-                            const diffW = Math.floor((now - wDate.getTime()) / dayMs);
+            const wishlistPromises = Object.keys(userRaceCount).map(async (uid) => {
+                try {
+                    const snap = await db.collection('users').doc(uid).collection('wishlist').get();
+                    if (!snap.empty) {
+                        wishlistUserIds.add(uid);
+                        snap.forEach(doc => {
+                            const item = doc.data();
+                            totalWItems++;
+                            if (item.date) {
+                                const wDate = new Date(item.date);
+                                wDate.setHours(0, 0, 0, 0);
+                                const diffW = Math.floor((today.getTime() - wDate.getTime()) / dayMs);
 
-                            if (diffW >= 0 && diffW < 7) stats.wishlistLast7++;
-                            else if (diffW >= 7 && diffW < 14) stats.wishlistPrev7++;
+                                if (diffW >= 0 && diffW < 7) stats.wishlistLast7++;
+                                else if (diffW >= 7 && diffW < 14) stats.wishlistPrev7++;
 
-                            if (diffW >= 0 && diffW < 30) stats.wishlistLast30++;
-                            else if (diffW >= 30 && diffW < 60) stats.wishlistPrev30++;
+                                if (diffW >= 0 && diffW < 30) stats.wishlistLast30++;
+                                else if (diffW >= 30 && diffW < 60) stats.wishlistPrev30++;
 
-                            if (diffW >= 0 && diffW < 365) stats.wishlistLast365++;
-                            else if (diffW >= 365 && diffW < 730) stats.wishlistPrev365++;
-                        }
-                    });
+                                if (diffW >= 0 && diffW < 365) stats.wishlistLast365++;
+                                else if (diffW >= 365 && diffW < 730) stats.wishlistPrev365++;
+                            }
+                        });
+                    }
+                } catch (e) {
+                    console.warn(`Could not fetch wishlist for user ${uid}:`, e);
                 }
-            } catch (e) {
-                console.warn(`Could not fetch wishlist for user ${uid}:`, e);
-            }
-        });
+            });
 
-        await Promise.all(wishlistPromises);
+            await Promise.all(wishlistPromises);
+            cachedWishlist = { 
+                stats: { 
+                    wishlistLast7: stats.wishlistLast7, wishlistPrev7: stats.wishlistPrev7,
+                    wishlistLast30: stats.wishlistLast30, wishlistPrev30: stats.wishlistPrev30,
+                    wishlistLast365: stats.wishlistLast365, wishlistPrev365: stats.wishlistPrev365
+                },
+                usersWithWishlist: wishlistUserIds.size,
+                totalWItems: totalWItems
+            };
+        } else {
+            // Restore from cache
+            stats.wishlistLast7 = existingWishlist.stats.wishlistLast7;
+            stats.wishlistPrev7 = existingWishlist.stats.wishlistPrev7;
+            stats.wishlistLast30 = existingWishlist.stats.wishlistLast30;
+            stats.wishlistPrev30 = existingWishlist.stats.wishlistPrev30;
+            stats.wishlistLast365 = existingWishlist.stats.wishlistLast365;
+            stats.wishlistPrev365 = existingWishlist.stats.wishlistPrev365;
+        }
 
-        stats.usersWithWishlist = wishlistUserIds.size;
-        const avgWItems = stats.usersWithWishlist > 0 ? (totalWItems / stats.usersWithWishlist).toFixed(1) : 0;
+        const currentWishlistData = existingWishlist || cachedWishlist;
+        stats.usersWithWishlist = currentWishlistData.usersWithWishlist;
+        const totalW = currentWishlistData.totalWItems;
+        const avgWItems = stats.usersWithWishlist > 0 ? (totalW / stats.usersWithWishlist).toFixed(1) : 0;
         stats.usersWithComments = usersWithCommentsSet.size;
 
         // Last 5 Logins
