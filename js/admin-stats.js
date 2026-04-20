@@ -25,7 +25,8 @@ const ADMIN_STAT_IDS = [
     'adminStatAvgRacesPerUser',
     'adminStatUsersWithWishlist', 'adminStatAvgWishlistItems',
     'adminStatLastLogin',
-    'adminStatTerrain', 'adminStatPrice', 'adminStatTime', 'adminStatStartHour'
+    'adminStatTerrain', 'adminStatPrice', 'adminStatTime', 'adminStatStartHour',
+    'adminTrend7', 'adminTrend30', 'adminTrend365'
 ];
 
 // Fonction pour afficher/masquer le chargement sur les cartes
@@ -107,7 +108,13 @@ async function loadAdminStats() {
             timeCount: 0,
             terrains: {},
             totalStartMinutes: 0,
-            startHourCount: 0
+            startHourCount: 0,
+            racesLast7: 0,
+            racesPrev7: 0,
+            racesLast30: 0,
+            racesPrev30: 0,
+            racesLast365: 0,
+            racesPrev365: 0
         };
 
         const today = new Date();
@@ -132,6 +139,20 @@ async function loadAdminStats() {
 
             const raceDate = new Date(race.date);
             raceDate.setHours(0, 0, 0, 0);
+
+            const now = today.getTime();
+            const raceTime = raceDate.getTime();
+            const dayMs = 24 * 60 * 60 * 1000;
+            const diffDays = Math.floor((now - raceTime) / dayMs);
+
+            if (diffDays >= 0 && diffDays < 7) stats.racesLast7++;
+            else if (diffDays >= 7 && diffDays < 14) stats.racesPrev7++;
+
+            if (diffDays >= 0 && diffDays < 30) stats.racesLast30++;
+            else if (diffDays >= 30 && diffDays < 60) stats.racesPrev30++;
+
+            if (diffDays >= 0 && diffDays < 365) stats.racesLast365++;
+            else if (diffDays >= 365 && diffDays < 730) stats.racesPrev365++;
 
             // --- FILTRE ---
             if (currentAdminFilter === 'past') {
@@ -284,6 +305,29 @@ async function loadAdminStats() {
         setText('adminStatAvgRacesPerUser', stats.averageRacesPerUser);
         setText('adminStatUsersWithWishlist', stats.usersWithWishlist.toLocaleString());
         setText('adminStatAvgWishlistItems', avgWItems);
+
+        const elTrend7 = document.getElementById('adminTrend7');
+        const elTrend30 = document.getElementById('adminTrend30');
+        const elTrend365 = document.getElementById('adminTrend365');
+        const elIcon7 = document.getElementById('adminTrendIcon7');
+        const elIcon30 = document.getElementById('adminTrendIcon30');
+        const elIcon365 = document.getElementById('adminTrendIcon365');
+
+        const updateTrend = (elVal, elIcon, last, prev) => {
+            if (!elVal || !elIcon) return;
+            elVal.textContent = last.toLocaleString();
+            if (last > prev) {
+                elIcon.innerHTML = `<i class="fas fa-arrow-up text-green-500"></i>`;
+            } else if (last < prev) {
+                elIcon.innerHTML = `<i class="fas fa-arrow-down text-red-500"></i>`;
+            } else {
+                elIcon.innerHTML = `<i class="fas fa-minus text-gray-300"></i>`;
+            }
+        };
+
+        updateTrend(elTrend7, elIcon7, stats.racesLast7, stats.racesPrev7);
+        updateTrend(elTrend30, elIcon30, stats.racesLast30, stats.racesPrev30);
+        updateTrend(elTrend365, elIcon365, stats.racesLast365, stats.racesPrev365);
 
         // Affichage des 5 dernières connexions
         const elLastLogin = document.getElementById('adminStatLastLogin');

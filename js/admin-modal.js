@@ -126,6 +126,34 @@ const adminModalHTML = `
                 </div>
             </div>
 
+            <!-- TENDANCES (ÉVOLUTION) -->
+            <div class="mt-4 bg-white border rounded-xl p-4 shadow-sm">
+                <h4 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3 italic">Dynamique de la plateforme (Nouvelles courses)</h4>
+                <div class="grid grid-cols-3 gap-4">
+                    <div class="text-center">
+                        <p class="text-[10px] text-gray-500 font-bold mb-1 border-b pb-1 inline-block border-gray-100">7 Jours</p>
+                        <div class="flex items-center justify-center gap-2 mt-1">
+                            <span class="text-lg font-bold text-gray-800" id="adminTrend7">0</span>
+                            <span id="adminTrendIcon7" class="text-xs"></span>
+                        </div>
+                    </div>
+                    <div class="text-center border-l border-r border-gray-100">
+                        <p class="text-[10px] text-gray-500 font-bold mb-1 border-b pb-1 inline-block border-gray-100">30 Jours</p>
+                        <div class="flex items-center justify-center gap-2 mt-1">
+                            <span class="text-lg font-bold text-gray-800" id="adminTrend30">0</span>
+                            <span id="adminTrendIcon30" class="text-xs"></span>
+                        </div>
+                    </div>
+                    <div class="text-center">
+                        <p class="text-[10px] text-gray-500 font-bold mb-1 border-b pb-1 inline-block border-gray-100">1 An</p>
+                        <div class="flex items-center justify-center gap-2 mt-1">
+                            <span class="text-lg font-bold text-gray-800" id="adminTrend365">0</span>
+                            <span id="adminTrendIcon365" class="text-xs"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- CARTE ADMIN -->
             <div class="mt-6 bg-white rounded-xl border border-gray-100 shadow-lg overflow-hidden">
                 <div class="bg-gray-50 px-4 py-2 border-b flex justify-between items-center">
@@ -201,7 +229,8 @@ const ADMIN_STAT_IDS = [
     'adminStatTotalKm', 'adminStatTotalElevation',
     'adminStatAvgRacesPerUser', 'adminStatAvgWishlistItems', 'adminStatUsersWithWishlist',
     'adminStatLastLogin', 'adminStatPrice',
-    'adminStatTime', 'adminStatStartHour'
+    'adminStatTime', 'adminStatStartHour',
+    'adminTrend7', 'adminTrend30', 'adminTrend365'
 ];
 
 function setAdminStatsLoading(isLoading) {
@@ -242,7 +271,13 @@ async function loadAdminStatsData() {
             timeCount: 0,
             terrains: {},
             totalStartMinutes: 0,
-            startHourCount: 0
+            startHourCount: 0,
+            racesLast7: 0,
+            racesPrev7: 0,
+            racesLast30: 0,
+            racesPrev30: 0,
+            racesLast365: 0,
+            racesPrev365: 0
         };
 
         const today = new Date();
@@ -267,6 +302,20 @@ async function loadAdminStatsData() {
 
             const raceDate = new Date(race.date);
             raceDate.setHours(0, 0, 0, 0);
+
+            const now = today.getTime();
+            const raceTime = raceDate.getTime();
+            const dayMs = 24 * 60 * 60 * 1000;
+            const diffDays = Math.floor((now - raceTime) / dayMs);
+
+            if (diffDays >= 0 && diffDays < 7) stats.racesLast7++;
+            else if (diffDays >= 7 && diffDays < 14) stats.racesPrev7++;
+
+            if (diffDays >= 0 && diffDays < 30) stats.racesLast30++;
+            else if (diffDays >= 30 && diffDays < 60) stats.racesPrev30++;
+
+            if (diffDays >= 0 && diffDays < 365) stats.racesLast365++;
+            else if (diffDays >= 365 && diffDays < 730) stats.racesPrev365++;
 
             if (currentAdminFilter === 'past' && raceDate >= today) return;
 
@@ -370,6 +419,29 @@ async function loadAdminStatsData() {
         setText('adminStatUsersWithWishlist', stats.usersWithWishlist.toLocaleString());
         setText('adminStatAvgWishlistItems', avgWItems);
         setText('adminStatUsersWithComments', stats.usersWithComments.toLocaleString());
+
+        const elTrend7 = document.getElementById('adminTrend7');
+        const elTrend30 = document.getElementById('adminTrend30');
+        const elTrend365 = document.getElementById('adminTrend365');
+        const elIcon7 = document.getElementById('adminTrendIcon7');
+        const elIcon30 = document.getElementById('adminTrendIcon30');
+        const elIcon365 = document.getElementById('adminTrendIcon365');
+
+        const updateTrend = (elVal, elIcon, last, prev) => {
+            if (!elVal || !elIcon) return;
+            elVal.textContent = last.toLocaleString();
+            if (last > prev) {
+                elIcon.innerHTML = `<i class="fas fa-arrow-up text-green-500"></i>`;
+            } else if (last < prev) {
+                elIcon.innerHTML = `<i class="fas fa-arrow-down text-red-500"></i>`;
+            } else {
+                elIcon.innerHTML = `<i class="fas fa-minus text-gray-300"></i>`;
+            }
+        };
+
+        updateTrend(elTrend7, elIcon7, stats.racesLast7, stats.racesPrev7);
+        updateTrend(elTrend30, elIcon30, stats.racesLast30, stats.racesPrev30);
+        updateTrend(elTrend365, elIcon365, stats.racesLast365, stats.racesPrev365);
 
         const avgPrice = stats.priceCount > 0 ? (stats.totalPrice / stats.priceCount).toFixed(2) + ' €' : '0 €';
         setText('adminStatPrice', avgPrice);
