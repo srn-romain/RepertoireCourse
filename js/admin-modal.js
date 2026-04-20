@@ -70,9 +70,9 @@ const adminModalHTML = `
                 <!-- Price/Time -->
                 <div class="bg-gray-50 rounded-xl p-4 text-center border border-gray-100 shadow-sm text-xs col-span-2 md:col-span-1">
                     <div class="flex flex-col h-full justify-center">
-                        <p><span class="font-bold text-gray-700">Prix :</span> <span id="adminStatPrice">0 €</span></p>
-                        <p><span class="font-bold text-gray-700">Temps :</span> <span id="adminStatTime">0h</span></p>
-                        <p><span class="font-bold text-gray-700">Départ :</span> <span id="adminStatStartHour">N/A</span></p>
+                        <p><span class="font-bold text-gray-700">Prix m̄ :</span> <span id="adminStatPrice">0 €</span></p>
+                        <p><span class="font-bold text-gray-700">Temps m̄ :</span> <span id="adminStatTime">0h</span></p>
+                        <p><span class="font-bold text-gray-700">Départ m̄ :</span> <span id="adminStatStartHour">N/A</span></p>
                     </div>
                 </div>
 
@@ -128,29 +128,27 @@ const adminModalHTML = `
 
             <!-- TENDANCES (ÉVOLUTION) -->
             <div class="mt-4 bg-white border rounded-xl p-4 shadow-sm">
-                <h4 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3 italic">Dynamique de la plateforme (Nouvelles courses)</h4>
-                <div class="grid grid-cols-3 gap-4">
-                    <div class="text-center">
-                        <p class="text-[10px] text-gray-500 font-bold mb-1 border-b pb-1 inline-block border-gray-100">7 Jours</p>
-                        <div class="flex items-center justify-center gap-2 mt-1">
-                            <span class="text-lg font-bold text-gray-800" id="adminTrend7">0</span>
-                            <span id="adminTrendIcon7" class="text-xs"></span>
-                        </div>
-                    </div>
-                    <div class="text-center border-l border-r border-gray-100">
-                        <p class="text-[10px] text-gray-500 font-bold mb-1 border-b pb-1 inline-block border-gray-100">30 Jours</p>
-                        <div class="flex items-center justify-center gap-2 mt-1">
-                            <span class="text-lg font-bold text-gray-800" id="adminTrend30">0</span>
-                            <span id="adminTrendIcon30" class="text-xs"></span>
-                        </div>
-                    </div>
-                    <div class="text-center">
-                        <p class="text-[10px] text-gray-500 font-bold mb-1 border-b pb-1 inline-block border-gray-100">1 An</p>
-                        <div class="flex items-center justify-center gap-2 mt-1">
-                            <span class="text-lg font-bold text-gray-800" id="adminTrend365">0</span>
-                            <span id="adminTrendIcon365" class="text-xs"></span>
-                        </div>
-                    </div>
+                <h4 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3 italic">Dynamique de la plateforme (7j / 30j / 1an)</h4>
+                
+                <div class="grid grid-cols-4 gap-2 text-center text-xs font-medium text-gray-500 mb-2 border-b pb-2 px-2">
+                    <div class="text-left font-bold text-gray-700">Métrique</div>
+                    <div>7 Jours</div>
+                    <div>30 Jours</div>
+                    <div>1 An</div>
+                </div>
+                
+                <div class="grid grid-cols-4 gap-2 text-center items-center py-2 border-b border-gray-50 last:border-0 px-2 hover:bg-gray-50 rounded-lg transition-colors">
+                    <div class="text-left text-[10px] uppercase font-bold text-blue-600">Courses</div>
+                    <div class="flex justify-center items-center gap-1"><span class="text-base font-bold text-gray-800" id="adminTrend7">0</span> <span id="adminTrendIcon7" class="text-[10px]"></span></div>
+                    <div class="flex justify-center items-center gap-1 border-l border-r border-gray-100"><span class="text-base font-bold text-gray-800" id="adminTrend30">0</span> <span id="adminTrendIcon30" class="text-[10px]"></span></div>
+                    <div class="flex justify-center items-center gap-1"><span class="text-base font-bold text-gray-800" id="adminTrend365">0</span> <span id="adminTrendIcon365" class="text-[10px]"></span></div>
+                </div>
+
+                <div class="grid grid-cols-4 gap-2 text-center items-center py-2 px-2 hover:bg-gray-50 rounded-lg transition-colors">
+                    <div class="text-left text-[10px] uppercase font-bold text-green-600">Connexions</div>
+                    <div class="flex justify-center items-center gap-1"><span class="text-base font-bold text-gray-800" id="adminLoginTrend7">0</span> <span id="adminLoginTrendIcon7" class="text-[10px]"></span></div>
+                    <div class="flex justify-center items-center gap-1 border-l border-r border-gray-100"><span class="text-base font-bold text-gray-800" id="adminLoginTrend30">0</span> <span id="adminLoginTrendIcon30" class="text-[10px]"></span></div>
+                    <div class="flex justify-center items-center gap-1"><span class="text-base font-bold text-gray-800" id="adminLoginTrend365">0</span> <span id="adminLoginTrendIcon365" class="text-[10px]"></span></div>
                 </div>
             </div>
 
@@ -230,7 +228,8 @@ const ADMIN_STAT_IDS = [
     'adminStatAvgRacesPerUser', 'adminStatAvgWishlistItems', 'adminStatUsersWithWishlist',
     'adminStatLastLogin', 'adminStatPrice',
     'adminStatTime', 'adminStatStartHour',
-    'adminTrend7', 'adminTrend30', 'adminTrend365'
+    'adminTrend7', 'adminTrend30', 'adminTrend365',
+    'adminLoginTrend7', 'adminLoginTrend30', 'adminLoginTrend365'
 ];
 
 function setAdminStatsLoading(isLoading) {
@@ -277,11 +276,20 @@ async function loadAdminStatsData() {
             racesLast30: 0,
             racesPrev30: 0,
             racesLast365: 0,
-            racesPrev365: 0
+            racesPrev365: 0,
+            loginsLast7: 0,
+            loginsPrev7: 0,
+            loginsLast30: 0,
+            loginsPrev30: 0,
+            loginsLast365: 0,
+            loginsPrev365: 0
         };
 
         const today = new Date();
         today.setHours(0, 0, 0, 0);
+
+        const now = today.getTime();
+        const dayMs = 24 * 60 * 60 * 1000;
 
         const userRaceCount = {};
         const userNames = {};
@@ -291,6 +299,22 @@ async function loadAdminStatsData() {
             userRaceCount[doc.id] = 0;
             const d = doc.data();
             userNames[doc.id] = d.pseudo || d.email || 'Utilisateur';
+
+            if (d.role !== 'admin' && d.lastLogin) {
+                const lDateObj = d.lastLogin.toDate ? d.lastLogin.toDate() : new Date(d.lastLogin);
+                const lDate = new Date(lDateObj);
+                lDate.setHours(0, 0, 0, 0);
+                const diffLogin = Math.floor((now - lDate.getTime()) / dayMs);
+
+                if (diffLogin >= 0 && diffLogin < 7) stats.loginsLast7++;
+                else if (diffLogin >= 7 && diffLogin < 14) stats.loginsPrev7++;
+
+                if (diffLogin >= 0 && diffLogin < 30) stats.loginsLast30++;
+                else if (diffLogin >= 30 && diffLogin < 60) stats.loginsPrev30++;
+
+                if (diffLogin >= 0 && diffLogin < 365) stats.loginsLast365++;
+                else if (diffLogin >= 365 && diffLogin < 730) stats.loginsPrev365++;
+            }
         });
 
         const locationUsersMap = {};
@@ -303,9 +327,7 @@ async function loadAdminStatsData() {
             const raceDate = new Date(race.date);
             raceDate.setHours(0, 0, 0, 0);
 
-            const now = today.getTime();
             const raceTime = raceDate.getTime();
-            const dayMs = 24 * 60 * 60 * 1000;
             const diffDays = Math.floor((now - raceTime) / dayMs);
 
             if (diffDays >= 0 && diffDays < 7) stats.racesLast7++;
@@ -442,6 +464,17 @@ async function loadAdminStatsData() {
         updateTrend(elTrend7, elIcon7, stats.racesLast7, stats.racesPrev7);
         updateTrend(elTrend30, elIcon30, stats.racesLast30, stats.racesPrev30);
         updateTrend(elTrend365, elIcon365, stats.racesLast365, stats.racesPrev365);
+
+        const elLogin7 = document.getElementById('adminLoginTrend7');
+        const elLogin30 = document.getElementById('adminLoginTrend30');
+        const elLogin365 = document.getElementById('adminLoginTrend365');
+        const elIconLogin7 = document.getElementById('adminLoginTrendIcon7');
+        const elIconLogin30 = document.getElementById('adminLoginTrendIcon30');
+        const elIconLogin365 = document.getElementById('adminLoginTrendIcon365');
+
+        updateTrend(elLogin7, elIconLogin7, stats.loginsLast7, stats.loginsPrev7);
+        updateTrend(elLogin30, elIconLogin30, stats.loginsLast30, stats.loginsPrev30);
+        updateTrend(elLogin365, elIconLogin365, stats.loginsLast365, stats.loginsPrev365);
 
         const avgPrice = stats.priceCount > 0 ? (stats.totalPrice / stats.priceCount).toFixed(2) + ' €' : '0 €';
         setText('adminStatPrice', avgPrice);

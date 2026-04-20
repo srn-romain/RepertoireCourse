@@ -26,7 +26,8 @@ const ADMIN_STAT_IDS = [
     'adminStatUsersWithWishlist', 'adminStatAvgWishlistItems',
     'adminStatLastLogin',
     'adminStatTerrain', 'adminStatPrice', 'adminStatTime', 'adminStatStartHour',
-    'adminTrend7', 'adminTrend30', 'adminTrend365'
+    'adminTrend7', 'adminTrend30', 'adminTrend365',
+    'adminLoginTrend7', 'adminLoginTrend30', 'adminLoginTrend365'
 ];
 
 // Fonction pour afficher/masquer le chargement sur les cartes
@@ -114,11 +115,20 @@ async function loadAdminStats() {
             racesLast30: 0,
             racesPrev30: 0,
             racesLast365: 0,
-            racesPrev365: 0
+            racesPrev365: 0,
+            loginsLast7: 0,
+            loginsPrev7: 0,
+            loginsLast30: 0,
+            loginsPrev30: 0,
+            loginsLast365: 0,
+            loginsPrev365: 0
         };
 
         const today = new Date();
         today.setHours(0, 0, 0, 0);
+
+        const now = today.getTime();
+        const dayMs = 24 * 60 * 60 * 1000;
 
         const userRaceCount = {};
         const userNames = {};
@@ -127,6 +137,22 @@ async function loadAdminStats() {
             userRaceCount[doc.id] = 0;
             const d = doc.data();
             userNames[doc.id] = d.pseudo || d.email || 'Utilisateur';
+
+            if (d.role !== 'admin' && d.lastLogin) {
+                const lDateObj = d.lastLogin.toDate ? d.lastLogin.toDate() : new Date(d.lastLogin);
+                const lDate = new Date(lDateObj);
+                lDate.setHours(0, 0, 0, 0);
+                const diffLogin = Math.floor((now - lDate.getTime()) / dayMs);
+
+                if (diffLogin >= 0 && diffLogin < 7) stats.loginsLast7++;
+                else if (diffLogin >= 7 && diffLogin < 14) stats.loginsPrev7++;
+
+                if (diffLogin >= 0 && diffLogin < 30) stats.loginsLast30++;
+                else if (diffLogin >= 30 && diffLogin < 60) stats.loginsPrev30++;
+
+                if (diffLogin >= 0 && diffLogin < 365) stats.loginsLast365++;
+                else if (diffLogin >= 365 && diffLogin < 730) stats.loginsPrev365++;
+            }
         });
 
         // Map pour stocker les lieux et les utilisateurs associés : { "Paris": Set("User1", "User2") }
@@ -140,9 +166,7 @@ async function loadAdminStats() {
             const raceDate = new Date(race.date);
             raceDate.setHours(0, 0, 0, 0);
 
-            const now = today.getTime();
             const raceTime = raceDate.getTime();
-            const dayMs = 24 * 60 * 60 * 1000;
             const diffDays = Math.floor((now - raceTime) / dayMs);
 
             if (diffDays >= 0 && diffDays < 7) stats.racesLast7++;
@@ -328,6 +352,17 @@ async function loadAdminStats() {
         updateTrend(elTrend7, elIcon7, stats.racesLast7, stats.racesPrev7);
         updateTrend(elTrend30, elIcon30, stats.racesLast30, stats.racesPrev30);
         updateTrend(elTrend365, elIcon365, stats.racesLast365, stats.racesPrev365);
+
+        const elLogin7 = document.getElementById('adminLoginTrend7');
+        const elLogin30 = document.getElementById('adminLoginTrend30');
+        const elLogin365 = document.getElementById('adminLoginTrend365');
+        const elIconLogin7 = document.getElementById('adminLoginTrendIcon7');
+        const elIconLogin30 = document.getElementById('adminLoginTrendIcon30');
+        const elIconLogin365 = document.getElementById('adminLoginTrendIcon365');
+
+        updateTrend(elLogin7, elIconLogin7, stats.loginsLast7, stats.loginsPrev7);
+        updateTrend(elLogin30, elIconLogin30, stats.loginsLast30, stats.loginsPrev30);
+        updateTrend(elLogin365, elIconLogin365, stats.loginsLast365, stats.loginsPrev365);
 
         // Affichage des 5 dernières connexions
         const elLastLogin = document.getElementById('adminStatLastLogin');
