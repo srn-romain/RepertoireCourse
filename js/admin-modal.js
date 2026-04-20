@@ -54,8 +54,17 @@ const adminModalHTML = `
                     <p class="text-[10px] uppercase tracking-wider text-red-800 font-bold mt-1">Km Totaux</p>
                 </div>
                 <div class="bg-orange-50 rounded-xl p-4 text-center border border-orange-100 shadow-sm">
-                    <p class="text-2xl font-bold text-orange-600" id="adminStatTotalElevation">0</p>
-                    <p class="text-[10px] uppercase tracking-wider text-orange-800 font-bold mt-1">D+ Total (m)</p>
+                    <div class="flex justify-around items-center h-full">
+                        <div>
+                            <p class="text-xl font-bold text-orange-600" id="adminStatTotalElevation">0</p>
+                            <p class="text-[9px] uppercase tracking-wider text-orange-800 font-bold mt-1">D+ Total</p>
+                        </div>
+                        <div class="h-8 w-px bg-orange-200"></div>
+                        <div>
+                            <p class="text-xl font-bold text-orange-600" id="adminStatTotalElevationNeg">0</p>
+                            <p class="text-[9px] uppercase tracking-wider text-orange-800 font-bold mt-1">D- Total</p>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Moyennes & Engagement -->
@@ -231,7 +240,7 @@ window.updateAdminStatsFilter = async function (filter) {
 const ADMIN_STAT_IDS = [
     'adminStatTotalUsers', 'adminStatActiveUsers',
     'adminStatTotalRaces', 'adminStatPublicRacesCount', 'adminStatPrivateRaces', 'adminStatUpcomingRaces',
-    'adminStatTotalKm', 'adminStatTotalElevation',
+    'adminStatTotalKm', 'adminStatTotalElevation', 'adminStatTotalElevationNeg',
     'adminStatAvgRacesPerUser', 'adminStatAvgWishlistItems', 'adminStatUsersWithWishlist',
     'adminStatLastLogin', 'adminStatPrice',
     'adminStatTime', 'adminStatStartHour',
@@ -269,6 +278,7 @@ async function loadAdminStatsData() {
             upcomingRaces: 0,
             totalKm: 0,
             totalElevation: 0,
+            totalElevationNeg: 0,
             averageRacesPerUser: 0,
             usersWithWishlist: 0,
             usersWithComments: 0,
@@ -376,6 +386,10 @@ async function loadAdminStatsData() {
                 const elev = parseFloat(race.elevation.toString().replace(',', '.'));
                 if (!isNaN(elev)) stats.totalElevation += elev;
             }
+            if (race.elevationNeg) {
+                const elevNeg = parseFloat(race.elevationNeg.toString().replace(',', '.'));
+                if (!isNaN(elevNeg)) stats.totalElevationNeg += elevNeg;
+            }
             if (race.terrain) {
                 const t = race.terrain.trim().toLowerCase();
                 if (t) stats.terrains[t] = (stats.terrains[t] || 0) + 1;
@@ -478,7 +492,8 @@ async function loadAdminStatsData() {
         setText('adminStatPrivateRaces', stats.privateRaces.toLocaleString());
         setText('adminStatUpcomingRaces', stats.upcomingRaces.toLocaleString());
         setText('adminStatTotalKm', Math.round(stats.totalKm).toLocaleString());
-        setText('adminStatTotalElevation', Math.round(stats.totalElevation).toLocaleString());
+        setText('adminStatTotalElevation', Math.round(stats.totalElevation).toLocaleString('fr-FR'));
+        setText('adminStatTotalElevationNeg', Math.round(stats.totalElevationNeg).toLocaleString('fr-FR'));
         setText('adminStatAvgRacesPerUser', stats.averageRacesPerUser);
         setText('adminStatUsersWithWishlist', stats.usersWithWishlist.toLocaleString());
         setText('adminStatAvgWishlistItems', avgWItems);

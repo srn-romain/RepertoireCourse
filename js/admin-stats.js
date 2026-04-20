@@ -21,7 +21,7 @@ const ADMIN_STAT_IDS = [
     'adminStatTotalUsers', 'adminStatActiveUsers',
     'adminStatTotalRaces', 'adminStatPublicRaces', 'adminStatPrivateRaces',
     'adminStatUpcomingRaces', 'adminStatPastRaces',
-    'adminStatTotalKm', 'adminStatTotalElevation',
+    'adminStatTotalKm', 'adminStatTotalElevation', 'adminStatTotalElevationNeg',
     'adminStatAvgRacesPerUser',
     'adminStatUsersWithWishlist', 'adminStatAvgWishlistItems',
     'adminStatLastLogin',
@@ -102,6 +102,7 @@ async function loadAdminStats() {
             pastRaces: 0,
             totalKm: 0,
             totalElevation: 0,
+            totalElevationNeg: 0,
             averageRacesPerUser: 0,
             usersWithWishlist: 0,
             totalPrice: 0,
@@ -206,6 +207,10 @@ async function loadAdminStats() {
             if (race.elevation) {
                 const elev = parseFloat(race.elevation.toString().replace(',', '.'));
                 if (!isNaN(elev)) stats.totalElevation += elev;
+            }
+            if (race.elevationNeg) {
+                const elevNeg = parseFloat(race.elevationNeg.toString().replace(',', '.'));
+                if (!isNaN(elevNeg)) stats.totalElevationNeg += elevNeg;
             }
 
             if (race.terrain) {
@@ -361,6 +366,7 @@ async function loadAdminStats() {
         setText('adminStatPastRaces', stats.pastRaces.toLocaleString());
         setText('adminStatTotalKm', Math.round(stats.totalKm).toLocaleString());
         setText('adminStatTotalElevation', Math.round(stats.totalElevation).toLocaleString());
+        setText('adminStatTotalElevationNeg', Math.round(stats.totalElevationNeg).toLocaleString());
         setText('adminStatAvgRacesPerUser', stats.averageRacesPerUser);
         setText('adminStatUsersWithWishlist', stats.usersWithWishlist.toLocaleString());
         setText('adminStatAvgWishlistItems', avgWItems);
