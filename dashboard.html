@@ -54,10 +54,16 @@
             -webkit-appearance: none;
         }
 
+        #raceNotesEditor {
+            position: relative;
+        }
         /* Placeholder pour l'éditeur de texte riche */
         #raceNotesEditor[data-placeholder]:empty:before,
         #raceNotesEditor[data-placeholder]:has(br:only-child):before {
             content: attr(data-placeholder);
+            position: absolute;
+            top: 0.5rem;
+            left: 0.75rem;
             color: #9ca3af;
             pointer-events: none;
             cursor: text;
@@ -1549,7 +1555,7 @@
             </div>
             <h2 id="privateRaceModalTitle" class="text-lg font-bold text-gray-800 mb-2 text-center">Course privée</h2>
             <p id="privateRaceModalText" class="text-gray-600 text-center mb-6 text-sm">
-                Cette course est privée. Elle n'est visible que par vous.
+                Cette course est privée. Elle n'est visible que par vous et ne peut pas être likée par la communauté.
             </p>
             <button onclick="document.getElementById('privateRaceModal').classList.add('hidden');"
                 class="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-semibold">
@@ -4274,13 +4280,13 @@
 
 
             // Gérer l'affichage des notes avec surlignage si correspond
-            const notesSection = document.querySelector('#detailsModal .mb-4:has(#detailsNotes)');
             const notesElement = document.getElementById('detailsNotes');
             const notesLabel = document.getElementById('detailsNotesLabel');
+            const notesSection = notesElement ? notesElement.parentElement : null;
 
-            if (race.notes && race.notes.trim() !== '') {
-                notesSection.classList.remove('hidden');
-                notesLabel.textContent = 'Note';
+            if (notesElement && race.notes && race.notes.replace(/<[^>]*>/g, '').trim() !== '') {
+                if (notesSection) notesSection.classList.remove('hidden');
+                if (notesLabel) notesLabel.textContent = 'Note';
 
                 if (fieldMatchesSearch(race.notes, searchQuery) && !race.notes.includes('<')) {
                     notesElement.innerHTML = highlightSearchMatch(race.notes, searchQuery);
@@ -4288,7 +4294,7 @@
                     notesElement.innerHTML = race.notes;
                 }
             } else {
-                notesSection.classList.add('hidden');
+                if (notesSection) notesSection.classList.add('hidden');
             }
 
             // Gérer l'affichage du prix avec surlignage si correspond
