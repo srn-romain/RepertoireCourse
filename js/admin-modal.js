@@ -128,7 +128,7 @@ const adminModalHTML = `
 
             <!-- TENDANCES (ÉVOLUTION) -->
             <div class="mt-4 bg-white border rounded-xl p-4 shadow-sm">
-                <h4 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3 italic">Dynamique de la plateforme (7j / 30j / 1an)</h4>
+                <h4 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3 italic">Dynamique de la plateforme</h4>
                 
                 <div class="grid grid-cols-4 gap-2 text-center text-xs font-medium text-gray-500 mb-2 border-b pb-2 px-2">
                     <div class="text-left font-bold text-gray-700">Métrique</div>
@@ -144,11 +144,18 @@ const adminModalHTML = `
                     <div class="flex justify-center items-center gap-1"><span class="text-base font-bold text-gray-800" id="adminTrend365">0</span> <span id="adminTrendIcon365" class="text-[10px]"></span></div>
                 </div>
 
-                <div class="grid grid-cols-4 gap-2 text-center items-center py-2 px-2 hover:bg-gray-50 rounded-lg transition-colors">
+                <div class="grid grid-cols-4 gap-2 text-center items-center py-2 border-b border-gray-50 last:border-0 px-2 hover:bg-gray-50 rounded-lg transition-colors">
                     <div class="text-left text-[10px] uppercase font-bold text-green-600">Connexions</div>
                     <div class="flex justify-center items-center gap-1"><span class="text-base font-bold text-gray-800" id="adminLoginTrend7">0</span> <span id="adminLoginTrendIcon7" class="text-[10px]"></span></div>
                     <div class="flex justify-center items-center gap-1 border-l border-r border-gray-100"><span class="text-base font-bold text-gray-800" id="adminLoginTrend30">0</span> <span id="adminLoginTrendIcon30" class="text-[10px]"></span></div>
                     <div class="flex justify-center items-center gap-1"><span class="text-base font-bold text-gray-800" id="adminLoginTrend365">0</span> <span id="adminLoginTrendIcon365" class="text-[10px]"></span></div>
+                </div>
+
+                <div class="grid grid-cols-4 gap-2 text-center items-center py-2 px-2 hover:bg-gray-50 rounded-lg transition-colors">
+                    <div class="text-left text-[10px] uppercase font-bold text-orange-600">Wishlist</div>
+                    <div class="flex justify-center items-center gap-1"><span class="text-base font-bold text-gray-800" id="adminWishlistTrend7">0</span> <span id="adminWishlistTrendIcon7" class="text-[10px]"></span></div>
+                    <div class="flex justify-center items-center gap-1 border-l border-r border-gray-100"><span class="text-base font-bold text-gray-800" id="adminWishlistTrend30">0</span> <span id="adminWishlistTrendIcon30" class="text-[10px]"></span></div>
+                    <div class="flex justify-center items-center gap-1"><span class="text-base font-bold text-gray-800" id="adminWishlistTrend365">0</span> <span id="adminWishlistTrendIcon365" class="text-[10px]"></span></div>
                 </div>
             </div>
 
@@ -229,7 +236,8 @@ const ADMIN_STAT_IDS = [
     'adminStatLastLogin', 'adminStatPrice',
     'adminStatTime', 'adminStatStartHour',
     'adminTrend7', 'adminTrend30', 'adminTrend365',
-    'adminLoginTrend7', 'adminLoginTrend30', 'adminLoginTrend365'
+    'adminLoginTrend7', 'adminLoginTrend30', 'adminLoginTrend365',
+    'adminWishlistTrend7', 'adminWishlistTrend30', 'adminWishlistTrend365'
 ];
 
 function setAdminStatsLoading(isLoading) {
@@ -282,7 +290,13 @@ async function loadAdminStatsData() {
             loginsLast30: 0,
             loginsPrev30: 0,
             loginsLast365: 0,
-            loginsPrev365: 0
+            loginsPrev365: 0,
+            wishlistLast7: 0,
+            wishlistPrev7: 0,
+            wishlistLast30: 0,
+            wishlistPrev30: 0,
+            wishlistLast365: 0,
+            wishlistPrev365: 0
         };
 
         const today = new Date();
@@ -401,13 +415,41 @@ async function loadAdminStatsData() {
         if (stats.activeUsers > 0) stats.averageRacesPerUser = (stats.totalRaces / stats.activeUsers).toFixed(1);
 
         // Wishlists
-        const wishlistPromises = [];
-        for (const uid of Object.keys(userRaceCount)) {
-            wishlistPromises.push(db.collection('users').doc(uid).collection('wishlist').get().then(s => s.size));
-        }
-        const wCounts = await Promise.all(wishlistPromises);
-        stats.usersWithWishlist = wCounts.filter(c => c > 0).length;
-        const totalWItems = wCounts.reduce((a, b) => a + b, 0);
+        const wishlistUserIds = new Set();
+        let totalWItems = 0;
+
+        const wishlistPromises = Object.keys(userRaceCount).map(async (uid) => {
+            try {
+                const snap = await db.collection('users').doc(uid).collection('wishlist').get();
+                if (!snap.empty) {
+                    wishlistUserIds.add(uid);
+                    snap.forEach(doc => {
+                        const item = doc.data();
+                        totalWItems++;
+                        if (item.date) {
+                            const wDate = new Date(item.date);
+                            wDate.setHours(0, 0, 0, 0);
+                            const diffW = Math.floor((now - wDate.getTime()) / dayMs);
+
+                            if (diffW >= 0 && diffW < 7) stats.wishlistLast7++;
+                            else if (diffW >= 7 && diffW < 14) stats.wishlistPrev7++;
+
+                            if (diffW >= 0 && diffW < 30) stats.wishlistLast30++;
+                            else if (diffW >= 30 && diffW < 60) stats.wishlistPrev30++;
+
+                            if (diffW >= 0 && diffW < 365) stats.wishlistLast365++;
+                            else if (diffW >= 365 && diffW < 730) stats.wishlistPrev365++;
+                        }
+                    });
+                }
+            } catch (e) {
+                console.warn(`Could not fetch wishlist for user ${uid}:`, e);
+            }
+        });
+
+        await Promise.all(wishlistPromises);
+
+        stats.usersWithWishlist = wishlistUserIds.size;
         const avgWItems = stats.usersWithWishlist > 0 ? (totalWItems / stats.usersWithWishlist).toFixed(1) : 0;
         stats.usersWithComments = usersWithCommentsSet.size;
 
@@ -475,6 +517,17 @@ async function loadAdminStatsData() {
         updateTrend(elLogin7, elIconLogin7, stats.loginsLast7, stats.loginsPrev7);
         updateTrend(elLogin30, elIconLogin30, stats.loginsLast30, stats.loginsPrev30);
         updateTrend(elLogin365, elIconLogin365, stats.loginsLast365, stats.loginsPrev365);
+
+        const elWish7 = document.getElementById('adminWishlistTrend7');
+        const elWish30 = document.getElementById('adminWishlistTrend30');
+        const elWish365 = document.getElementById('adminWishlistTrend365');
+        const elIconWish7 = document.getElementById('adminWishlistTrendIcon7');
+        const elIconWish30 = document.getElementById('adminWishlistTrendIcon30');
+        const elIconWish365 = document.getElementById('adminWishlistTrendIcon365');
+
+        updateTrend(elWish7, elIconWish7, stats.wishlistLast7, stats.wishlistPrev7);
+        updateTrend(elWish30, elIconWish30, stats.wishlistLast30, stats.wishlistPrev30);
+        updateTrend(elWish365, elIconWish365, stats.wishlistLast365, stats.wishlistPrev365);
 
         const avgPrice = stats.priceCount > 0 ? (stats.totalPrice / stats.priceCount).toFixed(2) + ' €' : '0 €';
         setText('adminStatPrice', avgPrice);

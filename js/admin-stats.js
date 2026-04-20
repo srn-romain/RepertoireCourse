@@ -27,7 +27,8 @@ const ADMIN_STAT_IDS = [
     'adminStatLastLogin',
     'adminStatTerrain', 'adminStatPrice', 'adminStatTime', 'adminStatStartHour',
     'adminTrend7', 'adminTrend30', 'adminTrend365',
-    'adminLoginTrend7', 'adminLoginTrend30', 'adminLoginTrend365'
+    'adminLoginTrend7', 'adminLoginTrend30', 'adminLoginTrend365',
+    'adminWishlistTrend7', 'adminWishlistTrend30', 'adminWishlistTrend365'
 ];
 
 // Fonction pour afficher/masquer le chargement sur les cartes
@@ -121,7 +122,13 @@ async function loadAdminStats() {
             loginsLast30: 0,
             loginsPrev30: 0,
             loginsLast365: 0,
-            loginsPrev365: 0
+            loginsPrev365: 0,
+            wishlistLast7: 0,
+            wishlistPrev7: 0,
+            wishlistLast30: 0,
+            wishlistPrev30: 0,
+            wishlistLast365: 0,
+            wishlistPrev365: 0
         };
 
         const today = new Date();
@@ -252,13 +259,41 @@ async function loadAdminStats() {
         }
 
         // Wishlists
-        const wishlistPromises = [];
-        for (const uid of Object.keys(userRaceCount)) {
-            wishlistPromises.push(db.collection('users').doc(uid).collection('wishlist').get().then(s => s.size));
-        }
-        const wCounts = await Promise.all(wishlistPromises);
-        stats.usersWithWishlist = wCounts.filter(c => c > 0).length;
-        const totalWItems = wCounts.reduce((a, b) => a + b, 0);
+        const wishlistUserIds = new Set();
+        let totalWItems = 0;
+
+        const wishlistPromises = Object.keys(userRaceCount).map(async (uid) => {
+            try {
+                const snap = await db.collection('users').doc(uid).collection('wishlist').get();
+                if (!snap.empty) {
+                    wishlistUserIds.add(uid);
+                    snap.forEach(doc => {
+                        const item = doc.data();
+                        totalWItems++;
+                        if (item.date) {
+                            const wDate = new Date(item.date);
+                            wDate.setHours(0, 0, 0, 0);
+                            const diffW = Math.floor((now - wDate.getTime()) / dayMs);
+
+                            if (diffW >= 0 && diffW < 7) stats.wishlistLast7++;
+                            else if (diffW >= 7 && diffW < 14) stats.wishlistPrev7++;
+
+                            if (diffW >= 0 && diffW < 30) stats.wishlistLast30++;
+                            else if (diffW >= 30 && diffW < 60) stats.wishlistPrev30++;
+
+                            if (diffW >= 0 && diffW < 365) stats.wishlistLast365++;
+                            else if (diffW >= 365 && diffW < 730) stats.wishlistPrev365++;
+                        }
+                    });
+                }
+            } catch (e) {
+                console.warn(`Could not fetch wishlist for user ${uid}:`, e);
+            }
+        });
+
+        await Promise.all(wishlistPromises);
+
+        stats.usersWithWishlist = wishlistUserIds.size;
         const avgWItems = stats.usersWithWishlist > 0 ? (totalWItems / stats.usersWithWishlist).toFixed(1) : 0;
 
         // Last 5 Logins (Exclure Admin)
@@ -363,6 +398,17 @@ async function loadAdminStats() {
         updateTrend(elLogin7, elIconLogin7, stats.loginsLast7, stats.loginsPrev7);
         updateTrend(elLogin30, elIconLogin30, stats.loginsLast30, stats.loginsPrev30);
         updateTrend(elLogin365, elIconLogin365, stats.loginsLast365, stats.loginsPrev365);
+
+        const elWish7 = document.getElementById('adminWishlistTrend7');
+        const elWish30 = document.getElementById('adminWishlistTrend30');
+        const elWish365 = document.getElementById('adminWishlistTrend365');
+        const elIconWish7 = document.getElementById('adminWishlistTrendIcon7');
+        const elIconWish30 = document.getElementById('adminWishlistTrendIcon30');
+        const elIconWish365 = document.getElementById('adminWishlistTrendIcon365');
+
+        updateTrend(elWish7, elIconWish7, stats.wishlistLast7, stats.wishlistPrev7);
+        updateTrend(elWish30, elIconWish30, stats.wishlistLast30, stats.wishlistPrev30);
+        updateTrend(elWish365, elIconWish365, stats.wishlistLast365, stats.wishlistPrev365);
 
         // Affichage des 5 dernières connexions
         const elLastLogin = document.getElementById('adminStatLastLogin');
