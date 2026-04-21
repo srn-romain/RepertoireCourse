@@ -631,12 +631,30 @@
                     <!-- Configuration Relai Standard -->
                     <div id="relayConfigContainer"
                         class="mb-4 hidden bg-green-50 p-4 rounded-lg border border-green-200">
-                        <h3 class="text-green-800 font-semibold mb-2">Détails des relais</h3>
+                        <div class="flex items-center justify-between mb-2">
+                            <h3 class="text-green-800 font-semibold">Détails des relais</h3>
+                            <i class="fas fa-info-circle text-green-500 cursor-pointer hover:text-green-600 transition-colors" 
+                               onclick="document.getElementById('relayHelpBox').classList.toggle('hidden')"
+                               title="Comment choisir un coureur ?"></i>
+                        </div>
+                        
+                        <!-- Bulle d'aide pour les relais (affichée par défaut) -->
+                        <div id="relayHelpBox" class="mb-4 bg-white border border-green-200 p-3 rounded-lg text-[11px] text-green-700 shadow-sm">
+                            <div class="flex gap-2">
+                                <i class="fas fa-lightbulb text-yellow-500 mt-0.5"></i>
+                                <div>
+                                    <p class="font-semibold mb-1">Comment ajouter des gens dans la liste ?</p>
+                                    <p>Pour sélectionner d'autres personnes que "Moi", vous devez d'abord les déclarer dans la section <strong>"Accompagnants"</strong> (tout en bas du formulaire).</p>
+                                    <p class="mt-1 italic">Note : Seuls les accompagnants de type <i class="fas fa-running text-green-600"></i> <strong>"Coureur"</strong> apparaissent dans la liste déroulante.</p>
+                                </div>
+                            </div>
+                        </div>
                         <div class="overflow-x-auto">
                             <table class="w-full text-sm text-left text-green-700">
                                 <thead class="text-xs text-green-700 uppercase bg-green-100">
                                     <tr>
                                         <th scope="col" class="px-2 py-2 w-10">#</th>
+                                        <th scope="col" class="px-2 py-2">Coureur</th>
                                         <th scope="col" class="px-2 py-2">Dist. (km)</th>
                                         <th scope="col" class="px-2 py-2">D+ (m)</th>
                                         <th scope="col" class="px-2 py-2">D- (m)</th>
@@ -648,12 +666,20 @@
                                     <!-- Les lignes seront générées par JS -->
                                 </tbody>
                                 <tfoot class="bg-green-100 font-bold">
-                                    <tr>
-                                        <td class="px-2 py-2">Total</td>
-                                        <td class="px-2 py-2" id="relayTotalDist">0</td>
-                                        <td class="px-2 py-2" id="relayTotalElev">0</td>
-                                        <td class="px-2 py-2" id="relayTotalElevNeg">0</td>
-                                        <td class="px-2 py-2" id="relayTotalTime">00:00:00</td>
+                                    <tr class="text-[10px] text-green-600 border-b border-green-200">
+                                        <td colspan="2" class="px-2 py-1">Total (Groupe)</td>
+                                        <td class="px-2 py-1" id="relayTotalDist">0</td>
+                                        <td class="px-2 py-1" id="relayTotalElev">0</td>
+                                        <td class="px-2 py-1" id="relayTotalElevNeg">0</td>
+                                        <td class="px-2 py-1" id="relayTotalTime">00:00:00</td>
+                                        <td></td>
+                                    </tr>
+                                    <tr class="text-green-800">
+                                        <td colspan="2" class="px-2 py-2">Total (Moi)</td>
+                                        <td class="px-2 py-2" id="userRelayTotalDist">0</td>
+                                        <td class="px-2 py-2" id="userRelayTotalElev">0</td>
+                                        <td class="px-2 py-2" id="userRelayTotalElevNeg">0</td>
+                                        <td class="px-2 py-2" id="userRelayTotalTime">00:00:00</td>
                                         <td></td>
                                     </tr>
                                 </tfoot>
@@ -4126,22 +4152,70 @@
             if (race.terrain === 'relai' && race.relayLaps && race.relayLaps.length > 0) {
                 // Calcul des totaux
                 let totalRelayDist = 0, totalRelayElev = 0, totalRelayElevNeg = 0, totalRelayTimeS = 0;
+                let userRelayDist = 0, userRelayElev = 0, userRelayElevNeg = 0, userRelayTimeS = 0;
+
                 race.relayLaps.forEach(lap => {
-                    totalRelayDist += parseFloat(lap.dist) || 0;
-                    totalRelayElev += parseInt(lap.elev) || 0;
-                    totalRelayElevNeg += parseInt(lap.elevNeg) || 0;
-                    totalRelayTimeS += timeToSeconds(lap.time);
+                    const d = parseFloat(lap.dist) || 0;
+                    const e = parseInt(lap.elev) || 0;
+                    const en = parseInt(lap.elevNeg) || 0;
+                    const s = timeToSeconds(lap.time);
+
+                    totalRelayDist += d;
+                    totalRelayElev += e;
+                    totalRelayElevNeg += en;
+                    totalRelayTimeS += s;
+
+                    if (lap.runner === 'Moi' || !lap.runner) {
+                        userRelayDist += d;
+                        userRelayElev += e;
+                        userRelayElevNeg += en;
+                        userRelayTimeS += s;
+                    }
                 });
                 const hasAnyElevNeg = race.relayLaps.some(lap => lap.elevNeg !== undefined && lap.elevNeg !== null && lap.elevNeg !== '');
 
+                // Bloc performance individuelle (Moi)
                 let relayHtml = `
+                    <div class="bg-blue-50 p-3 rounded-lg w-full border border-blue-100 mb-4 shadow-sm">
+                        <div class="flex items-center justify-between border-b border-blue-200 pb-2 mb-3">
+                            <h4 class="font-bold text-blue-800 text-sm flex items-center gap-2">
+                                <i class="fas fa-user text-blue-600"></i> Ma performance (Moi)
+                            </h4>
+                            <span class="text-[10px] bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full font-bold uppercase">Individuel</span>
+                        </div>
+                        <div class="grid grid-cols-4 gap-2 text-center">
+                            <div>
+                                <p class="text-[10px] text-blue-600 uppercase">Distance</p>
+                                <p class="font-bold text-blue-800 text-xs">${userRelayDist.toFixed(2)} km</p>
+                            </div>
+                            <div>
+                                <p class="text-[10px] text-blue-600 uppercase">D+</p>
+                                <p class="font-bold text-blue-800 text-xs">${userRelayElev} m</p>
+                            </div>
+                            <div>
+                                <p class="text-[10px] text-blue-600 uppercase">Temps</p>
+                                <p class="font-bold text-blue-800 text-xs">${secondsToTime(userRelayTimeS)}</p>
+                            </div>
+                            <div>
+                                <p class="text-[10px] text-blue-600 uppercase">Allure</p>
+                                <p class="font-bold text-blue-800 text-xs">${calculatePace(userRelayDist, userRelayTimeS)}</p>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="bg-green-50 p-3 rounded-lg w-full border border-green-100 mb-4 shadow-sm">
-                        <h4 class="font-bold text-green-800 text-center mb-3 text-sm border-b border-green-200 pb-2">Détails des relais</h4>
+                        <div class="flex items-center justify-between border-b border-green-200 pb-2 mb-3">
+                            <h4 class="font-bold text-green-800 text-sm flex items-center gap-2">
+                                <i class="fas fa-users text-green-600"></i> Performance du Groupe
+                            </h4>
+                            <span class="text-[10px] bg-green-100 text-green-800 px-2 py-0.5 rounded-full font-bold uppercase">Relais Complet</span>
+                        </div>
                         <div class="overflow-x-auto">
                             <table class="w-full text-xs text-left text-green-800">
                                 <thead class="bg-green-100 text-green-900 uppercase font-semibold">
                                     <tr>
-                                        <th class="px-2 py-1">N°</th>
+                                        <th class="px-2 py-1">#</th>
+                                        <th class="px-2 py-1">Coureur</th>
                                         <th class="px-2 py-1">Km</th>
                                         <th class="px-2 py-1">D+</th>
                                         ${hasAnyElevNeg ? '<th class="px-2 py-1">D-</th>' : ''}
@@ -4152,9 +4226,11 @@
                 `;
 
                 race.relayLaps.forEach((lap, idx) => {
+                    const isMoi = lap.runner === 'Moi' || !lap.runner;
                     relayHtml += `
-                        <tr class="hover:bg-green-100 transition-colors">
+                        <tr class="${isMoi ? 'bg-blue-50/50' : 'hover:bg-green-100'} transition-colors">
                             <td class="px-2 py-1 font-medium text-green-700">${idx + 1}</td>
+                            <td class="px-2 py-1 ${isMoi ? 'font-bold text-blue-700' : ''}">${lap.runner || 'Moi'}</td>
                             <td class="px-2 py-1">${formatDist(lap.dist)}</td>
                             <td class="px-2 py-1">${lap.elev || '-'}</td>
                             ${hasAnyElevNeg ? `<td class="px-2 py-1">${lap.elevNeg || '-'}</td>` : ''}
@@ -4163,12 +4239,12 @@
                     `;
                 });
 
-                // Ligne totaux
+                // Ligne totaux Groupe
                 relayHtml += `
                                 </tbody>
                                 <tfoot class="bg-green-100 font-bold">
                                     <tr>
-                                        <td class="px-2 py-1">Total</td>
+                                        <td colspan="2" class="px-2 py-1">Total Groupe</td>
                                         <td class="px-2 py-1">${totalRelayDist.toFixed(2)} km</td>
                                         <td class="px-2 py-1">${totalRelayElev > 0 ? totalRelayElev + ' m' : '-'}</td>
                                         ${hasAnyElevNeg ? `<td class="px-2 py-1">${totalRelayElevNeg > 0 ? totalRelayElevNeg + ' m' : '-'}</td>` : ''}
@@ -5494,6 +5570,14 @@
         // GESTION DU MODE RELAI (STANDARD)
         // ==========================================
 
+        window.calculatePace = function (dist, seconds) {
+            if (!dist || !seconds || dist <= 0) return '-';
+            const speed = dist / (seconds / 3600);
+            if (speed <= 0) return '-';
+            const timePerKm = 60 / speed;
+            return `${timePerKm.toFixed(2)} min/km`;
+        };
+
         const relayLapsTableBody = document.getElementById('relayLapsTableBody');
         const addRelayLapBtn = document.getElementById('addRelayLapBtn');
         const removeRelayLapBtn = document.getElementById('removeRelayLapBtn');
@@ -5527,18 +5611,32 @@
         function renderRelayRow(index, data = {}) {
             const tr = document.createElement('tr');
             tr.className = "bg-white border-b hover:bg-green-50";
+
+            // Options pour le sélecteur de coureur
+            const runners = currentCompanions.filter(c => c.type === 'runner').map(c => c.name);
+            let options = `<option value="Moi" ${data.runner === 'Moi' || !data.runner ? 'selected' : ''}>Moi</option>`;
+            runners.forEach(name => {
+                options += `<option value="${name}" ${data.runner === name ? 'selected' : ''}>${name}</option>`;
+            });
+
             tr.innerHTML = `
                 <td class="px-2 py-2 font-medium text-green-900">${index + 1}</td>
                 <td class="px-2 py-2">
-                    <input type="number" step="0.0001" class="relay-dist-input w-20 px-2 py-1 border rounded text-sm focus:ring-green-500 focus:border-green-500"
+                    <select class="relay-runner-select w-24 px-2 py-1 border rounded text-xs focus:ring-green-500 focus:border-green-500"
+                        onchange="updateRelayData(${index}, 'runner', this.value)">
+                        ${options}
+                    </select>
+                </td>
+                <td class="px-2 py-2">
+                    <input type="number" step="0.0001" class="relay-dist-input w-full min-w-[60px] px-2 py-1 border rounded text-sm focus:ring-green-500 focus:border-green-500"
                         value="${data.dist || ''}" placeholder="km" oninput="updateRelayData(${index}, 'dist', this.value)">
                 </td>
                 <td class="px-2 py-2">
-                    <input type="number" class="relay-elev-input w-20 px-2 py-1 border rounded text-sm focus:ring-green-500 focus:border-green-500" 
+                    <input type="number" class="relay-elev-input w-16 px-2 py-1 border rounded text-sm focus:ring-green-500 focus:border-green-500" 
                         value="${data.elev || ''}" placeholder="m" oninput="updateRelayData(${index}, 'elev', this.value)">
                 </td>
                 <td class="px-2 py-2">
-                    <input type="number" class="relay-elev-neg-input w-20 px-2 py-1 border rounded text-sm focus:ring-green-500 focus:border-green-500" 
+                    <input type="number" class="relay-elev-neg-input w-16 px-2 py-1 border rounded text-sm focus:ring-green-500 focus:border-green-500" 
                         value="${data.elevNeg || ''}" placeholder="m" oninput="updateRelayData(${index}, 'elevNeg', this.value)">
                 </td>
                 <td class="px-2 py-2">
@@ -5549,6 +5647,26 @@
             `;
             relayLapsTableBody.appendChild(tr);
         }
+
+        window.updateRelayRunnersDropdowns = function () {
+            const selects = document.querySelectorAll('.relay-runner-select');
+            const runners = currentCompanions.filter(c => c.type === 'runner').map(c => c.name);
+
+            selects.forEach((select, index) => {
+                const currentValue = relayLapsData[index]?.runner || 'Moi';
+                let options = `<option value="Moi" ${currentValue === 'Moi' ? 'selected' : ''}>Moi</option>`;
+                runners.forEach(name => {
+                    options += `<option value="${name}" ${currentValue === name ? 'selected' : ''}>${name}</option>`;
+                });
+                select.innerHTML = options;
+
+                // Si la valeur sélectionnée n'est plus dans la liste (ex: accompagnant supprimé), repasser sur 'Moi'
+                if (currentValue !== 'Moi' && !runners.includes(currentValue)) {
+                    select.value = 'Moi';
+                    updateRelayData(index, 'runner', 'Moi');
+                }
+            });
+        };
 
         window.updateRelayData = function (index, field, value) {
             if (!relayLapsData[index]) relayLapsData[index] = {};
@@ -5581,16 +5699,26 @@
         }
 
         function calculateRelayTotals() {
-            let totalDist = 0;
-            let totalElev = 0;
-            let totalElevNeg = 0;
-            let totalSeconds = 0;
+            let totalDist = 0, totalElev = 0, totalElevNeg = 0, totalSeconds = 0;
+            let userDist = 0, userElev = 0, userElevNeg = 0, userSeconds = 0;
 
             relayLapsData.forEach(lap => {
-                totalDist += parseFloat(lap.dist) || 0;
-                totalElev += parseInt(lap.elev) || 0;
-                totalElevNeg += parseInt(lap.elevNeg) || 0;
-                totalSeconds += timeToSeconds(lap.time);
+                const d = parseFloat(lap.dist) || 0;
+                const e = parseInt(lap.elev) || 0;
+                const en = parseInt(lap.elevNeg) || 0;
+                const s = timeToSeconds(lap.time);
+
+                totalDist += d;
+                totalElev += e;
+                totalElevNeg += en;
+                totalSeconds += s;
+
+                if (lap.runner === 'Moi' || !lap.runner) {
+                    userDist += d;
+                    userElev += e;
+                    userElevNeg += en;
+                    userSeconds += s;
+                }
             });
 
             // Update footer
@@ -5599,19 +5727,34 @@
             const elevNegEl = document.getElementById('relayTotalElevNeg');
             const timeEl = document.getElementById('relayTotalTime');
 
+            const uDistEl = document.getElementById('userRelayTotalDist');
+            const uElevEl = document.getElementById('userRelayTotalElev');
+            const uElevNegEl = document.getElementById('userRelayTotalElevNeg');
+            const uTimeEl = document.getElementById('userRelayTotalTime');
+
             if (distEl) distEl.textContent = totalDist.toFixed(2) + ' km';
             if (elevEl) elevEl.textContent = totalElev + ' m';
             if (elevNegEl) elevNegEl.textContent = totalElevNeg + ' m';
             if (timeEl) timeEl.textContent = secondsToTime(totalSeconds);
 
+            if (uDistEl) uDistEl.textContent = userDist.toFixed(2) + ' km';
+            if (uElevEl) uElevEl.textContent = userElev + ' m';
+            if (uElevNegEl) uElevNegEl.textContent = userElevNeg + ' m';
+            if (uTimeEl) uTimeEl.textContent = secondsToTime(userSeconds);
+
             // Update hidden form fields for Standard Relay
+            // IMPORTANT: Statistics will use THESE fields. 
+            // The user wants statistics to only count 'Moi' performance.
             const terrain = document.getElementById('raceTerrain').value;
             if (terrain === 'relai') {
-                const formattedDist = totalDist > 0 ? parseFloat(totalDist.toFixed(4)) : '';
+                // Here we store the USER performance in the main fields, 
+                // but we also need to store the FULL relay data for display.
+                // The structure of race object in Firestore already includes relayLaps.
+                const formattedDist = userDist > 0 ? parseFloat(userDist.toFixed(4)) : '';
                 document.getElementById('raceDistance').value = formattedDist;
-                document.getElementById('raceElevation').value = totalElev > 0 ? totalElev : '';
-                document.getElementById('raceElevationNeg').value = totalElevNeg > 0 ? totalElevNeg : '';
-                const timeStr = secondsToTime(totalSeconds);
+                document.getElementById('raceElevation').value = userElev > 0 ? userElev : '';
+                document.getElementById('raceElevationNeg').value = userElevNeg > 0 ? userElevNeg : '';
+                const timeStr = secondsToTime(userSeconds);
                 document.getElementById('raceTime').value = timeStr !== '00:00:00' ? timeStr : '';
             }
         }
@@ -5680,10 +5823,17 @@
 
             // Réinitialiser l'état des champs temps/classement
             updateTimeFieldState();
+            
+            // Réinitialiser les accompagnants
+            currentCompanions = [];
+            if (typeof renderCompanionsList === 'function') renderCompanionsList();
+            if (typeof updateRelayRunnersDropdowns === 'function') updateRelayRunnersDropdowns();
 
-            // Masquer la bulle d'aide Drive
+            // Masquer les bulles d'aide
             const driveHelp = document.getElementById('driveHelpBox');
             if (driveHelp) driveHelp.classList.add('hidden');
+            const relayHelp = document.getElementById('relayHelpBox');
+            if (relayHelp) relayHelp.classList.remove('hidden'); // Affiché par défaut
 
             // Réinitialiser les messages d'erreur
             ['raceNameError', 'raceDateError', 'raceTimeError', 'formGlobalError', 'companionError'].forEach(id => {
@@ -5786,13 +5936,16 @@
             document.getElementById('raceFavorite').checked = race.favorite || false;
             document.getElementById('racePublic').checked = (race.public !== undefined) ? race.public : true;
 
-            // Masquer la bulle d'aide Drive
+            // Masquer les bulles d'aide
             const driveHelpEdit = document.getElementById('driveHelpBox');
             if (driveHelpEdit) driveHelpEdit.classList.add('hidden');
+            const relayHelpEdit = document.getElementById('relayHelpBox');
+            if (relayHelpEdit) relayHelpEdit.classList.remove('hidden'); // Affiché par défaut
 
             // Load companions
             currentCompanions = race.companions || [];
             renderCompanionsList();
+            if (typeof updateRelayRunnersDropdowns === 'function') updateRelayRunnersDropdowns();
 
             // Réinitialiser d'abord la gestion de photos
             photoData = null;
@@ -6592,6 +6745,7 @@
             companionNameInput.value = '';
             setCompanionType(null); // Reset selection
             renderCompanionsList();
+            if (typeof updateRelayRunnersDropdowns === 'function') updateRelayRunnersDropdowns();
         }
 
         window.removeCompanion = function (event, index) {
@@ -6601,6 +6755,7 @@
             }
             currentCompanions.splice(index, 1);
             renderCompanionsList();
+            if (typeof updateRelayRunnersDropdowns === 'function') updateRelayRunnersDropdowns();
         };
 
         addCompanionBtn.addEventListener('click', addCompanion);

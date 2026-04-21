@@ -111,7 +111,12 @@
             // Helper : calcule le D+ réel d'une course (relai, triathlon ou standard)
             function getRealElevation(r) {
                 if (r.terrain === 'relai' && r.relayLaps && r.relayLaps.length > 0) {
-                    return r.relayLaps.reduce((sum, lap) => sum + (parseFloat(lap.elev) || 0), 0);
+                    return r.relayLaps.reduce((sum, lap) => {
+                        if (lap.runner === 'Moi' || !lap.runner) {
+                            return sum + (parseFloat(lap.elev) || 0);
+                        }
+                        return sum;
+                    }, 0);
                 }
                 if (r.terrain === 'triathlon' && r.raceFormat !== 'team') {
                     return (parseFloat(r.bikeElevation) || 0) + (parseFloat(r.elevation) || 0);
@@ -122,7 +127,12 @@
             // Helper : calcule le D- réel d'une course (relai, triathlon ou standard)
             function getRealElevationNeg(r) {
                 if (r.terrain === 'relai' && r.relayLaps && r.relayLaps.length > 0) {
-                    return r.relayLaps.reduce((sum, lap) => sum + (parseFloat(lap.elevNeg) || 0), 0);
+                    return r.relayLaps.reduce((sum, lap) => {
+                        if (lap.runner === 'Moi' || !lap.runner) {
+                            return sum + (parseFloat(lap.elevNeg) || 0);
+                        }
+                        return sum;
+                    }, 0);
                 }
                 if (r.terrain === 'triathlon' && r.raceFormat !== 'team') {
                     return (parseFloat(r.bikeElevationNeg) || 0) + (parseFloat(r.elevationNeg) || 0);
@@ -192,12 +202,21 @@
 
             // Calculer les distances (gérer le triathlon)
             const distances = pastRaces.map(race => {
-                let dist = parseFloat(race.distance) || 0;
-                if (race.terrain === 'triathlon') {
+                let dist = 0;
+                if (race.terrain === 'relai' && race.relayLaps && race.relayLaps.length > 0) {
+                    dist = race.relayLaps.reduce((sum, lap) => {
+                        if (lap.runner === 'Moi' || !lap.runner) {
+                            return sum + (parseFloat(lap.dist) || 0);
+                        }
+                        return sum;
+                    }, 0);
+                } else if (race.terrain === 'triathlon') {
                     const swim = (parseFloat(race.swimDistance) || 0) / 1000;
                     const bike = parseFloat(race.bikeDistance) || 0;
                     const run = parseFloat(race.distance) || 0;
                     dist = swim + bike + run;
+                } else {
+                    dist = parseFloat(race.distance) || 0;
                 }
                 return dist;
             }).filter(d => d > 0);
@@ -369,7 +388,19 @@
             // Préparer les données pour le graphique des temps
             const racesWithTime = pastRaces
                 .map(race => {
-                    const time = timeToSeconds(race.time);
+                    const isRelay = race.terrain === 'relai' && race.relayLaps && race.relayLaps.length > 0;
+                    let time = 0;
+                    if (isRelay) {
+                        const totalS = race.relayLaps.reduce((sum, lap) => {
+                            if (lap.runner === 'Moi' || !lap.runner) {
+                                return sum + (timeToSeconds(lap.time) || 0);
+                            }
+                            return sum;
+                        }, 0);
+                        time = totalS;
+                    } else {
+                        time = timeToSeconds(race.time);
+                    }
                     return {
                         race: race,
                         value: time || 0
