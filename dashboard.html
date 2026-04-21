@@ -8596,7 +8596,20 @@
                 loader.classList.add('hidden');
                 
                 if (files.length === 0) {
-                    showDriveError("Ce dossier est vide ou ne contient que des fichiers non compatibles (images/PDF).");
+                    const btnLabel = googleAccessToken ? "Changer de compte Google" : "Se connecter avec Google";
+                    showDriveError(`
+                        <div class="space-y-4">
+                            <p>Ce dossier semble vide ou l'accès est restreint.</p>
+                            <div class="flex flex-col gap-2">
+                                <button onclick="signInWithGoogleForDrive('${folderId}')" class="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 flex items-center justify-center gap-2">
+                                    <i class="fab fa-google"></i> ${btnLabel}
+                                </button>
+                                <button onclick="showNativeDriveView('${folderId}')" class="bg-white border border-gray-300 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 flex items-center justify-center gap-2 text-gray-700">
+                                    <i class="fab fa-google-drive"></i> Utiliser la vue native
+                                </button>
+                            </div>
+                        </div>
+                    `, folderId);
                 } else {
                     currentDriveFiles = files;
                     renderDriveFiles(files);
