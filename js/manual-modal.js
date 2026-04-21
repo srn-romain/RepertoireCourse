@@ -111,6 +111,7 @@ const manualModalHTML = `
                                     <div>• Accompagnants</div>
                                     <div>• Lien site de la course</div>
                                     <div>• Lien résultats en ligne</div>
+                                    <div>• Lien Google Drive en ligne</div>
                                 </div>
                             </div>
                         </div>
@@ -138,25 +139,53 @@ const manualModalHTML = `
                     </div>
                 </section>
 
+                <!-- Google Drive -->
+                <section class="mb-8">
+                    <h4 class="text-xl font-bold text-green-700 mb-3 flex items-center gap-2">
+                        <i class="fab fa-google-drive text-green-600"></i> Dossier Google Drive
+                    </h4>
+                    <div class="bg-white border border-green-100 rounded-lg p-4 shadow-sm">
+                        <p class="text-sm text-gray-600 mb-3">Associez un dossier Google Drive à votre course pour centraliser vos documents (photos, certificats, factures) :</p>
+                        <ul class="space-y-2 text-sm text-gray-600">
+                            <li class="flex items-start gap-2">
+                                <i class="fas fa-link text-green-600 mt-0.5"></i>
+                                <span><strong>Configuration :</strong> Renseignez l'ID du dossier Drive dans le champ "ID Dossier Google Drive" lors de l'ajout ou la modification.</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i class="fas fa-folder-open text-green-600 mt-0.5"></i>
+                                <span><strong>Explorateur intégré :</strong> Un bouton <span class="px-2 py-1 bg-green-50 text-green-700 border border-green-200 rounded text-xs leading-none"><i class="fab fa-google-drive mr-1"></i>Dossier Drive</span> apparaît sur la fiche détail. Il ouvre un explorateur intégré pour naviguer dans vos fichiers.</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i class="fas fa-th-large text-green-600 mt-0.5"></i>
+                                <span><strong>Vues :</strong> Basculez entre la vue "Miniature" (par défaut) et la vue "Liste" via le bouton dédié dans l'explorateur.</span>
+                            </li>
+                        </ul>
+                    </div>
+                </section>
+
                 <!-- Liens & Boutons d'accès rapide -->
                 <section class="mb-8">
                     <h4 class="text-xl font-bold text-green-700 mb-3 flex items-center gap-2">
                         <i class="fas fa-link text-green-600"></i> Liens & Boutons d'accès rapide
                     </h4>
                     <div class="bg-white border border-orange-100 rounded-lg p-4 shadow-sm">
-                        <p class="text-sm text-gray-600 mb-3">Dans la fiche détail d'une course, jusqu'à 3 boutons peuvent apparaître si les liens correspondants sont renseignés dans le formulaire :</p>
+                        <p class="text-sm text-gray-600 mb-3">Dans la fiche détail d'une course, plusieurs boutons peuvent apparaître si les informations sont renseignées :</p>
                         <ul class="space-y-3 text-sm text-gray-600">
                             <li class="flex items-center gap-3">
                                 <span class="inline-flex items-center justify-center w-24 py-1 bg-blue-600 text-white rounded text-xs font-semibold shrink-0"><i class="fas fa-external-link-alt mr-1.5"></i>Site</span>
-                                <span><strong class="text-gray-800">Voir le site de la course</strong> — s'affiche si le champ <em>Lien site de la course</em> est renseigné.</span>
+                                <span><strong class="text-gray-800">Voir le site</strong> — lien officiel de l'événement.</span>
                             </li>
                             <li class="flex items-center gap-3">
                                 <span class="inline-flex items-center justify-center w-24 py-1 bg-orange-500 text-white rounded text-xs font-semibold shrink-0"><i class="fas fa-trophy mr-1.5"></i>Résultats</span>
-                                <span><strong class="text-gray-800">Voir les résultats en ligne</strong> — s'affiche si le champ <em>Lien résultats de la course</em> est renseigné. Accès direct au classement officiel.</span>
+                                <span><strong class="text-gray-800">Voir les résultats</strong> — accès direct au classement en ligne.</span>
                             </li>
                             <li class="flex items-center gap-3">
                                 <span class="inline-flex items-center justify-center w-24 py-1 bg-green-600 text-white rounded text-xs font-semibold shrink-0"><i class="fas fa-route mr-1.5"></i>GPX</span>
-                                <span><strong class="text-gray-800">Voir le GPX</strong> — s'affiche si un lien GPX est renseigné.</span>
+                                <span><strong class="text-gray-800">Voir le GPX</strong> — visualisation du tracé si disponible.</span>
+                            </li>
+                             <li class="flex items-center gap-3">
+                                <span class="inline-flex items-center justify-center w-24 py-1 bg-green-50 text-green-700 border border-green-200 rounded text-xs font-semibold shrink-0"><i class="fab fa-google-drive mr-1.5"></i>Drive</span>
+                                <span><strong class="text-gray-800">Dossier Drive</strong> — accès à l'explorateur de fichiers intégré.</span>
                             </li>
                         </ul>
                         <p class="text-xs text-gray-400 italic mt-3">💡 Ces boutons sont visibles uniquement dans la modale de détail d'une course.</p>
@@ -196,7 +225,8 @@ const manualModalHTML = `
                             <p class="text-sm text-gray-600 mb-2">Gérez les courses d'équipe avec précision :</p>
                             <ul class="text-xs text-gray-600 ml-4 space-y-1">
                                 <li>• <strong>Relais Classique :</strong> Utilisez le "Tableau de Relais" pour
-                                    ajouter chaque segment avec sa <strong>distance</strong>, son <strong>D+</strong>, son <strong>D-</strong> et son <strong>temps</strong>. Les totaux sont calculés automatiquement.</li>
+                                    ajouter chaque segment avec son <strong>coureur</strong> (nom personnalisé), sa <strong>distance</strong>, son <strong>D+</strong>, son <strong>D-</strong> et son <strong>temps</strong>.</li>
+                                <li>• <strong>Calculs Automatiques :</strong> Les totaux de distance et de dénivelé sont recalculés en temps réel selon les segments saisis.</li>
                                 <li>• <strong>Triathlon en Relais :</strong> Sélectionnez "En équipe (Relais)" puis
                                     choisissez votre discipline (Nageur, Cycliste ou Coureur) pour n'enregistrer que
                                     votre partie.</li>
