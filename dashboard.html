@@ -1437,6 +1437,7 @@
             <div id="driveExplorerContent" class="flex-1 overflow-y-auto p-6 scroll-lock-ready">
                 <!-- Grille ou message d'erreur -->
                 <div id="driveGrid" class="drive-grid"></div>
+                <iframe id="driveIframe" class="w-full h-full min-h-[500px] border-0 hidden rounded-xl shadow-inner bg-gray-50"></iframe>
                 <div id="driveLoader" class="flex flex-col items-center justify-center py-20 hidden">
                     <div class="animate-spin rounded-full h-12 w-12 border-4 border-green-500 border-t-transparent"></div>
                     <p class="mt-4 text-gray-500 text-sm">Chargement des fichiers...</p>
@@ -8582,6 +8583,10 @@
             
             modal.classList.remove('hidden');
             grid.innerHTML = '';
+            grid.classList.remove('hidden');
+            const iframe = document.getElementById('driveIframe');
+            if (iframe) iframe.classList.add('hidden');
+            
             errorDiv.classList.add('hidden');
             loader.classList.remove('hidden');
             extLink.href = `https://drive.google.com/drive/folders/${folderId}`;
@@ -8685,15 +8690,44 @@
             if (msg === "Accès refusé." && folderId) {
                 const btnLabel = googleAccessToken ? "Changer de compte Google" : "Se connecter avec Google";
                 msgEl.innerHTML = `
-                    <p class="mb-4">Ce dossier est privé ou l'accès est restreint par Google.</p>
-                    <button onclick="signInWithGoogleForDrive('${folderId}')" class="bg-white border border-gray-300 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 flex items-center gap-2 mx-auto shadow-sm">
-                        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-4 h-4">
-                        ${btnLabel}
-                    </button>
-                    <p class="mt-3 text-[10px] text-gray-400 italic">Vérifiez que vous utilisez le compte Google ayant accès à ce dossier.</p>
+                    <div class="space-y-4">
+                        <p>Ce dossier est privé ou l'accès est restreint par Google.</p>
+                        
+                        <div class="flex flex-col gap-2">
+                            <button onclick="signInWithGoogleForDrive('${folderId}')" class="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 flex items-center justify-center gap-2 shadow-sm">
+                                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-4 h-4 brightness-0 invert">
+                                ${btnLabel} (Vue Premium)
+                            </button>
+                            
+                            <div class="flex items-center gap-2 py-2">
+                                <div class="flex-1 h-px bg-gray-200"></div>
+                                <span class="text-[10px] text-gray-400 font-bold uppercase">Ou</span>
+                                <div class="flex-1 h-px bg-gray-200"></div>
+                            </div>
+                            
+                            <button onclick="showNativeDriveView('${folderId}')" class="bg-white border border-gray-300 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 flex items-center justify-center gap-2 text-gray-700 shadow-sm">
+                                <i class="fab fa-google-drive text-green-600"></i>
+                                Utiliser la vue native Google
+                            </button>
+                        </div>
+                        
+                        <p class="text-[10px] text-gray-400 italic">La vue native fonctionne si vous êtes déjà connecté à Google dans votre navigateur.</p>
+                    </div>
                 `;
             }
         }
+
+        window.showNativeDriveView = function(folderId) {
+            const grid = document.getElementById('driveGrid');
+            const errorDiv = document.getElementById('driveError');
+            const iframe = document.getElementById('driveIframe');
+            
+            grid.classList.add('hidden');
+            errorDiv.classList.add('hidden');
+            
+            iframe.src = `https://drive.google.com/embeddedfolderview?id=${folderId}#grid`;
+            iframe.classList.remove('hidden');
+        };
 
         window.signInWithGoogleForDrive = async function(folderId) {
             const provider = new firebase.auth.GoogleAuthProvider();
