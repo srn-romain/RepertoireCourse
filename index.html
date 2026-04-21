@@ -73,28 +73,12 @@
             display: flex;
             width: max-content;
             padding: 1rem 0;
+            cursor: grab;
+            user-select: none;
         }
 
-        .carousel-track:hover {
-            animation-play-state: paused;
-        }
-
-        .scroll-left {
-            animation: scrollLeft 60s linear infinite;
-        }
-
-        .scroll-right {
-            animation: scrollRight 60s linear infinite;
-        }
-
-        @keyframes scrollLeft {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-50%); }
-        }
-
-        @keyframes scrollRight {
-            0% { transform: translateX(-50%); }
-            100% { transform: translateX(0); }
+        .carousel-track:active {
+            cursor: grabbing;
         }
 
         .feature-item {
@@ -583,7 +567,7 @@
         <div class="space-y-4">
             <!-- Row 1: Moving Right -->
             <div class="carousel-track-container">
-                <div class="carousel-track scroll-right">
+                <div class="carousel-track">
                     <!-- Set 1 -->
                     <div class="feature-item">
                         <div class="feature-card p-6 h-full">
@@ -699,7 +683,7 @@
 
             <!-- Row 2: Moving Left -->
             <div class="carousel-track-container mt-4">
-                <div class="carousel-track scroll-left">
+                <div class="carousel-track">
                     <!-- Set 1 -->
                     <div class="feature-item">
                         <div class="feature-card p-6 h-full">
@@ -1297,6 +1281,109 @@
         }
     </script>
     <script src="js/rgpd-modal.js"></script>
+    <script>
+        // --- Carousel Logic for Drag & Auto-scroll ---
+        class DraggableCarousel {
+            constructor(element, direction = 1) {
+                this.track = element;
+                this.direction = direction; // 1 for right, -1 for left
+                this.speed = 0.8; // pixels per frame
+                this.posX = 0;
+                this.isDragging = false;
+                this.isHovered = false;
+                this.startX = 0;
+                this.startPosX = 0;
+                
+                this.init();
+            }
+
+            init() {
+                // Initial position to avoid empty start if moving right
+                if (this.direction === 1) {
+                    this.posX = -this.track.offsetWidth / 2;
+                }
+                
+                this.addEventListeners();
+                this.animate();
+            }
+
+            addEventListeners() {
+                const container = this.track.parentElement;
+
+                // Mouse Drag
+                container.addEventListener('mousedown', (e) => {
+                    this.isDragging = true;
+                    this.startX = e.pageX;
+                    this.startPosX = this.posX;
+                });
+
+                window.addEventListener('mousemove', (e) => {
+                    if (!this.isDragging) return;
+                    e.preventDefault();
+                    const x = e.pageX;
+                    const walk = x - this.startX;
+                    this.posX = this.startPosX + walk;
+                    this.updateTransform();
+                });
+
+                window.addEventListener('mouseup', () => {
+                    this.isDragging = false;
+                });
+
+                // Touch Drag
+                container.addEventListener('touchstart', (e) => {
+                    this.isDragging = true;
+                    this.startX = e.touches[0].pageX;
+                    this.startPosX = this.posX;
+                });
+
+                window.addEventListener('touchmove', (e) => {
+                    if (!this.isDragging) return;
+                    const x = e.touches[0].pageX;
+                    const walk = x - this.startX;
+                    this.posX = this.startPosX + walk;
+                    this.updateTransform();
+                });
+
+                window.addEventListener('touchend', () => {
+                    this.isDragging = false;
+                });
+
+                // Pause on Hover
+                container.addEventListener('mouseenter', () => this.isHovered = true);
+                container.addEventListener('mouseleave', () => {
+                    this.isHovered = false;
+                    this.isDragging = false;
+                });
+            }
+
+            updateTransform() {
+                // Loop logic: reset X when reaching half of duplicated content
+                const halfWidth = this.track.offsetWidth / 2;
+                if (this.posX > 0) this.posX -= halfWidth;
+                if (this.posX < -halfWidth) this.posX += halfWidth;
+                
+                this.track.style.transform = `translateX(${this.posX}px)`;
+            }
+
+            animate() {
+                if (!this.isDragging && !this.isHovered) {
+                    this.posX += this.speed * this.direction;
+                    this.updateTransform();
+                }
+                requestAnimationFrame(() => this.animate());
+            }
+        }
+
+        // Initialize carousels after full load to get correct widths
+        window.addEventListener('load', () => {
+            const tracks = document.querySelectorAll('.carousel-track');
+            if (tracks.length >= 2) {
+                new DraggableCarousel(tracks[0], 1);  // Top: Right
+                new DraggableCarousel(tracks[1], -1); // Bottom: Left
+            }
+        });
+    </script>
 </body>
 
 </html>
