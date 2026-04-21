@@ -61,6 +61,47 @@
         .blur-bg {
             backdrop-filter: blur(5px);
         }
+
+        /* Infinite Carousel Styles */
+        .carousel-track-container {
+            position: relative;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .carousel-track {
+            display: flex;
+            width: max-content;
+            padding: 1rem 0;
+        }
+
+        .carousel-track:hover {
+            animation-play-state: paused;
+        }
+
+        .scroll-left {
+            animation: scrollLeft 60s linear infinite;
+        }
+
+        .scroll-right {
+            animation: scrollRight 60s linear infinite;
+        }
+
+        @keyframes scrollLeft {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        @keyframes scrollRight {
+            0% { transform: translateX(-50%); }
+            100% { transform: translateX(0); }
+        }
+
+        .feature-item {
+            width: 320px;
+            flex-shrink: 0;
+            margin: 0 12px;
+        }
     </style>
 </head>
 
@@ -535,94 +576,240 @@
                     course à pied.</p>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <!-- Feature 1: Journal (Green) -->
-                <div class="feature-card p-6">
-                    <div
-                        class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4 text-green-600">
-                        <i class="fas fa-list-ul text-xl"></i>
-                    </div>
-                    <h3 class="text-lg font-bold text-green-800 mb-2">Journal Complet</h3>
-                    <p class="text-gray-600 text-sm">Gardez une trace de toutes vos courses avec détails, photos, et
-                        notes personnelles.</p>
-                </div>
+            </div>
+        </div>
 
-                <!-- Feature 2: Statistiques (Blue) -->
-                <div class="feature-card p-6">
-                    <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-4 text-blue-600">
-                        <i class="fas fa-chart-line text-xl"></i>
+        <!-- Carousels outside the container for full-width effect -->
+        <div class="space-y-4">
+            <!-- Row 1: Moving Right -->
+            <div class="carousel-track-container">
+                <div class="carousel-track scroll-right">
+                    <!-- Set 1 -->
+                    <div class="feature-item">
+                        <div class="feature-card p-6 h-full">
+                            <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4 text-green-600">
+                                <i class="fas fa-list-ul text-xl"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-green-800 mb-2">Journal de Courses</h3>
+                            <p class="text-gray-600 text-sm">Centralisez l'historique complet de vos épreuves avec chronos, photos et notes.</p>
+                        </div>
                     </div>
-                    <h3 class="text-lg font-bold text-blue-800 mb-2">Statistiques Avancées</h3>
-                    <p class="text-gray-600 text-sm">Visualisez votre progression, km parcourus et dénivelé via des
-                        graphiques interactifs.</p>
+                    <div class="feature-item">
+                        <div class="feature-card p-6 h-full">
+                            <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-4 text-blue-600">
+                                <i class="fas fa-brain text-xl"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-blue-800 mb-2">IA & Prédictions</h3>
+                            <p class="text-gray-600 text-sm">Visualisez votre évolution et profitez de prédictions intelligentes pour vos chronos.</p>
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-card p-6 h-full">
+                            <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mb-4 text-purple-600">
+                                <i class="fas fa-award text-xl"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-purple-800 mb-2">Badges & Succès</h3>
+                            <p class="text-gray-600 text-sm">Relevez des défis et débloquez des badges exclusifs selon vos records personnels.</p>
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-card p-6 h-full">
+                            <div class="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mb-4 text-orange-600">
+                                <i class="fas fa-dumbbell text-xl"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-orange-800 mb-2">Gestion Hyrox</h3>
+                            <p class="text-gray-600 text-sm">Section dédiée pour suivre vos performances sur les 8 stations du circuit Hyrox.</p>
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-card p-6 h-full">
+                            <div class="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center mb-4 text-indigo-600">
+                                <i class="fas fa-users-cog text-xl"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-indigo-800 mb-2">Courses en Relai</h3>
+                            <p class="text-gray-600 text-sm">Gérez vos équipes et vos segments avec un suivi précis pour chaque relayeur.</p>
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-card p-6 h-full">
+                            <div class="w-12 h-12 bg-teal-100 rounded-full flex items-center justify-center mb-4 text-teal-600">
+                                <i class="fas fa-file-export text-xl"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-teal-800 mb-2">Import & Export</h3>
+                            <p class="text-gray-600 text-sm">Sauvegardez vos données en local et importez-les librement en un clic.</p>
+                        </div>
+                    </div>
+                    <!-- Set 2 (Duplicate for seamless loop) -->
+                    <div class="feature-item">
+                        <div class="feature-card p-6 h-full">
+                            <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4 text-green-600">
+                                <i class="fas fa-list-ul text-xl"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-green-800 mb-2">Journal de Courses</h3>
+                            <p class="text-gray-600 text-sm">Centralisez l'historique complet de vos épreuves avec chronos, photos et notes.</p>
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-card p-6 h-full">
+                            <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-4 text-blue-600">
+                                <i class="fas fa-brain text-xl"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-blue-800 mb-2">IA & Prédictions</h3>
+                            <p class="text-gray-600 text-sm">Visualisez votre évolution et profitez de prédictions intelligentes pour vos chronos.</p>
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-card p-6 h-full">
+                            <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mb-4 text-purple-600">
+                                <i class="fas fa-award text-xl"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-purple-800 mb-2">Badges & Succès</h3>
+                            <p class="text-gray-600 text-sm">Relevez des défis et débloquez des badges exclusifs selon vos records personnels.</p>
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-card p-6 h-full">
+                            <div class="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mb-4 text-orange-600">
+                                <i class="fas fa-dumbbell text-xl"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-orange-800 mb-2">Gestion Hyrox</h3>
+                            <p class="text-gray-600 text-sm">Section dédiée pour suivre vos performances sur les 8 stations du circuit Hyrox.</p>
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-card p-6 h-full">
+                            <div class="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center mb-4 text-indigo-600">
+                                <i class="fas fa-users-cog text-xl"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-indigo-800 mb-2">Courses en Relai</h3>
+                            <p class="text-gray-600 text-sm">Gérez vos équipes et vos segments avec un suivi précis pour chaque relayeur.</p>
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-card p-6 h-full">
+                            <div class="w-12 h-12 bg-teal-100 rounded-full flex items-center justify-center mb-4 text-teal-600">
+                                <i class="fas fa-file-export text-xl"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-teal-800 mb-2">Import & Export</h3>
+                            <p class="text-gray-600 text-sm">Sauvegardez vos données en local et importez-les librement en un clic.</p>
+                        </div>
+                    </div>
                 </div>
+            </div>
 
-                <!-- Feature 3: Badges (Purple) -->
-                <div class="feature-card p-6">
-                    <div
-                        class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mb-4 text-purple-600">
-                        <i class="fas fa-award text-xl"></i>
+            <!-- Row 2: Moving Left -->
+            <div class="carousel-track-container mt-4">
+                <div class="carousel-track scroll-left">
+                    <!-- Set 1 -->
+                    <div class="feature-item">
+                        <div class="feature-card p-6 h-full">
+                            <div class="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center mb-4 text-blue-500">
+                                <i class="fab fa-google-drive text-xl"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-blue-900 mb-2">Lien Google Drive</h3>
+                            <p class="text-gray-600 text-sm">Connectez votre Drive pour visualiser vos documents et dossards directement.</p>
+                        </div>
                     </div>
-                    <h3 class="text-lg font-bold text-purple-800 mb-2">Badges & Succès</h3>
-                    <p class="text-gray-600 text-sm">Débloquez des badges uniques en atteignant vos objectifs et
-                        records
-                        personnels.</p>
-                </div>
-
-                <!-- Feature Relai (Indigo) -->
-                <div class="feature-card p-6">
-                    <div
-                        class="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center mb-4 text-indigo-600">
-                        <i class="fas fa-users-cog text-xl"></i>
+                    <div class="feature-item">
+                        <div class="feature-card p-6 h-full">
+                            <div class="w-12 h-12 bg-pink-100 rounded-full flex items-center justify-center mb-4 text-pink-600">
+                                <i class="fas fa-heart text-xl"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-pink-800 mb-2">Wishlist & Rêves</h3>
+                            <p class="text-gray-600 text-sm">Listez les courses que vous rêvez de faire et planifiez vos futur défis sportifs.</p>
+                        </div>
                     </div>
-                    <h3 class="text-lg font-bold text-indigo-800 mb-2">Courses en Relai</h3>
-                    <p class="text-gray-600 text-sm">Gérez vos équipes avec un tableau dédié pour chaque relayeur et
-                        segment.</p>
-                </div>
-
-                <!-- Feature 4: Wishlist (Pink) -->
-                <div class="feature-card p-6">
-                    <div class="w-12 h-12 bg-pink-100 rounded-full flex items-center justify-center mb-4 text-pink-600">
-                        <i class="fas fa-heart text-xl"></i>
+                    <div class="feature-item">
+                        <div class="feature-card p-6 h-full">
+                            <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-4 text-red-600">
+                                <i class="fas fa-file-pdf text-xl"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-red-800 mb-2">Rapports PDF</h3>
+                            <p class="text-gray-600 text-sm">Générez des rapports détaillés de vos performances pour les archives ou le partage.</p>
+                        </div>
                     </div>
-                    <h3 class="text-lg font-bold text-pink-800 mb-2">Wishlist</h3>
-                    <p class="text-gray-600 text-sm">Listez les courses de vos rêves et cochez-les une fois
-                        réalisées.
-                    </p>
-                </div>
-
-                <!-- Feature 5: Export PDF (Red) -->
-                <div class="feature-card p-6">
-                    <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-4 text-red-600">
-                        <i class="fas fa-file-pdf text-xl"></i>
+                    <div class="feature-item">
+                        <div class="feature-card p-6 h-full">
+                            <div class="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center mb-4 text-amber-600">
+                                <i class="fas fa-users text-xl"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-amber-800 mb-2">Communauté</h3>
+                            <p class="text-gray-600 text-sm">Partagez vos courses publiquement et découvrez les exploits des autres coureurs.</p>
+                        </div>
                     </div>
-                    <h3 class="text-lg font-bold text-red-800 mb-2">Export PDF</h3>
-                    <p class="text-gray-600 text-sm">Générez des rapports PDF de vos courses pour partager vos
-                        performances.</p>
-                </div>
-
-                <!-- Feature 6: Communauté (Teal) -->
-                <div class="feature-card p-6">
-                    <div class="w-12 h-12 bg-teal-100 rounded-full flex items-center justify-center mb-4 text-teal-600">
-                        <i class="fas fa-users text-xl"></i>
+                    <div class="feature-item">
+                        <div class="feature-card p-6 h-full">
+                            <div class="w-12 h-12 bg-cyan-100 rounded-full flex items-center justify-center mb-4 text-cyan-600">
+                                <i class="fas fa-swimmer text-xl"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-cyan-800 mb-2">Mode Triathlon</h3>
+                            <p class="text-gray-600 text-sm">Suivi complet multisport intégrant la natation, le cyclisme et la course à pied.</p>
+                        </div>
                     </div>
-                    <h3 class="text-lg font-bold text-teal-800 mb-2">Communauté</h3>
-                    <p class="text-gray-600 text-sm">
-                        Trouvez la course qui vous motive et encouragez les autres
-                        avec un "J'aime" !
-                    </p>
-                </div>
-
-                <!-- Feature Triathlon (Orange) -->
-                <div class="feature-card p-6">
-                    <div
-                        class="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mb-4 text-orange-600">
-                        <i class="fas fa-swimmer text-xl"></i>
+                    <div class="feature-item">
+                        <div class="feature-card p-6 h-full">
+                            <div class="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center mb-4 text-emerald-600">
+                                <i class="fas fa-map-marked-alt text-xl"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-emerald-800 mb-2">Cartographie</h3>
+                            <p class="text-gray-600 text-sm">Visualisation interactive de vos parcours via des cartes détaillées et personnalisées.</p>
+                        </div>
                     </div>
-                    <h3 class="text-lg font-bold text-orange-800 mb-2">Gestion Triathlon</h3>
-                    <p class="text-gray-600 text-sm">Suivez vos performances détaillées en natation, vélo et course
-                        à
-                        pied.</p>
+                    <!-- Set 2 (Duplicate) -->
+                    <div class="feature-item">
+                        <div class="feature-card p-6 h-full">
+                            <div class="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center mb-4 text-blue-500">
+                                <i class="fab fa-google-drive text-xl"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-blue-900 mb-2">Lien Google Drive</h3>
+                            <p class="text-gray-600 text-sm">Connectez votre Drive pour visualiser vos documents et dossards directement.</p>
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-card p-6 h-full">
+                            <div class="w-12 h-12 bg-pink-100 rounded-full flex items-center justify-center mb-4 text-pink-600">
+                                <i class="fas fa-heart text-xl"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-pink-800 mb-2">Wishlist & Rêves</h3>
+                            <p class="text-gray-600 text-sm">Listez les courses que vous rêvez de faire et planifiez vos futur défis sportifs.</p>
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-card p-6 h-full">
+                            <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-4 text-red-600">
+                                <i class="fas fa-file-pdf text-xl"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-red-800 mb-2">Rapports PDF</h3>
+                            <p class="text-gray-600 text-sm">Générez des rapports détaillés de vos performances pour les archives ou le partage.</p>
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-card p-6 h-full">
+                            <div class="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center mb-4 text-amber-600">
+                                <i class="fas fa-users text-xl"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-amber-800 mb-2">Communauté</h3>
+                            <p class="text-gray-600 text-sm">Partagez vos courses publiquement et découvrez les exploits des autres coureurs.</p>
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-card p-6 h-full">
+                            <div class="w-12 h-12 bg-cyan-100 rounded-full flex items-center justify-center mb-4 text-cyan-600">
+                                <i class="fas fa-swimmer text-xl"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-cyan-800 mb-2">Mode Triathlon</h3>
+                            <p class="text-gray-600 text-sm">Suivi complet multisport intégrant la natation, le cyclisme et la course à pied.</p>
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-card p-6 h-full">
+                            <div class="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center mb-4 text-emerald-600">
+                                <i class="fas fa-map-marked-alt text-xl"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-emerald-800 mb-2">Cartographie</h3>
+                            <p class="text-gray-600 text-sm">Visualisation interactive de vos parcours via des cartes détaillées et personnalisées.</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
