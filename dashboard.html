@@ -194,6 +194,77 @@
             z-index: 10 !important;
         }
 
+        /* Drive Explorer Grid */
+        .drive-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 1.5rem;
+            padding: 1rem;
+        }
+
+        .drive-item {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .drive-item:hover {
+            transform: scale(1.05);
+        }
+
+        .drive-thumb-container {
+            width: 100px;
+            height: 100px;
+            border-radius: 12px;
+            overflow: hidden;
+            background: #f3f4f6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border: 2px solid transparent;
+            transition: border-color 0.2s;
+        }
+
+        .drive-item:hover .drive-thumb-container {
+            border-color: #10b981;
+        }
+
+        .drive-item-name {
+            margin-top: 0.5rem;
+            font-size: 0.75rem;
+            color: #374151;
+            text-align: center;
+            width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            opacity: 0;
+            transition: opacity 0.2s;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 2px 6px;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            z-index: 10;
+        }
+
+        .drive-item:hover .drive-item-name {
+            opacity: 1;
+        }
+
+        /* Modal Iframe adjustments */
+        .drive-iframe-container {
+            width: 100%;
+            height: 500px;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 2px solid #e5e7eb;
+            background: #fff;
+        }
+
         /* Stats Dashboard Responsive < 770px */
         @media (max-width: 770px) {
             #statsText {
@@ -1833,17 +1904,91 @@
 
 <!-- Modal Zoom Image -->
 
+<!-- Modal Drive Explorer -->
+<div id="driveExplorerModal"
+     class="modal hidden fixed inset-0 z-[70] flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm transition-opacity duration-300">
+    <div class="modal-content !max-h-[90vh] bg-white p-6 w-full max-w-3xl m-4 rounded-3xl shadow-2xl relative border border-green-100 overflow-hidden flex flex-col">
+        <div class="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
+            <div class="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
+                <h3 class="text-2xl font-bold text-green-800 flex items-center gap-3">
+                    <i class="fab fa-google-drive text-green-600"></i> Dossier Drive
+                </h3>
+                <a id="openInDriveExternalBtn" href="#" target="_blank"
+                   class="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl text-gray-700 font-semibold hover:bg-gray-50 hover:border-green-300 transition-all text-sm shadow-sm group">
+                    <i class="fas fa-external-link-alt text-green-500 group-hover:scale-110 transition-transform"></i>
+                    Ouvrir dans Drive
+                </a>
+            </div>
+            <button onclick="closeModal('driveExplorerModal')"
+                    class="text-gray-400 hover:text-gray-600 p-2 hover:bg-gray-100 rounded-full transition-colors order-first sm:order-last self-end sm:self-auto">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+
+        <div id="driveExplorerContent" class="flex-grow min-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+            <!-- Loader / Resultats -->
+            <div id="driveLoader" class="flex flex-col items-center justify-center h-full py-20">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
+                <p class="mt-4 text-gray-500 font-medium font-montserrat">Exploration du dossier...</p>
+            </div>
+            <div id="driveGrid" class="drive-grid hidden"></div>
+            <div id="driveIframeContainer" class="drive-iframe-container hidden">
+                <iframe id="driveIframe" src="" class="w-full h-full border-0"></iframe>
+            </div>
+            <div id="driveError" class="hidden flex flex-col items-center justify-center h-full py-10 px-4 text-center">
+                <div class="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mb-4">
+                    <i class="fas fa-exclamation-triangle text-red-500 text-3xl"></i>
+                </div>
+                <h4 class="text-xl font-bold text-red-800 mb-2">Accès restreint</h4>
+                <p id="driveErrorMessage" class="text-gray-600 max-w-sm mb-6">Le dossier est privé ou l'ID est invalide.</p>
+                <div class="flex gap-3">
+                    <button id="driveRetryBtn" class="px-6 py-2 bg-gray-200 hover:bg-gray-300 rounded-xl font-bold transition-all">Réessayer</button>
+                    <button id="driveLoginBtn" class="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-xl font-bold shadow-md transition-all">Se connecter</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Zoom Image -->
 <div id="imageZoomModal"
-     class="hidden fixed inset-0 z-[10000] flex items-center justify-center bg-black/90 backdrop-blur-sm transition-all duration-300 opacity-0"
-     onclick="closeImageZoom()">
-    <div class="relative max-w-[95vw] max-h-[95vh] flex items-center justify-center"
-         onclick="event.stopPropagation()">
+     class="hidden fixed inset-0 z-[10000] flex items-center justify-center bg-black/95 backdrop-blur-md transition-all duration-300 opacity-0">
+    <!-- Overlay Click-to-close -->
+    <div class="absolute inset-0" onclick="closeImageZoom()"></div>
+    
+    <div class="relative max-w-full max-h-full flex items-center justify-center p-4" onclick="event.stopPropagation()">
+        <!-- Close Button -->
         <button onclick="closeImageZoom()"
-                class="absolute -top-12 right-0 text-white text-3xl hover:text-green-400 transition-colors p-2">
+                class="fixed top-6 right-6 text-white/50 hover:text-white text-3xl transition-colors p-2 z-[10002] bg-black/20 hover:bg-black/40 rounded-full">
             <i class="fas fa-times"></i>
         </button>
-        <img id="zoomedImage" src="" alt="Zoom"
-             class="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl border-2 border-white/20 transform scale-90 transition-transform duration-300">
+
+        <!-- Navigation Buttons -->
+        <button id="prevZoomBtn"
+                class="fixed left-4 top-1/2 -translate-y-1/2 text-white/50 hover:text-white text-5xl transition-all p-4 z-[10002] hover:scale-110 disabled:opacity-0 disabled:cursor-default">
+            <i class="fas fa-chevron-left"></i>
+        </button>
+
+        <button id="nextZoomBtn"
+                class="fixed right-4 top-1/2 -translate-y-1/2 text-white/50 hover:text-white text-5xl transition-all p-4 z-[10002] hover:scale-110 disabled:opacity-0 disabled:cursor-default">
+            <i class="fas fa-chevron-right"></i>
+        </button>
+
+        <!-- Image Container -->
+        <div class="relative group">
+            <img id="zoomedImage" src="" alt="Zoom"
+                 class="max-w-[95vw] max-h-[90vh] object-contain rounded-lg shadow-2xl border-2 border-white/10 transform scale-90 transition-all duration-300">
+            
+            <!-- Caption/Filename on hover -->
+            <div id="zoomCaption" class="absolute bottom-0 left-0 right-0 bg-black/60 text-white p-4 text-center rounded-b-lg opacity-0 group-hover:opacity-100 transition-opacity translate-y-2 group-hover:translate-y-0">
+                <span id="zoomFilename" class="font-medium text-sm"></span>
+            </div>
+        </div>
+
+        <!-- Counter -->
+        <div class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-black/40 px-4 py-1.5 rounded-full text-white/80 text-sm font-medium backdrop-blur-sm border border-white/10">
+            <span id="zoomCounter">1 / 1</span>
+        </div>
     </div>
 </div>
 
@@ -5153,7 +5298,7 @@
             if (driveContainer) driveContainer.classList.remove('hidden');
             if (openDriveBtn) {
                 openDriveBtn.onclick = () => {
-                    window.open(`https://drive.google.com/drive/folders/${race.driveId}`, '_blank');
+                    openDriveExplorer(race.driveId);
                 };
             }
         } else {
@@ -8355,14 +8500,23 @@
         return results;
     }
     // Image Zoom Logic
-    function zoomImage(url) {
+    // --- Enhanced Image Zoom ---
+    let currentZoomList = [];
+    let currentZoomIndex = 0;
+    let currentZoomNames = [];
+
+    function zoomImage(url, list = [], index = 0, names = []) {
         const modal = document.getElementById('imageZoomModal');
         const img = document.getElementById('zoomedImage');
         if (!modal || !img) return;
 
-        img.src = url;
-        modal.classList.remove('hidden');
+        currentZoomList = list.length > 0 ? list : [url];
+        currentZoomIndex = index;
+        currentZoomNames = names;
 
+        updateZoomDisplay();
+
+        modal.classList.remove('hidden');
         // Forcer le reflow pour l'animation
         modal.offsetHeight;
 
@@ -8372,14 +8526,53 @@
 
         document.body.style.overflow = 'hidden';
 
-        // Fermeture avec Echap
-        const escHandler = (e) => {
-            if (e.key === 'Escape') {
-                closeImageZoom();
-                window.removeEventListener('keydown', escHandler);
-            }
+        // Key handler
+        const keyHandler = (e) => {
+            if (e.key === 'Escape') closeImageZoom();
+            if (e.key === 'ArrowLeft') zoomPrev();
+            if (e.key === 'ArrowRight') zoomNext();
         };
-        window.addEventListener('keydown', escHandler);
+        window.addEventListener('keydown', keyHandler);
+        modal._keyHandler = keyHandler;
+    }
+
+    function updateZoomDisplay() {
+        const img = document.getElementById('zoomedImage');
+        const counter = document.getElementById('zoomCounter');
+        const caption = document.getElementById('zoomFilename');
+        const prevBtn = document.getElementById('prevZoomBtn');
+        const nextBtn = document.getElementById('nextZoomBtn');
+
+        if (!img || !counter) return;
+
+        img.src = currentZoomList[currentZoomIndex];
+        counter.textContent = `${currentZoomIndex + 1} / ${currentZoomList.length}`;
+        
+        const filename = currentZoomNames && currentZoomNames[currentZoomIndex] ? currentZoomNames[currentZoomIndex] : '';
+        if (caption) caption.textContent = filename;
+        
+        const captionContainer = document.getElementById('zoomCaption');
+        if (captionContainer) {
+            if (filename) captionContainer.classList.remove('hidden');
+            else captionContainer.classList.add('hidden');
+        }
+
+        if (prevBtn) prevBtn.disabled = currentZoomIndex === 0;
+        if (nextBtn) nextBtn.disabled = currentZoomIndex === currentZoomList.length - 1;
+    }
+
+    function zoomNext() {
+        if (currentZoomIndex < currentZoomList.length - 1) {
+            currentZoomIndex++;
+            updateZoomDisplay();
+        }
+    }
+
+    function zoomPrev() {
+        if (currentZoomIndex > 0) {
+            currentZoomIndex--;
+            updateZoomDisplay();
+        }
     }
 
     function closeImageZoom() {
@@ -8391,12 +8584,158 @@
         img.classList.remove('scale-100');
         img.classList.add('scale-90');
 
+        if (modal._keyHandler) {
+            window.removeEventListener('keydown', modal._keyHandler);
+            delete modal._keyHandler;
+        }
+
         setTimeout(() => {
             modal.classList.add('hidden');
             img.src = '';
             document.body.style.overflow = '';
         }, 300);
     }
+
+    // --- Google Drive Integration ---
+    async function fetchDriveFiles(folderId) {
+        const token = localStorage.getItem('googleDriveToken');
+        const apiKey = firebaseConfig.apiKey;
+        // Use a more robust query and include more fields
+        const url = `https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents+and+trashed=false&fields=files(id,name,mimeType,thumbnailLink,webContentLink,iconLink)&key=${apiKey}&pageSize=100`;
+        
+        const headers = {};
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+
+        const response = await fetch(url, { headers });
+        if (!response.ok) {
+            if (response.status === 403 || response.status === 404) throw new Error('RestrictedOrNotFound');
+            throw new Error('DriveAPIError');
+        }
+        const data = await response.json();
+        return data.files || [];
+    }
+
+    function renderDriveFiles(files, folderId) {
+        const grid = document.getElementById('driveGrid');
+        const loader = document.getElementById('driveLoader');
+        
+        if (loader) loader.classList.add('hidden');
+        if (!grid) return;
+        
+        grid.innerHTML = '';
+        
+        if (files.length === 0) {
+            grid.innerHTML = '<div class="col-span-full py-20 text-center text-gray-500">Ce dossier est vide.</div>';
+            grid.classList.remove('hidden');
+            return;
+        }
+
+        const images = files.filter(f => f.mimeType.startsWith('image/'));
+        const imageUrls = images.map(f => f.webContentLink?.replace('&export=download', ''));
+        const imageNames = images.map(f => f.name);
+
+        files.forEach(file => {
+            const isImage = file.mimeType.startsWith('image/');
+            const item = document.createElement('div');
+            item.className = 'drive-item';
+            
+            // Format thumbnail link for better quality if possible
+            let thumbUrl = file.thumbnailLink;
+            if (thumbUrl) thumbUrl = thumbUrl.replace(/=s[0-9]+$/, '=s220');
+            else thumbUrl = file.iconLink || 'https://www.gstatic.com/images/branding/product/1x/drive_48dp.png';
+            
+            item.innerHTML = `
+                <div class="drive-thumb-container">
+                    <img src="${thumbUrl}" class="${isImage ? 'w-full h-full object-cover' : 'w-12 h-12'}" alt="" onerror="this.src='${file.iconLink || ''}'">
+                    ${!isImage ? `<i class="fas ${getIconForMime(file.mimeType)} text-2xl absolute"></i>` : ''}
+                </div>
+                <div class="drive-item-name">${file.name}</div>
+            `;
+
+            item.onclick = (e) => {
+                e.stopPropagation();
+                if (isImage) {
+                    const idx = images.findIndex(img => img.id === file.id);
+                    zoomImage(file.webContentLink?.replace('&export=download', ''), imageUrls, idx, imageNames);
+                } else {
+                    window.open(`https://drive.google.com/file/d/${file.id}/view`, '_blank');
+                }
+            };
+
+            grid.appendChild(item);
+        });
+
+        grid.classList.remove('hidden');
+    }
+
+    function getIconForMime(mime) {
+        if (mime.includes('pdf')) return 'fa-file-pdf text-red-500';
+        if (mime.includes('video')) return 'fa-file-video text-blue-500';
+        if (mime.includes('spreadsheet') || mime.includes('excel')) return 'fa-file-excel text-green-600';
+        if (mime.includes('document') || mime.includes('word')) return 'fa-file-word text-blue-600';
+        if (mime.includes('presentation') || mime.includes('powerpoint')) return 'fa-file-powerpoint text-orange-500';
+        if (mime.includes('zip') || mime.includes('compressed')) return 'fa-file-archive text-yellow-600';
+        if (mime.includes('folder')) return 'fa-folder text-yellow-500';
+        return 'fa-file text-gray-400';
+    }
+
+    async function openDriveExplorer(folderId) {
+        const modal = document.getElementById('driveExplorerModal');
+        const grid = document.getElementById('driveGrid');
+        const loader = document.getElementById('driveLoader');
+        const iframeCont = document.getElementById('driveIframeContainer');
+        const iframe = document.getElementById('driveIframe');
+        const errorZone = document.getElementById('driveError');
+        const externalBtn = document.getElementById('openInDriveExternalBtn');
+
+        if (!modal) return;
+
+        modal.classList.remove('hidden');
+        if (loader) loader.classList.remove('hidden');
+        if (grid) grid.classList.add('hidden');
+        if (iframeCont) iframeCont.classList.add('hidden');
+        if (errorZone) errorZone.classList.add('hidden');
+        
+        if (externalBtn) externalBtn.href = `https://drive.google.com/drive/folders/${folderId}`;
+
+        // Buttons listeners
+        const loginBtn = document.getElementById('driveLoginBtn');
+        if (loginBtn) loginBtn.onclick = () => {
+            loginWithGoogle().then(() => openDriveExplorer(folderId));
+        };
+        const retryBtn = document.getElementById('driveRetryBtn');
+        if (retryBtn) retryBtn.onclick = () => openDriveExplorer(folderId);
+
+        try {
+            const files = await fetchDriveFiles(folderId);
+            renderDriveFiles(files, folderId);
+        } catch (err) {
+            console.error("Drive exploration error:", err);
+            if (loader) loader.classList.add('hidden');
+            
+            // If restricted/not found, try showing the Iframe as fallback
+            if (iframe && iframeCont) {
+                iframe.src = `https://drive.google.com/embeddedfolderview?id=${folderId}#grid`;
+                iframeCont.classList.remove('hidden');
+            } else {
+                if (errorZone) {
+                    errorZone.classList.remove('hidden');
+                    const errText = document.getElementById('driveErrorMessage');
+                    if (errText) errText.textContent = "Le dossier est inaccessible ou l'ID est incorrect.";
+                }
+            }
+        }
+    }
+
+    // Attach zoom navigation button listeners
+    document.addEventListener('DOMContentLoaded', () => {
+        const pBtn = document.getElementById('prevZoomBtn');
+        if (pBtn) pBtn.onclick = (e) => { e.stopPropagation(); zoomPrev(); };
+        const nBtn = document.getElementById('nextZoomBtn');
+        if (nBtn) nBtn.onclick = (e) => { e.stopPropagation(); zoomNext(); };
+    });
 
     function showPrivateInfo() {
         const modal = document.getElementById('privateRaceModal');
