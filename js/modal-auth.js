@@ -305,9 +305,15 @@ window.switchModal = function (closeId, openId) {
 
 window.loginWithGoogle = async function () {
     const provider = new firebase.auth.GoogleAuthProvider();
+    provider.addScope('https://www.googleapis.com/auth/drive.readonly');
     try {
         const result = await auth.signInWithPopup(provider);
         const user = result.user;
+        
+        // Capturer le token de connexion Google pour Drive
+        if (result.credential && result.credential.accessToken) {
+            localStorage.setItem('googleDriveToken', result.credential.accessToken);
+        }
 
         // Ensure user document exists in Firestore
         const userDocRef = db.collection('users').doc(user.uid);
