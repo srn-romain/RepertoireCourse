@@ -231,6 +231,83 @@
                 font-size: 1rem;
             }
         }
+        /* Google Drive Explorer Styles */
+        .drive-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 1rem;
+        }
+
+        .drive-item {
+            position: relative;
+            aspect-ratio: 1 / 1;
+            overflow: hidden;
+            border-radius: 0.75rem;
+            background-color: #f3f4f6;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .drive-item:hover {
+            transform: scale(1.02);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .drive-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .drive-item-name {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 0.25rem 0.5rem;
+            font-size: 0.65rem;
+            color: #374151;
+            text-align: center;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .drive-item:hover .drive-item-name {
+            opacity: 1;
+        }
+
+        .drive-doc-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            font-size: 2rem;
+            color: #9ca3af;
+        }
+
+        /* Photo Viewer Nav */
+        .viewer-nav-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0, 0, 0, 0.3);
+            color: white;
+            padding: 1rem;
+            border-radius: 50%;
+            transition: background 0.2s;
+            z-index: 60;
+        }
+
+        .viewer-nav-btn:hover {
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        .viewer-prev { left: 1rem; }
+        .viewer-next { right: 1rem; }
     </style>
 </head>
 
@@ -5146,14 +5223,14 @@
                 });
             }
 
-            // --- Google Drive Link ---
+            // --- Google Drive Explorer ---
             const driveContainer = document.getElementById('driveButtonContainer');
             const openDriveBtn = document.getElementById('openDriveBtn');
             if (race.driveId && race.driveId.trim() !== '') {
                 if (driveContainer) driveContainer.classList.remove('hidden');
                 if (openDriveBtn) {
                     openDriveBtn.onclick = () => {
-                        window.open(`https://drive.google.com/drive/folders/${race.driveId}`, '_blank');
+                        openDriveExplorer(race.driveId.trim());
                     };
                 }
             } else {
@@ -8424,6 +8501,253 @@
             toggleBtnActive(document.getElementById('btnUnderline'), isUnderline);
         }
 
+        // --- Google Drive Explorer Logic ---
+        const DRIVE_API_KEY = "AIzaSyAQl3f8x9uafRTFIDvf6WtZPbjZtPbzU9M";
+        let currentDriveFiles = [];
+        let currentViewerIndex = -1;
+        let googleAccessToken = localStorage.getItem('googleDriveToken');
+
+        async function openDriveExplorer(folderId) {
+            const modal = document.getElementById('driveExplorerModal');
+            const grid = document.getElementById('driveGrid');
+            const loader = document.getElementById('driveLoader');
+            const errorDiv = document.getElementById('driveError');
+            const extLink = document.getElementById('externalDriveLink');
+            
+            modal.classList.remove('hidden');
+            grid.innerHTML = '';
+            errorDiv.classList.add('hidden');
+            loader.classList.remove('hidden');
+            extLink.href = `https://drive.google.com/drive/folders/${folderId}`;
+
+            try {
+                const files = await fetchDriveFiles(folderId);
+                loader.classList.add('hidden');
+                
+                if (files.length === 0) {
+                    showDriveError("Ce dossier est vide ou contient des fichiers non compatibles.");
+                } else {
+                    currentDriveFiles = files;
+                    renderDriveFiles(files);
+                }
+            } catch (err) {
+                loader.classList.add('hidden');
+                showDriveError(err.message || "Impossible d'accéder au dossier.", err.folderId || folderId);
+            }
+        }
+
+        async function fetchDriveFiles(folderId) {
+            const headers = {};
+            if (googleAccessToken) {
+                headers['Authorization'] = `Bearer ${googleAccessToken}`;
+            }
+
+            const url = `https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents+and+trashed=false&fields=files(id,name,mimeType,thumbnailLink,webContentLink)&key=${DRIVE_API_KEY}`;
+            const response = await fetch(url, { headers });
+            
+            // Si le token est expiré (401), on le supprime et on retente sans (ou on demande reconnexion)
+            if (response.status === 401) {
+                googleAccessToken = null;
+                localStorage.removeItem('googleDriveToken');
+                return fetchDriveFiles(folderId);
+            }
+
+            const data = await response.json();
+
+            if (data.error) {
+                if (data.error.code === 404) throw new Error("Dossier introuvable.");
+                if (data.error.code === 403) {
+                    const error = new Error("Accès refusé.");
+                    error.code = 403;
+                    error.folderId = folderId;
+                    throw error;
+                }
+                throw new Error("Erreur lors de la récupération des fichiers.");
+            }
+
+            // Filtrer par images et documents courants
+            return data.files.filter(f => 
+                f.mimeType.startsWith('image/') || 
+                f.mimeType.includes('pdf') || 
+                f.mimeType.includes('document') ||
+                f.thumbnailLink
+            );
+        }
+
+        function renderDriveFiles(files) {
+            const grid = document.getElementById('driveGrid');
+            grid.innerHTML = files.map((file, index) => {
+                const isImage = file.mimeType.startsWith('image/');
+                const thumb = file.thumbnailLink ? file.thumbnailLink.replace(/=s\d+/, '=s400') : null;
+                
+                return `
+                    <div class="drive-item group" onclick="handleDriveItemClick(${index})">
+                        ${isImage && thumb ? 
+                            `<img src="${thumb}" alt="${file.name}" loading="lazy">` : 
+                            `<div class="drive-doc-icon"><i class="fas ${getDriveIcon(file.mimeType)}"></i></div>`
+                        }
+                        <div class="drive-item-name">${file.name}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function getDriveIcon(mimeType) {
+            if (mimeType.includes('pdf')) return 'fa-file-pdf';
+            if (mimeType.includes('word') || mimeType.includes('document')) return 'fa-file-word';
+            if (mimeType.includes('excel') || mimeType.includes('sheet')) return 'fa-file-excel';
+            return 'fa-file';
+        }
+
+        function showDriveError(msg, folderId = null) {
+            const errorDiv = document.getElementById('driveError');
+            const msgEl = document.getElementById('driveErrorMessage');
+            errorDiv.classList.remove('hidden');
+            msgEl.innerHTML = msg;
+
+            if (msg === "Accès refusé." && folderId) {
+                msgEl.innerHTML = `
+                    <p class="mb-4">Ce dossier est privé ou l'accès est restreint.</p>
+                    <button onclick="signInWithGoogleForDrive('${folderId}')" class="bg-white border border-gray-300 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 flex items-center gap-2 mx-auto shadow-sm">
+                        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-4 h-4">
+                        Se connecter avec Google
+                    </button>
+                    <p class="mt-3 text-[10px] text-gray-400 italic">La connexion est nécessaire pour accéder à vos dossiers personnels.</p>
+                `;
+            }
+        }
+
+        window.signInWithGoogleForDrive = async function(folderId) {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            provider.addScope('https://www.googleapis.com/auth/drive.readonly');
+            
+            try {
+                // On stocke l'ID du dossier pour le rouvrir après redirection
+                sessionStorage.setItem('pendingDriveFolderId', folderId);
+                await firebase.auth().signInWithRedirect(provider);
+            } catch (error) {
+                console.error("Erreur de redirection Google:", error);
+                alert("Erreur lors de la redirection Google.");
+            }
+        };
+
+        // Gérer le retour de redirection Google Auth au chargement
+        window.addEventListener('load', async () => {
+            try {
+                const result = await firebase.auth().getRedirectResult();
+                if (result && result.credential) {
+                    googleAccessToken = result.credential.accessToken;
+                    localStorage.setItem('googleDriveToken', googleAccessToken);
+                    
+                    // Si on attendait un dossier, on l'ouvre
+                    const pendingId = sessionStorage.getItem('pendingDriveFolderId');
+                    if (pendingId) {
+                        sessionStorage.removeItem('pendingDriveFolderId');
+                        // Un petit délai pour laisser l'app s'initialiser (Firebase etc)
+                        setTimeout(() => openDriveExplorer(pendingId), 1000);
+                    }
+                }
+            } catch (error) {
+                console.error("Erreur post-redirection:", error);
+            }
+        });
+
+        window.handleDriveItemClick = (index) => {
+            const file = currentDriveFiles[index];
+            if (file.mimeType.startsWith('image/')) {
+                openDriveViewer(index);
+            } else {
+                // Pour les docs, on ouvre dans un nouvel onglet
+                window.open(`https://docs.google.com/viewer?url=${encodeURIComponent(file.webContentLink)}`, '_blank');
+            }
+        };
+
+        function openDriveViewer(index) {
+            currentViewerIndex = index;
+            const modal = document.getElementById('driveViewerModal');
+            const img = document.getElementById('driveViewerImage');
+            const info = document.getElementById('driveViewerInfo');
+            const file = currentDriveFiles[index];
+
+            modal.classList.remove('hidden');
+            updateViewerContent(file);
+            updateViewerNav();
+        }
+
+        function updateViewerContent(file) {
+            const img = document.getElementById('driveViewerImage');
+            const info = document.getElementById('driveViewerInfo');
+            const loader = document.getElementById('driveViewerLoading');
+
+            loader.classList.remove('hidden');
+            img.classList.add('opacity-0');
+            
+            // On utilise webContentLink pour l'image plein écran (version téléchargement/visualisation)
+            img.src = file.thumbnailLink.replace(/=s\d+/, '=s2000'); 
+            
+            img.onload = () => {
+                loader.classList.add('hidden');
+                img.classList.remove('opacity-0');
+            };
+
+            info.textContent = `${file.name} (${currentViewerIndex + 1} / ${currentDriveFiles.length})`;
+        }
+
+        function updateViewerNav() {
+            const prev = document.getElementById('prevDriveItem');
+            const next = document.getElementById('nextDriveItem');
+            
+            // On ne navigue qu'entre les IMAGES pour la fluidité? 
+            // Ou on navigue tout et on gère l'affichage. Naviguons tout.
+            prev.classList.toggle('hidden', currentViewerIndex === 0);
+            next.classList.toggle('hidden', currentViewerIndex === currentDriveFiles.length - 1);
+        }
+
+        function navigateViewer(dir) {
+            const newIndex = currentViewerIndex + dir;
+            if (newIndex >= 0 && newIndex < currentDriveFiles.length) {
+                currentViewerIndex = newIndex;
+                const file = currentDriveFiles[currentViewerIndex];
+                
+                if (file.mimeType.startsWith('image/')) {
+                    updateViewerContent(file);
+                    updateViewerNav();
+                } else {
+                    // Si c'est un doc, on passe au suivant directement
+                    navigateViewer(dir);
+                }
+            }
+        }
+
+        // Event Listeners for Drive
+        document.getElementById('closeDriveExplorer')?.addEventListener('click', () => {
+            document.getElementById('driveExplorerModal').classList.add('hidden');
+        });
+
+        document.getElementById('closeDriveViewer')?.addEventListener('click', () => {
+            document.getElementById('driveViewerModal').classList.add('hidden');
+        });
+
+        document.getElementById('prevDriveItem')?.addEventListener('click', () => navigateViewer(-1));
+        document.getElementById('nextDriveItem')?.addEventListener('click', () => navigateViewer(1));
+
+        // Click on background to close viewer
+        document.getElementById('driveViewerModal')?.addEventListener('click', (e) => {
+            if (e.target.id === 'driveViewerModal') {
+                document.getElementById('driveViewerModal').classList.add('hidden');
+            }
+        });
+
+        // Keyboard support for viewer
+        window.addEventListener('keydown', (e) => {
+            const viewer = document.getElementById('driveViewerModal');
+            if (viewer && !viewer.classList.contains('hidden')) {
+                if (e.key === 'ArrowLeft') navigateViewer(-1);
+                if (e.key === 'ArrowRight') navigateViewer(1);
+                if (e.key === 'Escape') viewer.classList.add('hidden');
+            }
+        });
+
         function toggleBtnActive(btn, isActive) {
             if (!btn) return;
             if (isActive) {
@@ -8435,6 +8759,71 @@
             }
         }
     </script>
+
+    <!-- Modale Explorateur Google Drive -->
+    <div id="driveExplorerModal" class="fixed inset-0 bg-black bg-opacity-75 z-[60] hidden flex items-center justify-center p-4 blur-bg">
+        <div class="bg-white rounded-2xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl">
+            <div class="p-4 border-b border-gray-100 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="bg-green-100 p-2 rounded-lg">
+                        <i class="fab fa-google-drive text-green-600 text-xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-gray-800">Photos & Documents</h3>
+                        <p class="text-xs text-gray-500">Contenu du dossier Drive</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <a id="externalDriveLink" href="#" target="_blank" class="flex items-center gap-2 px-3 py-1.5 bg-green-50 text-green-700 rounded-lg text-xs font-semibold hover:bg-green-100 transition-colors">
+                        <i class="fas fa-external-link-alt"></i>
+                        Ouvrir dans Drive
+                    </a>
+                    <button id="closeDriveExplorer" class="text-gray-400 hover:text-gray-600 p-2">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            <div id="driveExplorerContent" class="flex-1 overflow-y-auto p-6 scroll-lock-ready">
+                <!-- Grille ou message d'erreur -->
+                <div id="driveGrid" class="drive-grid"></div>
+                <div id="driveLoader" class="flex flex-col items-center justify-center py-20 hidden">
+                    <div class="animate-spin rounded-full h-12 w-12 border-4 border-green-500 border-t-transparent"></div>
+                    <p class="mt-4 text-gray-500 text-sm">Chargement des fichiers...</p>
+                </div>
+                <div id="driveError" class="flex flex-col items-center justify-center py-20 hidden">
+                    <div class="bg-red-50 p-4 rounded-full mb-4 text-red-500">
+                        <i class="fas fa-exclamation-triangle text-3xl"></i>
+                    </div>
+                    <p id="driveErrorMessage" class="text-gray-600 text-center max-w-sm px-4 text-sm"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Visionneuse d'images Drive -->
+    <div id="driveViewerModal" class="fixed inset-0 bg-black z-[70] hidden flex items-center justify-center select-none">
+        <button id="closeDriveViewer" class="absolute top-4 right-4 text-white hover:text-gray-300 z-50 p-4">
+            <i class="fas fa-times text-2xl"></i>
+        </button>
+        
+        <button id="prevDriveItem" class="viewer-nav-btn viewer-prev hidden">
+            <i class="fas fa-chevron-left text-2xl"></i>
+        </button>
+        <button id="nextDriveItem" class="viewer-nav-btn viewer-next hidden">
+            <i class="fas fa-chevron-right text-2xl"></i>
+        </button>
+
+        <div class="w-full h-full flex items-center justify-center p-4">
+            <img id="driveViewerImage" src="" alt="" class="max-w-full max-h-full object-contain shadow-2xl transition-all duration-300">
+            <div id="driveViewerLoading" class="absolute inset-0 flex items-center justify-center hidden">
+                <div class="animate-spin rounded-full h-12 w-12 border-4 border-white border-t-transparent"></div>
+            </div>
+        </div>
+        
+        <div class="absolute bottom-6 left-0 right-0 text-center">
+            <p id="driveViewerInfo" class="text-white text-xs bg-black/50 inline-block px-3 py-1 rounded-full"></p>
+        </div>
+    </div>
 
     <script src="js/isAdmin.js"></script>
     <script src="js/isInvite.js"></script>
