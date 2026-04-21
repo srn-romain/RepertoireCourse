@@ -8603,7 +8603,12 @@
                 }
             } catch (err) {
                 loader.classList.add('hidden');
-                showDriveError(err.message || "Impossible d'accéder au dossier.", err.folderId || folderId);
+                if (err.code === 403) {
+                    console.log("Accès API refusé, bascule automatique vers la vue native.");
+                    showNativeDriveView(folderId);
+                } else {
+                    showDriveError(err.message || "Impossible d'accéder au dossier.", err.folderId || folderId, err);
+                }
             }
         }
 
@@ -8617,18 +8622,21 @@
 
         async function fetchDriveFiles(folderId) {
             const headers = {};
-            let url = `https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents+and+trashed=false&fields=files(id,name,mimeType,thumbnailLink,webContentLink)`;
+            // Augmenter pageSize à 1000 pour être sûr de tout voir
+            let url = `https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents+and+trashed=false&fields=files(id,name,mimeType,thumbnailLink,webContentLink,iconLink)&pageSize=1000&key=${DRIVE_API_KEY}`;
 
             if (googleAccessToken) {
                 headers['Authorization'] = `Bearer ${googleAccessToken}`;
+                console.log("Tentative d'accès Drive avec jeton OAuth2...");
             } else {
-                url += `&key=${DRIVE_API_KEY}`;
+                console.log("Tentative d'accès Drive public (clé API seule)...");
             }
 
             const response = await fetch(url, { headers });
             
             // Si le token est expiré (401), on le supprime et on retente sans (ou on demande reconnexion)
             if (response.status === 401) {
+                console.warn("Jeton Google expiré ou invalide (401).");
                 googleAccessToken = null;
                 localStorage.removeItem('googleDriveToken');
                 return fetchDriveFiles(folderId);
@@ -8636,22 +8644,27 @@
 
             const data = await response.json();
 
-            if (data.error) {
-                if (data.error.code === 404) throw new Error("Dossier introuvable.");
-                if (data.error.code === 403) {
+            if (!response.ok) {
+                console.error("Erreur API Drive détaillée:", data);
+                const errorDetail = data.error ? data.error.message : "Erreur inconnue";
+                if (response.status === 403) {
                     const error = new Error("Accès refusé.");
                     error.code = 403;
                     error.folderId = folderId;
+                    error.googleMessage = errorDetail;
                     throw error;
                 }
-                throw new Error("Erreur lors de la récupération des fichiers.");
+                throw new Error(`API Drive: ${errorDetail}`);
             }
 
-            // Filtrer par images et documents courants
+            // Filtrer par images, vidéos, docs ou tout ce qui a une miniature
             return data.files.filter(f => 
                 f.mimeType.startsWith('image/') || 
+                f.mimeType.startsWith('video/') ||
                 f.mimeType.includes('pdf') || 
                 f.mimeType.includes('document') ||
+                f.mimeType.includes('presentation') ||
+                f.mimeType.includes('sheet') ||
                 f.thumbnailLink
             );
         }
@@ -8681,40 +8694,25 @@
             return 'fa-file';
         }
 
-        function showDriveError(msg, folderId = null) {
+        function showDriveError(msg, folderId = null, err = null) {
             const errorDiv = document.getElementById('driveError');
             const msgEl = document.getElementById('driveErrorMessage');
             errorDiv.classList.remove('hidden');
             msgEl.innerHTML = msg;
 
+            // En cas d'accès refusé, on ne montre plus d'erreur mais on bascule en vue native
             if (msg === "Accès refusé." && folderId) {
-                const btnLabel = googleAccessToken ? "Changer de compte Google" : "Se connecter avec Google";
-                msgEl.innerHTML = `
-                    <div class="space-y-4">
-                        <p>Ce dossier est privé ou l'accès est restreint par Google.</p>
-                        
-                        <div class="flex flex-col gap-2">
-                            <button onclick="signInWithGoogleForDrive('${folderId}')" class="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 flex items-center justify-center gap-2 shadow-sm">
-                                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-4 h-4 brightness-0 invert">
-                                ${btnLabel} (Vue Premium)
-                            </button>
-                            
-                            <div class="flex items-center gap-2 py-2">
-                                <div class="flex-1 h-px bg-gray-200"></div>
-                                <span class="text-[10px] text-gray-400 font-bold uppercase">Ou</span>
-                                <div class="flex-1 h-px bg-gray-200"></div>
-                            </div>
-                            
-                            <button onclick="showNativeDriveView('${folderId}')" class="bg-white border border-gray-300 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 flex items-center justify-center gap-2 text-gray-700 shadow-sm">
-                                <i class="fab fa-google-drive text-green-600"></i>
-                                Utiliser la vue native Google
-                            </button>
-                        </div>
-                        
-                        <p class="text-[10px] text-gray-400 italic">La vue native fonctionne si vous êtes déjà connecté à Google dans votre navigateur.</p>
-                    </div>
-                `;
+                showNativeDriveView(folderId);
+                return;
             }
+            
+            // Pour les autres erreurs (404, etc.)
+            msgEl.innerHTML = `
+                <div class="text-center py-10">
+                    <p class="text-gray-600 mb-4">${msg}</p>
+                    <button onclick="closeModal('driveExplorerModal')" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm">Fermer</button>
+                </div>
+            `;
         }
 
         window.showNativeDriveView = function(folderId) {
