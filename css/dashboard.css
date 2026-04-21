@@ -1,0 +1,248 @@
+/* css/dashboard.css */
+
+body {
+    font-family: 'Montserrat', sans-serif;
+    background-image: url('https://images.unsplash.com/photo-1476231682824-37e0d921d6b2?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');
+    background-size: cover;
+    background-attachment: fixed;
+    background-position: center;
+}
+
+/* Masquer la croix par défaut pour les champs de recherche (Chrome/Safari) */
+input[type="search"]::-webkit-search-decoration,
+input[type="search"]::-webkit-search-cancel-button,
+input[type="search"]::-webkit-search-results-button,
+input[type="search"]::-webkit-search-results-decoration {
+    -webkit-appearance: none;
+}
+
+#raceNotesEditor {
+    position: relative;
+}
+
+/* Placeholder pour l'éditeur de texte riche */
+#raceNotesEditor[data-placeholder]:empty:before,
+#raceNotesEditor[data-placeholder]:has(br:only-child):before {
+    content: attr(data-placeholder);
+    position: absolute;
+    top: 0.5rem;
+    left: 0.75rem;
+    color: #9ca3af;
+    pointer-events: none;
+    cursor: text;
+}
+
+.card-hover {
+    transition: all 0.3s ease;
+}
+
+.card-hover:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.modal {
+    transition: opacity 0.3s ease;
+    z-index: 50;
+}
+
+.blur-bg {
+    backdrop-filter: blur(5px);
+}
+
+.blur-text {
+    filter: blur(5px);
+    user-select: none;
+    pointer-events: none;
+}
+
+.modal-content {
+    max-height: 80vh;
+    overflow-y: auto;
+    padding-right: 5px;
+}
+
+.modal-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.modal-content::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.modal-content::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 10px;
+}
+
+.modal-content::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+#confirmDeleteModal {
+    z-index: 60;
+}
+
+#permissionDeniedModal {
+    z-index: 100;
+}
+
+#detailsNotes {
+    white-space: pre-wrap;
+}
+
+#detailsPhoto,
+#detailsParcours {
+    cursor: pointer;
+    transition: box-shadow 0.2s, filter 0.2s;
+}
+
+#detailsPhoto:hover,
+#detailsParcours:hover {
+    box-shadow: 0 0 0 1px #34d399, 0 10px 20px rgba(0, 0, 0, 0.15);
+    filter: brightness(0.95) saturate(1.1);
+}
+
+/* Styles pour le graphique des statistiques */
+@media (max-width: 640px) {
+    #top10RacesList {
+        max-height: 500px !important;
+        padding: 0.5rem;
+    }
+
+    .chart-item {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 0.5rem !important;
+        padding: 0.75rem;
+        background: rgba(0, 0, 0, 0.02);
+        border-radius: 8px;
+        margin-bottom: 0.75rem;
+    }
+
+    .chart-item > span:first-child {
+        order: 1;
+        font-size: 0.875rem !important;
+        font-weight: 600;
+        width: 100% !important;
+    }
+
+    .chart-item > div:last-child {
+        order: 2;
+        width: 100% !important;
+        height: 32px !important;
+        margin-top: 0.25rem;
+    }
+
+    .chart-item > div:last-child > div {
+        height: 32px !important;
+        font-size: 0.75rem !important;
+    }
+}
+
+#top10RacesList {
+    overflow-x: auto;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.anniversary-behind {
+    z-index: 10 !important;
+}
+
+/* Stats Dashboard Responsive < 770px */
+@media (max-width: 770px) {
+    #statsText {
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px 8px;
+        text-align: center;
+        width: 100%;
+        background: rgba(255, 255, 255, 0.5);
+        padding: 0.8rem 0.8rem 0.4rem 0.8rem;
+        border-radius: 12px;
+        margin-top: 0.5rem;
+        box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.02);
+    }
+
+    .stat-year,
+    .stat-price {
+        grid-column: span 2;
+    }
+
+    .stat-price {
+        padding-top: 8px;
+        border-top: 1px dashed #d1fae5;
+        margin-top: 4px;
+    }
+
+    .stat-item {
+        display: flex;
+        flex-direction: column;
+        font-size: 0.75rem;
+        color: #065f46;
+    }
+
+    .stat-item span:first-child {
+        font-size: 1rem;
+    }
+}
+
+/* Drive Explorer Specific Styles */
+#driveExplorerModal .modal-container {
+    max-width: 1000px;
+    width: 95%;
+    height: 85vh;
+    display: flex;
+    flex-direction: column;
+    background: white;
+    border-radius: 1rem;
+    overflow: hidden;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+.drive-header {
+    padding: 1rem 1.5rem;
+    background: #f0fdf4;
+    border-bottom: 1px solid #dcfce7;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.drive-iframe-container {
+    flex: 1;
+    position: relative;
+    background: #f9fafb;
+}
+
+#driveIframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+.drive-loader {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: white;
+    z-index: 10;
+}
+
+.drive-error {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: white;
+    z-index: 20;
+    text-align: center;
+    padding: 2rem;
+}
