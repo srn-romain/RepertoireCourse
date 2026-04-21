@@ -250,15 +250,16 @@ function initReviewForm() {
 }
 
 // ─────────────────────────────────────────────
-//  Carrousel des avis (index.html)
+//  Affichage cyclique des avis (index.html)
 // ─────────────────────────────────────────────
-async function loadReviewsCarousel() {
-    const container = document.getElementById('reviewsCarouselTrack');
+let allReviewsPool = [];
+
+async function initReviewsDisplay() {
+    const container = document.getElementById('reviewsStaticContainer');
     if (!container) return;
 
     try {
-        // Requête simple sans index composite
-        const snapshot = await db.collection('reviews').limit(30).get();
+        const snapshot = await db.collection('reviews').limit(50).get();
 
         if (snapshot.empty) {
             const section = document.getElementById('reviewsSection');
@@ -266,50 +267,99 @@ async function loadReviewsCarousel() {
             return;
         }
 
-        const reviews = [];
+        allReviewsPool = [];
         snapshot.forEach(doc => {
             const data = doc.data();
-            // Filtrer côté client
-            if (data.approved !== false) reviews.push(data);
+            if (data.approved !== false) allReviewsPool.push(data);
         });
 
-        if (reviews.length === 0) {
+        if (allReviewsPool.length === 0) {
             const section = document.getElementById('reviewsSection');
             if (section) section.classList.add('hidden');
             return;
         }
 
-        // Trier côté client du plus récent au plus ancien
-        reviews.sort((a, b) => {
-            const ta = a.createdAt ? (a.createdAt.toMillis ? a.createdAt.toMillis() : 0) : 0;
-            const tb = b.createdAt ? (b.createdAt.toMillis ? b.createdAt.toMillis() : 0) : 0;
-            return tb - ta;
-        });
+        // Premier affichage
+        displayRandomReviews();
 
-        // Dupliquer pour un défilement continu seamless
-        // On multiplie pour s'assurer que le rail est toujours plus large que l'écran
-        let repeatFactor = 2;
-        if (reviews.length < 5) repeatFactor = 4;
-        if (reviews.length < 3) repeatFactor = 6;
-        
-        const allReviews = [];
-        for(let i=0; i < repeatFactor; i++) allReviews.push(...reviews);
+        // Lancer le cycle toutes les 10 secondes
+        setInterval(rotateReviews, 10000);
 
-        container.innerHTML = allReviews.map(r => buildReviewCard(r)).join('');
-
-        // Ajuster la vitesse selon le nb de cartes (plus lent)
-        const duration = Math.max(30, reviews.length * 12);
-        container.style.animationDuration = `${duration}s`;
-
-        // Afficher la section si elle était cachée
         const section = document.getElementById('reviewsSection');
         if (section) section.classList.remove('hidden');
 
     } catch (e) {
-        console.error('Erreur chargement avis carrousel:', e);
+        console.error('Erreur chargement avis:', e);
         const section = document.getElementById('reviewsSection');
         if (section) section.classList.add('hidden');
     }
+}
+
+function rotateReviews() {
+    const container = document.getElementById('reviewsStaticContainer');
+    if (!container) return;
+
+    const cards = container.querySelectorAll('.review-card-slot');
+    if (cards.length === 0) return;
+
+    const tempPool = [...allReviewsPool];
+    const newReviews = [];
+
+    // Préparer les 3 nouveaux avis
+    for (let i = 0; i < 3; i++) {
+        if (tempPool.length > 0) {
+            const randomIndex = Math.floor(Math.random() * tempPool.length);
+            newReviews.push(tempPool[randomIndex]);
+            if (allReviewsPool.length >= 3) tempPool.splice(randomIndex, 1);
+        } else {
+            const randomIndex = Math.floor(Math.random() * allReviewsPool.length);
+            newReviews.push(allReviewsPool[randomIndex]);
+        }
+    }
+
+    // Appliquer l'effet progressif (Gauche -> Milieu -> Droite)
+    cards.forEach((slot, index) => {
+        setTimeout(() => {
+            // Fade out de la card individuelle
+            slot.classList.add('opacity-0', 'scale-95');
+            slot.classList.remove('opacity-100', 'scale-100');
+
+            setTimeout(() => {
+                // Changer le contenu
+                slot.innerHTML = buildReviewCard(newReviews[index]);
+                
+                // Fade in
+                slot.classList.add('opacity-100', 'scale-100');
+                slot.classList.remove('opacity-0', 'scale-95');
+            }, 600); // Temps de disparition
+        }, index * 250); // Délai entre chaque card (effet cascade)
+    });
+}
+
+function displayRandomReviews() {
+    const container = document.getElementById('reviewsStaticContainer');
+    if (!container || allReviewsPool.length === 0) return;
+
+    const reviewsToDisplay = [];
+    const tempPool = [...allReviewsPool];
+
+    for (let i = 0; i < 3; i++) {
+        if (tempPool.length > 0) {
+            const randomIndex = Math.floor(Math.random() * tempPool.length);
+            reviewsToDisplay.push(tempPool[randomIndex]);
+            if (allReviewsPool.length >= 3) tempPool.splice(randomIndex, 1);
+        } else {
+            const randomIndex = Math.floor(Math.random() * allReviewsPool.length);
+            reviewsToDisplay.push(allReviewsPool[randomIndex]);
+        }
+    }
+
+    // Créer des slots persistants pour permettre les transitions individuelles
+    container.innerHTML = reviewsToDisplay.map(r => `
+        <div class="review-card-slot transition-all duration-700 ease-in-out transform opacity-100 scale-100">
+            ${buildReviewCard(r)}
+        </div>
+    `).join('');
 }
 
 function buildReviewCard(review) {
@@ -341,16 +391,16 @@ function buildReviewCard(review) {
     }
 
     return `
-    <div class="review-card flex-shrink-0 w-72 bg-white rounded-2xl shadow-md border border-gray-100 p-5 mx-3 flex flex-col gap-3">
+    <div class="review-card w-full bg-white rounded-2xl shadow-md border border-gray-100 p-6 flex flex-col gap-4 transform transition-transform hover:scale-[1.02]">
         <div class="flex items-center gap-3">
             ${avatarHTML}
             <div class="min-w-0">
-                <p class="font-semibold text-gray-800 text-sm truncate">${escapeHtml(pseudo)}</p>
+                <p class="font-bold text-gray-800 text-sm truncate uppercase tracking-tight">${escapeHtml(pseudo)}</p>
                 <p class="text-yellow-400 text-base leading-none mt-0.5">${filledStars}<span class="text-gray-200">${emptyStars}</span></p>
             </div>
         </div>
         ${review.message ? `<p class="text-gray-600 text-sm leading-relaxed italic flex-1">"${escapeHtml(review.message)}"</p>` : ''}
-        ${dateStr ? `<p class="text-xs text-gray-400 mt-auto">${dateStr}</p>` : ''}
+        ${dateStr ? `<p class="text-[10px] font-bold text-gray-300 uppercase tracking-widest mt-auto">${dateStr}</p>` : ''}
     </div>`;
 }
 
@@ -363,12 +413,12 @@ function escapeHtml(str) {
 //  Initialisation
 // ─────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
-    // Charger le carrousel si on est sur index.html
+    // Charger la section avis si on est sur index.html
     if (document.getElementById('reviewsSection')) {
-        loadReviewsCarousel();
+        initReviewsDisplay();
     }
 });
 
 // Exposer pour appel externe
 window.injectReviewForm = injectReviewForm;
-window.loadReviewsCarousel = loadReviewsCarousel;
+window.initReviewsDisplay = initReviewsDisplay;

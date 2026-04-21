@@ -812,41 +812,14 @@
             </div>
         </div>
 
-        <!-- Carrousel infini -->
-        <div class="relative w-full overflow-hidden"
-            style="mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent); -webkit-mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);">
-            <div id="reviewsCarouselTrack" class="flex reviews-scroll">
-                <!-- Les cartes sont injectées par reviews.js -->
+        <!-- Grille d'avis statiques -->
+        <div class="max-w-6xl mx-auto px-4">
+            <div id="reviewsStaticContainer" class="grid grid-cols-1 md:grid-cols-3 gap-8 transition-opacity duration-1000 opacity-100">
+                <!-- Les 3 cartes sont injectées par reviews.js -->
+                <div class="col-span-full text-center py-10 opacity-50 italic">Chargement des avis...</div>
             </div>
         </div>
     </div>
-
-    <style>
-        @keyframes reviewsScroll {
-            0% {
-                transform: translateX(0);
-            }
-
-            100% {
-                transform: translateX(-50%);
-            }
-        }
-
-        .reviews-scroll {
-            animation: reviewsScroll 40s linear infinite;
-            width: max-content;
-            padding-top: 1rem;
-            padding-bottom: 1rem;
-        }
-
-        .reviews-scroll:hover {
-            animation-play-state: paused;
-        }
-
-        .review-card {
-            min-height: 130px;
-        }
-    </style>
 
     <!-- Public Races Section -->
     <div id="publicRacesSection" class="py-6">
@@ -860,7 +833,6 @@
                 <p class="text-gray-600 max-w-2xl mx-auto">Découvrez les performances collectives des coureurs.</p>
 
             </div>
-
 
             <!-- Séparateur -->
             <div class="max-w-4xl mx-auto mb-6">
