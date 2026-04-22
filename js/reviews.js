@@ -66,6 +66,29 @@ const reviewFormHTML = `
 </div>
 `;
 
+const deleteReviewModalHTML = `
+<div id="deleteReviewModal" class="fixed inset-0 z-[100] flex items-center justify-center hidden">
+    <div class="absolute inset-0 bg-black/40 backdrop-blur-sm"></div>
+    <div class="relative bg-white rounded-2xl p-6 w-full max-w-sm m-4 shadow-2xl border border-red-50 transform transition-all scale-100">
+        <div class="text-center">
+            <div class="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-trash-alt text-2xl"></i>
+            </div>
+            <h3 class="text-lg font-bold text-gray-900 mb-2">Supprimer l'avis ?</h3>
+            <p class="text-sm text-gray-500 mb-6">Voulez-vous vraiment supprimer votre avis ? Cette action est définitive.</p>
+        </div>
+        <div class="flex gap-3">
+            <button id="cancelDeleteReviewBtn" class="flex-1 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl transition-all">
+                Annuler
+            </button>
+            <button id="confirmDeleteReviewBtn" class="flex-1 py-2.5 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-xl transition-all shadow-md shadow-red-100">
+                Supprimer
+            </button>
+        </div>
+    </div>
+</div>
+`;
+
 // Labels selon le nb d'étoiles
 const starLabels = ['', 'Pas convaincu 😕', 'Peut mieux faire 🙂', 'Bien ! 👍', 'Très bien ! 😊', 'Excellent ! 🌟'];
 
@@ -76,6 +99,13 @@ function injectReviewForm() {
     // Ne pas injecter si déjà présent
     if (document.getElementById('reviewSection')) {
         return;
+    }
+
+    // Injecter la modale de confirmation de suppression si elle n'existe pas
+    if (!document.getElementById('deleteReviewModal')) {
+        const div = document.createElement('div');
+        div.innerHTML = deleteReviewModalHTML;
+        document.body.appendChild(div.firstElementChild);
     }
 
     // Chercher le conteneur principal du formulaire de settings
@@ -244,48 +274,71 @@ function initReviewForm() {
 
     // Gérer la suppression
     if (deleteBtn) {
-        deleteBtn.onclick = async () => {
-            const user = firebase.auth().currentUser;
-            if (!user) return;
+        deleteBtn.onclick = () => {
+            const modal = document.getElementById('deleteReviewModal');
+            if (!modal) return;
 
-            if (!confirm('Voulez-vous vraiment supprimer votre avis ?')) return;
+            modal.classList.remove('hidden');
 
-            deleteBtn.disabled = true;
-            deleteBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Suppression...';
+            const confirmBtn = document.getElementById('confirmDeleteReviewBtn');
+            const cancelBtn = document.getElementById('cancelDeleteReviewBtn');
 
-            try {
-                await db.collection('reviews').doc(user.uid).delete();
-                
-                // Reset UI
-                selectedStars = 0;
-                highlightStars(0);
-                if (label) label.textContent = '';
-                if (textarea) textarea.value = '';
-                if (charCount) charCount.textContent = '0';
-                if (statusBadge) statusBadge.classList.add('hidden');
-                
-                if (submitBtn) {
-                    submitBtn.disabled = false;
-                    submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Publier l\'avis';
-                }
-                if (draftBtn) {
-                    draftBtn.disabled = false;
-                    draftBtn.innerHTML = '<i class="fas fa-save"></i> Enregistrer en brouillon';
-                }
-                
-                deleteBtn.classList.add('hidden');
-                deleteBtn.disabled = false;
-                deleteBtn.innerHTML = '<i class="fas fa-trash-alt"></i> Supprimer mon avis';
-                
-                showReviewMsg('Votre avis a été supprimé.', 'success');
-                window.settingsHasChanged = true;
-            } catch (e) {
-                console.error('Erreur suppression avis:', e);
-                showReviewMsg('Erreur lors de la suppression.', 'error');
-                deleteBtn.disabled = false;
-                deleteBtn.innerHTML = '<i class="fas fa-trash-alt"></i> Supprimer mon avis';
-            }
+            // On utilise onclick pour écraser les précédents listeners
+            confirmBtn.onclick = async () => {
+                modal.classList.add('hidden');
+                await executeDelete();
+            };
+
+            cancelBtn.onclick = () => {
+                modal.classList.add('hidden');
+            };
+            
+            // Fermer si clic sur le backdrop
+            modal.onclick = (e) => {
+                if (e.target === modal) modal.classList.add('hidden');
+            };
         };
+    }
+
+    async function executeDelete() {
+        const user = firebase.auth().currentUser;
+        if (!user) return;
+
+        deleteBtn.disabled = true;
+        deleteBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Suppression...';
+
+        try {
+            await db.collection('reviews').doc(user.uid).delete();
+            
+            // Reset UI
+            selectedStars = 0;
+            highlightStars(0);
+            if (label) label.textContent = '';
+            if (textarea) textarea.value = '';
+            if (charCount) charCount.textContent = '0';
+            if (statusBadge) statusBadge.classList.add('hidden');
+            
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Publier l\'avis';
+            }
+            if (draftBtn) {
+                draftBtn.disabled = false;
+                draftBtn.innerHTML = '<i class="fas fa-save"></i> Enregistrer en brouillon';
+            }
+            
+            deleteBtn.classList.add('hidden');
+            deleteBtn.disabled = false;
+            deleteBtn.innerHTML = '<i class="fas fa-trash-alt"></i> Supprimer mon avis';
+            
+            showReviewMsg('Votre avis a été supprimé.', 'success');
+            window.settingsHasChanged = true;
+        } catch (e) {
+            console.error('Erreur suppression avis:', e);
+            showReviewMsg('Erreur lors de la suppression.', 'error');
+            deleteBtn.disabled = false;
+            deleteBtn.innerHTML = '<i class="fas fa-trash-alt"></i> Supprimer mon avis';
+        }
     }
 
     function showReviewMsg(msg, type) {
