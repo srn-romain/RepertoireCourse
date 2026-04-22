@@ -30,6 +30,12 @@ input[type="search"]::-webkit-search-results-decoration {
     color: #9ca3af;
     pointer-events: none;
     cursor: text;
+    transition: opacity 0.2s ease;
+}
+
+#raceNotesEditor.has-content:before,
+#raceNotesEditor:focus:before {
+    display: none !important;
 }
 
 .card-hover {

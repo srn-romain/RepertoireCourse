@@ -5440,7 +5440,10 @@
             modalTitle.textContent = 'Ajouter une course';
             raceForm.reset();
             const rNE = document.getElementById('raceNotesEditor');
-            if (rNE) rNE.innerHTML = '';
+            if (rNE) {
+                rNE.innerHTML = '';
+                rNE.classList.remove('has-content');
+            }
             if (typeof toggleBtnActive === 'function') {
                 toggleBtnActive(document.getElementById('btnBold'), false);
                 toggleBtnActive(document.getElementById('btnItalic'), false);
@@ -5563,7 +5566,10 @@
             }
             document.getElementById('raceNotes').value = race.notes || '';
             const raceNotesEditor = document.getElementById('raceNotesEditor');
-            if (raceNotesEditor) raceNotesEditor.innerHTML = race.notes || '';
+            if (raceNotesEditor) {
+                raceNotesEditor.innerHTML = race.notes || '';
+                updateNotesFormatState();
+            }
             document.getElementById('racePrice').value = (race.price !== undefined && race.price !== null) ? race.price : '';
             document.getElementById('raceWebsite').value = race.website || '';
             document.getElementById('raceResultUrl').value = race.resultUrl || '';
@@ -8046,6 +8052,9 @@
         }
 
         function updateNotesFormatState() {
+            const editor = document.getElementById('raceNotesEditor');
+            if (!editor) return;
+
             const isBold = document.queryCommandState('bold');
             const isItalic = document.queryCommandState('italic');
             const isUnderline = document.queryCommandState('underline');
@@ -8053,6 +8062,21 @@
             toggleBtnActive(document.getElementById('btnBold'), isBold);
             toggleBtnActive(document.getElementById('btnItalic'), isItalic);
             toggleBtnActive(document.getElementById('btnUnderline'), isUnderline);
+
+            // Gérer le placeholder via une classe si besoin (plus robuste que :empty)
+            const hasContent = editor.textContent.trim().length > 0 || editor.querySelector('img, iframe, table');
+            editor.classList.toggle('has-content', hasContent);
+        }
+
+        // Gestion spécifique du collage pour l'éditeur
+        const rNE = document.getElementById('raceNotesEditor');
+        if (rNE) {
+            rNE.addEventListener('paste', () => {
+                setTimeout(updateNotesFormatState, 0);
+            });
+            rNE.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') setTimeout(updateNotesFormatState, 0);
+            });
         }
 
         function toggleBtnActive(btn, isActive) {
