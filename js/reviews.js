@@ -12,9 +12,12 @@
 const reviewFormHTML = `
 <!-- Laisser un avis -->
 <div id="reviewSection" class="mb-4">
-    <h3 class="text-sm font-semibold text-gray-700 mb-1 flex items-center gap-2">
-        <i class="fas fa-star text-yellow-400"></i> Laisser un avis
-    </h3>
+    <div class="flex items-center justify-between mb-1">
+        <h3 class="text-sm font-semibold text-gray-700 flex items-center gap-2">
+            <i class="fas fa-star text-yellow-400"></i> Laisser un avis
+        </h3>
+        <div id="reviewStatusBadge" class="hidden text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full"></div>
+    </div>
     <p class="text-xs text-gray-400 mb-3 italic">Votre retour aide la communauté à découvrir l'application ✨</p>
 
     <div class="bg-gradient-to-br from-yellow-50 to-amber-50 border border-yellow-200 rounded-xl p-4 space-y-3">
@@ -41,14 +44,20 @@ const reviewFormHTML = `
             <p class="text-right text-xs text-gray-400 mt-0.5"><span id="reviewCharCount">0</span>/250</p>
         </div>
 
-        <!-- Bouton de publication -->
-        <button id="submitReviewBtn"
-            class="w-full py-2 bg-yellow-400 hover:bg-yellow-500 text-white font-semibold rounded-lg transition-all shadow-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
-            <i class="fas fa-paper-plane"></i> Publier mon avis
-        </button>
+        <!-- Boutons d'actions -->
+        <div class="flex flex-col gap-2">
+            <button id="submitReviewBtn"
+                class="w-full py-2 bg-yellow-400 hover:bg-yellow-500 text-white font-semibold rounded-lg transition-all shadow-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed text-xs">
+                <i class="fas fa-paper-plane"></i> Publier l'avis
+            </button>
+            <button id="draftReviewBtn"
+                class="w-full py-2 bg-white border border-yellow-200 hover:bg-yellow-100 text-yellow-700 font-semibold rounded-lg transition-all shadow-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed text-xs">
+                <i class="fas fa-save"></i> Enregistrer en brouillon
+            </button>
+        </div>
 
-        <!-- Bouton de suppression -->
-        <button id="deleteReviewBtn" class="hidden w-full py-1 text-red-400 hover:text-red-600 text-xs font-medium transition-colors flex items-center justify-center gap-1 mt-1">
+        <!-- Suppression -->
+        <button id="deleteReviewBtn" class="hidden w-full py-1 text-red-400 hover:text-red-600 text-[10px] font-medium transition-colors flex items-center justify-center gap-1 mt-1">
             <i class="fas fa-trash-alt"></i> Supprimer mon avis
         </button>
 
@@ -95,6 +104,9 @@ function initReviewForm() {
     const textarea = document.getElementById('reviewMessage');
     const charCount = document.getElementById('reviewCharCount');
     const submitBtn = document.getElementById('submitReviewBtn');
+    const draftBtn = document.getElementById('draftReviewBtn');
+    const deleteBtn = document.getElementById('deleteReviewBtn');
+    const statusBadge = document.getElementById('reviewStatusBadge');
     const formMsg = document.getElementById('reviewFormMessage');
 
     if (!stars.length) return;
@@ -124,6 +136,23 @@ function initReviewForm() {
         });
     }
 
+    function updateUIStatus(approved) {
+        if (!statusBadge) return;
+        statusBadge.classList.remove('hidden');
+        if (approved) {
+            statusBadge.textContent = 'Publié';
+            statusBadge.className = 'text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full bg-green-100 text-green-700';
+            if (submitBtn) submitBtn.innerHTML = '<i class="fas fa-edit"></i> Mettre à jour';
+            if (draftBtn) draftBtn.innerHTML = '<i class="fas fa-undo"></i> Remettre en brouillon';
+        } else {
+            statusBadge.textContent = 'Brouillon';
+            statusBadge.className = 'text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-700';
+            if (submitBtn) submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Publier l\'avis';
+            if (draftBtn) draftBtn.innerHTML = '<i class="fas fa-save"></i> Enregistrer en brouillon';
+        }
+        if (deleteBtn) deleteBtn.classList.remove('hidden');
+    }
+
     // Vérifier si l'utilisateur a déjà soumis un avis
     const user = firebase.auth().currentUser;
     if (user) {
@@ -135,73 +164,85 @@ function initReviewForm() {
                 if (label) label.textContent = starLabels[selectedStars];
                 if (textarea) textarea.value = data.message || '';
                 if (charCount) charCount.textContent = (data.message || '').length;
-                if (submitBtn) submitBtn.innerHTML = '<i class="fas fa-edit"></i> Modifier mon avis';
-                const deleteBtn = document.getElementById('deleteReviewBtn');
-                if (deleteBtn) deleteBtn.classList.remove('hidden');
+                updateUIStatus(data.approved !== false);
             }
         }).catch(e => console.warn('Erreur chargement avis:', e));
     }
 
-    // Soumettre
-    if (submitBtn) {
-        submitBtn.addEventListener('click', async () => {
-            if (selectedStars === 0) {
-                showReviewMsg('Veuillez choisir une note en étoiles.', 'error');
-                return;
-            }
+    // Fonction de sauvegarde générique
+    async function saveReview(isApproved) {
+        if (selectedStars === 0) {
+            showReviewMsg('Veuillez choisir une note en étoiles.', 'error');
+            return;
+        }
 
-            const currentUser = firebase.auth().currentUser;
-            if (!currentUser) return;
+        const currentUser = firebase.auth().currentUser;
+        if (!currentUser) return;
 
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Publication...';
+        const btn = isApproved ? submitBtn : draftBtn;
+        const originalHTML = btn.innerHTML;
+        
+        // Disable both buttons
+        if (submitBtn) submitBtn.disabled = true;
+        if (draftBtn) draftBtn.disabled = true;
+        btn.innerHTML = `<i class="fas fa-circle-notch fa-spin"></i> ${isApproved ? 'Publication...' : 'Enregistrement...'}`;
 
+        try {
+            // Récupérer le pseudo et la photo
+            let pseudo = 'Anonyme';
+            let photoURL = '';
             try {
-                // Récupérer le pseudo et la photo
-                let pseudo = 'Anonyme';
-                let photoURL = '';
-                try {
-                    const uDoc = await db.collection('users').doc(currentUser.uid).get();
-                    if (uDoc.exists) {
-                        const uData = uDoc.data();
-                        if (uData.pseudo) pseudo = uData.pseudo;
-                        if (uData.photoURL) photoURL = uData.photoURL;
-                    }
-                } catch(e) {}
+                const uDoc = await db.collection('users').doc(currentUser.uid).get();
+                if (uDoc.exists) {
+                    const uData = uDoc.data();
+                    if (uData.pseudo) pseudo = uData.pseudo;
+                    if (uData.photoURL) photoURL = uData.photoURL;
+                }
+            } catch(e) {}
 
-                const reviewData = {
-                    stars: selectedStars,
-                    message: textarea ? textarea.value.trim() : '',
-                    pseudo,
-                    photoURL,
-                    uid: currentUser.uid,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                    approved: true
-                };
-
-                // Utiliser l'UID comme ID de document (1 avis par utilisateur)
-                await db.collection('reviews').doc(currentUser.uid).set(reviewData);
-
-                showReviewMsg('Votre avis a été publié ! Merci 🎉', 'success');
-                submitBtn.innerHTML = '<i class="fas fa-check"></i> Avis publié !';
-
-                // Marquer comme modifié pour recharger la page à la fermeture de la modale
-                window.settingsHasChanged = true;
-                
-                // Montrer le bouton de suppression s'il est caché
-                const deleteBtn = document.getElementById('deleteReviewBtn');
-                if (deleteBtn) deleteBtn.classList.remove('hidden');
-            } catch (e) {
-                console.error('Erreur soumission avis:', e);
-                showReviewMsg('Erreur lors de la publication. Réessayez.', 'error');
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Publier mon avis';
+            const reviewData = {
+                stars: selectedStars,
+                message: textarea ? textarea.value.trim() : '',
+                pseudo,
+                photoURL,
+                uid: currentUser.uid,
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                approved: isApproved
+            };
+            
+            // Si nouveau, ajouter createdAt
+            const docRef = db.collection('reviews').doc(currentUser.uid);
+            const doc = await docRef.get();
+            if (!doc.exists) {
+                reviewData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
             }
-        });
+
+            await docRef.set(reviewData, { merge: true });
+
+            showReviewMsg(isApproved ? 'Votre avis a été publié ! Merci 🎉' : 'Brouillon enregistré.', 'success');
+            
+            // Update UI
+            updateUIStatus(isApproved);
+            
+            // Marquer comme modifié pour recharger la page à la fermeture de la modale
+            window.settingsHasChanged = true;
+        } catch (e) {
+            console.error('Erreur soumission avis:', e);
+            showReviewMsg('Erreur lors de l\'enregistrement. Réessayez.', 'error');
+        } finally {
+            if (submitBtn) submitBtn.disabled = false;
+            if (draftBtn) draftBtn.disabled = false;
+            if (submitBtn) submitBtn.innerHTML = isApproved ? (isApproved ? '<i class="fas fa-edit"></i> Mettre à jour' : '<i class="fas fa-paper-plane"></i> Publier l\'avis') : submitBtn.innerHTML;
+            // On laisse updateUIStatus gérer le contenu des boutons normalement, mais au cas où :
+            if (isApproved) updateUIStatus(true); else updateUIStatus(false);
+        }
     }
 
+    // Listeners
+    if (submitBtn) submitBtn.addEventListener('click', () => saveReview(true));
+    if (draftBtn) draftBtn.addEventListener('click', () => saveReview(false));
+
     // Gérer la suppression
-    const deleteBtn = document.getElementById('deleteReviewBtn');
     if (deleteBtn) {
         deleteBtn.onclick = async () => {
             const user = firebase.auth().currentUser;
@@ -221,10 +262,17 @@ function initReviewForm() {
                 if (label) label.textContent = '';
                 if (textarea) textarea.value = '';
                 if (charCount) charCount.textContent = '0';
+                if (statusBadge) statusBadge.classList.add('hidden');
+                
                 if (submitBtn) {
                     submitBtn.disabled = false;
-                    submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Publier mon avis';
+                    submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Publier l\'avis';
                 }
+                if (draftBtn) {
+                    draftBtn.disabled = false;
+                    draftBtn.innerHTML = '<i class="fas fa-save"></i> Enregistrer en brouillon';
+                }
+                
                 deleteBtn.classList.add('hidden');
                 deleteBtn.disabled = false;
                 deleteBtn.innerHTML = '<i class="fas fa-trash-alt"></i> Supprimer mon avis';
