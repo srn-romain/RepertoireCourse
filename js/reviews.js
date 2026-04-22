@@ -15,12 +15,24 @@ const reviewFormHTML = `
     <div class="flex items-center justify-between mb-1">
         <h3 class="text-sm font-semibold text-gray-700 flex items-center gap-2">
             <i class="fas fa-star text-yellow-400"></i> Laisser un avis
+            <div class="group relative inline-block">
+                <i class="fas fa-info-circle text-gray-300 hover:text-blue-400 cursor-help transition-colors text-xs"></i>
+                <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block w-48 bg-gray-800 text-white text-[10px] p-2 rounded-lg shadow-xl z-50 text-center leading-snug">
+                    Votre avis sera affiché dans le carrousel de la page d'accueil pour aider les autres utilisateurs ✨
+                    <div class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-800"></div>
+                </div>
+            </div>
         </h3>
         <div id="reviewStatusBadge" class="hidden text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full"></div>
     </div>
     <p class="text-xs text-gray-400 mb-3 italic">Votre retour aide la communauté à découvrir l'application ✨</p>
 
     <div class="bg-gradient-to-br from-yellow-50 to-amber-50 border border-yellow-200 rounded-xl p-4 space-y-3">
+        <!-- État actuel explication -->
+        <div id="reviewStateExplanation" class="hidden text-[10px] text-amber-700 bg-white/50 border border-amber-100 rounded-lg p-2 italic leading-tight">
+            <!-- Rempli par le JS -->
+        </div>
+
         <!-- Étoiles -->
         <div>
             <p class="text-xs font-semibold text-gray-600 mb-2">Votre note</p>
@@ -169,14 +181,20 @@ function initReviewForm() {
     function updateUIStatus(approved) {
         if (!statusBadge) return;
         statusBadge.classList.remove('hidden');
+        
+        const explanation = document.getElementById('reviewStateExplanation');
+        if (explanation) explanation.classList.remove('hidden');
+
         if (approved) {
             statusBadge.textContent = 'Publié';
             statusBadge.className = 'text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full bg-green-100 text-green-700';
+            if (explanation) explanation.innerHTML = '<b>Publié :</b> cet avis est visible par tout le monde sur la page d\'accueil.';
             if (submitBtn) submitBtn.innerHTML = '<i class="fas fa-edit"></i> Mettre à jour';
             if (draftBtn) draftBtn.innerHTML = '<i class="fas fa-undo"></i> Remettre en brouillon';
         } else {
             statusBadge.textContent = 'Brouillon';
             statusBadge.className = 'text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-700';
+            if (explanation) explanation.innerHTML = '<b>Brouillon :</b> votre avis n\'est pas encore visible par la communauté. Vous seul pouvez le voir ici.';
             if (submitBtn) submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Publier l\'avis';
             if (draftBtn) draftBtn.innerHTML = '<i class="fas fa-save"></i> Enregistrer en brouillon';
         }
@@ -317,6 +335,9 @@ function initReviewForm() {
             if (textarea) textarea.value = '';
             if (charCount) charCount.textContent = '0';
             if (statusBadge) statusBadge.classList.add('hidden');
+            
+            const explanation = document.getElementById('reviewStateExplanation');
+            if (explanation) explanation.classList.add('hidden');
             
             if (submitBtn) {
                 submitBtn.disabled = false;
