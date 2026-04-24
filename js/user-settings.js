@@ -102,8 +102,16 @@ const userSettingsModalHTML = `
                 <h3 class="text-sm font-semibold text-gray-700 mb-3">Préférences d'interface</h3>
                 <div class="space-y-3 bg-gray-50 p-4 rounded-lg border border-gray-100">
                     <label class="flex items-center cursor-pointer">
+                        <input type="checkbox" id="prefShowWishlistBtn" class="w-4 h-4 text-green-600 rounded focus:ring-green-500" checked>
+                        <span class="ml-2 text-sm text-gray-700">Afficher le bouton "Wishlist"</span>
+                    </label>
+                    <label class="flex items-center cursor-pointer">
                         <input type="checkbox" id="prefShowStatsBtn" class="w-4 h-4 text-green-600 rounded focus:ring-green-500">
                         <span class="ml-2 text-sm text-gray-700">Afficher le bouton "Statistiques"</span>
+                    </label>
+                    <label class="flex items-center cursor-pointer">
+                        <input type="checkbox" id="prefShowBadgesBtn" class="w-4 h-4 text-green-600 rounded focus:ring-green-500" checked>
+                        <span class="ml-2 text-sm text-gray-700">Afficher le bouton "Badges"</span>
                     </label>
                     <div class="pt-2 border-t border-gray-200 mt-2">
                         <p class="text-xs text-green-600 font-medium"><i class="fas fa-check-circle mr-1"></i>Les modifications sont automatiquement enregistrées.</p>
@@ -120,16 +128,16 @@ const userSettingsModalHTML = `
             <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-2">Gestion des données</label>
                 <div class="grid grid-cols-2 gap-3">
-                    <button id="btnSettingsImport" class="py-2.5 px-3 border border-teal-200 bg-teal-50 text-teal-700 rounded-lg hover:bg-teal-100 transition flex items-center justify-center gap-2 text-sm font-medium shadow-sm hover:shadow">
-                        <i class="fas fa-upload"></i>
-                        Importer
-                    </button>
                     <button id="btnSettingsExport" class="py-2.5 px-3 border border-green-200 bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition flex items-center justify-center gap-2 text-sm font-medium shadow-sm hover:shadow">
                         <i class="fas fa-download"></i>
                         Exporter
                     </button>
+                    <button id="btnSettingsImport" class="py-2.5 px-3 border border-teal-200 bg-teal-50 text-teal-700 rounded-lg hover:bg-teal-100 transition flex items-center justify-center gap-2 text-sm font-medium shadow-sm hover:shadow">
+                        <i class="fas fa-upload"></i>
+                        Importer
+                    </button>
                 </div>
-                <p class="text-xs text-gray-400 italic mt-2">Importez ou exportez vos courses et wishlist au format JSON.</p>
+                <p class="text-xs text-gray-400 italic mt-2"> Exportez ou importez vos courses et wishlist au format JSON.</p>
             </div>
 
             <hr class="border-gray-100">
@@ -314,6 +322,8 @@ async function initSettingsLogic() {
 
     // Checkboxes UI preferences
     const prefShowStatsBtn = document.getElementById('prefShowStatsBtn');
+    const prefShowBadgesBtn = document.getElementById('prefShowBadgesBtn');
+    const prefShowWishlistBtn = document.getElementById('prefShowWishlistBtn');
 
     // Vérifier si l'utilisateur est invité
     let isInvite = false;
@@ -350,7 +360,7 @@ async function initSettingsLogic() {
         });
 
         // Désactiver toutes les checkboxes de préférences UI
-        [prefShowStatsBtn].forEach(cb => {
+        [prefShowStatsBtn, prefShowBadgesBtn, prefShowWishlistBtn].forEach(cb => {
             if (cb) {
                 cb.disabled = true;
                 cb.classList.add('opacity-50', 'cursor-not-allowed');
@@ -504,7 +514,9 @@ async function initSettingsLogic() {
         if (!user) return;
 
         const uiPreferences = {
-            showStatsBtn: prefShowStatsBtn.checked
+            showStatsBtn: prefShowStatsBtn.checked,
+            showBadgesBtn: prefShowBadgesBtn.checked,
+            showWishlistBtn: prefShowWishlistBtn.checked
         };
 
         try {
@@ -522,7 +534,7 @@ async function initSettingsLogic() {
             if (cb) cb.addEventListener('change', savePrivacySettings);
         });
 
-        [prefShowStatsBtn].forEach(cb => {
+        [prefShowStatsBtn, prefShowBadgesBtn, prefShowWishlistBtn].forEach(cb => {
             if (cb) cb.addEventListener('change', saveUISettings);
         });
 
@@ -629,9 +641,13 @@ async function initSettingsLogic() {
                 // UI preferences (Default to true if undefined, as buttons were previously visible)
                 if (data.uiPreferences) {
                     if (prefShowStatsBtn) prefShowStatsBtn.checked = data.uiPreferences.showStatsBtn !== false;
+                    if (prefShowBadgesBtn) prefShowBadgesBtn.checked = data.uiPreferences.showBadgesBtn !== false;
+                    if (prefShowWishlistBtn) prefShowWishlistBtn.checked = data.uiPreferences.showWishlistBtn !== false;
                 } else {
                     // Defaults if no settings saved yet
                     if (prefShowStatsBtn) prefShowStatsBtn.checked = true;
+                    if (prefShowBadgesBtn) prefShowBadgesBtn.checked = true;
+                    if (prefShowWishlistBtn) prefShowWishlistBtn.checked = true;
                 }
 
                 // Pseudo input
@@ -964,8 +980,12 @@ window.openUserSettings = async function () {
             // Charger les préférences UI
             const ui = data.uiPreferences || {};
             const prefShowStatsBtn = document.getElementById('prefShowStatsBtn');
+            const prefShowBadgesBtn = document.getElementById('prefShowBadgesBtn');
+            const prefShowWishlistBtn = document.getElementById('prefShowWishlistBtn');
 
             if (prefShowStatsBtn) prefShowStatsBtn.checked = (ui.showStatsBtn !== undefined) ? ui.showStatsBtn : true;
+            if (prefShowBadgesBtn) prefShowBadgesBtn.checked = (ui.showBadgesBtn !== undefined) ? ui.showBadgesBtn : true;
+            if (prefShowWishlistBtn) prefShowWishlistBtn.checked = (ui.showWishlistBtn !== undefined) ? ui.showWishlistBtn : true;
 
         } else {
             if (pseudoInput) pseudoInput.value = "";

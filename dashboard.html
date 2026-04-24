@@ -1912,7 +1912,7 @@
                                 showPseudo: true, showCity: true, showFavorite: false,
                                 showDay: true, hideLikeCount: false
                             };
-                            updateData.uiPreferences = { showStatsBtn: true };
+                            updateData.uiPreferences = { showStatsBtn: true, showBadgesBtn: true, showWishlistBtn: true };
                         }
 
                         await userDocRef.set(updateData, { merge: true });
@@ -7722,13 +7722,16 @@
 
         let parsedImportData = null;
 
-        // Gérer les préférences d'interface utilisateur (Stats)
+        // Gérer les préférences d'interface utilisateur (Stats, Badges, Wishlist)
         async function applyUserUIPreferences() {
             const user = firebase.auth().currentUser;
             const statsBtn = document.getElementById('statsBtn');
+            const badgesBtn = document.getElementById('badgesBtn');
+            const wishlistBtn = document.getElementById('wishlistBtn');
 
             if (!user) {
                 if (statsBtn) statsBtn.classList.add('hidden');
+                if (badgesBtn) badgesBtn.classList.add('hidden');
                 return;
             }
 
@@ -7738,15 +7741,34 @@
                     const data = doc.data();
                     const uiPrefs = data.uiPreferences || {};
 
-                    let showStats = true; // Default intent for logged in users usually
+                    // Stats button
+                    let showStats = true;
                     if (uiPrefs.hasOwnProperty('showStatsBtn')) {
                         showStats = uiPrefs.showStatsBtn;
                     }
-
                     if (statsBtn) {
-
                         if (showStats) statsBtn.classList.remove('hidden');
                         else statsBtn.classList.add('hidden');
+                    }
+
+                    // Badges button
+                    let showBadges = true;
+                    if (uiPrefs.hasOwnProperty('showBadgesBtn')) {
+                        showBadges = uiPrefs.showBadgesBtn;
+                    }
+                    if (badgesBtn) {
+                        if (showBadges) badgesBtn.classList.remove('hidden');
+                        else badgesBtn.classList.add('hidden');
+                    }
+
+                    // Wishlist button
+                    let showWishlist = true;
+                    if (uiPrefs.hasOwnProperty('showWishlistBtn')) {
+                        showWishlist = uiPrefs.showWishlistBtn;
+                    }
+                    if (wishlistBtn) {
+                        if (showWishlist) wishlistBtn.classList.remove('hidden');
+                        else wishlistBtn.classList.add('hidden');
                     }
                 }
             } catch (error) {
