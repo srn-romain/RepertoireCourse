@@ -7494,7 +7494,12 @@
                 };
 
                 racesSnapshot.forEach(doc => {
-                    data.races.push({ id: doc.id, ...doc.data() });
+                    const raceData = doc.data();
+                    // Assurer que le champ public est présent dans l'export (défaut true)
+                    if (!raceData.hasOwnProperty('public')) {
+                        raceData.public = true;
+                    }
+                    data.races.push({ id: doc.id, ...raceData });
                 });
 
                 wishlistSnapshot.forEach(doc => {

@@ -432,8 +432,21 @@ const manualModalHTML = `
                                 <p class="text-xs text-gray-600 mb-1">Simplifiez votre tableau de bord en affichant
                                     uniquement ce dont vous avez besoin :</p>
                                 <ul class="text-xs text-gray-600 list-disc ml-4 space-y-0.5">
-                                    <li>Afficher/Masquer le bouton "Importer mes données"</li>
+                                    <li>Afficher/Masquer le bouton "Wishlist"</li>
                                     <li>Afficher/Masquer le bouton "Statistiques"</li>
+                                    <li>Afficher/Masquer le bouton "Badges"</li>
+                                </ul>
+                                <p class="text-[10px] text-gray-400 italic mt-1">Par défaut, tous les boutons sont activés.</p>
+                            </div>
+
+                            <!-- Gestion des données -->
+                            <div class="bg-gray-50 p-3 rounded border border-gray-100">
+                                <p class="font-semibold text-gray-800 text-sm mb-1 flex items-center gap-2"><i
+                                        class="fas fa-database text-green-600"></i> Gestion des données</p>
+                                <p class="text-xs text-gray-600 mb-1">Importez ou exportez vos courses et votre wishlist directement depuis vos paramètres :</p>
+                                <ul class="text-xs text-gray-600 list-disc ml-4 space-y-0.5">
+                                    <li><strong>Importer :</strong> Restaurez vos données depuis un fichier JSON de sauvegarde.</li>
+                                    <li><strong>Exporter :</strong> Téléchargez une copie complète de vos données (courses + wishlist).</li>
                                 </ul>
                             </div>
 
@@ -472,12 +485,7 @@ const manualModalHTML = `
                                 :</p>
                             <ul class="text-xs text-gray-600 ml-4 mt-2 space-y-1">
                                 <li>• Format JSON universel</li>
-                                <li class="flex items-center gap-1">• Bouton <svg xmlns="http://www.w3.org/2000/svg"
-                                        class="h-4 w-4 text-green-600 inline" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fill-rule="evenodd"
-                                            d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
-                                            clip-rule="evenodd" />
-                                    </svg> dans la barre de statut</li>
+                                <li class="flex items-center gap-1">• Bouton <span class="px-2 py-0.5 bg-green-50 text-green-700 border border-green-200 rounded text-xs font-medium"><i class="fas fa-download mr-1"></i>Exporter</span> dans les paramètres du compte</li>
                             </ul>
                         </div>
                         <div class="bg-white border border-teal-100 rounded-lg p-4 shadow-sm">
@@ -487,8 +495,7 @@ const manualModalHTML = `
                             <p class="text-sm text-gray-600">Restaurez vos données depuis un fichier JSON.</p>
                             <ul class="text-xs text-gray-600 ml-4 mt-2 space-y-1">
                                 <li>• Importe courses et wishlist</li>
-                                <li>• Courses publiques par défaut</li>
-                                <li>• Caché par défaut (activer dans Compte)</li>
+                                <li class="flex items-center gap-1">• Bouton <span class="px-2 py-0.5 bg-teal-50 text-teal-700 border border-teal-200 rounded text-xs font-medium"><i class="fas fa-upload mr-1"></i>Importer</span> dans les paramètres du compte</li>
                             </ul>
                         </div>
                         <div class="bg-white border border-red-100 rounded-lg p-4 shadow-sm md:col-span-2">
@@ -496,8 +503,7 @@ const manualModalHTML = `
                                 <i class="fas fa-file-pdf text-red-600"></i> Export PDF
                             </h5>
                             <p class="text-sm text-gray-600">Générez un rapport PDF esthétique de vos courses
-                                pour
-                                partager vos performances.</p>
+                                pour partager vos performances à partir de la modale de détail d'une course.</p>
                         </div>
                     </div>
                 </section>
