@@ -314,6 +314,12 @@ const manualModalHTML = `
                                 <p class="text-xs text-gray-600">Ville, région, pays</p>
                             </div>
                         </div>
+                        <p class="text-[11px] text-blue-600 italic mt-3 flex items-center gap-2">
+                            <i class="fas fa-lightbulb text-yellow-500"></i>
+                            <span><strong>Recherche Intelligente :</strong> La barre de recherche principale ne se
+                             limite pas aux noms. Elle scanne instantanément toutes les données de vos courses
+                              (lieux, notes, accompagnants, etc.) pour vous offrir un résultat immédiat.</span>
+                        </p>
                     </div>
                 </section>
 
@@ -495,15 +501,11 @@ const manualModalHTML = `
                             </div>
                              <div class="flex items-start gap-2">
                                 <i class="fas fa-calendar-check text-green-600 mt-0.5"></i>
-                                <span><strong>Anniversaires :</strong> l'application vous signale automatiquement vos courses passées à la même date.</span>
+                                <span>Retrouvez vos exploits passés avec les rappels d'anniversaire</span>
                             </div>
                             <div class="flex items-start gap-2">
                                 <i class="fas fa-search text-blue-600 mt-0.5"></i>
-                                <span><strong>Recherche :</strong> trouvez une course instantanément en tapant son nom ou son lieu.</span>
-                            </div>
-                            <div class="flex items-start gap-2">
-                                <i class="fas fa-camera text-blue-600 mt-0.5"></i>
-                                <span>Ajoutez des photos pour immortaliser vos moments</span>
+                                <span>Retrouvez une course grâce à une donnée qui la concerne</span>
                             </div>
                             <div class="flex items-start gap-2">
                                 <i class="fas fa-graduation-cap text-green-600 mt-0.5"></i>
