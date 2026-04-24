@@ -102,10 +102,6 @@ const userSettingsModalHTML = `
                 <h3 class="text-sm font-semibold text-gray-700 mb-3">Préférences d'interface</h3>
                 <div class="space-y-3 bg-gray-50 p-4 rounded-lg border border-gray-100">
                     <label class="flex items-center cursor-pointer">
-                        <input type="checkbox" id="prefShowImportBtn" class="w-4 h-4 text-green-600 rounded focus:ring-green-500">
-                        <span class="ml-2 text-sm text-gray-700">Afficher le bouton "Importer mes données"</span>
-                    </label>
-                    <label class="flex items-center cursor-pointer">
                         <input type="checkbox" id="prefShowStatsBtn" class="w-4 h-4 text-green-600 rounded focus:ring-green-500">
                         <span class="ml-2 text-sm text-gray-700">Afficher le bouton "Statistiques"</span>
                     </label>
@@ -116,6 +112,24 @@ const userSettingsModalHTML = `
                 <div class="flex flex-col gap-1 mt-2">
                      <p class="text-xs text-gray-400 italic">Ces réglages contrôlent l'affichage des boutons dans le tableau de bord.</p>
                 </div>
+            </div>
+
+            <hr class="border-gray-100">
+
+            <!-- Gestion des données -->
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Gestion des données</label>
+                <div class="grid grid-cols-2 gap-3">
+                    <button id="btnSettingsImport" class="py-2.5 px-3 border border-teal-200 bg-teal-50 text-teal-700 rounded-lg hover:bg-teal-100 transition flex items-center justify-center gap-2 text-sm font-medium shadow-sm hover:shadow">
+                        <i class="fas fa-upload"></i>
+                        Importer
+                    </button>
+                    <button id="btnSettingsExport" class="py-2.5 px-3 border border-green-200 bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition flex items-center justify-center gap-2 text-sm font-medium shadow-sm hover:shadow">
+                        <i class="fas fa-download"></i>
+                        Exporter
+                    </button>
+                </div>
+                <p class="text-xs text-gray-400 italic mt-2">Importez ou exportez vos courses et wishlist au format JSON.</p>
             </div>
 
             <hr class="border-gray-100">
@@ -299,7 +313,6 @@ async function initSettingsLogic() {
     const prefHideLikeCount = document.getElementById('prefHideLikeCount');
 
     // Checkboxes UI preferences
-    const prefShowImportBtn = document.getElementById('prefShowImportBtn');
     const prefShowStatsBtn = document.getElementById('prefShowStatsBtn');
 
     // Vérifier si l'utilisateur est invité
@@ -337,7 +350,7 @@ async function initSettingsLogic() {
         });
 
         // Désactiver toutes les checkboxes de préférences UI
-        [prefShowImportBtn, prefShowStatsBtn].forEach(cb => {
+        [prefShowStatsBtn].forEach(cb => {
             if (cb) {
                 cb.disabled = true;
                 cb.classList.add('opacity-50', 'cursor-not-allowed');
@@ -345,6 +358,18 @@ async function initSettingsLogic() {
                 if (label) label.classList.add('opacity-50', 'cursor-not-allowed');
             }
         });
+
+        // Désactiver les boutons import/export pour les invités
+        const btnSettingsImport = document.getElementById('btnSettingsImport');
+        const btnSettingsExport = document.getElementById('btnSettingsExport');
+        if (btnSettingsImport) {
+            btnSettingsImport.disabled = true;
+            btnSettingsImport.classList.add('opacity-50', 'cursor-not-allowed');
+        }
+        if (btnSettingsExport) {
+            btnSettingsExport.disabled = true;
+            btnSettingsExport.classList.add('opacity-50', 'cursor-not-allowed');
+        }
 
         // Désactiver le bouton de suppression de compte
         const deleteAccountBtn = document.getElementById('btnInitDeleteAccount');
@@ -479,7 +504,6 @@ async function initSettingsLogic() {
         if (!user) return;
 
         const uiPreferences = {
-            showImportBtn: prefShowImportBtn.checked,
             showStatsBtn: prefShowStatsBtn.checked
         };
 
@@ -498,9 +522,47 @@ async function initSettingsLogic() {
             if (cb) cb.addEventListener('change', savePrivacySettings);
         });
 
-        [prefShowImportBtn, prefShowStatsBtn].forEach(cb => {
+        [prefShowStatsBtn].forEach(cb => {
             if (cb) cb.addEventListener('change', saveUISettings);
         });
+
+        // Bouton Importer dans les paramètres
+        const btnSettingsImport = document.getElementById('btnSettingsImport');
+        if (btnSettingsImport) {
+            btnSettingsImport.addEventListener('click', () => {
+                // Fermer la modale des paramètres
+                const settingsModal = document.getElementById('userSettingsModal');
+                if (settingsModal) settingsModal.classList.add('hidden');
+                document.body.classList.remove('overflow-hidden');
+                // Ouvrir la modale d'import
+                const importJsonModal = document.getElementById('importJsonModal');
+                if (importJsonModal) {
+                    importJsonModal.classList.remove('hidden');
+                    const jsonFileInput = document.getElementById('jsonFileInput');
+                    const importPreview = document.getElementById('importPreview');
+                    const importMessage = document.getElementById('importMessage');
+                    const confirmImportBtn = document.getElementById('confirmImportBtn');
+                    if (jsonFileInput) jsonFileInput.value = '';
+                    if (importPreview) importPreview.classList.add('hidden');
+                    if (importMessage) importMessage.classList.add('hidden');
+                    if (confirmImportBtn) confirmImportBtn.disabled = true;
+                }
+            });
+        }
+
+        // Bouton Exporter dans les paramètres
+        const btnSettingsExport = document.getElementById('btnSettingsExport');
+        if (btnSettingsExport) {
+            btnSettingsExport.addEventListener('click', () => {
+                // Fermer la modale des paramètres
+                const settingsModal = document.getElementById('userSettingsModal');
+                if (settingsModal) settingsModal.classList.add('hidden');
+                document.body.classList.remove('overflow-hidden');
+                // Ouvrir la modale de backup/export
+                const backupModal = document.getElementById('backupConfirmationModal');
+                if (backupModal) backupModal.classList.remove('hidden');
+            });
+        }
     }
 
     // Gestion du bouton tutoriel
@@ -566,11 +628,9 @@ async function initSettingsLogic() {
 
                 // UI preferences (Default to true if undefined, as buttons were previously visible)
                 if (data.uiPreferences) {
-                    if (prefShowImportBtn) prefShowImportBtn.checked = data.uiPreferences.showImportBtn !== false;
                     if (prefShowStatsBtn) prefShowStatsBtn.checked = data.uiPreferences.showStatsBtn !== false;
                 } else {
                     // Defaults if no settings saved yet
-                    if (prefShowImportBtn) prefShowImportBtn.checked = true; // Default visible logic handled by dashboard
                     if (prefShowStatsBtn) prefShowStatsBtn.checked = true;
                 }
 
@@ -903,15 +963,8 @@ window.openUserSettings = async function () {
 
             // Charger les préférences UI
             const ui = data.uiPreferences || {};
-            const prefShowImportBtn = document.getElementById('prefShowImportBtn');
             const prefShowStatsBtn = document.getElementById('prefShowStatsBtn');
 
-            // Par défaut : affiché (true) si non défini
-            // Pour Import : Caché par défaut (demande user), activable manuellement.
-
-            let defaultImportState = false;
-
-            if (prefShowImportBtn) prefShowImportBtn.checked = (ui.showImportBtn !== undefined) ? ui.showImportBtn : defaultImportState;
             if (prefShowStatsBtn) prefShowStatsBtn.checked = (ui.showStatsBtn !== undefined) ? ui.showStatsBtn : true;
 
         } else {

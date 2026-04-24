@@ -154,11 +154,7 @@
                         </svg>
                         Wishlist
                     </button>
-                    <button id="importJsonBtn"
-                        class="hidden flex items-center justify-center bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-full transition w-full lg:w-auto">
-                        <i class="fas fa-upload mr-2"></i>
-                        Import
-                    </button>
+
                     <button id="statsBtn"
                         class="hidden bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-full flex items-center justify-center transition-colors w-full lg:w-auto whitespace-nowrap">
                         <i class="fas fa-chart-bar mr-2"></i> <span>Statistiques</span>
@@ -1926,7 +1922,7 @@
                                 showPseudo: true, showCity: true, showFavorite: false,
                                 showDay: true, hideLikeCount: false
                             };
-                            updateData.uiPreferences = { showImportBtn: false, showStatsBtn: true };
+                            updateData.uiPreferences = { showStatsBtn: true };
                         }
 
                         await userDocRef.set(updateData, { merge: true });
@@ -7780,7 +7776,6 @@
         });
 
         // ===== EXPORT / IMPORT JSON =====
-        const importJsonBtn = document.getElementById('importJsonBtn');
         const importJsonModal = document.getElementById('importJsonModal');
         const jsonFileInput = document.getElementById('jsonFileInput');
         const confirmImportBtn = document.getElementById('confirmImportBtn');
@@ -7790,15 +7785,13 @@
 
         let parsedImportData = null;
 
-        // Gérer les préférences d'interface utilisateur (Import / Stats)
+        // Gérer les préférences d'interface utilisateur (Stats)
         async function applyUserUIPreferences() {
             const user = firebase.auth().currentUser;
-            const importBtn = document.getElementById('importJsonBtn');
             const statsBtn = document.getElementById('statsBtn');
 
             if (!user) {
-                if (importBtn) importBtn.classList.add('hidden');
-                if (statsBtn) statsBtn.classList.add('hidden'); // Stats button usually hidden for guests anyway?
+                if (statsBtn) statsBtn.classList.add('hidden');
                 return;
             }
 
@@ -7807,18 +7800,6 @@
                 if (doc.exists) {
                     const data = doc.data();
                     const uiPrefs = data.uiPreferences || {};
-
-                    let showImport = false;
-                    if (uiPrefs.hasOwnProperty('showImportBtn')) {
-                        showImport = uiPrefs.showImportBtn;
-                    } else {
-                        showImport = false;
-                    }
-
-                    if (importBtn) {
-                        if (showImport) importBtn.classList.remove('hidden');
-                        else importBtn.classList.add('hidden');
-                    }
 
                     let showStats = true; // Default intent for logged in users usually
                     if (uiPrefs.hasOwnProperty('showStatsBtn')) {
@@ -7836,17 +7817,6 @@
             }
         }
 
-        // Import JSON - Ouvrir modale
-        if (importJsonBtn) {
-            importJsonBtn.addEventListener('click', () => {
-                importJsonModal.classList.remove('hidden');
-                jsonFileInput.value = '';
-                importPreview.classList.add('hidden');
-                importMessage.classList.add('hidden');
-                confirmImportBtn.disabled = true;
-                parsedImportData = null;
-            });
-        }
 
         // Lecture du fichier JSON
         if (jsonFileInput) {
