@@ -218,107 +218,53 @@
         tooltip.style.maxWidth = '90vw';
     }
 
-    // Vérifier si un élément est visible (existe et n'est pas caché)
-    function isElementVisible(selector) {
-        const el = document.querySelector(selector);
-        if (!el) return false;
-        // Vérifier si l'élément ou un parent a la classe 'hidden' (Tailwind)
-        if (el.classList.contains('hidden')) return false;
-        // Vérifier aussi via le style computed
-        const style = window.getComputedStyle(el);
-        return style.display !== 'none' && style.visibility !== 'hidden';
-    }
-
-    // Vérifier si une étape doit être affichée
-    function isStepAvailable(stepIndex) {
-        const step = tutorialSteps[stepIndex];
-        // Les étapes sans cible (comme la conclusion) sont toujours disponibles
-        if (!step.target) return true;
-        // Vérifier si l'élément cible est visible
-        if (isElementVisible(step.target)) return true;
-        // Vérifier le fallback
-        if (step.fallback && isElementVisible(step.fallback)) return true;
-        return false;
-    }
-
-    // Compter les étapes visibles
-    function getVisibleStepsInfo() {
-        let visibleSteps = [];
-        for (let i = 0; i < tutorialSteps.length; i++) {
-            if (isStepAvailable(i)) {
-                visibleSteps.push(i);
-            }
-        }
-        return visibleSteps;
-    }
-
     // Afficher une étape
     function showStep(stepIndex) {
         if (stepIndex < 0 || stepIndex >= tutorialSteps.length) return;
-
-        // Si l'étape n'est pas disponible, sauter à la suivante
-        if (!isStepAvailable(stepIndex)) {
-            // Chercher la prochaine étape disponible dans la direction actuelle
-            let nextAvailable = stepIndex + 1;
-            while (nextAvailable < tutorialSteps.length && !isStepAvailable(nextAvailable)) {
-                nextAvailable++;
-            }
-            if (nextAvailable < tutorialSteps.length) {
-                currentStep = nextAvailable;
-                showStep(nextAvailable);
-            } else {
-                endTutorial();
-            }
-            return;
-        }
 
         const step = tutorialSteps[stepIndex];
         const tooltip = document.getElementById('tutorialTooltip');
 
         document.getElementById('tutorialTitle').textContent = step.title;
         document.getElementById('tutorialContent').textContent = step.content;
-
-        // Calculer le progrès basé sur les étapes visibles
-        const visibleSteps = getVisibleStepsInfo();
-        const currentVisibleIndex = visibleSteps.indexOf(stepIndex) + 1;
-        document.getElementById('tutorialProgress').textContent = `Étape ${currentVisibleIndex} sur ${visibleSteps.length}`;
+        document.getElementById('tutorialProgress').textContent = `Étape ${stepIndex + 1} sur ${tutorialSteps.length}`;
 
         // Boutons
         const prevBtn = document.getElementById('tutorialPrev');
         const nextBtn = document.getElementById('tutorialNext');
 
-        // Masquer le bouton précédent s'il n'y a pas d'étape visible avant
-        const hasPrevVisible = visibleSteps.indexOf(stepIndex) > 0;
-        prevBtn.style.display = hasPrevVisible ? 'inline-flex' : 'none';
+        prevBtn.style.display = stepIndex === 0 ? 'none' : 'inline-flex';
 
-        if (stepIndex === tutorialSteps.length - 1 || visibleSteps.indexOf(stepIndex) === visibleSteps.length - 1) {
+        if (stepIndex === tutorialSteps.length - 1) {
             nextBtn.innerHTML = '<i class="fas fa-check mr-2"></i>Terminer';
         } else {
             nextBtn.innerHTML = 'Suivant<i class="fas fa-arrow-right ml-2"></i>';
         }
 
-        // Trouver l'élément cible
+        // Trouver l'élément cible (seulement s'il est visible)
         let targetElement = null;
         if (step.target) {
-            targetElement = document.querySelector(step.target);
-            // Si l'élément n'existe pas ou est caché, essayer le fallback
-            if ((!targetElement || targetElement.classList.contains('hidden')) && step.fallback) {
-                targetElement = document.querySelector(step.fallback);
+            const el = document.querySelector(step.target);
+            if (el && !el.classList.contains('hidden') && window.getComputedStyle(el).display !== 'none') {
+                targetElement = el;
+            }
+            // Essayer le fallback si la cible n'est pas visible
+            if (!targetElement && step.fallback) {
+                const fb = document.querySelector(step.fallback);
+                if (fb && !fb.classList.contains('hidden') && window.getComputedStyle(fb).display !== 'none') {
+                    targetElement = fb;
+                }
             }
         }
 
-        positionTooltip(targetElement, step.position);
+        // Si l'élément n'est pas visible, le tooltip sera centré sans highlight
+        positionTooltip(targetElement, targetElement ? step.position : 'center');
     }
 
     // Navigation
     function nextStep() {
-        // Trouver la prochaine étape visible
-        let next = currentStep + 1;
-        while (next < tutorialSteps.length && !isStepAvailable(next)) {
-            next++;
-        }
-        if (next < tutorialSteps.length) {
-            currentStep = next;
+        if (currentStep < tutorialSteps.length - 1) {
+            currentStep++;
             showStep(currentStep);
         } else {
             endTutorial();
@@ -326,13 +272,8 @@
     }
 
     function prevStep() {
-        // Trouver la précédente étape visible
-        let prev = currentStep - 1;
-        while (prev >= 0 && !isStepAvailable(prev)) {
-            prev--;
-        }
-        if (prev >= 0) {
-            currentStep = prev;
+        if (currentStep > 0) {
+            currentStep--;
             showStep(currentStep);
         }
     }
