@@ -89,19 +89,9 @@
     <!-- Barre d'information de connexion -->
     <div id="authStatusBar" class="bg-green-50 border-b border-green-200 py-2 px-4 sticky top-0 z-50 hidden">
         <div class="container mx-auto flex flex-col md:flex-row justify-between items-center gap-4 md:gap-0">
-            <!-- Zone Information & Sauvegarde -->
+            <!-- Zone Information -->
             <div class="flex items-center justify-between w-full md:w-auto gap-4">
                 <div class="flex items-center gap-3">
-                    <button id="backupDataBtn"
-                        class="text-green-600 hover:text-green-800 transition p-2 bg-white md:bg-transparent rounded-full shadow-sm md:shadow-none border border-green-100 md:border-0"
-                        title="Sauvegarder mes données (JSON)">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 md:h-5 md:w-5" viewBox="0 0 20 20"
-                            fill="currentColor">
-                            <path fill-rule="evenodd"
-                                d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
-                                clip-rule="evenodd" />
-                        </svg>
-                    </button>
                     <p id="authStatusText" class="text-xs md:text-sm text-green-800 font-medium"></p>
                 </div>
             </div>
@@ -7469,130 +7459,77 @@
 
         // --- FONCTION DE SAUVEGARDE DES DONNÉES ---
         const migrateDataBtn = document.getElementById('migrateDataBtn');
-        const backupDataBtn = document.getElementById('backupDataBtn');
 
-        if (migrateDataBtn || backupDataBtn) {
-            // Le bouton backup est déjà visible dans le HTML (sans classe hidden)
-            // On garde juste la restriction admin pour migrateDataBtn si besoin
+        if (migrateDataBtn) {
             BackendAPI.onAuthStateChanged(async (user) => {
                 if (user) {
                     const isAdmin = await BackendAPI.isAdminAsync();
                     if (isAdmin) {
                         if (migrateDataBtn) migrateDataBtn.classList.remove('hidden');
                     }
-
-                    // Vérifier si c'est un compte invité
-                    const isInviteUser = await (async () => {
-                        // Check custom claims
-                        try {
-                            const token = await user.getIdTokenResult();
-                            if (token.claims.invite) return true;
-                        } catch (e) { }
-                        // Check doc
-                        try {
-                            const d = await db.collection('users').doc(user.uid).get();
-                            if (d.exists && d.data().role === 'invite') return true;
-                        } catch (e) { }
-                        return await window.isInviteUser();
-                    })();
-
-                    // Masquer le bouton de sauvegarde pour les comptes invités
-                    if (backupDataBtn) {
-                        if (isInviteUser) {
-                            backupDataBtn.classList.add('hidden');
-                        } else {
-                            backupDataBtn.classList.remove('hidden');
-                        }
-                    }
                 }
             });
+        }
 
-            // LOGIQUE DE SAUVEGARDE
-            if (backupDataBtn) {
-                // Fonction de sauvegarde réelle
-                const performBackup = async () => {
-                    const confirmBtn = document.getElementById('btnConfirmBackupDownload');
-                    const modal = document.getElementById('backupConfirmationModal');
+        // Fonction de sauvegarde réelle (utilisée par la modale de confirmation d'export)
+        const performBackup = async () => {
+            const confirmBtn = document.getElementById('btnConfirmBackupDownload');
+            const modal = document.getElementById('backupConfirmationModal');
 
-                    if (confirmBtn) {
-                        confirmBtn.disabled = true;
-                        confirmBtn.innerHTML = '<svg class="animate-spin h-5 w-5 text-white mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Génération...';
-                    }
+            if (confirmBtn) {
+                confirmBtn.disabled = true;
+                confirmBtn.innerHTML = '<svg class="animate-spin h-5 w-5 text-white mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Génération...';
+            }
 
-                    try {
-                        if (!racesCollection || !wishlistCollection) throw new Error("Collections non initialisées.");
+            try {
+                if (!racesCollection || !wishlistCollection) throw new Error("Collections non initialisées.");
 
-                        const racesSnapshot = await racesCollection.get();
-                        const wishlistSnapshot = await wishlistCollection.get();
+                const racesSnapshot = await racesCollection.get();
+                const wishlistSnapshot = await wishlistCollection.get();
 
-                        const data = {
-                            timestamp: new Date().toISOString(),
-                            races: [],
-                            wishlist: []
-                        };
-
-                        racesSnapshot.forEach(doc => {
-                            data.races.push({ id: doc.id, ...doc.data() });
-                        });
-
-                        wishlistSnapshot.forEach(doc => {
-                            data.wishlist.push({ id: doc.id, ...doc.data() });
-                        });
-
-                        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data, null, 2));
-                        const downloadAnchorNode = document.createElement('a');
-                        downloadAnchorNode.setAttribute("href", dataStr);
-                        downloadAnchorNode.setAttribute("download", "sauvegarde_courses_" + new Date().toISOString().slice(0, 10) + ".json");
-                        document.body.appendChild(downloadAnchorNode); // required for firefox
-                        downloadAnchorNode.click();
-                        downloadAnchorNode.remove();
-
-                        // Succès
-                        if (modal) modal.classList.add('hidden');
-
-                    } catch (e) {
-                        console.error(e);
-                        alert("Erreur lors de la sauvegarde : " + e.message);
-                    } finally {
-                        if (confirmBtn) {
-                            confirmBtn.disabled = false;
-                            confirmBtn.innerHTML = '<i class="fas fa-download"></i> Télécharger';
-                        }
-                        // Feedback visuel sur le bouton principal
-                        backupDataBtn.classList.remove('animate-pulse');
-                    }
+                const data = {
+                    timestamp: new Date().toISOString(),
+                    races: [],
+                    wishlist: []
                 };
 
-                // Attacher l'événement au bouton de la modale (Attendre que le DOM soit complet car la modale est plus bas)
-                document.addEventListener('DOMContentLoaded', () => {
-                    const btnConfirmBackup = document.getElementById('btnConfirmBackupDownload');
-                    if (btnConfirmBackup) {
-                        btnConfirmBackup.addEventListener('click', performBackup);
-                    }
+                racesSnapshot.forEach(doc => {
+                    data.races.push({ id: doc.id, ...doc.data() });
                 });
 
-                // Clic sur le bouton du dashboard
-                backupDataBtn.addEventListener('click', async () => {
-                    const user = firebase.auth().currentUser;
-
-                    // Si pas connecté ou Anonyme (Invité)
-                    if (!user || user.isAnonymous) {
-                        // Option 1 : Ne rien faire (le bouton devrait être caché idéalement)
-                        // Option 2 : Message d'erreur
-                        alert("Cette fonctionnalité est réservée au propriétaire du compte.");
-                        return;
-                    }
-
-                    // Ouvrir la modale
-                    const modal = document.getElementById('backupConfirmationModal');
-                    if (modal) modal.classList.remove('hidden');
+                wishlistSnapshot.forEach(doc => {
+                    data.wishlist.push({ id: doc.id, ...doc.data() });
                 });
-            }
 
-            if (migrateDataBtn) {
-                // Fonctionnalité supprimée
+                const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data, null, 2));
+                const downloadAnchorNode = document.createElement('a');
+                downloadAnchorNode.setAttribute("href", dataStr);
+                downloadAnchorNode.setAttribute("download", "sauvegarde_courses_" + new Date().toISOString().slice(0, 10) + ".json");
+                document.body.appendChild(downloadAnchorNode); // required for firefox
+                downloadAnchorNode.click();
+                downloadAnchorNode.remove();
+
+                // Succès
+                if (modal) modal.classList.add('hidden');
+
+            } catch (e) {
+                console.error(e);
+                alert("Erreur lors de la sauvegarde : " + e.message);
+            } finally {
+                if (confirmBtn) {
+                    confirmBtn.disabled = false;
+                    confirmBtn.innerHTML = '<i class="fas fa-download"></i> Télécharger';
+                }
             }
-        }
+        };
+
+        // Attacher l'événement au bouton de la modale de confirmation
+        document.addEventListener('DOMContentLoaded', () => {
+            const btnConfirmBackup = document.getElementById('btnConfirmBackupDownload');
+            if (btnConfirmBackup) {
+                btnConfirmBackup.addEventListener('click', performBackup);
+            }
+        });
 
         // Fonction pour gérer le z-index des boutons flottants (anniversaire et scroll-to-top)
         function updateAnniversaryButtonZIndex() {
