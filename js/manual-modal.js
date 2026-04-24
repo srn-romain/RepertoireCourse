@@ -187,6 +187,10 @@ const manualModalHTML = `
                                 <span class="inline-flex items-center justify-center w-24 py-1 bg-green-50 text-green-700 border border-green-200 rounded text-xs font-semibold shrink-0"><i class="fab fa-google-drive mr-1.5"></i>Drive</span>
                                 <span><strong class="text-gray-800">Dossier Drive</strong> — accès à l'explorateur de fichiers intégré.</span>
                             </li>
+                            <li class="flex items-center gap-3">
+                                <span class="inline-flex items-center justify-center w-24 py-1 bg-red-600 text-white rounded text-xs font-semibold shrink-0"><i class="fas fa-file-pdf mr-1.5"></i>PDF</span>
+                                <span><strong class="text-gray-800">Export PDF</strong> — générez un rapport esthétique de vos performances.</span>
+                            </li>
                         </ul>
                         <p class="text-xs text-gray-400 italic mt-3">💡 Ces boutons sont visibles uniquement dans la modale de détail d'une course.</p>
                     </div>
@@ -363,8 +367,15 @@ const manualModalHTML = `
                                 <li class="flex items-start gap-2">
                                     <i class="fas fa-info-circle text-blue-600 mt-0.5"></i>
                                     <span><strong>Confidentialité :</strong> Vous pouvez <strong>masquer le nombre de
-                                            J'aime</strong> sur VOS courses dans les paramètres de compte (visible
-                                        uniquement par vous).</span>
+                                            J'aime</strong> sur VOS courses dans les paramètres de compte.</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <i class="fas fa-globe text-green-600 mt-0.5"></i>
+                                    <span><strong>Partage public :</strong> Activez le partage pour chaque course individuellement pour qu'elle soit visible par la communauté.</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <i class="fas fa-eye text-blue-600 mt-0.5"></i>
+                                    <span><strong>Découvrir :</strong> Consultez les performances des autres coureurs sur la page d'accueil de l'application.</span>
                                 </li>
                             </ul>
                         </div>
@@ -380,7 +391,7 @@ const manualModalHTML = `
                             <ul class="text-xs text-gray-600 ml-4 space-y-1.5">
                                 <li>• <strong>Comment faire :</strong> Allez dans vos <i class="fas fa-cog"></i> <strong>Paramètres</strong> pour laisser une note (1 à 5 étoiles) et un message.</li>
                                 <li>• <strong>Visibilité :</strong> Votre avis s'affiche dans le carrousel sur la page d'accueil avec votre photo de profil.</li>
-                                <li>• <strong>Gestion :</strong> Vous pouvez modifier ou supprimer votre avis à tout moment depuis vos paramètres.</li>
+                                <li>• <strong>Gestion :</strong> Vous pouvez modifier, mettre en brouillon ou supprimer votre avis à tout moment depuis vos paramètres.</li>
                             </ul>
                         </div>
                     </div>
@@ -471,67 +482,6 @@ const manualModalHTML = `
                     </div>
                 </section>
 
-                <!-- Export & Backup -->
-                <section class="mb-8">
-                    <h4 class="text-xl font-bold text-green-700 mb-3 flex items-center gap-2">
-                        <i class="fas fa-download text-green-600"></i> Export, Sauvegarde & Import
-                    </h4>
-                    <div class="grid md:grid-cols-2 gap-4">
-                        <div class="bg-white border border-green-100 rounded-lg p-4 shadow-sm">
-                            <h5 class="font-bold text-green-800 mb-2 flex items-center gap-2">
-                                <i class="fas fa-file-export text-green-600"></i> Export & Backup
-                            </h5>
-                            <p class="text-sm text-gray-600">Sauvegardez toutes vos données (courses + wishlist)
-                                :</p>
-                            <ul class="text-xs text-gray-600 ml-4 mt-2 space-y-1">
-                                <li>• Format JSON universel</li>
-                                <li class="flex items-center gap-1">• Bouton <span class="px-2 py-0.5 bg-green-50 text-green-700 border border-green-200 rounded text-xs font-medium"><i class="fas fa-download mr-1"></i>Exporter</span> dans les paramètres du compte</li>
-                            </ul>
-                        </div>
-                        <div class="bg-white border border-teal-100 rounded-lg p-4 shadow-sm">
-                            <h5 class="font-bold text-teal-800 mb-2 flex items-center gap-2">
-                                <i class="fas fa-file-import text-teal-600"></i> Import Données
-                            </h5>
-                            <p class="text-sm text-gray-600">Restaurez vos données depuis un fichier JSON.</p>
-                            <ul class="text-xs text-gray-600 ml-4 mt-2 space-y-1">
-                                <li>• Importe courses et wishlist</li>
-                                <li class="flex items-center gap-1">• Bouton <span class="px-2 py-0.5 bg-teal-50 text-teal-700 border border-teal-200 rounded text-xs font-medium"><i class="fas fa-upload mr-1"></i>Importer</span> dans les paramètres du compte</li>
-                            </ul>
-                        </div>
-                        <div class="bg-white border border-red-100 rounded-lg p-4 shadow-sm md:col-span-2">
-                            <h5 class="font-bold text-red-800 mb-2 flex items-center gap-2">
-                                <i class="fas fa-file-pdf text-red-600"></i> Export PDF
-                            </h5>
-                            <p class="text-sm text-gray-600">Générez un rapport PDF esthétique de vos courses
-                                pour partager vos performances à partir de la modale de détail d'une course.</p>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- Communauté -->
-                <section class="mb-8">
-                    <h4 class="text-xl font-bold text-green-700 mb-3 flex items-center gap-2">
-                        <i class="fas fa-users text-green-600"></i> Communauté
-                    </h4>
-                    <div class="bg-white border border-green-100 rounded-lg p-4 shadow-sm">
-                        <p class="text-sm text-gray-600 mb-3">Partagez vos exploits avec la communauté :</p>
-                        <ul class="space-y-2 text-sm text-gray-600">
-                            <li class="flex items-start gap-2">
-                                <i class="fas fa-globe text-green-600 mt-0.5"></i>
-                                <span>Activez le partage public pour chaque course individuellement</span>
-                            </li>
-                            <li class="flex items-start gap-2">
-                                <i class="fas fa-eye text-blue-600 mt-0.5"></i>
-                                <span>Consultez les courses des autres coureurs sur la page d'accueil</span>
-                            </li>
-                            <li class="flex items-start gap-2">
-                                <i class="fas fa-filter text-purple-600 mt-0.5"></i>
-                                <span>Filtrez par statut (À venir / Passées) et nombre de résultats</span>
-                            </li>
-                        </ul>
-                    </div>
-                </section>
-
                 <!-- Astuces -->
                 <section>
                     <h4 class="text-xl font-bold text-green-700 mb-3 flex items-center gap-2">
@@ -543,9 +493,13 @@ const manualModalHTML = `
                                 <i class="fas fa-star text-yellow-500 mt-0.5"></i>
                                 <span>Marquez vos courses favorites avec l'étoile</span>
                             </div>
-                            <div class="flex items-start gap-2">
+                             <div class="flex items-start gap-2">
                                 <i class="fas fa-calendar-check text-green-600 mt-0.5"></i>
-                                <span>Activez les rappels d'anniversaire de courses</span>
+                                <span><strong>Anniversaires :</strong> l'application vous signale automatiquement vos courses passées à la même date.</span>
+                            </div>
+                            <div class="flex items-start gap-2">
+                                <i class="fas fa-search text-blue-600 mt-0.5"></i>
+                                <span><strong>Recherche :</strong> trouvez une course instantanément en tapant son nom ou son lieu.</span>
                             </div>
                             <div class="flex items-start gap-2">
                                 <i class="fas fa-camera text-blue-600 mt-0.5"></i>
