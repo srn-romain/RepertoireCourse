@@ -21,12 +21,6 @@
             position: 'bottom'
         },
         {
-            target: '#importJsonBtn',
-            title: 'Importer des données 📥',
-            content: 'Importez vos données depuis un fichier JSON de sauvegarde. Pratique pour restaurer vos courses après une sauvegarde.',
-            position: 'bottom'
-        },
-        {
             target: '#statsBtn',
             title: 'Statistiques détaillées 📊',
             content: 'Consultez des statistiques avancées : graphiques, records personnels, répartition des distances, des dénivelés, et bien plus !',
@@ -71,14 +65,14 @@
         {
             target: '.race-card',
             title: 'Détails & PDF 🏃',
-            content: 'Cliquez sur une carte pour voir tous les détails, modifier la course, ou **télécharger un superbe rapport PDF**. Vous pouvez aussi y voir vos accompagnants et la météo de la course.',
+            content: 'Cliquez sur une carte pour voir tous les détails, modifier la course, ou télécharger un superbe rapport PDF. Vous pouvez aussi y voir vos accompagnants et la météo de la course.',
             position: 'top',
             fallback: '#racesContainer'
         },
         {
             target: '#userSettingsBtn',
             title: 'Paramètres du compte ⚙️',
-            content: 'Gérez vos paramètres : modifier votre pseudo, configurer la confidentialité de vos courses publiques, personnaliser l\'interface, et bien plus.',
+            content: 'Gérez vos paramètres : pseudo, confidentialité, importer/exporter vos données, et choisir quels boutons afficher dans le tableau de bord (Wishlist, Statistiques, Badges).',
             position: 'bottom'
         },
         {
@@ -86,12 +80,6 @@
             title: 'Déconnexion 🚪',
             content: 'Déconnectez-vous de votre compte en toute sécurité. Vos données resteront sauvegardées dans le cloud.',
             position: 'left'
-        },
-        {
-            target: '#backupDataBtn',
-            title: 'Sauvegarde de sécurité 💾',
-            content: 'Téléchargez une copie de toutes vos données au format JSON. C\'est votre filet de sécurité ! Vous pourrez restaurer ces données via le bouton "Importer".',
-            position: 'bottom'
         },
         {
             target: '#anniversaryBtn',
@@ -230,24 +218,80 @@
         tooltip.style.maxWidth = '90vw';
     }
 
+    // Vérifier si un élément est visible (existe et n'est pas caché)
+    function isElementVisible(selector) {
+        const el = document.querySelector(selector);
+        if (!el) return false;
+        // Vérifier si l'élément ou un parent a la classe 'hidden' (Tailwind)
+        if (el.classList.contains('hidden')) return false;
+        // Vérifier aussi via le style computed
+        const style = window.getComputedStyle(el);
+        return style.display !== 'none' && style.visibility !== 'hidden';
+    }
+
+    // Vérifier si une étape doit être affichée
+    function isStepAvailable(stepIndex) {
+        const step = tutorialSteps[stepIndex];
+        // Les étapes sans cible (comme la conclusion) sont toujours disponibles
+        if (!step.target) return true;
+        // Vérifier si l'élément cible est visible
+        if (isElementVisible(step.target)) return true;
+        // Vérifier le fallback
+        if (step.fallback && isElementVisible(step.fallback)) return true;
+        return false;
+    }
+
+    // Compter les étapes visibles
+    function getVisibleStepsInfo() {
+        let visibleSteps = [];
+        for (let i = 0; i < tutorialSteps.length; i++) {
+            if (isStepAvailable(i)) {
+                visibleSteps.push(i);
+            }
+        }
+        return visibleSteps;
+    }
+
     // Afficher une étape
     function showStep(stepIndex) {
         if (stepIndex < 0 || stepIndex >= tutorialSteps.length) return;
+
+        // Si l'étape n'est pas disponible, sauter à la suivante
+        if (!isStepAvailable(stepIndex)) {
+            // Chercher la prochaine étape disponible dans la direction actuelle
+            let nextAvailable = stepIndex + 1;
+            while (nextAvailable < tutorialSteps.length && !isStepAvailable(nextAvailable)) {
+                nextAvailable++;
+            }
+            if (nextAvailable < tutorialSteps.length) {
+                currentStep = nextAvailable;
+                showStep(nextAvailable);
+            } else {
+                endTutorial();
+            }
+            return;
+        }
 
         const step = tutorialSteps[stepIndex];
         const tooltip = document.getElementById('tutorialTooltip');
 
         document.getElementById('tutorialTitle').textContent = step.title;
         document.getElementById('tutorialContent').textContent = step.content;
-        document.getElementById('tutorialProgress').textContent = `Étape ${stepIndex + 1} sur ${tutorialSteps.length}`;
+
+        // Calculer le progrès basé sur les étapes visibles
+        const visibleSteps = getVisibleStepsInfo();
+        const currentVisibleIndex = visibleSteps.indexOf(stepIndex) + 1;
+        document.getElementById('tutorialProgress').textContent = `Étape ${currentVisibleIndex} sur ${visibleSteps.length}`;
 
         // Boutons
         const prevBtn = document.getElementById('tutorialPrev');
         const nextBtn = document.getElementById('tutorialNext');
 
-        prevBtn.style.display = stepIndex === 0 ? 'none' : 'inline-flex';
+        // Masquer le bouton précédent s'il n'y a pas d'étape visible avant
+        const hasPrevVisible = visibleSteps.indexOf(stepIndex) > 0;
+        prevBtn.style.display = hasPrevVisible ? 'inline-flex' : 'none';
 
-        if (stepIndex === tutorialSteps.length - 1) {
+        if (stepIndex === tutorialSteps.length - 1 || visibleSteps.indexOf(stepIndex) === visibleSteps.length - 1) {
             nextBtn.innerHTML = '<i class="fas fa-check mr-2"></i>Terminer';
         } else {
             nextBtn.innerHTML = 'Suivant<i class="fas fa-arrow-right ml-2"></i>';
@@ -257,8 +301,8 @@
         let targetElement = null;
         if (step.target) {
             targetElement = document.querySelector(step.target);
-            // Si l'élément n'existe pas, essayer le fallback
-            if (!targetElement && step.fallback) {
+            // Si l'élément n'existe pas ou est caché, essayer le fallback
+            if ((!targetElement || targetElement.classList.contains('hidden')) && step.fallback) {
                 targetElement = document.querySelector(step.fallback);
             }
         }
@@ -268,8 +312,13 @@
 
     // Navigation
     function nextStep() {
-        if (currentStep < tutorialSteps.length - 1) {
-            currentStep++;
+        // Trouver la prochaine étape visible
+        let next = currentStep + 1;
+        while (next < tutorialSteps.length && !isStepAvailable(next)) {
+            next++;
+        }
+        if (next < tutorialSteps.length) {
+            currentStep = next;
             showStep(currentStep);
         } else {
             endTutorial();
@@ -277,8 +326,13 @@
     }
 
     function prevStep() {
-        if (currentStep > 0) {
-            currentStep--;
+        // Trouver la précédente étape visible
+        let prev = currentStep - 1;
+        while (prev >= 0 && !isStepAvailable(prev)) {
+            prev--;
+        }
+        if (prev >= 0) {
+            currentStep = prev;
             showStep(currentStep);
         }
     }
