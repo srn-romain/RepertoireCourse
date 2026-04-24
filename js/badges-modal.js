@@ -64,28 +64,8 @@ function updateBadgesButtonVisibility() {
         return;
     }
 
-    // Calculate badges if necessary
-    if (typeof races !== 'undefined') {
-        window.raceBadges = calculateRaceBadges(races);
-    }
-
-    const badgesList = window.raceBadges || {};
-    let hasAnyBadge = false;
-
-    // Check if there is at least one badge across all races
-    for (const raceId in badgesList) {
-        const b = badgesList[raceId];
-        if (b.hasRPMile || b.hasMostExpensive || b.hasMostElevation || b.hasLongestDistance) {
-            hasAnyBadge = true;
-            break;
-        }
-    }
-
-    if (hasAnyBadge) {
-        badgesBtn.classList.remove('hidden');
-    } else {
-        badgesBtn.classList.add('hidden');
-    }
+    // Always show if authenticated (as per user request, default is true)
+    badgesBtn.classList.remove('hidden');
 }
 
 /**

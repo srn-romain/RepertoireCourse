@@ -285,9 +285,8 @@ const manualModalHTML = `
                             <div class="bg-purple-50 p-2 rounded flex items-center gap-2"><i class="fas fa-route"></i>
                                 Plus Longue Distance</div>
                         </div>
-                        <p class="text-xs text-gray-500 italic">Note : Le bouton "Badges" apparaît sur votre tableau
-                            de
-                            bord automatiquement dès que vous obtenez votre premier badge.</p>
+                        <p class="text-[10px] text-gray-400 italic mt-1">Cliquez sur la modale 'Badge' pour voir votre 
+                        collection.</p>
                     </div>
                 </section>
 
