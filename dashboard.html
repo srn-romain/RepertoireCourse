@@ -2253,10 +2253,6 @@
                     racesCollection = db.collection('users').doc(user.uid).collection('races');
                     wishlistCollection = db.collection('users').doc(user.uid).collection('wishlist');
 
-                    // Lancement de l'application
-                    if (typeof loadRaces === 'function') {
-                        loadRaces();
-                    }
 
                     // Initialiser le tutoriel pour les nouveaux utilisateurs
                     if (typeof window.initTutorial === 'function') {
@@ -2293,8 +2289,12 @@
                                     window.customCardButtons = ['edit', 'delete', 'details'];
                                 }
                             }
+                            // Charger les courses APRÈS avoir récupéré la config cardButtons
+                            if (typeof loadRaces === 'function') loadRaces();
                         } catch (e) {
                             console.error("Erreur récup pseudo/photo/cardButtons", e);
+                            // Charger les courses même en cas d'erreur (avec config par défaut)
+                            if (typeof loadRaces === 'function') loadRaces();
                         }
 
                         const avatarSrc = userPhotoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(userPseudo)}&background=random`;
