@@ -788,8 +788,21 @@
             <div class="text-center mb-8">
                 <span
                     class="bg-yellow-100 text-yellow-800 text-sm px-3 py-1 rounded-full uppercase tracking-wider">Avis</span>
+                
                 <h2 class="text-3xl text-green-800 mt-2 mb-4">Ce qu'ils en pensent</h2>
                 <p class="text-gray-600 max-w-2xl mx-auto">Des vraies personnes, des vrais retours.</p>
+
+                <!-- Évaluation moyenne globale -->
+                <div id="reviewsAverageContainer" class="flex flex-col items-center justify-center mt-4 -mb-1 hidden">
+                    <div class="flex items-center gap-3 px-4 py-1 transition-all duration-300 transform hover:scale-[1.02] cursor-pointer">
+                        <div class="flex gap-1 text-yellow-400 text-lg sm:text-xl" id="averageStarsContainer">
+                            <!-- Les étoiles dynamiques seront injectées ici -->
+                        </div>
+                        <span class="text-base sm:text-lg font-bold text-gray-800" id="averageRatingText">0.0 / 5</span>
+                        <span class="w-1.5 h-1.5 rounded-full bg-gray-400"></span>
+                        <span class="text-xs sm:text-sm font-semibold text-gray-500 hover:text-green-700 transition-colors" id="totalReviewsText">0 avis</span>
+                    </div>
+                </div>
             </div>
         </div>
 

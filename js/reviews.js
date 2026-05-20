@@ -410,6 +410,9 @@ async function initReviewsDisplay() {
         // Premier affichage
         displayRandomReviews();
 
+        // Calcul et affichage de la moyenne globale des avis
+        updateReviewsAverage();
+
         // Lancer le cycle toutes les 10 secondes
         setInterval(rotateReviews, 10000);
 
@@ -421,6 +424,55 @@ async function initReviewsDisplay() {
         const section = document.getElementById('reviewsSection');
         if (section) section.classList.add('hidden');
     }
+}
+
+/**
+ * Calcul et affichage de la note moyenne globale et du nombre d'avis
+ */
+function updateReviewsAverage() {
+    const avgContainer = document.getElementById('reviewsAverageContainer');
+    const starsContainer = document.getElementById('averageStarsContainer');
+    const ratingText = document.getElementById('averageRatingText');
+    const totalText = document.getElementById('totalReviewsText');
+    
+    if (!avgContainer || !allReviewsPool || allReviewsPool.length === 0) {
+        if (avgContainer) avgContainer.classList.add('hidden');
+        return;
+    }
+
+    const totalReviews = allReviewsPool.length;
+    const sumStars = allReviewsPool.reduce((acc, curr) => acc + (curr.stars || 0), 0);
+    const averageRating = sumStars / totalReviews;
+
+    // Formater la moyenne à 1 décimale, ex: 4.8
+    const formattedAvg = averageRating.toFixed(1);
+
+    // Générer les étoiles HTML (gestion des pleines, demi-étoiles et vides)
+    let starsHtml = '';
+    const fullStars = Math.floor(averageRating);
+    const hasHalfStar = (averageRating % 1) >= 0.25 && (averageRating % 1) <= 0.75;
+    const extraFullStar = (averageRating % 1) > 0.75 ? 1 : 0;
+    
+    const filledCount = fullStars + extraFullStar;
+    const halfCount = hasHalfStar ? 1 : 0;
+    const emptyCount = 5 - filledCount - halfCount;
+
+    for (let i = 0; i < filledCount; i++) {
+        starsHtml += '<i class="fa-solid fa-star text-yellow-400"></i>';
+    }
+    if (halfCount) {
+        starsHtml += '<i class="fa-solid fa-star-half-stroke text-yellow-400"></i>';
+    }
+    for (let i = 0; i < emptyCount; i++) {
+        starsHtml += '<i class="fa-regular fa-star text-gray-300"></i>';
+    }
+
+    if (starsContainer) starsContainer.innerHTML = starsHtml;
+    if (ratingText) ratingText.textContent = `${formattedAvg} / 5`;
+    if (totalText) totalText.textContent = `${totalReviews} ${totalReviews > 1 ? 'avis' : 'avis'}`;
+
+    // Afficher avec une animation d'apparition douce
+    avgContainer.classList.remove('hidden');
 }
 
 function rotateReviews() {
