@@ -3882,7 +3882,7 @@
                 race.relayLaps.forEach((lap, idx) => {
                     const isMoi = lap.runner === 'Moi' || !lap.runner;
                     relayHtml += `
-                        <tr class="${isMoi ? 'bg-blue-50/50' : 'hover:bg-green-100'} transition-colors">
+                        <tr class="${isMoi ? 'bg-blue-50/50 hover:bg-blue-100' : 'hover:bg-green-100'} transition-colors">
                             <td class="px-2 py-1 font-medium text-green-700">${idx + 1}</td>
                             <td class="px-2 py-1 ${isMoi ? 'font-bold text-blue-700' : ''}">${lap.runner || 'Moi'}</td>
                             <td class="px-2 py-1">${formatDist(lap.dist)}</td>
