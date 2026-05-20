@@ -2154,6 +2154,10 @@
                     console.log("Mode Invité détecté");
                     sessionStorage.setItem('authLevel', 'invite');
 
+                    // Masquer le bouton de configuration de carte pour les invités
+                    const openCardConfigBtn = document.getElementById('openCardConfigBtn');
+                    if (openCardConfigBtn) openCardConfigBtn.classList.add('hidden');
+
                     // Gestion du modal invité
                     const inviteModal = document.getElementById('inviteUserSelectModal');
                     const inviteSelect = document.getElementById('inviteUserSelect');
