@@ -1617,7 +1617,7 @@
                 </div>
                 
                 <!-- Section Boutons Disponibles -->
-                <div class="space-y-2.5">
+                <div class="space-y-2.5" id="availableBtnsSection">
                     <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1.5">
                         <i class="fas fa-th-large text-gray-400"></i>
                         Boutons disponibles à glisser ou toucher
@@ -8632,15 +8632,25 @@
                         btnItem.classList.remove('opacity-50');
                     });
 
-                    // Tap/Click selector
-                    btnItem.addEventListener('click', () => {
+                    // Tap/Click — auto-assign to first empty slot (leftmost)
+                    btnItem.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
                         if (isAssigned) return;
-                        if (selectedAvailableButtonId === btnDef.id) {
-                            selectedAvailableButtonId = null; // deselect
-                        } else {
-                            selectedAvailableButtonId = btnDef.id; // select
+                        // Find first empty slot
+                        let targetSlot = -1;
+                        for (let s = 0; s < 3; s++) {
+                            if (!tempConfigButtons[s]) {
+                                targetSlot = s;
+                                break;
+                            }
                         }
-                        renderModalState();
+                        if (targetSlot === -1) {
+                            // All slots full — show inline toast
+                            showCardConfigToast('Les 3 emplacements sont déjà occupés. Supprimez-en un d\'abord en cliquant sur la croix ✕ rouge.');
+                            return;
+                        }
+                        assignButtonToSlot(btnDef.id, targetSlot);
                     });
 
                     availableConfigButtons.appendChild(btnItem);
@@ -8655,6 +8665,36 @@
                 }
                 tempConfigButtons[targetSlotIndex] = buttonId;
                 renderModalState();
+            }
+
+            function showCardConfigToast(message) {
+                // Remove existing toast if any
+                const existing = document.getElementById('cardConfigToast');
+                if (existing) existing.remove();
+
+                const toast = document.createElement('div');
+                toast.id = 'cardConfigToast';
+                toast.className = 'flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold shadow-md border transition-all duration-300';
+                toast.style.cssText = 'background: linear-gradient(135deg, #fee2e2, #fecaca); color: #991b1b; border-color: #f87171; animation: toastSlideIn 0.35s cubic-bezier(0.34,1.56,0.64,1);';
+                toast.innerHTML = `
+                    <span class="text-base">❌</span>
+                    <span>${message}</span>
+                `;
+
+                // Insert just above the "Boutons disponibles" section
+                const availableSection = document.getElementById('availableBtnsSection');
+                if (availableSection) {
+                    availableSection.parentNode.insertBefore(toast, availableSection);
+                }
+
+                // Auto-remove after 3.5s
+                setTimeout(() => {
+                    if (toast.parentNode) {
+                        toast.style.opacity = '0';
+                        toast.style.transform = 'translateY(-10px)';
+                        setTimeout(() => toast.remove(), 300);
+                    }
+                }, 3500);
             }
         }
 

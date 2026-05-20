@@ -380,3 +380,8 @@ input[type="search"]::-webkit-search-results-decoration {
     50% { opacity: 0.85; transform: scale(0.98); }
 }
 
+/* Toast notification inside card config modal */
+@keyframes toastSlideIn {
+    0% { opacity: 0; transform: translateY(-12px) scale(0.95); }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
+}
