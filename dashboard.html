@@ -3158,23 +3158,6 @@
                         </button>
                     </div>
 
-                    <!-- LIKES DISPLAY -->
-                    ${likeCount > 0 ? `
-                    <div class="like-hover-trigger flex items-center gap-1 text-red-500 bg-red-50 px-2 py-1 rounded-full cursor-help relative group/likes"
-                         data-liked-by='${JSON.stringify(likedBy)}'>
-                        <i class="fas fa-heart text-sm"></i>
-                        <span class="text-xs font-bold">${likeCount}</span>
-
-                        <!-- Tooltip qui sera injecté au survol -->
-                        <div class="liker-tooltip hidden absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 bg-white border border-red-100 shadow-xl rounded-xl p-3 z-[100]">
-                            <p class="text-[10px] text-gray-400 mb-2 border-b pb-1 font-bold uppercase tracking-wider">Aimé par :</p>
-                            <ul class="liker-list space-y-2 max-h-40 overflow-y-auto">
-                                <li class="text-[10px] italic text-gray-400">Chargement...</li>
-                            </ul>
-                            <div class="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-white border-b border-r border-red-100 transform rotate-45"></div>
-                        </div>
-                    </div>
-                    ` : ''}
                 </div>
                 <div class="absolute bottom-3 right-3 h-28 w-28 group-hover:scale-105 transition-transform duration-300 pointer-events-none">
                     ${hasBadges ? `
