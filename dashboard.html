@@ -112,7 +112,10 @@
                         class="px-3 py-1 bg-blue-100 hover:bg-blue-200 text-blue-800 text-sm rounded-full transition hidden">
                         <i class="fas fa-exchange-alt mr-1"></i> <span class="md:inline">Changer de carnet</span>
                     </button>
-
+                    <button id="openCardConfigBtn"
+                        class="col-span-2 md:col-span-1 w-full md:w-auto px-3 py-1.5 md:py-1 bg-purple-100 hover:bg-purple-200 text-purple-800 text-[10px] md:text-sm rounded-xl md:rounded-full transition flex items-center justify-center gap-1 font-bold md:font-medium">
+                        <i class="fas fa-cog"></i> <span>Configurer la carte</span>
+                    </button>
                 </div>
 
                 <!-- Bouton Déconnexion (Pleine largeur sur mobile) -->
@@ -1528,6 +1531,120 @@
         </div>
     </div>
 
+    <!-- Modal Configuration de la Carte de Course -->
+    <div id="cardConfigModal" class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center p-4 hidden z-[10010] modal">
+        <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl transform transition-all duration-300 scale-100 opacity-100 border border-gray-100 flex flex-col max-h-[90vh] sm:max-h-[85vh]">
+            <!-- Header -->
+            <div class="p-5 border-b border-gray-100 flex justify-between items-center bg-green-50 rounded-t-2xl">
+                <div class="flex items-center gap-2">
+                    <span class="text-xl sm:text-2xl">⚙️</span>
+                    <h2 class="text-lg sm:text-xl font-bold text-green-800">Configuration de la Carte de Course</h2>
+                </div>
+                <button type="button" id="closeCardConfigModalBtn" class="text-gray-400 hover:text-gray-600 transition-colors text-2xl font-bold leading-none">&times;</button>
+            </div>
+            
+            <!-- Content -->
+            <div class="p-4 sm:p-6 overflow-y-auto space-y-4 sm:space-y-6 flex-1 modal-content">
+                <p class="text-xs sm:text-sm text-gray-600 leading-relaxed">
+                    Personnalisez les boutons d'actions rapides affichés en bas à gauche de vos cartes de course. 
+                    Vous pouvez en sélectionner <strong>jusqu'à 3 au maximum</strong>.
+                </p>
+                <div class="flex flex-col gap-2">
+                    <span class="text-xs text-green-700 font-semibold bg-green-50 border border-green-200 px-2.5 py-1.5 rounded-lg hidden md:flex items-center gap-2">
+                        <span>💡</span>
+                        <span><strong>Drag & Drop :</strong> Glissez un bouton du bas et déposez-le sur un des 3 emplacements de la carte exemple.</span>
+                    </span>
+                    <span class="text-xs text-blue-700 font-semibold bg-blue-50 border border-blue-200 px-2.5 py-1.5 rounded-lg flex md:hidden items-center gap-2">
+                        <span>📱</span>
+                        <span><strong>Mobile / Tactile :</strong> Cliquez sur un bouton du bas puis sur l'un des 3 emplacements de la carte.</span>
+                    </span>
+                </div>
+                
+                <!-- Section Carte Exemple -->
+                <div class="bg-slate-50 border border-slate-100 p-4 sm:p-5 rounded-xl flex flex-col items-center shadow-inner">
+                    <span class="text-[10px] font-bold text-gray-400 mb-3 uppercase tracking-wider">Aperçu en temps réel</span>
+                    
+                    <div class="border border-green-200 rounded-xl overflow-hidden shadow-md bg-white p-5 w-full max-w-sm relative group">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h3 class="text-lg font-bold text-green-800 mb-1 flex items-center gap-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-500" viewBox="0 0 20 20" fill="currentColor">
+                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                    </svg>
+                                    Course Exemple
+                                </h3>
+                                <p class="text-xs text-green-600 font-medium">20 Mai 2026</p>
+                            </div>
+                            <span class="px-2 py-0.5 bg-green-100 text-green-800 text-xs rounded-full font-bold">2026</span>
+                        </div>
+                        <div class="mt-4 flex flex-col gap-2">
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <span class="flex items-center gap-1 px-2 py-0.5 bg-green-50 text-green-800 text-[10px] rounded-full font-medium">
+                                    <i class="fas fa-ruler-horizontal text-green-500"></i> 10.00 km
+                                </span>
+                                <span class="flex items-center gap-1 px-2 py-0.5 bg-green-50 text-green-800 text-[10px] rounded-full font-medium">
+                                    <i class="fas fa-mountain text-green-500"></i> +150 m
+                                </span>
+                                <span class="flex items-center gap-1 px-2 py-0.5 bg-green-50 text-green-800 text-[10px] rounded-full font-medium">
+                                    <i class="fas fa-map-marker-alt text-green-500"></i> Paris, FR
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6 flex flex-wrap justify-between items-center gap-2">
+                            <!-- slots container -->
+                            <div class="flex space-x-2 items-center" id="configCardSlots">
+                                <div class="config-slot" data-slot="0" title="Bouton 1 - Glissez-déposez ou cliquez ici">
+                                    <span class="text-xs text-slate-300 font-extrabold">1</span>
+                                </div>
+                                <div class="config-slot" data-slot="1" title="Bouton 2 - Glissez-déposez ou cliquez ici">
+                                    <span class="text-xs text-slate-300 font-extrabold">2</span>
+                                </div>
+                                <div class="config-slot" data-slot="2" title="Bouton 3 - Glissez-déposez ou cliquez ici">
+                                    <span class="text-xs text-slate-300 font-extrabold">3</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- image thumbnail placeholder -->
+                        <div class="absolute bottom-3 right-3 h-16 w-16 pointer-events-none">
+                            <div class="h-full w-full flex flex-col items-center justify-center bg-gray-50 rounded-lg border border-gray-200">
+                                <i class="fas fa-image text-gray-300 text-lg"></i>
+                                <p class="text-[8px] text-gray-400 mt-0.5">Exemple</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Section Boutons Disponibles -->
+                <div class="space-y-2.5">
+                    <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1.5">
+                        <i class="fas fa-th-large text-gray-400"></i>
+                        Boutons disponibles à glisser ou toucher
+                    </h3>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5" id="availableConfigButtons">
+                        <!-- Les boutons disponibles seront injectés ici dynamiquement -->
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Footer -->
+            <div class="p-4 sm:p-5 border-t border-gray-100 flex flex-col sm:flex-row gap-3 sm:gap-0 justify-between items-center bg-slate-50 rounded-b-2xl">
+                <button type="button" id="resetCardConfigBtn" class="w-full sm:w-auto px-4 py-2 text-xs font-bold text-red-600 hover:bg-red-50 hover:text-red-800 rounded-xl transition border border-transparent hover:border-red-200 text-center">
+                    Réinitialiser par défaut
+                </button>
+                <div class="flex gap-2 w-full sm:w-auto justify-end">
+                    <button type="button" id="cancelCardConfigBtn" class="flex-1 sm:flex-none px-4 py-2 bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 rounded-xl text-xs font-semibold transition text-center shadow-sm">
+                        Annuler
+                    </button>
+                    <button type="button" id="saveCardConfigBtn" class="flex-1 sm:flex-none px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-xl text-xs font-semibold transition text-center shadow-sm">
+                        Enregistrer
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal d'alerte doublon wishlist (Similitudes à supprimer après ajout de course) -->
     <div id="wishlistCleanAfterAddModal" class="fixed inset-0 flex items-center justify-center z-[80] hidden">
         <div class="absolute inset-0 bg-black bg-opacity-50 blur-bg"></div>
@@ -1869,6 +1986,114 @@
             return parseFloat(num.toFixed(4));
         }
 
+        window.customCardButtons = ['edit', 'delete', 'details'];
+
+        const AVAILABLE_CARD_BUTTONS = {
+            edit: {
+                id: 'edit',
+                label: 'Modifier',
+                icon: '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" /></svg>',
+                bgColorClass: 'bg-green-100 text-green-800 hover:bg-green-200',
+                colorClass: 'text-green-600 border-green-200 hover:bg-green-50',
+                title: 'Modifier',
+                actionClass: 'edit-race',
+                isEnabled: (race) => true
+            },
+            delete: {
+                id: 'delete',
+                label: 'Supprimer',
+                icon: '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" /></svg>',
+                bgColorClass: 'bg-red-100 text-red-800 hover:bg-red-200',
+                colorClass: 'text-red-600 border-red-200 hover:bg-red-50',
+                title: 'Supprimer',
+                actionClass: 'delete-race',
+                isEnabled: (race) => true
+            },
+            details: {
+                id: 'details',
+                label: 'Détails',
+                icon: '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M10 12a2 2 0 100-4 2 2 0 000 4z" /><path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" /></svg>',
+                bgColorClass: 'bg-blue-100 text-blue-800 hover:bg-blue-200',
+                colorClass: 'text-blue-600 border-blue-200 hover:bg-blue-50',
+                title: 'Détails',
+                actionClass: 'details-btn',
+                isEnabled: (race) => true
+            },
+            drive: {
+                id: 'drive',
+                label: 'Drive',
+                icon: '<i class="fab fa-google-drive"></i>',
+                bgColorClass: 'bg-amber-100 text-amber-800 hover:bg-amber-200',
+                colorClass: 'text-amber-600 border-amber-200 hover:bg-amber-50',
+                title: 'Google Drive',
+                actionClass: 'drive-btn',
+                isEnabled: (race) => !!(race.driveId && race.driveId.trim() !== '')
+            },
+            results: {
+                id: 'results',
+                label: 'Résultats',
+                icon: '<i class="fas fa-trophy"></i>',
+                bgColorClass: 'bg-indigo-100 text-indigo-800 hover:bg-indigo-200',
+                colorClass: 'text-indigo-600 border-indigo-200 hover:bg-indigo-50',
+                title: 'Résultats de la course',
+                actionClass: 'results-btn',
+                isEnabled: (race) => !!(race.resultUrl && race.resultUrl.trim() !== '')
+            },
+            onlineResults: {
+                id: 'onlineResults',
+                label: 'Résultats en ligne',
+                icon: '<i class="fas fa-globe"></i>',
+                bgColorClass: 'bg-orange-100 text-orange-800 hover:bg-orange-200',
+                colorClass: 'text-orange-600 border-orange-200 hover:bg-orange-50',
+                title: 'Résultats en ligne / Site web',
+                actionClass: 'online-results-btn',
+                isEnabled: (race) => !!((race.website && race.website.trim() !== '') || (race.resultUrl && race.resultUrl.trim() !== ''))
+            },
+            gpx: {
+                id: 'gpx',
+                label: 'GPX',
+                icon: '<i class="fas fa-route"></i>',
+                bgColorClass: 'bg-purple-100 text-purple-800 hover:bg-purple-200',
+                colorClass: 'text-purple-600 border-purple-200 hover:bg-green-50',
+                title: 'Parcours GPX',
+                actionClass: 'gpx-btn',
+                isEnabled: (race) => !!(race.gpxUrl && race.gpxUrl.trim() !== '')
+            },
+            pdf: {
+                id: 'pdf',
+                label: 'PDF',
+                icon: '<i class="fas fa-file-pdf"></i>',
+                bgColorClass: 'bg-pink-100 text-pink-800 hover:bg-pink-200',
+                colorClass: 'text-pink-600 border-pink-200 hover:bg-green-50',
+                title: 'Générer PDF',
+                actionClass: 'pdf-btn',
+                isEnabled: (race) => true
+            }
+        };
+
+        function renderCardButtonsHtml(race) {
+            const buttons = window.customCardButtons || ['edit', 'delete', 'details'];
+            return buttons.map(btnId => {
+                const btnDef = AVAILABLE_CARD_BUTTONS[btnId];
+                if (!btnDef) return '';
+                const enabled = btnDef.isEnabled(race);
+                if (enabled) {
+                    return `
+                        <button class="${btnDef.actionClass} p-2 ${btnDef.bgColorClass} rounded-md transition-colors" data-id="${race.id}" title="${btnDef.title}">
+                            ${btnDef.icon}
+                        </button>
+                    `;
+                } else {
+                    return `
+                        <button class="p-2 bg-gray-100 text-gray-400 rounded-md cursor-not-allowed opacity-40" disabled title="${btnDef.title} (Non disponible)">
+                            ${btnDef.icon}
+                        </button>
+                    `;
+                }
+            }).join('');
+        }
+
+
         // Références Firebase dynamiques (initialisées après auth)
         let usersCollection = db.collection('users');
         let racesCollection = null;
@@ -1963,13 +2188,25 @@
                             inviteUserSelectBtn.disabled = !inviteSelect.value;
                         };
 
-                        inviteUserSelectBtn.onclick = () => {
+                        inviteUserSelectBtn.onclick = async () => {
                             const targetUserId = inviteSelect.value;
                             const targetUserEmail = inviteSelect.options[inviteSelect.selectedIndex].text;
 
                             // Configurer les collections sur l'utilisateur CIBLE
                             racesCollection = db.collection('users').doc(targetUserId).collection('races');
                             wishlistCollection = db.collection('users').doc(targetUserId).collection('wishlist');
+
+                            try {
+                                const targetUserDoc = await db.collection('users').doc(targetUserId).get();
+                                if (targetUserDoc.exists && targetUserDoc.data().cardButtons) {
+                                    window.customCardButtons = targetUserDoc.data().cardButtons;
+                                } else {
+                                    window.customCardButtons = ['edit', 'delete', 'details'];
+                                }
+                            } catch (err) {
+                                console.error("Error loading target user card buttons:", err);
+                                window.customCardButtons = ['edit', 'delete', 'details'];
+                            }
 
                             inviteModal.classList.add('hidden');
 
@@ -2049,9 +2286,15 @@
                             if (uDoc.exists) {
                                 userPseudo = uDoc.data().pseudo || "Utilisateur";
                                 userPhotoURL = uDoc.data().photoURL;
+                                
+                                if (uDoc.data().cardButtons && Array.isArray(uDoc.data().cardButtons)) {
+                                    window.customCardButtons = uDoc.data().cardButtons;
+                                } else {
+                                    window.customCardButtons = ['edit', 'delete', 'details'];
+                                }
                             }
                         } catch (e) {
-                            console.error("Erreur récup pseudo/photo", e);
+                            console.error("Erreur récup pseudo/photo/cardButtons", e);
                         }
 
                         const avatarSrc = userPhotoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(userPseudo)}&background=random`;
@@ -3143,21 +3386,8 @@
                 </div>
                 <div class="mt-4 flex flex-wrap justify-between items-center gap-2">
                     <div class="flex space-x-2 items-center">
-                        <button class="edit-race p-2 bg-green-100 text-green-800 rounded-md hover:bg-green-200 transition-colors" data-id="${race.id}" title="Modifier">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
-                        </button>
-                        <button class="delete-race p-2 bg-red-100 text-red-800 rounded-md hover:bg-red-200 transition-colors" data-id="${race.id}" title="Supprimer">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
-                        </button>
-                        <button class="details-btn p-2 bg-blue-100 text-blue-800 rounded-md hover:bg-blue-200 transition-colors" data-id="${race.id}" title="Détails">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-                                <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" />
-                        </button>
+                        ${renderCardButtonsHtml(race)}
                     </div>
-
                 </div>
                 <div class="absolute bottom-3 right-3 h-28 w-28 group-hover:scale-105 transition-transform duration-300 pointer-events-none">
                     ${hasBadges ? `
@@ -3226,55 +3456,102 @@
                     });
                 }
 
-                // Rendre toute la carte cliquable (sauf si clic sur trigger de likes)
+                // Rendre toute la carte cliquable (sauf si clic sur trigger de likes ou boutons/liens)
                 raceCard.addEventListener('click', (e) => {
-                    // Ne pas déclencher si on clique sur les boutons d'édition/suppression/détails ou le trigger de likes
-                    if (!e.target.closest('.edit-race') && !e.target.closest('.delete-race') && !e.target.closest('.details-btn') && !e.target.closest('.like-hover-trigger')) {
+                    if (!e.target.closest('button') && !e.target.closest('a') && !e.target.closest('.like-hover-trigger')) {
                         showRaceDetails(race.id);
                     }
                 });
 
                 // Ajouter un écouteur d'événement pour le bouton détails
                 const detailsBtn = raceCard.querySelector('.details-btn');
-                detailsBtn.addEventListener('click', (e) => {
-                    e.stopPropagation(); // Évite de déclencher l'événement de la carte
-                    showRaceDetails(race.id);
-                });
+                if (detailsBtn) {
+                    detailsBtn.addEventListener('click', (e) => {
+                        e.stopPropagation(); // Évite de déclencher l'événement de la carte
+                        showRaceDetails(race.id);
+                    });
+                }
 
                 // Ajouter des écouteurs d'événements pour éditer et supprimer
                 const editBtn = raceCard.querySelector('.edit-race');
                 const deleteBtn = raceCard.querySelector('.delete-race');
 
-                editBtn.addEventListener('click', async (e) => {
-                    e.stopPropagation(); // Empêche le déclenchement du clic sur la carte
-                    if (!isAuthenticated()) {
-                        showPasswordModal('edit', race.id);
-                        return;
-                    }
-                    // Autoriser si admin ou user authentifié (pas invité)
-                    if (await isInviteAsync()) {
-                        showPermissionDeniedModal('modifier une course');
-                        return;
-                    }
-                    modalTitle.textContent = 'Modifier la course';
-                    populateEditForm(race.id);
-                    raceModal.classList.remove('hidden');
-                    document.getElementById('raceName').focus();
-                });
+                if (editBtn) {
+                    editBtn.addEventListener('click', async (e) => {
+                        e.stopPropagation(); // Empêche le déclenchement du clic sur la carte
+                        if (!isAuthenticated()) {
+                            showPasswordModal('edit', race.id);
+                            return;
+                        }
+                        // Autoriser si admin ou user authentifié (pas invité)
+                        if (await isInviteAsync()) {
+                            showPermissionDeniedModal('modifier une course');
+                            return;
+                        }
+                        modalTitle.textContent = 'Modifier la course';
+                        populateEditForm(race.id);
+                        raceModal.classList.remove('hidden');
+                        document.getElementById('raceName').focus();
+                    });
+                }
 
-                deleteBtn.addEventListener('click', async (e) => {
-                    e.stopPropagation(); // Empêche le déclenchement du clic sur la carte
-                    if (!isAuthenticated()) {
-                        showPasswordModal('delete', race.id);
-                        return;
-                    }
-                    // Autoriser si admin ou user authentifié (pas invité)
-                    if (await isInviteAsync()) {
-                        showPermissionDeniedModal('supprimer une course');
-                        return;
-                    }
-                    showConfirmDeleteModal(race.id);
-                });
+                if (deleteBtn) {
+                    deleteBtn.addEventListener('click', async (e) => {
+                        e.stopPropagation(); // Empêche le déclenchement du clic sur la carte
+                        if (!isAuthenticated()) {
+                            showPasswordModal('delete', race.id);
+                            return;
+                        }
+                        // Autoriser si admin ou user authentifié (pas invité)
+                        if (await isInviteAsync()) {
+                            showPermissionDeniedModal('supprimer une course');
+                            return;
+                        }
+                        showConfirmDeleteModal(race.id);
+                    });
+                }
+
+                // Nouveaux boutons d'actions personnalisés
+                const driveBtn = raceCard.querySelector('.drive-btn');
+                if (driveBtn) {
+                    driveBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        openDriveExplorer(race.driveId);
+                    });
+                }
+
+                const resultsBtn = raceCard.querySelector('.results-btn');
+                if (resultsBtn) {
+                    resultsBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        window.open(race.resultUrl, '_blank');
+                    });
+                }
+
+                const onlineResultsBtn = raceCard.querySelector('.online-results-btn');
+                if (onlineResultsBtn) {
+                    onlineResultsBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const url = race.website || race.resultUrl;
+                        if (url) window.open(url, '_blank');
+                    });
+                }
+
+                const gpxBtn = raceCard.querySelector('.gpx-btn');
+                if (gpxBtn) {
+                    gpxBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        if (race.gpxUrl) window.open(race.gpxUrl, '_blank');
+                    });
+                }
+
+                const pdfBtn = raceCard.querySelector('.pdf-btn');
+                if (pdfBtn) {
+                    pdfBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        generateRacePdf(race.id);
+                    });
+                }
             });
         }
 
@@ -8132,6 +8409,257 @@
         }
 
         window.openDriveExplorer = openDriveExplorer;
+
+        // Initialisation de la modale de configuration des cartes de course (Drag & Drop + Mobile Click)
+        function initCardConfigModal() {
+            const openCardConfigBtn = document.getElementById('openCardConfigBtn');
+            const cardConfigModal = document.getElementById('cardConfigModal');
+            const closeCardConfigModalBtn = document.getElementById('closeCardConfigModalBtn');
+            const cancelCardConfigBtn = document.getElementById('cancelCardConfigBtn');
+            const saveCardConfigBtn = document.getElementById('saveCardConfigBtn');
+            const resetCardConfigBtn = document.getElementById('resetCardConfigBtn');
+            const configCardSlots = document.getElementById('configCardSlots');
+            const availableConfigButtons = document.getElementById('availableConfigButtons');
+
+            if (!openCardConfigBtn || !cardConfigModal) {
+                console.warn("Card configuration modal DOM elements missing.");
+                return;
+            }
+
+            let tempConfigButtons = [];
+            let selectedAvailableButtonId = null;
+
+            // Open modal handler
+            openCardConfigBtn.addEventListener('click', () => {
+                if (!isAuthenticated()) {
+                    showPasswordModal('cardConfig');
+                    return;
+                }
+                
+                // Copy the current configuration
+                tempConfigButtons = [...window.customCardButtons];
+                selectedAvailableButtonId = null;
+                renderModalState();
+                cardConfigModal.classList.remove('hidden');
+                
+                // Block scroll underneath if scroll-lock script is present
+                if (window.ScrollLock && typeof window.ScrollLock.lock === 'function') {
+                    window.ScrollLock.lock();
+                }
+            });
+
+            // Close modal handler
+            const closeModal = () => {
+                cardConfigModal.classList.add('hidden');
+                if (window.ScrollLock && typeof window.ScrollLock.unlock === 'function') {
+                    window.ScrollLock.unlock();
+                }
+            };
+
+            if (closeCardConfigModalBtn) closeCardConfigModalBtn.addEventListener('click', closeModal);
+            if (cancelCardConfigBtn) cancelCardConfigBtn.addEventListener('click', closeModal);
+
+            // Backdrop click closing
+            cardConfigModal.addEventListener('click', (e) => {
+                if (e.target === cardConfigModal) {
+                    closeModal();
+                }
+            });
+
+            // Reset handler
+            if (resetCardConfigBtn) {
+                resetCardConfigBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    tempConfigButtons = ['edit', 'delete', 'details'];
+                    selectedAvailableButtonId = null;
+                    renderModalState();
+                });
+            }
+
+            // Save handler
+            if (saveCardConfigBtn) {
+                saveCardConfigBtn.addEventListener('click', async () => {
+                    if (!isAuthenticated()) return;
+                    
+                    // Filter empty slots if any
+                    const cleanButtons = tempConfigButtons.filter(b => b !== null && b !== undefined && b !== '');
+                    if (cleanButtons.length === 0) {
+                        alert("Veuillez sélectionner au moins un bouton pour votre carte.");
+                        return;
+                    }
+
+                    saveCardConfigBtn.disabled = true;
+                    const originalText = saveCardConfigBtn.innerHTML;
+                    saveCardConfigBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Enregistrement...';
+
+                    try {
+                        const user = auth.currentUser;
+                        if (user) {
+                            await db.collection('users').doc(user.uid).set({
+                                cardButtons: cleanButtons
+                            }, { merge: true });
+                            
+                            window.customCardButtons = cleanButtons;
+                            console.log("✅ Configuration de la carte enregistrée dans Firestore:", cleanButtons);
+                            
+                            // Reload dashboard races to reflect custom buttons
+                            if (typeof loadRaces === 'function') {
+                                loadRaces();
+                            }
+                            closeModal();
+                        }
+                    } catch (err) {
+                        console.error("Error saving card configuration:", err);
+                        alert("Erreur lors de la sauvegarde : " + err.message);
+                    } finally {
+                        saveCardConfigBtn.disabled = false;
+                        saveCardConfigBtn.innerHTML = originalText;
+                    }
+                });
+            }
+
+            function renderModalState() {
+                const isDesktop = window.matchMedia('(min-width: 768px)').matches;
+
+                // 1. Render slots
+                configCardSlots.innerHTML = '';
+                for (let i = 0; i < 3; i++) {
+                    const btnId = tempConfigButtons[i];
+                    const slotDiv = document.createElement('div');
+                    slotDiv.className = 'config-slot relative flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-lg border-2 border-dashed border-slate-300 bg-slate-50 transition-all cursor-pointer';
+                    slotDiv.dataset.slot = i;
+
+                    if (btnId && AVAILABLE_CARD_BUTTONS[btnId]) {
+                        const btnDef = AVAILABLE_CARD_BUTTONS[btnId];
+                        slotDiv.className = `config-slot relative flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-lg border-2 border-solid ${btnDef.bgColorClass} transition-all cursor-pointer animate-pop`;
+                        slotDiv.innerHTML = `
+                            <span class="text-lg sm:text-xl">${btnDef.icon}</span>
+                            <span class="absolute -bottom-5 left-1/2 transform -translate-x-1/2 text-[9px] font-semibold text-gray-500 whitespace-nowrap">${btnDef.label}</span>
+                            <button class="config-slot-delete-btn flex items-center justify-center" data-slot="${i}" title="Vider cet emplacement">&times;</button>
+                        `;
+                    } else {
+                        // Empty slot
+                        slotDiv.innerHTML = `
+                            <span class="text-xs text-slate-300 font-extrabold">${i + 1}</span>
+                            <span class="absolute -bottom-5 left-1/2 transform -translate-x-1/2 text-[9px] font-semibold text-slate-400 whitespace-nowrap">Vide</span>
+                        `;
+                    }
+
+                    // Attach Drag & Drop events for each slot
+                    slotDiv.addEventListener('dragover', (e) => {
+                        e.preventDefault();
+                        slotDiv.classList.add('drag-over');
+                    });
+
+                    slotDiv.addEventListener('dragleave', () => {
+                        slotDiv.classList.remove('drag-over');
+                    });
+
+                    slotDiv.addEventListener('drop', (e) => {
+                        e.preventDefault();
+                        slotDiv.classList.remove('drag-over');
+                        const draggedId = e.dataTransfer.getData('text/plain');
+                        if (draggedId && AVAILABLE_CARD_BUTTONS[draggedId]) {
+                            assignButtonToSlot(draggedId, i);
+                        }
+                    });
+
+                    // Mobile Tap support
+                    slotDiv.addEventListener('click', (e) => {
+                        // If delete badge was clicked, handle it separately
+                        if (e.target.closest('.config-slot-delete-btn')) {
+                            e.stopPropagation();
+                            const slotIdx = parseInt(e.target.closest('.config-slot-delete-btn').dataset.slot, 10);
+                            tempConfigButtons[slotIdx] = null;
+                            selectedAvailableButtonId = null;
+                            renderModalState();
+                            return;
+                        }
+
+                        if (selectedAvailableButtonId) {
+                            assignButtonToSlot(selectedAvailableButtonId, i);
+                            selectedAvailableButtonId = null;
+                        }
+                    });
+
+                    configCardSlots.appendChild(slotDiv);
+                }
+
+                // 2. Render available buttons list
+                availableConfigButtons.innerHTML = '';
+                Object.values(AVAILABLE_CARD_BUTTONS).forEach(btnDef => {
+                    const isAssigned = tempConfigButtons.includes(btnDef.id);
+                    const btnItem = document.createElement('div');
+                    
+                    // Style base classes
+                    btnItem.className = 'available-btn-item border border-gray-200 bg-white rounded-xl p-3 flex flex-col items-center justify-center gap-1.5 transition-all shadow-sm select-none min-h-[4.5rem]';
+                    
+                    if (isAssigned) {
+                        btnItem.className += ' opacity-40 cursor-not-allowed';
+                        btnItem.setAttribute('draggable', 'false');
+                        btnItem.title = 'Déjà assigné';
+                    } else {
+                        // Only enable HTML5 drag on desktop — on mobile, use tap-to-select
+                        btnItem.setAttribute('draggable', isDesktop ? 'true' : 'false');
+                        btnItem.className += isDesktop ? ' cursor-grab hover:bg-slate-50 hover:border-slate-300 hover:scale-105' : ' cursor-pointer hover:bg-slate-50 hover:border-slate-300';
+                        btnItem.title = 'Glissez-déposez ou cliquez ici';
+                        
+                        if (selectedAvailableButtonId === btnDef.id) {
+                            btnItem.className += ' selected animate-pulse-subtle';
+                        }
+                    }
+
+                    // HTML contents with proper color class
+                    btnItem.innerHTML = `
+                        <div class="w-8 h-8 rounded-lg ${btnDef.bgColorClass} flex items-center justify-center text-base sm:text-lg">
+                            ${btnDef.icon}
+                        </div>
+                        <span class="text-xs font-medium text-gray-700 text-center">${btnDef.label}</span>
+                    `;
+
+                    // Dragstart
+                    btnItem.addEventListener('dragstart', (e) => {
+                        if (isAssigned) {
+                            e.preventDefault();
+                            return;
+                        }
+                        e.dataTransfer.setData('text/plain', btnDef.id);
+                        btnItem.classList.add('opacity-50');
+                    });
+
+                    btnItem.addEventListener('dragend', () => {
+                        btnItem.classList.remove('opacity-50');
+                    });
+
+                    // Tap/Click selector
+                    btnItem.addEventListener('click', () => {
+                        if (isAssigned) return;
+                        if (selectedAvailableButtonId === btnDef.id) {
+                            selectedAvailableButtonId = null; // deselect
+                        } else {
+                            selectedAvailableButtonId = btnDef.id; // select
+                        }
+                        renderModalState();
+                    });
+
+                    availableConfigButtons.appendChild(btnItem);
+                });
+            }
+
+            function assignButtonToSlot(buttonId, targetSlotIndex) {
+                // Enforce unique assignment
+                const existingIndex = tempConfigButtons.indexOf(buttonId);
+                if (existingIndex !== -1) {
+                    tempConfigButtons[existingIndex] = null;
+                }
+                tempConfigButtons[targetSlotIndex] = buttonId;
+                renderModalState();
+            }
+        }
+
+        // Lancer l'initialisation du gestionnaire de modale
+        initCardConfigModal();
 
     </script>
 
