@@ -412,7 +412,6 @@ async function loadPublicRaces() {
                 }
                             <span class="truncate max-w-[150px] font-semibold">${ownerPseudoDisplay}</span>
                         </span>
-                        ${race.time ? `<span class="text-sm font-bold text-green-700 font-mono">${race.time}</span>` : ''}
                     </div>
 
                     <!-- Image -->
