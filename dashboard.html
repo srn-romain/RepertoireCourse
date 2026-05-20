@@ -2079,13 +2079,13 @@
                 const enabled = btnDef.isEnabled(race);
                 if (enabled) {
                     return `
-                        <button class="${btnDef.actionClass} p-2 ${btnDef.bgColorClass} rounded-md transition-colors" data-id="${race.id}" title="${btnDef.title}">
+                        <button class="${btnDef.actionClass} w-9 h-9 flex items-center justify-center ${btnDef.bgColorClass} rounded-md transition-colors" data-id="${race.id}" title="${btnDef.title}">
                             ${btnDef.icon}
                         </button>
                     `;
                 } else {
                     return `
-                        <button class="p-2 bg-gray-100 text-gray-400 rounded-md cursor-not-allowed opacity-40" disabled title="${btnDef.title} (Non disponible)">
+                        <button class="w-9 h-9 flex items-center justify-center bg-gray-100 text-gray-400 rounded-md cursor-not-allowed opacity-40" disabled title="${btnDef.title} (Non disponible)">
                             ${btnDef.icon}
                         </button>
                     `;
