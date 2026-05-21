@@ -8585,10 +8585,15 @@
 
             // Close modal handler
             const closeModal = () => {
+                // Hide modal
                 cardConfigModal.classList.add('hidden');
+                // Unlock body scroll if locked
                 if (window.ScrollLock && typeof window.ScrollLock.unlock === 'function') {
                     window.ScrollLock.unlock();
                 }
+                // Remove any lingering toast messages
+                const toast = document.getElementById('cardConfigToast');
+                if (toast) toast.remove();
             };
 
             if (closeCardConfigModalBtn) closeCardConfigModalBtn.addEventListener('click', closeModal);
