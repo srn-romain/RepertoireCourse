@@ -1210,6 +1210,27 @@
                         <p class="mt-4 text-sm font-medium text-gray-500 animate-pulse">Consultation du dossier...</p>
                     </div>
 
+                    <!-- Modal Nombre de J'aime -->
+                    <div id="likesModal" class="fixed inset-0 flex items-center justify-center z-50 hidden backdrop-blur-sm bg-black/30 transition-opacity duration-300">
+                        <div class="bg-white rounded-2xl shadow-2xl p-6 flex flex-col items-center justify-center w-72 max-h-[80vh] transform scale-95 transition-transform duration-300">
+                            <div class="w-16 h-16 rounded-full bg-rose-100 flex items-center justify-center mb-4 shrink-0">
+                                <i class="fas fa-heart text-3xl text-rose-500 animate-pulse"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-gray-800 mb-1">Nombre de J'aime</h3>
+                            <p id="likesModalCount" class="text-4xl font-extrabold text-rose-600 mb-4 shrink-0">0</p>
+
+                            <div class="w-full overflow-y-auto mb-6 px-2 border-t border-gray-100 pt-4" style="max-height: 200px;">
+                                <ul id="likesModalList" class="flex flex-col gap-2 w-full text-sm text-gray-600">
+                                    <!-- Likers will be injected here -->
+                                </ul>
+                            </div>
+
+                            <button onclick="document.getElementById('likesModal').classList.add('hidden')" class="w-full py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl transition-colors shrink-0">
+                                Fermer
+                            </button>
+                        </div>
+                    </div>
+
                     <!-- Error State -->
                     <div id="driveError"
                         class="absolute inset-0 flex flex-col items-center justify-center bg-white z-[10011] hidden p-8 text-center">
@@ -2067,6 +2088,46 @@
                 colorClass: 'text-pink-600 border-pink-200 hover:bg-green-50',
                 title: 'Générer PDF',
                 actionClass: 'pdf-btn',
+                isEnabled: (race) => true
+            },
+            website: {
+                id: 'website',
+                label: 'Site web',
+                icon: '<i class="fas fa-external-link-alt"></i>',
+                bgColorClass: 'bg-teal-100 text-teal-800 hover:bg-teal-200',
+                colorClass: 'text-teal-600 border-teal-200 hover:bg-teal-50',
+                title: 'Voir le site de la course',
+                actionClass: 'website-btn',
+                isEnabled: (race) => !!(race.website && race.website.trim() !== '')
+            },
+            zoomRaceImage: {
+                id: 'zoomRaceImage',
+                label: 'Image course',
+                icon: '<i class="fas fa-search-plus"></i>',
+                bgColorClass: 'bg-indigo-100 text-indigo-800 hover:bg-indigo-200',
+                colorClass: 'text-indigo-600 border-indigo-200 hover:bg-indigo-50',
+                title: 'Voir l\'image de la course',
+                actionClass: 'zoom-race-image-btn',
+                isEnabled: (race) => !!(race.photo && race.photo.trim() !== '')
+            },
+            zoomRouteImage: {
+                id: 'zoomRouteImage',
+                label: 'Image parcours',
+                icon: '<i class="fas fa-map-marked-alt"></i>',
+                bgColorClass: 'bg-lime-100 text-lime-800 hover:bg-lime-200',
+                colorClass: 'text-lime-600 border-lime-200 hover:bg-lime-50',
+                title: 'Voir l\'image du parcours',
+                actionClass: 'zoom-route-image-btn',
+                isEnabled: (race) => !!(race.parcours && race.parcours.trim() !== '')
+            },
+            likes: {
+                id: 'likes',
+                label: 'J\'aime',
+                icon: '<i class="fas fa-heart"></i>',
+                bgColorClass: 'bg-rose-100 text-rose-800 hover:bg-rose-200',
+                colorClass: 'text-rose-600 border-rose-200 hover:bg-rose-50',
+                title: 'Nombre de j\'aime',
+                actionClass: 'likes-btn',
                 isEnabled: (race) => true
             }
         };
@@ -3554,6 +3615,76 @@
                     pdfBtn.addEventListener('click', (e) => {
                         e.stopPropagation();
                         generateRacePdf(race.id);
+                    });
+                }
+
+                const websiteBtn = raceCard.querySelector('.website-btn');
+                if (websiteBtn) {
+                    websiteBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        if (race.website) window.open(race.website, '_blank');
+                    });
+                }
+
+                const zoomRaceImageBtn = raceCard.querySelector('.zoom-race-image-btn');
+                if (zoomRaceImageBtn) {
+                    zoomRaceImageBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        if (race.photo && typeof zoomImage === 'function') {
+                            zoomImage(race.photo);
+                        }
+                    });
+                }
+
+                const zoomRouteImageBtn = raceCard.querySelector('.zoom-route-image-btn');
+                if (zoomRouteImageBtn) {
+                    zoomRouteImageBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        if (race.parcours && typeof zoomImage === 'function') {
+                            zoomImage(race.parcours);
+                        }
+                    });
+                }
+
+                const likesBtn = raceCard.querySelector('.likes-btn');
+                if (likesBtn) {
+                    likesBtn.addEventListener('click', async (e) => {
+                        e.stopPropagation();
+                        const likedBy = race.likedBy || [];
+                        const count = likedBy.length;
+                        const likesModalCount = document.getElementById('likesModalCount');
+                        const likesModal = document.getElementById('likesModal');
+                        const likesModalList = document.getElementById('likesModalList');
+                        
+                        if (likesModalCount && likesModal) {
+                            likesModalCount.textContent = count;
+                            
+                            if (likesModalList) {
+                                likesModalList.innerHTML = '<li class="text-center text-gray-400 py-2"><i class="fas fa-spinner fa-spin"></i> Chargement...</li>';
+                            }
+                            
+                            likesModal.classList.remove('hidden');
+                            
+                            if (likesModalList) {
+                                if (count > 0) {
+                                    try {
+                                        const likersInfo = await getLikersInfo(likedBy);
+                                        likesModalList.innerHTML = likersInfo.map(info => `
+                                            <li class="flex items-center gap-3 bg-gray-50 p-2 rounded-lg border border-gray-100">
+                                                <div class="w-8 h-8 rounded-full bg-gray-200 overflow-hidden shrink-0 flex items-center justify-center">
+                                                    ${info.photo ? `<img src="${info.photo}" class="w-full h-full object-cover">` : '<i class="fas fa-user text-gray-400"></i>'}
+                                                </div>
+                                                <span class="font-medium text-gray-700 truncate">${info.pseudo}</span>
+                                            </li>
+                                        `).join('');
+                                    } catch (err) {
+                                        likesModalList.innerHTML = '<li class="text-center text-red-500 py-2">Erreur de chargement</li>';
+                                    }
+                                } else {
+                                    likesModalList.innerHTML = '<li class="text-center text-gray-400 italic py-2">Aucun j\'aime pour le moment</li>';
+                                }
+                            }
+                        }
                     });
                 }
             });

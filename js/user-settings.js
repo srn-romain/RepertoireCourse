@@ -1,4 +1,3 @@
-
 /**
  * js/user-settings.js
  * Gère la modale de paramètres utilisateur (changement pseudo, reset mot de passe)
