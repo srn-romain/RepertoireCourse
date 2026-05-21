@@ -139,6 +139,38 @@ const manualModalHTML = `
                     </div>
                 </section>
 
+                <!-- Configuration des Cartes -->
+                <section class="mb-8">
+                    <h4 class="text-xl font-bold text-green-700 mb-3 flex items-center gap-2">
+                        <i class="fas fa-cog text-green-600"></i> Configuration des Cartes
+                    </h4>
+                    <div class="bg-white border border-green-100 rounded-lg p-4 shadow-sm">
+                        <p class="text-sm text-gray-600 mb-3">Personnalisez les boutons d'actions rapides affichés directement sur vos cartes de course pour un accès immédiat :</p>
+                        <ul class="space-y-2 text-sm text-gray-600">
+                            <li class="flex items-start gap-2">
+                                <i class="fas fa-hand-pointer text-green-600 mt-0.5"></i>
+                                <span><strong>Interface intuitive :</strong> Utilisez le glisser-déposer (sur ordinateur) ou de simples clics (sur mobile) pour configurer vos boutons.</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i class="fas fa-layer-group text-green-600 mt-0.5"></i>
+                                <span><strong>Jusqu'à 3 boutons :</strong> Choisissez un maximum de 3 raccourcis parmi ceux disponibles (Site web, PDF, GPX, Drive, Résultats, etc.).</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i class="fas fa-eye text-green-600 mt-0.5"></i>
+                                <span><strong>Aperçu en temps réel :</strong> Visualisez immédiatement le résultat de votre configuration sur une carte d'exemple interactive.</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i class="fas fa-undo text-green-600 mt-0.5"></i>
+                                <span><strong>Réinitialisation :</strong> Un bouton dédié vous permet de revenir à la configuration par défaut à tout moment.</span>
+                            </li>
+                        </ul>
+                        <p class="text-[11px] text-blue-600 italic mt-3 flex items-center gap-2">
+                            <i class="fas fa-lightbulb text-yellow-500"></i>
+                            <span>Cliquez sur le bouton <strong><i class="fas fa-cog mr-1"></i> Configurer la carte</strong> en haut du tableau de bord pour y accéder.</span>
+                        </p>
+                    </div>
+                </section>
+
                 <!-- Google Drive -->
                 <section class="mb-8">
                     <h4 class="text-xl font-bold text-green-700 mb-3 flex items-center gap-2">

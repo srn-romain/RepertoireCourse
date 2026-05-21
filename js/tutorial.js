@@ -39,6 +39,12 @@
             position: 'bottom'
         },
         {
+            target: '#openCardConfigBtn',
+            title: 'Configurer la carte ⚙️',
+            content: 'Personnalisez les boutons d\'actions rapides affichés sur vos cartes de course. Choisissez jusqu\'à 3 raccourcis via un système de glisser-déposer intuitif et profitez d\'un aperçu en temps réel.',
+            position: 'bottom'
+        },
+        {
             target: '#searchInput',
             title: 'Recherche 🔍',
             content: 'Recherchez rapidement une course par son nom, lieu, date, distance, dénivelé, temps, notes, ou tout autre critère. La recherche est instantanée !',
