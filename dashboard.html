@@ -8614,13 +8614,19 @@
 
             // Save handler
             if (saveCardConfigBtn) {
-                saveCardConfigBtn.addEventListener('click', async () => {
+                saveCardConfigBtn.addEventListener('click', async (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
                     if (!isAuthenticated()) return;
                     
                     // Filter empty slots if any
                     const cleanButtons = tempConfigButtons.filter(b => b !== null && b !== undefined && b !== '');
                     if (cleanButtons.length === 0) {
-                        alert("Veuillez sélectionner au moins un bouton pour votre carte.");
+                        if (typeof showCardConfigToast === 'function') {
+                            showCardConfigToast("Vous devez sélectionner au moins une fonctionnalité");
+                        } else {
+                            alert("Vous devez sélectionner au moins une fonctionnalité");
+                        }
                         return;
                     }
 
