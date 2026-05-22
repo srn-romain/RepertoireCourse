@@ -8020,34 +8020,53 @@
         // Logique Anniversaire
         anniversaryBtn.addEventListener('click', () => {
             const now = new Date();
-            let minDiff = Infinity;
+            const todayLocal = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+            const getLocalDateOnly = (dateString) => {
+                const parts = dateString.split('-');
+                return new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+            };
+
+            let minDiffDays = Infinity;
             let candidates = [];
 
-            // Trouver les courses avec l'anniversaire le plus proche (jour/mois)
+            // Trouver les courses avec l'anniversaire ou la date la plus proche
             races.forEach(race => {
                 if (!race.date) return;
-                const raceDate = new Date(race.date);
+                const raceDate = getLocalDateOnly(race.date);
 
-                // Créer des dates d'anniversaire potentielles (cette année, année précédente, année suivante)
-                // pour gérer la circularité (ex: 31 déc proche de 1 jan)
-                const currentYear = now.getFullYear();
-                const datesToCheck = [
-                    new Date(currentYear, raceDate.getMonth(), raceDate.getDate()),
-                    new Date(currentYear - 1, raceDate.getMonth(), raceDate.getDate()),
-                    new Date(currentYear + 1, raceDate.getMonth(), raceDate.getDate())
-                ];
+                let diffDays = Infinity;
+                let targetDate = null;
 
-                let localMin = Infinity;
-                datesToCheck.forEach(d => {
-                    const diff = Math.abs(now - d);
-                    if (diff < localMin) localMin = diff;
-                });
+                if (raceDate >= todayLocal) {
+                    // Course future ou aujourd'hui : cible est la course elle-même
+                    targetDate = raceDate;
+                    diffDays = Math.round((targetDate.getTime() - todayLocal.getTime()) / (24 * 3600 * 1000));
+                } else {
+                    // Course passée : vérification des anniversaires (cette année, année précédente, année suivante)
+                    const currentYear = todayLocal.getFullYear();
+                    const datesToCheck = [
+                        new Date(currentYear, raceDate.getMonth(), raceDate.getDate()),
+                        new Date(currentYear - 1, raceDate.getMonth(), raceDate.getDate()),
+                        new Date(currentYear + 1, raceDate.getMonth(), raceDate.getDate())
+                    ];
+                    let minAnniversaryDiff = Infinity;
+                    datesToCheck.forEach(d => {
+                        const diff = Math.round((d.getTime() - todayLocal.getTime()) / (24 * 3600 * 1000));
+                        if (Math.abs(diff) < Math.abs(minAnniversaryDiff)) {
+                            minAnniversaryDiff = diff;
+                            targetDate = d;
+                        }
+                    });
+                    diffDays = minAnniversaryDiff;
+                }
 
-                if (localMin < minDiff) {
-                    minDiff = localMin;
-                    candidates = [race];
-                } else if (Math.abs(localMin - minDiff) < 1000) { // Tolérance ms
-                    candidates.push(race);
+                const absDiff = Math.abs(diffDays);
+                if (absDiff < minDiffDays) {
+                    minDiffDays = absDiff;
+                    candidates = [{ race, diffDays, targetDate }];
+                } else if (absDiff === minDiffDays) {
+                    candidates.push({ race, diffDays, targetDate });
                 }
             });
 
@@ -8057,13 +8076,13 @@
 
             if (candidates.length > 0) {
                 // Trier par date d'origine (du plus vieux au plus récent)
-                candidates.sort((a, b) => new Date(b.date) - new Date(a.date));
+                candidates.sort((a, b) => new Date(b.race.date) - new Date(a.race.date));
 
-                // Est-ce que c'est aujourd'hui ? (moins de 24h d'écart avec un anniversaire)
-                const isToday = minDiff < (12 * 3600 * 1000); // Tolérance 12h pour considérer "le jour J"
+                // Est-ce qu'il y a un événement aujourd'hui ?
+                const hasEventToday = (minDiffDays === 0);
 
                 // Définition dynamique du titre de la modale
-                const hasFuture = candidates.some(race => new Date(race.date) > now);
+                const hasFuture = candidates.some(c => getLocalDateOnly(c.race.date) >= todayLocal);
                 const modalTitleElement = document.getElementById('anniversaryModalTitle');
                 if (modalTitleElement) {
                     modalTitleElement.innerHTML = hasFuture
@@ -8071,47 +8090,81 @@
                         : '<i class="fas fa-history"></i> Souvenirs';
                 }
 
-                if (isToday) {
-                    const msg = document.createElement('p');
-                    msg.className = "text-center text-green-600 font-bold mb-4 animate-bounce";
-                    msg.innerHTML = "🎉 Joyeux Anniversaire de Course ! 🎉";
-                    contentDiv.appendChild(msg);
+                if (hasEventToday) {
+                    const hasPastAnniversaryToday = candidates.some(c => {
+                        const rDate = getLocalDateOnly(c.race.date);
+                        return rDate < todayLocal && c.diffDays === 0;
+                    });
+                    
+                    const hasActualRaceToday = candidates.some(c => {
+                        const rDate = getLocalDateOnly(c.race.date);
+                        return rDate.getTime() === todayLocal.getTime();
+                    });
+
+                    if (hasPastAnniversaryToday) {
+                        const msg = document.createElement('p');
+                        msg.className = "text-center text-purple-600 font-bold mb-4 animate-bounce text-lg";
+                        msg.innerHTML = "🎉 Joyeux Anniversaire de Course ! 🎉";
+                        contentDiv.appendChild(msg);
+                    } else if (hasActualRaceToday) {
+                        const msg = document.createElement('p');
+                        msg.className = "text-center text-green-600 font-bold mb-4 animate-bounce text-lg";
+                        msg.innerHTML = "🏃‍♂️ Jour de course : bon courage ! 💪";
+                        contentDiv.appendChild(msg);
+                    }
                 }
 
-                candidates.forEach(race => {
-                    const raceDate = new Date(race.date);
-
-                    // Calcul précis du temps écoulé
-                    let diffMs = now.getTime() - raceDate.getTime();
-                    const isPast = diffMs >= 0;
-                    diffMs = Math.abs(diffMs);
-
-                    const years = Math.floor(diffMs / (365.25 * 24 * 60 * 60 * 1000));
-                    let remainingMs = diffMs - (years * (365.25 * 24 * 60 * 60 * 1000));
-                    const days = isPast 
-                        ? Math.floor(remainingMs / (24 * 60 * 60 * 1000))
-                        : Math.ceil(remainingMs / (24 * 60 * 60 * 1000));
-
+                candidates.forEach(({ race, diffDays, targetDate }) => {
+                    const raceDate = getLocalDateOnly(race.date);
                     const div = document.createElement('div');
-                    div.className = "bg-purple-50 p-4 rounded-xl border border-purple-100 flex flex-col gap-2";
 
                     let dateStr = raceDate.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
-
                     let timeDisplay = "";
-                    if (isToday) {
-                        timeDisplay = `<span class="font-bold text-xl">${years} an${years > 1 ? 's' : ''}</span> tout pile aujourd'hui !`;
+
+                    if (raceDate >= todayLocal) {
+                        // Course future ou aujourd'hui
+                        div.className = "bg-green-50 p-4 rounded-xl border border-green-100 flex flex-col gap-2";
+                        if (diffDays === 0) {
+                            timeDisplay = `<span class="font-bold text-xl">C'est aujourd'hui !</span> Bonne chance pour votre course !`;
+                        } else if (diffDays === 1) {
+                            timeDisplay = `<span class="font-bold text-xl">J-1</span> avant la course !`;
+                        } else {
+                            timeDisplay = `<span class="font-bold text-xl">J-${diffDays}</span> avant la course !`;
+                        }
                     } else {
-                        const prefix = isPast ? "Il y a" : "Dans";
-                        const yearStr = years > 0 ? `<span class="font-bold text-xl">${years} an${years > 1 ? 's' : ''}</span> et ` : "";
-                        timeDisplay = `${prefix} ${yearStr}<span class="font-bold text-xl">${days} jour${days > 1 ? 's' : ''}</span>.`;
+                        // Course passée (Souvenir / Anniversaire)
+                        div.className = "bg-purple-50 p-4 rounded-xl border border-purple-100 flex flex-col gap-2";
+
+                        // Calcul précis du temps écoulé depuis la course d'origine
+                        let diffMs = now.getTime() - raceDate.getTime();
+                        diffMs = Math.abs(diffMs);
+                        const years = Math.floor(diffMs / (365.25 * 24 * 60 * 60 * 1000));
+
+                        if (diffDays === 0) {
+                            timeDisplay = `<span class="font-bold text-xl">${years} an${years > 1 ? 's' : ''}</span> tout pile aujourd'hui !`;
+                        } else {
+                            const absDays = Math.abs(diffDays);
+                            if (diffDays > 0) {
+                                // L'anniversaire est dans le futur
+                                const nextAnniversaryYears = targetDate.getFullYear() - raceDate.getFullYear();
+                                timeDisplay = `Dans <span class="font-bold text-xl">${absDays} jour${absDays > 1 ? 's' : ''}</span> (Anniversaire des <span class="font-bold">${nextAnniversaryYears} ans</span>).`;
+                            } else {
+                                // L'anniversaire est passé
+                                timeDisplay = `Il y a <span class="font-bold text-xl">${absDays} jour${absDays > 1 ? 's' : ''}</span> (Anniversaire des <span class="font-bold">${years} ans</span>).`;
+                            }
+                        }
                     }
+
+                    const titleClass = raceDate >= todayLocal ? "text-green-900" : "text-purple-900";
+                    const textClass = raceDate >= todayLocal ? "text-green-700" : "text-purple-700";
+                    const badgeClass = raceDate >= todayLocal ? "bg-green-200 text-green-800" : "bg-purple-200 text-purple-800";
 
                     div.innerHTML = `
                         <div class="flex justify-between items-start">
-                            <h4 class="font-bold text-lg text-purple-900">${race.name}</h4>
-                            <span class="text-xs bg-purple-200 text-purple-800 px-2 py-1 rounded-full">${dateStr}</span>
+                            <h4 class="font-bold text-lg ${titleClass}">${race.name}</h4>
+                            <span class="text-xs ${badgeClass} px-2 py-1 rounded-full">${dateStr}</span>
                         </div>
-                        <div class="text-purple-700 font-medium text-lg mt-1">
+                        <div class="font-medium text-lg mt-1 ${textClass}">
                             ${timeDisplay}
                         </div>
                     `;
