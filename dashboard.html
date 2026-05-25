@@ -4297,8 +4297,7 @@
                                         <th class="px-2 py-1">#</th>
                                         <th class="px-2 py-1">Coureur</th>
                                         <th class="px-2 py-1">Km</th>
-                                        <th class="px-2 py-1">D+</th>
-                                        ${hasAnyElevNeg ? '<th class="px-2 py-1">D-</th>' : ''}
+                                        <th class="px-2 py-1">Dénivelé</th>
                                         <th class="px-2 py-1">Temps</th>
                                         ${hasStartHour ? '<th class="px-2 py-1">Départ</th>' : ''}
                                         ${hasStartHour ? '<th class="px-2 py-1">Arrivée</th>' : ''}
@@ -4319,10 +4318,15 @@
                     relayHtml += `
                         <tr class="${isMoi ? 'bg-blue-50/50 hover:bg-blue-100' : isTousEnsemble ? 'bg-purple-50/60 hover:bg-purple-100' : 'hover:bg-green-100'} transition-colors">
                             <td class="px-2 py-1 font-medium text-green-700">${idx + 1}</td>
-                            <td class="px-2 py-1 ${isMoi ? 'font-bold text-blue-700' : isTousEnsemble ? 'font-bold text-purple-700' : ''}">${isTousEnsemble ? 'Tous ensemble' : (lap.runner || 'Moi')}</td>
+                            <td class="px-2 py-1 ${isMoi ? 'font-bold text-blue-700' : isTousEnsemble ? 'font-bold text-purple-700' : ''}">${isTousEnsemble ? 'Tous' : (lap.runner || 'Moi')}</td>
                             <td class="px-2 py-1">${formatDist(lap.dist)}</td>
-                            <td class="px-2 py-1">${lap.elev || '-'}</td>
-                            ${hasAnyElevNeg ? `<td class="px-2 py-1">${lap.elevNeg || '-'}</td>` : ''}
+                            <td class="px-2 py-1 whitespace-nowrap">${
+                                (() => {
+                                    const dp = lap.elev ? `↑${lap.elev}` : '';
+                                    const dn = lap.elevNeg ? `↓${lap.elevNeg}` : '';
+                                    return [dp, dn].filter(Boolean).join(' ') || '-';
+                                })()
+                            }</td>
                             <td class="px-2 py-1 font-mono text-xs">${lap.time || '-'}</td>
                             ${hasStartHour ? `<td class="px-2 py-1 font-mono text-xs text-indigo-700 font-semibold">${departureTime}</td>` : ''}
                             ${hasStartHour ? `<td class="px-2 py-1 font-mono text-xs text-indigo-700 font-semibold">${arrivalTime}</td>` : ''}
@@ -4337,8 +4341,13 @@
                                     <tr>
                                         <td colspan="2" class="px-2 py-1">Total Groupe</td>
                                         <td class="px-2 py-1">${totalRelayDist.toFixed(2)} km</td>
-                                        <td class="px-2 py-1">${totalRelayElev > 0 ? totalRelayElev + ' m' : '-'}</td>
-                                        ${hasAnyElevNeg ? `<td class="px-2 py-1">${totalRelayElevNeg > 0 ? totalRelayElevNeg + ' m' : '-'}</td>` : ''}
+                                        <td class="px-2 py-1 whitespace-nowrap">${
+                                            (() => {
+                                                const dp = totalRelayElev > 0 ? `↑${totalRelayElev}m` : '';
+                                                const dn = totalRelayElevNeg > 0 ? `↓${totalRelayElevNeg}m` : '';
+                                                return [dp, dn].filter(Boolean).join(' ') || '-';
+                                            })()
+                                        }</td>
                                         <td class="px-2 py-1 font-mono text-xs">${secondsToTime(totalRelayTimeS)}</td>
                                         ${hasStartHour ? `<td class="px-2 py-1 font-mono text-xs text-indigo-700">${race.hour}</td>` : ''}
                                         ${hasStartHour ? `<td class="px-2 py-1 font-mono text-xs text-indigo-700">${addTimeToHour(race.hour, totalRelayTimeS)}</td>` : ''}
