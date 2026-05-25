@@ -2289,6 +2289,7 @@
                                     if (doc.exists) {
                                         targetPhotoURL = doc.data().photoURL;
                                         targetPseudo = doc.data().pseudo || doc.data().email.split('@')[0];
+                                        window.currentUserPseudo = targetPseudo;
                                     }
                                     const avatarSrc = targetPhotoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(targetPseudo)}&background=random`;
                                     authText.innerHTML = `
@@ -2342,11 +2343,13 @@
                     if (authStatusText) {
                         // Récupération des données utilisateur complètes
                         let userPseudo = "Utilisateur";
+                        window.currentUserPseudo = userPseudo;
                         let userPhotoURL = null;
                         try {
                             const uDoc = await db.collection('users').doc(user.uid).get();
                             if (uDoc.exists) {
                                 userPseudo = uDoc.data().pseudo || "Utilisateur";
+                                window.currentUserPseudo = userPseudo;
                                 userPhotoURL = uDoc.data().photoURL;
                                 
                                 if (uDoc.data().cardButtons && Array.isArray(uDoc.data().cardButtons)) {
@@ -4209,6 +4212,7 @@
             }
 
             if (race.terrain === 'relai' && race.relayLaps && race.relayLaps.length > 0) {
+                const currentUserPseudo = window.currentUserPseudo || 'Moi';
                 // Calcul des totaux
                 let totalRelayDist = 0, totalRelayElev = 0, totalRelayElevNeg = 0, totalRelayTimeS = 0;
                 let userRelayDist = 0, userRelayElev = 0, userRelayElevNeg = 0, userRelayTimeS = 0;
@@ -4255,7 +4259,7 @@
                     <div class="bg-blue-50 p-3 rounded-lg w-full border border-blue-100 mb-4 shadow-sm">
                         <div class="flex items-center justify-between border-b border-blue-200 pb-2 mb-3">
                             <h4 class="font-bold text-blue-800 text-sm flex items-center gap-2">
-                                <i class="fas fa-user text-blue-600"></i> Ma performance (Moi)
+                                <i class="fas fa-user text-blue-600"></i> Ma performance (${currentUserPseudo})
                             </h4>
                             <span class="text-[10px] bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full font-bold uppercase">Individuel</span>
                         </div>
@@ -4321,7 +4325,7 @@
                             class="${isMoi ? 'bg-blue-50/50 hover:bg-blue-100' : isTousEnsemble ? 'bg-purple-50/60 hover:bg-purple-100' : 'hover:bg-green-100'} transition-colors ${hasStartHour ? 'cursor-pointer select-none' : ''}"
                             ${hasStartHour ? `onclick="const r=document.getElementById('${subRowId}');r.classList.toggle('hidden');this.querySelector('.relay-chevron')?.classList.toggle('rotate-180');"` : ''}>
                             <td class="px-2 py-1 font-medium text-green-700">${idx + 1}</td>
-                            <td class="px-2 py-1 ${isMoi ? 'font-bold text-blue-700' : isTousEnsemble ? 'font-bold text-purple-700' : ''}">${isTousEnsemble ? '🤝 Tous' : (lap.runner || 'Moi')}</td>
+                            <td class="px-2 py-1 ${isMoi ? 'font-bold text-blue-700' : isTousEnsemble ? 'font-bold text-purple-700' : ''}">${isTousEnsemble ? '🤝 Tous' : (isMoi ? currentUserPseudo : lap.runner)}</td>
                             <td class="px-2 py-1">${formatDist(lap.dist)}</td>
                             <td class="px-2 py-1 whitespace-nowrap">${
                                 (() => {
