@@ -4225,7 +4225,8 @@
                     totalRelayElevNeg += en;
                     totalRelayTimeS += s;
 
-                    if (lap.runner === 'Moi' || !lap.runner) {
+                    // "Tous ensemble" compte aussi pour l'utilisateur
+                    if (lap.runner === 'Moi' || !lap.runner || lap.runner === 'Tous ensemble') {
                         userRelayDist += d;
                         userRelayElev += e;
                         userRelayElevNeg += en;
@@ -4293,10 +4294,11 @@
 
                 race.relayLaps.forEach((lap, idx) => {
                     const isMoi = lap.runner === 'Moi' || !lap.runner;
+                    const isTousEnsemble = lap.runner === 'Tous ensemble';
                     relayHtml += `
-                        <tr class="${isMoi ? 'bg-blue-50/50 hover:bg-blue-100' : 'hover:bg-green-100'} transition-colors">
+                        <tr class="${isMoi ? 'bg-blue-50/50 hover:bg-blue-100' : isTousEnsemble ? 'bg-purple-50/60 hover:bg-purple-100' : 'hover:bg-green-100'} transition-colors">
                             <td class="px-2 py-1 font-medium text-green-700">${idx + 1}</td>
-                            <td class="px-2 py-1 ${isMoi ? 'font-bold text-blue-700' : ''}">${lap.runner || 'Moi'}</td>
+                            <td class="px-2 py-1 ${isMoi ? 'font-bold text-blue-700' : isTousEnsemble ? 'font-bold text-purple-700' : ''}">${isTousEnsemble ? 'Tous ensemble' : (lap.runner || 'Moi')}</td>
                             <td class="px-2 py-1">${formatDist(lap.dist)}</td>
                             <td class="px-2 py-1">${lap.elev || '-'}</td>
                             ${hasAnyElevNeg ? `<td class="px-2 py-1">${lap.elevNeg || '-'}</td>` : ''}
@@ -5656,6 +5658,10 @@
             runners.forEach(name => {
                 options += `<option value="${name}" ${data.runner === name ? 'selected' : ''}>${name}</option>`;
             });
+            // Option "Tous ensemble" disponible seulement s'il y a au moins un accompagnant coureur
+            if (runners.length > 0) {
+                options += `<option value="Tous ensemble" ${data.runner === 'Tous ensemble' ? 'selected' : ''}>All</option>`;
+            }
 
             tr.innerHTML = `
                 <td class="px-2 py-2 font-medium text-green-900">${index + 1}</td>
@@ -5696,10 +5702,14 @@
                 runners.forEach(name => {
                     options += `<option value="${name}" ${currentValue === name ? 'selected' : ''}>${name}</option>`;
                 });
+                // Option "Tous ensemble" disponible seulement s'il y a au moins un accompagnant coureur
+                if (runners.length > 0) {
+                    options += `<option value="Tous ensemble" ${currentValue === 'Tous ensemble' ? 'selected' : ''}>All</option>`;
+                }
                 select.innerHTML = options;
 
                 // Si la valeur sélectionnée n'est plus dans la liste (ex: accompagnant supprimé), repasser sur 'Moi'
-                if (currentValue !== 'Moi' && !runners.includes(currentValue)) {
+                if (currentValue !== 'Moi' && currentValue !== 'Tous ensemble' && !runners.includes(currentValue)) {
                     select.value = 'Moi';
                     updateRelayData(index, 'runner', 'Moi');
                 }
@@ -5751,7 +5761,8 @@
                 totalElevNeg += en;
                 totalSeconds += s;
 
-                if (lap.runner === 'Moi' || !lap.runner) {
+                // "Tous ensemble" compte aussi pour l'utilisateur
+                if (lap.runner === 'Moi' || !lap.runner || lap.runner === 'Tous ensemble') {
                     userDist += d;
                     userElev += e;
                     userElevNeg += en;
