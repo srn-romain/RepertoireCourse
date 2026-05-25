@@ -4290,7 +4290,7 @@
                             </h4>
                             <span class="text-[10px] bg-green-100 text-green-800 px-2 py-0.5 rounded-full font-bold uppercase">Relais Complet</span>
                         </div>
-                        <div class="overflow-x-auto">
+                        <div class="relay-drag-scroll">
                             <table class="w-full text-xs text-left text-green-800">
                                 <thead class="bg-green-100 text-green-900 uppercase font-semibold">
                                     <tr>
@@ -4300,8 +4300,8 @@
                                         <th class="px-2 py-1">D+</th>
                                         ${hasAnyElevNeg ? '<th class="px-2 py-1">D-</th>' : ''}
                                         <th class="px-2 py-1">Temps</th>
-                                        ${hasStartHour ? '<th class="px-2 py-1"><i class="fas fa-flag text-green-600"></i> Départ</th>' : ''}
-                                        ${hasStartHour ? '<th class="px-2 py-1"><i class="fas fa-flag-checkered text-green-600"></i> Arrivée</th>' : ''}
+                                        ${hasStartHour ? '<th class="px-2 py-1">Départ</th>' : ''}
+                                        ${hasStartHour ? '<th class="px-2 py-1">Arrivée</th>' : ''}
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-green-200">
@@ -4454,6 +4454,25 @@
 
                 detailsRelayContainer.innerHTML = relayHtml;
                 detailsRelayContainer.classList.remove('hidden');
+
+                // Activer le drag-to-scroll sur tous les conteneurs .relay-drag-scroll
+                detailsRelayContainer.querySelectorAll('.relay-drag-scroll').forEach(el => {
+                    let isDown = false, startX = 0, scrollLeft = 0;
+                    el.addEventListener('mousedown', e => {
+                        isDown = true;
+                        el.classList.add('is-dragging');
+                        startX = e.pageX - el.offsetLeft;
+                        scrollLeft = el.scrollLeft;
+                        e.preventDefault();
+                    });
+                    el.addEventListener('mouseleave', () => { isDown = false; el.classList.remove('is-dragging'); });
+                    el.addEventListener('mouseup',    () => { isDown = false; el.classList.remove('is-dragging'); });
+                    el.addEventListener('mousemove',  e => {
+                        if (!isDown) return;
+                        const x = e.pageX - el.offsetLeft;
+                        el.scrollLeft = scrollLeft - (x - startX);
+                    });
+                });
 
                 // Affichage D+/D- dans le carré dénivelé de la modale
                 const relayElevElement = document.getElementById('detailsElevation');
