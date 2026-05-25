@@ -386,37 +386,3 @@ input[type="search"]::-webkit-search-results-decoration {
     100% { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-/* ==========================================
-   RELAY TABLE — DRAG TO SCROLL
-   ========================================== */
-
-.relay-drag-scroll {
-    cursor: grab;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    user-select: none;
-    scroll-behavior: auto;
-}
-
-.relay-drag-scroll.is-dragging {
-    cursor: grabbing;
-    scroll-behavior: auto;
-}
-
-/* Scrollbar discrète sur desktop */
-.relay-drag-scroll::-webkit-scrollbar {
-    height: 4px;
-}
-
-.relay-drag-scroll::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-.relay-drag-scroll::-webkit-scrollbar-thumb {
-    background: #86efac; /* green-300 */
-    border-radius: 99px;
-}
-
-.relay-drag-scroll::-webkit-scrollbar-thumb:hover {
-    background: #4ade80; /* green-400 */
-}

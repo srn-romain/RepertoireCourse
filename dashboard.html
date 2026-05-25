@@ -4290,7 +4290,7 @@
                             </h4>
                             <span class="text-[10px] bg-green-100 text-green-800 px-2 py-0.5 rounded-full font-bold uppercase">Relais Complet</span>
                         </div>
-                        <div class="relay-drag-scroll">
+                        <div class="overflow-x-auto">
                             <table class="w-full text-xs text-left text-green-800">
                                 <thead class="bg-green-100 text-green-900 uppercase font-semibold">
                                     <tr>
@@ -4299,8 +4299,7 @@
                                         <th class="px-2 py-1">Km</th>
                                         <th class="px-2 py-1">Dénivelé</th>
                                         <th class="px-2 py-1">Temps</th>
-                                        ${hasStartHour ? '<th class="px-2 py-1">Départ</th>' : ''}
-                                        ${hasStartHour ? '<th class="px-2 py-1">Arrivée</th>' : ''}
+                                        ${hasStartHour ? '<th class="px-2 py-1 text-indigo-600" title="Cliquez sur une ligne pour voir les horaires"><i class="fas fa-clock"></i></th>' : ''}
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-green-200">
@@ -4315,10 +4314,14 @@
                     const departureTime = hasStartHour ? addTimeToHour(race.hour, cumulativeSeconds) : null;
                     cumulativeSeconds += lapSeconds;
                     const arrivalTime = hasStartHour ? addTimeToHour(race.hour, cumulativeSeconds) : null;
+                    const subRowId = `relay-sub-${idx}`;
+                    const colCount = hasStartHour ? 6 : 5;
                     relayHtml += `
-                        <tr class="${isMoi ? 'bg-blue-50/50 hover:bg-blue-100' : isTousEnsemble ? 'bg-purple-50/60 hover:bg-purple-100' : 'hover:bg-green-100'} transition-colors">
+                        <tr
+                            class="${isMoi ? 'bg-blue-50/50 hover:bg-blue-100' : isTousEnsemble ? 'bg-purple-50/60 hover:bg-purple-100' : 'hover:bg-green-100'} transition-colors ${hasStartHour ? 'cursor-pointer select-none' : ''}"
+                            ${hasStartHour ? `onclick="const r=document.getElementById('${subRowId}');r.classList.toggle('hidden');this.querySelector('.relay-chevron')?.classList.toggle('rotate-180');"` : ''}>
                             <td class="px-2 py-1 font-medium text-green-700">${idx + 1}</td>
-                            <td class="px-2 py-1 ${isMoi ? 'font-bold text-blue-700' : isTousEnsemble ? 'font-bold text-purple-700' : ''}">${isTousEnsemble ? 'Tous' : (lap.runner || 'Moi')}</td>
+                            <td class="px-2 py-1 ${isMoi ? 'font-bold text-blue-700' : isTousEnsemble ? 'font-bold text-purple-700' : ''}">${isTousEnsemble ? '🤝 Tous' : (lap.runner || 'Moi')}</td>
                             <td class="px-2 py-1">${formatDist(lap.dist)}</td>
                             <td class="px-2 py-1 whitespace-nowrap">${
                                 (() => {
@@ -4328,9 +4331,25 @@
                                 })()
                             }</td>
                             <td class="px-2 py-1 font-mono text-xs">${lap.time || '-'}</td>
-                            ${hasStartHour ? `<td class="px-2 py-1 font-mono text-xs text-indigo-700 font-semibold">${departureTime}</td>` : ''}
-                            ${hasStartHour ? `<td class="px-2 py-1 font-mono text-xs text-indigo-700 font-semibold">${arrivalTime}</td>` : ''}
+                            ${hasStartHour ? `<td class="px-2 py-1 text-center text-indigo-400"><i class="fas fa-chevron-down relay-chevron text-[9px] transition-transform duration-200"></i></td>` : ''}
                         </tr>
+                        ${hasStartHour ? `
+                        <tr id="${subRowId}" class="hidden">
+                            <td colspan="${colCount}" class="px-3 py-2 bg-indigo-50 border-t border-indigo-100">
+                                <div class="flex items-center justify-center gap-6 text-xs">
+                                    <div class="flex items-center gap-1.5">
+                                        <i class="fas fa-flag text-indigo-400 text-[10px]"></i>
+                                        <span class="text-indigo-500 uppercase text-[10px] font-semibold">Départ</span>
+                                        <span class="font-mono font-bold text-indigo-700">${departureTime}</span>
+                                    </div>
+                                    <div class="flex items-center gap-1.5">
+                                        <i class="fas fa-flag-checkered text-indigo-400 text-[10px]"></i>
+                                        <span class="text-indigo-500 uppercase text-[10px] font-semibold">Arrivée</span>
+                                        <span class="font-mono font-bold text-indigo-700">${arrivalTime}</span>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>` : ''}
                     `;
                 });
 
@@ -4349,8 +4368,7 @@
                                             })()
                                         }</td>
                                         <td class="px-2 py-1 font-mono text-xs">${secondsToTime(totalRelayTimeS)}</td>
-                                        ${hasStartHour ? `<td class="px-2 py-1"></td>` : ''}
-                                        ${hasStartHour ? `<td class="px-2 py-1"></td>` : ''}
+                                        ${hasStartHour ? '<td class="px-2 py-1"></td>' : ''}
                                     </tr>
                                 </tfoot>
                             </table>
@@ -4464,24 +4482,6 @@
                 detailsRelayContainer.innerHTML = relayHtml;
                 detailsRelayContainer.classList.remove('hidden');
 
-                // Activer le drag-to-scroll sur tous les conteneurs .relay-drag-scroll
-                detailsRelayContainer.querySelectorAll('.relay-drag-scroll').forEach(el => {
-                    let isDown = false, startX = 0, scrollLeft = 0;
-                    el.addEventListener('mousedown', e => {
-                        isDown = true;
-                        el.classList.add('is-dragging');
-                        startX = e.pageX - el.offsetLeft;
-                        scrollLeft = el.scrollLeft;
-                        e.preventDefault();
-                    });
-                    el.addEventListener('mouseleave', () => { isDown = false; el.classList.remove('is-dragging'); });
-                    el.addEventListener('mouseup',    () => { isDown = false; el.classList.remove('is-dragging'); });
-                    el.addEventListener('mousemove',  e => {
-                        if (!isDown) return;
-                        const x = e.pageX - el.offsetLeft;
-                        el.scrollLeft = scrollLeft - (x - startX);
-                    });
-                });
 
                 // Affichage D+/D- dans le carré dénivelé de la modale
                 const relayElevElement = document.getElementById('detailsElevation');
