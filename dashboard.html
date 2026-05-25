@@ -4319,7 +4319,7 @@
                     relayHtml += `
                         <tr class="${isMoi ? 'bg-blue-50/50 hover:bg-blue-100' : isTousEnsemble ? 'bg-purple-50/60 hover:bg-purple-100' : 'hover:bg-green-100'} transition-colors">
                             <td class="px-2 py-1 font-medium text-green-700">${idx + 1}</td>
-                            <td class="px-2 py-1 ${isMoi ? 'font-bold text-blue-700' : isTousEnsemble ? 'font-bold text-purple-700' : ''}">${isTousEnsemble ? '🤝 Tous ensemble' : (lap.runner || 'Moi')}</td>
+                            <td class="px-2 py-1 ${isMoi ? 'font-bold text-blue-700' : isTousEnsemble ? 'font-bold text-purple-700' : ''}">${isTousEnsemble ? 'Tous ensemble' : (lap.runner || 'Moi')}</td>
                             <td class="px-2 py-1">${formatDist(lap.dist)}</td>
                             <td class="px-2 py-1">${lap.elev || '-'}</td>
                             ${hasAnyElevNeg ? `<td class="px-2 py-1">${lap.elevNeg || '-'}</td>` : ''}
@@ -4352,6 +4352,106 @@
                         </div>
                     </div>
                 `;
+                // ── Calcul des stats par coéquipier ──────────────────────────────────────
+                // Palette de couleurs : une par coureur (hors Moi)
+                const teamColors = [
+                    { bg: 'bg-orange-50', border: 'border-orange-200', headerBorder: 'border-orange-300', title: 'text-orange-800', sub: 'text-orange-600', badge: 'bg-orange-100 text-orange-800', foot: 'border-orange-200', icon: 'text-orange-500' },
+                    { bg: 'bg-violet-50', border: 'border-violet-200', headerBorder: 'border-violet-300', title: 'text-violet-800', sub: 'text-violet-600', badge: 'bg-violet-100 text-violet-800', foot: 'border-violet-200', icon: 'text-violet-500' },
+                    { bg: 'bg-rose-50',   border: 'border-rose-200',   headerBorder: 'border-rose-300',   title: 'text-rose-800',   sub: 'text-rose-600',   badge: 'bg-rose-100 text-rose-800',   foot: 'border-rose-200',   icon: 'text-rose-500' },
+                    { bg: 'bg-teal-50',   border: 'border-teal-200',   headerBorder: 'border-teal-300',   title: 'text-teal-800',   sub: 'text-teal-600',   badge: 'bg-teal-100 text-teal-800',   foot: 'border-teal-200',   icon: 'text-teal-500' },
+                    { bg: 'bg-amber-50',  border: 'border-amber-200',  headerBorder: 'border-amber-300',  title: 'text-amber-800',  sub: 'text-amber-600',  badge: 'bg-amber-100 text-amber-800',  foot: 'border-amber-200',  icon: 'text-amber-500' },
+                    { bg: 'bg-cyan-50',   border: 'border-cyan-200',   headerBorder: 'border-cyan-300',   title: 'text-cyan-800',   sub: 'text-cyan-600',   badge: 'bg-cyan-100 text-cyan-800',   foot: 'border-cyan-200',   icon: 'text-cyan-500' },
+                    { bg: 'bg-fuchsia-50',border: 'border-fuchsia-200',headerBorder: 'border-fuchsia-300',title: 'text-fuchsia-800',sub: 'text-fuchsia-600',badge: 'bg-fuchsia-100 text-fuchsia-800',foot: 'border-fuchsia-200',icon: 'text-fuchsia-500' },
+                    { bg: 'bg-lime-50',   border: 'border-lime-200',   headerBorder: 'border-lime-300',   title: 'text-lime-800',   sub: 'text-lime-600',   badge: 'bg-lime-100 text-lime-800',   foot: 'border-lime-200',   icon: 'text-lime-500' },
+                ];
+
+                // Collecter les coureurs uniques (hors Moi / vide)
+                const teammateNames = [...new Set(
+                    race.relayLaps
+                        .map(l => l.runner)
+                        .filter(r => r && r !== 'Moi' && r !== 'Tous ensemble')
+                )];
+
+                if (teammateNames.length > 0) {
+                    // Agréger les stats par coureur (+ les relais "Tous ensemble" comptent pour chacun)
+                    const teammateStats = {};
+                    teammateNames.forEach(name => {
+                        teammateStats[name] = { dist: 0, elev: 0, elevNeg: 0, timeS: 0, count: 0 };
+                    });
+
+                    race.relayLaps.forEach(lap => {
+                        const isTousEnsemble = lap.runner === 'Tous ensemble';
+                        const targets = isTousEnsemble ? teammateNames : (lap.runner && lap.runner !== 'Moi' ? [lap.runner] : []);
+                        const d = parseFloat(lap.dist) || 0;
+                        const e = parseInt(lap.elev) || 0;
+                        const en = parseInt(lap.elevNeg) || 0;
+                        const s = timeToSeconds(lap.time);
+                        targets.forEach(name => {
+                            if (teammateStats[name]) {
+                                teammateStats[name].dist += d;
+                                teammateStats[name].elev += e;
+                                teammateStats[name].elevNeg += en;
+                                teammateStats[name].timeS += s;
+                                teammateStats[name].count++;
+                            }
+                        });
+                    });
+
+                    // Générer les cartes HTML
+                    let teammateCardsHtml = '';
+                    teammateNames.forEach((name, idx) => {
+                        const c = teamColors[idx % teamColors.length];
+                        const st = teammateStats[name];
+                        teammateCardsHtml += `
+                            <div class="${c.bg} p-3 rounded-lg w-full border ${c.border} mb-3 shadow-sm">
+                                <div class="flex items-center justify-between border-b ${c.headerBorder} pb-2 mb-3">
+                                    <h4 class="font-bold ${c.title} text-sm flex items-center gap-2">
+                                        <i class="fas fa-user ${c.icon}"></i> ${name}
+                                    </h4>
+                                    <span class="text-[10px] ${c.badge} px-2 py-0.5 rounded-full font-bold uppercase">Coéquipier</span>
+                                </div>
+                                <div class="grid grid-cols-4 gap-2 text-center">
+                                    <div>
+                                        <p class="text-[10px] ${c.sub} uppercase">Distance</p>
+                                        <p class="font-bold ${c.title} text-xs">${st.dist.toFixed(2)} km</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-[10px] ${c.sub} uppercase">D+</p>
+                                        <p class="font-bold ${c.title} text-xs">${st.elev} m</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-[10px] ${c.sub} uppercase">Temps</p>
+                                        <p class="font-bold ${c.title} text-xs">${secondsToTime(st.timeS)}</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-[10px] ${c.sub} uppercase">Allure</p>
+                                        <p class="font-bold ${c.title} text-xs">${calculatePace(st.dist, st.timeS)}</p>
+                                    </div>
+                                </div>
+                                <div class="mt-3 pt-2 border-t ${c.foot} flex items-center justify-center gap-2">
+                                    <i class="fas fa-person-running ${c.icon} text-xs"></i>
+                                    <span class="text-[11px] ${c.title} font-semibold">${st.count} relai${st.count > 1 ? 's' : ''} effectué${st.count > 1 ? 's' : ''}</span>
+                                </div>
+                            </div>
+                        `;
+                    });
+
+                    relayHtml += `
+                        <div class="w-full mb-2">
+                            <button
+                                onclick="this.nextElementSibling.classList.toggle('hidden'); this.querySelector('i.toggle-chevron').classList.toggle('rotate-180')"
+                                class="w-full flex items-center justify-center gap-2 py-1.5 px-3 text-[11px] font-semibold text-green-700 bg-green-50 border border-green-200 rounded-lg hover:bg-green-100 transition-colors">
+                                <i class="fas fa-users text-green-500 text-[10px]"></i>
+                                Détail par coéquipier
+                                <i class="fas fa-chevron-down toggle-chevron text-[10px] text-green-500 transition-transform duration-200"></i>
+                            </button>
+                            <div class="hidden mt-3 space-y-1">
+                                ${teammateCardsHtml}
+                            </div>
+                        </div>
+                    `;
+                }
+
                 detailsRelayContainer.innerHTML = relayHtml;
                 detailsRelayContainer.classList.remove('hidden');
 
