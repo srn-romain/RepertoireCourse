@@ -4236,7 +4236,8 @@
                 });
                 const totalRelayCount = race.relayLaps.length;
                 const hasAnyElevNeg = race.relayLaps.some(lap => lap.elevNeg !== undefined && lap.elevNeg !== null && lap.elevNeg !== '');
-                const hasStartHour = !!race.hour; // Afficher les colonnes heure seulement si l'heure de départ est connue
+                // Afficher les colonnes heure seulement si l'heure de départ est connue ET tous les relais ont un temps renseigné (00:00:00 accepté, vide non)
+                const hasStartHour = !!race.hour && race.relayLaps.every(lap => lap.time && lap.time.trim() !== '');
 
                 // Fonction : ajoute HH:MM (ou HH:MM:SS) à une heure de départ "HH:MM"
                 function addTimeToHour(startHour, elapsedSeconds) {

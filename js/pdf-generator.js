@@ -282,7 +282,8 @@ async function generateRacePdf(raceId) {
         yPos += 8;
 
         // Colonnes du tableau relai
-        const hasStartHour = !!race.hour;
+        // Afficher les colonnes heure seulement si l'heure de départ est connue ET tous les relais ont un temps renseigné (00:00:00 accepté, vide non)
+        const hasStartHour = !!race.hour && race.relayLaps.every(lap => lap.time && lap.time.trim() !== '');
         // Helper : heure de départ + secondes écoulées
         function addTimeToHourPdf(startHour, elapsedSeconds) {
             const [sh, sm] = startHour.split(':').map(Number);
