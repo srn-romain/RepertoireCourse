@@ -105,7 +105,7 @@ const manualModalHTML = `
                                     <div>• Photo (JPG, PNG)</div>
                                     <div>• Image automatique (Web/Nom)</div>
                                     <div>• Fichier GPX</div>
-                                    <div>• Notes personnelles (Éditeur riche)</div>
+                                    <div>• Notes personnelles avec éditeur</div>
                                     <div>• Statut favori</div>
                                     <div>• Partage public</div>
                                     <div>• Accompagnants</div>
@@ -263,6 +263,9 @@ const manualModalHTML = `
                                 <li>• <strong>Relais Classique :</strong> Utilisez le "Tableau de Relais" pour
                                     ajouter chaque segment avec son <strong>coureur</strong> (nom personnalisé), sa <strong>distance</strong>, son <strong>D+</strong>, son <strong>D-</strong> et son <strong>temps</strong>.</li>
                                 <li>• <strong>Calculs Automatiques :</strong> Les totaux de distance et de dénivelé sont recalculés en temps réel selon les segments saisis.</li>
+                                <li>• <strong>Horaires ergonomiques :</strong> Si l'heure de départ de la course est renseignée et que tous les segments ont un temps valide, cliquez sur n'importe quelle ligne de segment pour déplier les horaires associés (Départ / Arrivée) de façon centrée sans défilement horizontal.</li>
+                                <li>• <strong>Dénivelé unifié :</strong> Les dénivelés D+ et D- sont combinés de façon compacte dans la colonne unique <i>Dénivelé</i> (ex: '↑500 ↓200').</li>
+                                <li>• <strong>Pseudo connecté :</strong> Vos propres relais affichent automatiquement votre pseudo dynamique d'utilisateur (ou du propriétaire du carnet) au lieu de la mention standard « Moi ».</li>
                                 <li>• <strong>Triathlon en Relais :</strong> Sélectionnez "En équipe (Relais)" puis
                                     choisissez votre discipline (Nageur, Cycliste ou Coureur) pour n'enregistrer que
                                     votre partie.</li>
