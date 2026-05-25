@@ -282,7 +282,22 @@ async function generateRacePdf(raceId) {
         yPos += 8;
 
         // Colonnes du tableau relai
-        const relCols = [margin, margin + 18, margin + 50, margin + 80, margin + 110, margin + 145];
+        const hasStartHour = !!race.hour;
+        // Helper : heure de départ + secondes écoulées
+        function addTimeToHourPdf(startHour, elapsedSeconds) {
+            const [sh, sm] = startHour.split(':').map(Number);
+            const totalSec = sh * 3600 + sm * 60 + Math.round(elapsedSeconds);
+            const h = Math.floor(totalSec / 3600) % 24;
+            const m = Math.floor((totalSec % 3600) / 60);
+            const s = totalSec % 60;
+            const pad = n => String(n).padStart(2, '0');
+            return s > 0 ? `${pad(h)}:${pad(m)}:${pad(s)}` : `${pad(h)}:${pad(m)}`;
+        }
+
+        // Colonnes : #, Coureur, Dist., D+, D-, Temps [, Départ, Arrivée]
+        const relCols = hasStartHour
+            ? [margin, margin + 10, margin + 30, margin + 60, margin + 80, margin + 104, margin + 128, margin + 158]
+            : [margin, margin + 18, margin + 50, margin + 80, margin + 110, margin + 145];
 
         // En-tête
         doc.setFontSize(9);
@@ -291,13 +306,19 @@ async function generateRacePdf(raceId) {
         doc.setTextColor(255, 255, 255);
         doc.setFont(undefined, 'bold');
         doc.text('N°', relCols[0] + 1, yPos);
-        doc.text('Dist. (km)', relCols[1], yPos);
-        doc.text('D+ (m)', relCols[2], yPos);
-        doc.text('D- (m)', relCols[3], yPos);
-        doc.text('Temps', relCols[4], yPos);
+        doc.text('Coureur', relCols[1], yPos);
+        doc.text('Dist. (km)', relCols[2], yPos);
+        doc.text('D+ (m)', relCols[3], yPos);
+        doc.text('D- (m)', relCols[4], yPos);
+        doc.text('Temps', relCols[5], yPos);
+        if (hasStartHour) {
+            doc.text('Départ', relCols[6], yPos);
+            doc.text('Arrivée', relCols[7], yPos);
+        }
         yPos += 7;
 
         let totalDist = 0, totalElev = 0, totalElevNeg = 0;
+        let cumulativePdfSeconds = 0;
 
         race.relayLaps.forEach((lap, i) => {
             if (yPos > doc.internal.pageSize.getHeight() - 20) {
@@ -314,15 +335,32 @@ async function generateRacePdf(raceId) {
             const dist = parseFloat(lap.dist) || 0;
             const elev = parseFloat(lap.elev) || 0;
             const elevNeg = parseFloat(lap.elevNeg) || 0;
+            const lapSec = (() => {
+                if (!lap.time) return 0;
+                const parts = lap.time.split(':').map(Number);
+                if (parts.length === 3) return parts[0] * 3600 + parts[1] * 60 + parts[2];
+                if (parts.length === 2) return parts[0] * 3600 + parts[1] * 60;
+                return 0;
+            })();
+            const departureStr = hasStartHour ? addTimeToHourPdf(race.hour, cumulativePdfSeconds) : null;
+            cumulativePdfSeconds += lapSec;
+            const arrivalStr = hasStartHour ? addTimeToHourPdf(race.hour, cumulativePdfSeconds) : null;
             totalDist += dist;
             totalElev += elev;
             totalElevNeg += elevNeg;
 
+            const runnerLabel = lap.runner === 'Tous ensemble' ? 'Tous ens.' : (lap.runner || 'Moi');
+
             doc.text(`${i + 1}`, relCols[0] + 1, yPos);
-            doc.text(dist > 0 ? dist.toFixed(2) : '—', relCols[1], yPos);
-            doc.text(elev > 0 ? `${elev}` : '—', relCols[2], yPos);
-            doc.text(elevNeg > 0 ? `${elevNeg}` : '—', relCols[3], yPos);
-            doc.text(lap.time || '—', relCols[4], yPos);
+            doc.text(runnerLabel, relCols[1], yPos);
+            doc.text(dist > 0 ? dist.toFixed(2) : '—', relCols[2], yPos);
+            doc.text(elev > 0 ? `${elev}` : '—', relCols[3], yPos);
+            doc.text(elevNeg > 0 ? `${elevNeg}` : '—', relCols[4], yPos);
+            doc.text(lap.time || '—', relCols[5], yPos);
+            if (hasStartHour) {
+                doc.text(departureStr, relCols[6], yPos);
+                doc.text(arrivalStr, relCols[7], yPos);
+            }
             yPos += 7;
         });
 
@@ -332,10 +370,15 @@ async function generateRacePdf(raceId) {
         doc.setFont(undefined, 'bold');
         doc.setTextColor(...primaryColor);
         doc.text('TOTAL', relCols[0] + 1, yPos);
-        doc.text(totalDist > 0 ? totalDist.toFixed(2) : '—', relCols[1], yPos);
-        doc.text(totalElev > 0 ? `${totalElev}` : '—', relCols[2], yPos);
-        doc.text(totalElevNeg > 0 ? `${totalElevNeg}` : '—', relCols[3], yPos);
-        doc.text(race.time || '—', relCols[4], yPos);
+        doc.text('', relCols[1], yPos);
+        doc.text(totalDist > 0 ? totalDist.toFixed(2) : '—', relCols[2], yPos);
+        doc.text(totalElev > 0 ? `${totalElev}` : '—', relCols[3], yPos);
+        doc.text(totalElevNeg > 0 ? `${totalElevNeg}` : '—', relCols[4], yPos);
+        doc.text(race.time || '—', relCols[5], yPos);
+        if (hasStartHour) {
+            doc.text(race.hour, relCols[6], yPos);
+            doc.text(addTimeToHourPdf(race.hour, cumulativePdfSeconds), relCols[7], yPos);
+        }
         yPos += 10;
     }
     // ─────────────────────────────────────────────────────────────────────────

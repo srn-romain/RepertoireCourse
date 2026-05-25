@@ -4236,6 +4236,18 @@
                 });
                 const totalRelayCount = race.relayLaps.length;
                 const hasAnyElevNeg = race.relayLaps.some(lap => lap.elevNeg !== undefined && lap.elevNeg !== null && lap.elevNeg !== '');
+                const hasStartHour = !!race.hour; // Afficher les colonnes heure seulement si l'heure de départ est connue
+
+                // Fonction : ajoute HH:MM (ou HH:MM:SS) à une heure de départ "HH:MM"
+                function addTimeToHour(startHour, elapsedSeconds) {
+                    const [sh, sm] = startHour.split(':').map(Number);
+                    const totalSec = sh * 3600 + sm * 60 + Math.round(elapsedSeconds);
+                    const h = Math.floor(totalSec / 3600) % 24;
+                    const m = Math.floor((totalSec % 3600) / 60);
+                    const s = totalSec % 60;
+                    const pad = n => String(n).padStart(2, '0');
+                    return s > 0 ? `${pad(h)}:${pad(m)}:${pad(s)}` : `${pad(h)}:${pad(m)}`;
+                }
 
                 // Bloc performance individuelle (Moi)
                 let relayHtml = `
@@ -4287,22 +4299,32 @@
                                         <th class="px-2 py-1">D+</th>
                                         ${hasAnyElevNeg ? '<th class="px-2 py-1">D-</th>' : ''}
                                         <th class="px-2 py-1">Temps</th>
+                                        ${hasStartHour ? '<th class="px-2 py-1"><i class="fas fa-flag text-green-600"></i> Départ</th>' : ''}
+                                        ${hasStartHour ? '<th class="px-2 py-1"><i class="fas fa-flag-checkered text-green-600"></i> Arrivée</th>' : ''}
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-green-200">
                 `;
 
+
+                let cumulativeSeconds = 0;
                 race.relayLaps.forEach((lap, idx) => {
                     const isMoi = lap.runner === 'Moi' || !lap.runner;
                     const isTousEnsemble = lap.runner === 'Tous ensemble';
+                    const lapSeconds = timeToSeconds(lap.time);
+                    const departureTime = hasStartHour ? addTimeToHour(race.hour, cumulativeSeconds) : null;
+                    cumulativeSeconds += lapSeconds;
+                    const arrivalTime = hasStartHour ? addTimeToHour(race.hour, cumulativeSeconds) : null;
                     relayHtml += `
                         <tr class="${isMoi ? 'bg-blue-50/50 hover:bg-blue-100' : isTousEnsemble ? 'bg-purple-50/60 hover:bg-purple-100' : 'hover:bg-green-100'} transition-colors">
                             <td class="px-2 py-1 font-medium text-green-700">${idx + 1}</td>
-                            <td class="px-2 py-1 ${isMoi ? 'font-bold text-blue-700' : isTousEnsemble ? 'font-bold text-purple-700' : ''}">${isTousEnsemble ? 'Tous ensemble' : (lap.runner || 'Moi')}</td>
+                            <td class="px-2 py-1 ${isMoi ? 'font-bold text-blue-700' : isTousEnsemble ? 'font-bold text-purple-700' : ''}">${isTousEnsemble ? '🤝 Tous ensemble' : (lap.runner || 'Moi')}</td>
                             <td class="px-2 py-1">${formatDist(lap.dist)}</td>
                             <td class="px-2 py-1">${lap.elev || '-'}</td>
                             ${hasAnyElevNeg ? `<td class="px-2 py-1">${lap.elevNeg || '-'}</td>` : ''}
                             <td class="px-2 py-1 font-mono text-xs">${lap.time || '-'}</td>
+                            ${hasStartHour ? `<td class="px-2 py-1 font-mono text-xs text-indigo-700 font-semibold">${departureTime}</td>` : ''}
+                            ${hasStartHour ? `<td class="px-2 py-1 font-mono text-xs text-indigo-700 font-semibold">${arrivalTime}</td>` : ''}
                         </tr>
                     `;
                 });
@@ -4317,6 +4339,8 @@
                                         <td class="px-2 py-1">${totalRelayElev > 0 ? totalRelayElev + ' m' : '-'}</td>
                                         ${hasAnyElevNeg ? `<td class="px-2 py-1">${totalRelayElevNeg > 0 ? totalRelayElevNeg + ' m' : '-'}</td>` : ''}
                                         <td class="px-2 py-1 font-mono text-xs">${secondsToTime(totalRelayTimeS)}</td>
+                                        ${hasStartHour ? `<td class="px-2 py-1 font-mono text-xs text-indigo-700">${race.hour}</td>` : ''}
+                                        ${hasStartHour ? `<td class="px-2 py-1 font-mono text-xs text-indigo-700">${addTimeToHour(race.hour, totalRelayTimeS)}</td>` : ''}
                                     </tr>
                                 </tfoot>
                             </table>
