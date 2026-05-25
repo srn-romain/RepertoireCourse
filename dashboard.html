@@ -4239,7 +4239,7 @@
                 // Afficher les colonnes heure seulement si l'heure de départ est connue ET tous les relais ont un temps renseigné (00:00:00 accepté, vide non)
                 const hasStartHour = !!race.hour && race.relayLaps.every(lap => lap.time && lap.time.trim() !== '');
 
-                // Fonction : ajoute HH:MM (ou HH:MM:SS) à une heure de départ "HH:MM"
+                // Fonction : ajoute HH:MM:SS à une heure de départ "HH:MM"
                 function addTimeToHour(startHour, elapsedSeconds) {
                     const [sh, sm] = startHour.split(':').map(Number);
                     const totalSec = sh * 3600 + sm * 60 + Math.round(elapsedSeconds);
@@ -4247,7 +4247,7 @@
                     const m = Math.floor((totalSec % 3600) / 60);
                     const s = totalSec % 60;
                     const pad = n => String(n).padStart(2, '0');
-                    return s > 0 ? `${pad(h)}:${pad(m)}:${pad(s)}` : `${pad(h)}:${pad(m)}`;
+                    return `${pad(h)}:${pad(m)}:${pad(s)}`;
                 }
 
                 // Bloc performance individuelle (Moi)
@@ -4349,8 +4349,8 @@
                                             })()
                                         }</td>
                                         <td class="px-2 py-1 font-mono text-xs">${secondsToTime(totalRelayTimeS)}</td>
-                                        ${hasStartHour ? `<td class="px-2 py-1 font-mono text-xs text-indigo-700">${race.hour}</td>` : ''}
-                                        ${hasStartHour ? `<td class="px-2 py-1 font-mono text-xs text-indigo-700">${addTimeToHour(race.hour, totalRelayTimeS)}</td>` : ''}
+                                        ${hasStartHour ? `<td class="px-2 py-1"></td>` : ''}
+                                        ${hasStartHour ? `<td class="px-2 py-1"></td>` : ''}
                                     </tr>
                                 </tfoot>
                             </table>
