@@ -180,10 +180,18 @@ async function generateRacePdf(raceId) {
     yPos += 5;
 
     // ─── SECTION TRIATHLON (solo uniquement) ──────────────────────────────────
-    if (race.terrain === 'triathlon' && race.raceFormat !== 'team') {
-        const hasSwim = race.swimTime || race.swimDistance;
-        const hasBike = race.bikeTime || race.bikeDistance;
-        const hasRun = race.runTime || race.distance;
+    if (race.terrain === 'triathlon') {
+        const isTeam = race.raceFormat === 'team';
+        const relaySport = race.raceRelaySport; // 'swim', 'bike', or 'run'
+
+        // Determine which cards to show
+        const showSwim = !isTeam || relaySport === 'swim';
+        const showBike = !isTeam || relaySport === 'bike';
+        const showRun = !isTeam || relaySport === 'run';
+
+        const hasSwim = showSwim && (race.swimTime || race.swimDistance);
+        const hasBike = showBike && (race.bikeTime || race.bikeDistance);
+        const hasRun = showRun && (race.runTime || race.distance);
 
         if (hasSwim || hasBike || hasRun) {
             // Helper to parse HH:MM:SS to seconds
@@ -316,7 +324,8 @@ async function generateRacePdf(raceId) {
             doc.setFontSize(14);
             doc.setTextColor(...primaryColor);
             doc.setFont(undefined, 'bold');
-            doc.text('Détails Triathlon', margin, yPos);
+            const sectionTitle = isTeam ? 'Détails Triathlon (Relai)' : 'Détails Triathlon';
+            doc.text(sectionTitle, margin, yPos);
             yPos += 8;
 
             // 1. Swim Card
@@ -334,7 +343,7 @@ async function generateRacePdf(raceId) {
                     { label: 'TEMPS', value: swimTimeStr },
                     { label: 'ALLURE', value: swimPace }
                 ];
-                drawSportCard('Natation', 'SPORT 1', swimStats, swimColors);
+                drawSportCard(isTeam ? 'Natation (Relai)' : 'Natation', isTeam ? 'RELAI' : 'SPORT 1', swimStats, swimColors);
             }
 
             // 2. Bike Card
@@ -356,7 +365,7 @@ async function generateRacePdf(raceId) {
                     { label: 'DÉNIVELÉ', value: bikeElevStr },
                     { label: 'VITESSE', value: bikeSpeed }
                 ];
-                drawSportCard('Cyclisme', 'SPORT 2', bikeStats, bikeColors);
+                drawSportCard(isTeam ? 'Cyclisme (Relai)' : 'Cyclisme', isTeam ? 'RELAI' : 'SPORT 2', bikeStats, bikeColors);
             }
 
             // 3. Run Card
@@ -367,9 +376,11 @@ async function generateRacePdf(raceId) {
                 const runSec = parseTimeToSeconds(runTimeStr);
                 const runPace = calculateRunPace(runDistVal, runSec);
                 const runElevStr = (() => {
-                    const p = race.elevation ? `D+ ${race.elevation}m` : '';
-                    const n = race.elevationNeg ? `D- ${race.elevationNeg}m` : '';
-                    return [p, n].filter(Boolean).join(' / ') || '—';
+                    const p = isTeam ? race.runElevation : race.elevation;
+                    const n = isTeam ? race.runElevationNeg : race.elevationNeg;
+                    const pStr = p ? `D+ ${p}m` : '';
+                    const nStr = n ? `D- ${n}m` : '';
+                    return [pStr, nStr].filter(Boolean).join(' / ') || '—';
                 })();
 
                 const runStats = [
@@ -378,7 +389,7 @@ async function generateRacePdf(raceId) {
                     { label: 'DÉNIVELÉ', value: runElevStr },
                     { label: 'ALLURE', value: runPace }
                 ];
-                drawSportCard('Course à pied', 'SPORT 3', runStats, runColors);
+                drawSportCard(isTeam ? 'Course à pied (Relai)' : 'Course à pied', isTeam ? 'RELAI' : 'SPORT 3', runStats, runColors);
             }
 
             // Temps total triathlon
