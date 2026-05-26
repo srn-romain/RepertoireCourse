@@ -708,9 +708,22 @@ async function generateRacePdf(raceId) {
         doc.setFont(undefined, 'normal');
 
         // Extract plain text from HTML and preserve line breaks
+        let html = race.notes;
+        // Replace <br> with a unique placeholder
+        html = html.replace(/<br\s*[\/]?>/gi, '___NEWLINE_PLACEHOLDER___');
+        // Replace block closing tags with the same unique placeholder
+        html = html.replace(/<\/p>|<\/div>|<\/li>|<\/h[1-6]>|<\/ol>|<\/ul>/gi, '___NEWLINE_PLACEHOLDER___');
+
         const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = race.notes.replace(/<br\s*[\/]?>/gi, '\n').replace(/<\/p>|<\/div>/gi, '\n');
-        const cleanNotes = tempDiv.textContent || tempDiv.innerText || '';
+        tempDiv.innerHTML = html;
+        let cleanNotes = tempDiv.textContent || tempDiv.innerText || '';
+
+        // Replace placeholders with newlines
+        cleanNotes = cleanNotes.replace(/___NEWLINE_PLACEHOLDER___/g, '\n');
+        // Normalize 3 or more consecutive newlines to exactly 2 newlines (1 empty line) to avoid excessive spaces
+        cleanNotes = cleanNotes.replace(/\n{3,}/g, '\n\n');
+        // Trim leading/trailing newlines
+        cleanNotes = cleanNotes.trim();
 
         // Gérer le texte long avec retour à la ligne
         const notesLines = doc.splitTextToSize(cleanNotes, pageWidth - 2 * margin);
