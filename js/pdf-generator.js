@@ -186,7 +186,129 @@ async function generateRacePdf(raceId) {
         const hasRun = race.runTime || race.distance;
 
         if (hasSwim || hasBike || hasRun) {
-            if (yPos > doc.internal.pageSize.getHeight() - 50) {
+            // Helper to parse HH:MM:SS to seconds
+            function parseTimeToSeconds(timeStr) {
+                if (!timeStr || !/^\d{2}:\d{2}:\d{2}$/.test(timeStr)) return 0;
+                const [h, m, s] = timeStr.split(':').map(Number);
+                return h * 3600 + m * 60 + s;
+            }
+
+            // Helpers for swim pace, bike speed, run pace
+            function calculateSwimPace(distMeters, seconds) {
+                if (!distMeters || !seconds || distMeters <= 0) return '-';
+                const pace = (seconds / 60) / (distMeters / 100);
+                const mins = Math.floor(pace);
+                const secs = Math.round((pace - mins) * 60);
+                return `${mins}:${String(secs).padStart(2, '0')} min/100m`;
+            }
+
+            function calculateBikeSpeed(distKm, seconds) {
+                if (!distKm || !seconds || distKm <= 0) return '-';
+                const speed = distKm / (seconds / 3600);
+                return `${speed.toFixed(2)} km/h`;
+            }
+
+            function calculateRunPace(distKm, seconds) {
+                if (!distKm || !seconds || distKm <= 0) return '-';
+                const speed = distKm / (seconds / 3600);
+                if (speed <= 0) return '-';
+                const timePerKm = 60 / speed;
+                return `${timePerKm.toFixed(2)} min/km`;
+            }
+
+            // Draw Sport Card Function
+            function drawSportCard(title, badgeLabel, stats, colors) {
+                const cardHeight = 25;
+                const cardWidth = pageWidth - 2 * margin;
+
+                // Page break check
+                if (yPos + cardHeight > doc.internal.pageSize.getHeight() - margin) {
+                    doc.addPage();
+                    yPos = margin;
+                }
+
+                // Draw Background and Border
+                doc.setFillColor(...colors.bg);
+                doc.setDrawColor(...colors.border);
+                doc.setLineWidth(0.4);
+                doc.roundedRect(margin, yPos, cardWidth, cardHeight, 3, 3, 'FD');
+
+                // Draw Title
+                doc.setFont(undefined, 'bold');
+                doc.setFontSize(11);
+                doc.setTextColor(...colors.title);
+                doc.text(title, margin + 6, yPos + 7);
+
+                // Draw Badge
+                doc.setFont(undefined, 'bold');
+                doc.setFontSize(8);
+                const badgeTextWidth = doc.getTextWidth(badgeLabel);
+                const badgeWidth = badgeTextWidth + 6;
+                const badgeHeight = 5;
+                const badgeX = margin + cardWidth - badgeWidth - 6;
+                const badgeY = yPos + 3.5;
+
+                doc.setFillColor(...colors.badgeBg);
+                doc.roundedRect(badgeX, badgeY, badgeWidth, badgeHeight, 1.5, 1.5, 'F');
+                doc.setTextColor(...colors.badgeText);
+                doc.text(badgeLabel, badgeX + 3, badgeY + 3.8);
+
+                // Draw Header Underline
+                doc.setDrawColor(...colors.border);
+                doc.setLineWidth(0.2);
+                doc.line(margin + 6, yPos + 10.5, margin + cardWidth - 6, yPos + 10.5);
+
+                // Stats Columns
+                const colWidth = (cardWidth - 12) / stats.length;
+                stats.forEach((stat, i) => {
+                    const colX = margin + 6 + i * colWidth + colWidth / 2;
+
+                    // Label
+                    doc.setFont(undefined, 'normal');
+                    doc.setFontSize(8);
+                    doc.setTextColor(...colors.sub);
+                    doc.text(stat.label, colX, yPos + 15.5, { align: 'center' });
+
+                    // Value
+                    doc.setFont(undefined, 'bold');
+                    doc.setFontSize(10.5);
+                    doc.setTextColor(...colors.title);
+                    doc.text(stat.value, colX, yPos + 21, { align: 'center' });
+                });
+
+                yPos += cardHeight + 6; // Move yPos down
+            }
+
+            // Colors
+            const swimColors = {
+                bg: [239, 246, 255],      // bg-blue-50
+                border: [191, 219, 254],  // border-blue-200
+                title: [30, 58, 138],     // text-blue-800
+                sub: [37, 99, 235],       // text-blue-600
+                badgeBg: [219, 234, 254], // bg-blue-100
+                badgeText: [30, 58, 138]  // text-blue-800
+            };
+
+            const bikeColors = {
+                bg: [255, 247, 237],      // bg-orange-50
+                border: [254, 215, 170],  // border-orange-200
+                title: [154, 52, 18],     // text-orange-800
+                sub: [234, 88, 12],       // text-orange-600
+                badgeBg: [254, 215, 170], // bg-orange-100
+                badgeText: [154, 52, 18]  // text-orange-800
+            };
+
+            const runColors = {
+                bg: [240, 253, 244],      // bg-green-50
+                border: [187, 247, 208],  // border-green-200
+                title: [22, 101, 52],     // text-green-800
+                sub: [22, 163, 74],       // text-green-600
+                badgeBg: [187, 247, 208], // bg-green-100
+                badgeText: [22, 101, 52]  // text-green-800
+            };
+
+            // Section Title
+            if (yPos > doc.internal.pageSize.getHeight() - 60) {
                 doc.addPage();
                 yPos = margin;
             }
@@ -197,66 +319,74 @@ async function generateRacePdf(raceId) {
             doc.text('Détails Triathlon', margin, yPos);
             yPos += 8;
 
-            // En-têtes du tableau triathlon
-            const triCols = [margin, margin + 55, margin + 95, margin + 135];
-            doc.setFontSize(9);
-            doc.setFillColor(34, 139, 34);
-            doc.rect(margin, yPos - 4, pageWidth - 2 * margin, 7, 'F');
-            doc.setTextColor(255, 255, 255);
-            doc.setFont(undefined, 'bold');
-            doc.text('Sport', triCols[0] + 1, yPos);
-            doc.text('Distance', triCols[1], yPos);
-            doc.text('Temps', triCols[2], yPos);
-            doc.text('Élévation', triCols[3], yPos);
-            yPos += 7;
+            // 1. Swim Card
+            if (hasSwim) {
+                const swimDistVal = parseFloat(race.swimDistance);
+                const swimDistStr = race.swimDistance ? (swimDistVal > 999
+                    ? `${(swimDistVal / 1000).toFixed(2)} km`
+                    : `${race.swimDistance} m`) : '—';
+                const swimTimeStr = race.swimTime || '—';
+                const swimSec = parseTimeToSeconds(race.swimTime);
+                const swimPace = calculateSwimPace(swimDistVal, swimSec);
 
-            doc.setFont(undefined, 'normal');
-            const triRows = [
-                {
-                    label: 'Natation',
-                    dist: race.swimDistance ? (parseFloat(race.swimDistance) > 999
-                        ? `${(parseFloat(race.swimDistance) / 1000).toFixed(2)} km`
-                        : `${race.swimDistance} m`) : '—',
-                    time: race.swimTime || '—',
-                    elev: '—'
-                },
-                {
-                    label: 'Velo',
-                    dist: race.bikeDistance ? `${race.bikeDistance} km` : '—',
-                    time: race.bikeTime || '—',
-                    elev: (() => {
-                        const p = race.bikeElevation ? `D+ ${race.bikeElevation}m` : '';
-                        const n = race.bikeElevationNeg ? `D- ${race.bikeElevationNeg}m` : '';
-                        return [p, n].filter(Boolean).join(' / ') || '—';
-                    })()
-                },
-                {
-                    label: 'Course a pied',
-                    dist: race.distance ? `${race.distance} km` : '—',
-                    time: race.runTime || race.time || '—',
-                    elev: (() => {
-                        const p = race.elevation ? `D+ ${race.elevation}m` : '';
-                        const n = race.elevationNeg ? `D- ${race.elevationNeg}m` : '';
-                        return [p, n].filter(Boolean).join(' / ') || '—';
-                    })()
-                }
-            ];
+                const swimStats = [
+                    { label: 'DISTANCE', value: swimDistStr },
+                    { label: 'TEMPS', value: swimTimeStr },
+                    { label: 'ALLURE', value: swimPace }
+                ];
+                drawSportCard('Natation', 'SPORT 1', swimStats, swimColors);
+            }
 
-            triRows.forEach((row, i) => {
-                const bg = i % 2 === 0 ? [240, 255, 240] : [255, 255, 255];
-                doc.setFillColor(...bg);
-                doc.rect(margin, yPos - 4, pageWidth - 2 * margin, 7, 'F');
-                doc.setTextColor(...textColor);
-                doc.setFontSize(9);
-                doc.text(row.label, triCols[0] + 1, yPos);
-                doc.text(row.dist, triCols[1], yPos);
-                doc.text(row.time, triCols[2], yPos);
-                doc.text(row.elev, triCols[3], yPos);
-                yPos += 7;
-            });
+            // 2. Bike Card
+            if (hasBike) {
+                const bikeDistVal = parseFloat(race.bikeDistance);
+                const bikeDistStr = race.bikeDistance ? `${race.bikeDistance} km` : '—';
+                const bikeTimeStr = race.bikeTime || '—';
+                const bikeSec = parseTimeToSeconds(race.bikeTime);
+                const bikeSpeed = calculateBikeSpeed(bikeDistVal, bikeSec);
+                const bikeElevStr = (() => {
+                    const p = race.bikeElevation ? `D+ ${race.bikeElevation}m` : '';
+                    const n = race.bikeElevationNeg ? `D- ${race.bikeElevationNeg}m` : '';
+                    return [p, n].filter(Boolean).join(' / ') || '—';
+                })();
+
+                const bikeStats = [
+                    { label: 'DISTANCE', value: bikeDistStr },
+                    { label: 'TEMPS', value: bikeTimeStr },
+                    { label: 'DÉNIVELÉ', value: bikeElevStr },
+                    { label: 'VITESSE', value: bikeSpeed }
+                ];
+                drawSportCard('Cyclisme', 'SPORT 2', bikeStats, bikeColors);
+            }
+
+            // 3. Run Card
+            if (hasRun) {
+                const runDistVal = parseFloat(race.distance);
+                const runDistStr = race.distance ? `${race.distance} km` : '—';
+                const runTimeStr = race.runTime || race.time || '—';
+                const runSec = parseTimeToSeconds(runTimeStr);
+                const runPace = calculateRunPace(runDistVal, runSec);
+                const runElevStr = (() => {
+                    const p = race.elevation ? `D+ ${race.elevation}m` : '';
+                    const n = race.elevationNeg ? `D- ${race.elevationNeg}m` : '';
+                    return [p, n].filter(Boolean).join(' / ') || '—';
+                })();
+
+                const runStats = [
+                    { label: 'DISTANCE', value: runDistStr },
+                    { label: 'TEMPS', value: runTimeStr },
+                    { label: 'DÉNIVELÉ', value: runElevStr },
+                    { label: 'ALLURE', value: runPace }
+                ];
+                drawSportCard('Course à pied', 'SPORT 3', runStats, runColors);
+            }
 
             // Temps total triathlon
             if (race.time && race.time !== '00:00:00') {
+                if (yPos > doc.internal.pageSize.getHeight() - 20) {
+                    doc.addPage();
+                    yPos = margin;
+                }
                 doc.setFont(undefined, 'bold');
                 doc.setFontSize(10);
                 doc.setTextColor(...primaryColor);
