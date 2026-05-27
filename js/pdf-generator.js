@@ -413,11 +413,19 @@ async function generateRacePdf(raceId) {
     if (race.terrain === 'relai' && race.relayLaps && race.relayLaps.length > 0) {
         const currentUserPseudo = window.currentUserPseudo || 'Moi';
 
-        // Helper to parse HH:MM:SS to seconds
+        // Helper to parse HH:MM:SS or MM:SS to seconds
         function parseTimeToSeconds(timeStr) {
-            if (!timeStr || !/^\d{2}:\d{2}:\d{2}$/.test(timeStr)) return 0;
-            const [h, m, s] = timeStr.split(':').map(Number);
-            return h * 3600 + m * 60 + s;
+            if (!timeStr) return 0;
+            const parts = timeStr.trim().split(':').map(Number);
+            if (parts.some(isNaN)) return 0;
+            if (parts.length === 3) {
+                return parts[0] * 3600 + parts[1] * 60 + parts[2];
+            } else if (parts.length === 2) {
+                return parts[0] * 60 + parts[1];
+            } else if (parts.length === 1) {
+                return parts[0];
+            }
+            return 0;
         }
 
         // Helper to format seconds to HH:MM:SS
@@ -426,6 +434,13 @@ async function generateRacePdf(raceId) {
             const m = Math.floor((totalSeconds % 3600) / 60);
             const s = totalSeconds % 60;
             return [h, m, s].map(v => v.toString().padStart(2, '0')).join(':');
+        }
+
+        // Helper to normalize any time string to HH:MM:SS
+        function normalizeTimeToFormatted(timeStr) {
+            if (!timeStr || timeStr.trim() === '' || timeStr === '—') return '—';
+            const seconds = parseTimeToSeconds(timeStr);
+            return formatSecondsToTime(seconds);
         }
 
         // Helper to calculate pace
@@ -635,7 +650,7 @@ async function generateRacePdf(raceId) {
             const m = Math.floor((totalSec % 3600) / 60);
             const s = totalSec % 60;
             const pad = n => String(n).padStart(2, '0');
-            return s > 0 ? `${pad(h)}:${pad(m)}:${pad(s)}` : `${pad(h)}:${pad(m)}`;
+            return `${pad(h)}:${pad(m)}:${pad(s)}`;
         }
 
         // Colonnes : #, Coureur, Dist., D+, D-, Temps [, Départ, Arrivée]
@@ -679,13 +694,7 @@ async function generateRacePdf(raceId) {
             const dist = parseFloat(lap.dist) || 0;
             const elev = parseFloat(lap.elev) || 0;
             const elevNeg = parseFloat(lap.elevNeg) || 0;
-            const lapSec = (() => {
-                if (!lap.time) return 0;
-                const parts = lap.time.split(':').map(Number);
-                if (parts.length === 3) return parts[0] * 3600 + parts[1] * 60 + parts[2];
-                if (parts.length === 2) return parts[0] * 3600 + parts[1] * 60;
-                return 0;
-            })();
+            const lapSec = parseTimeToSeconds(lap.time);
             const departureStr = hasStartHour ? addTimeToHourPdf(race.hour, cumulativePdfSeconds) : null;
             cumulativePdfSeconds += lapSec;
             const arrivalStr = hasStartHour ? addTimeToHourPdf(race.hour, cumulativePdfSeconds) : null;
@@ -700,7 +709,7 @@ async function generateRacePdf(raceId) {
             doc.text(dist > 0 ? dist.toFixed(2) : '—', relCols[2], yPos);
             doc.text(elev > 0 ? `${elev}` : '—', relCols[3], yPos);
             doc.text(elevNeg > 0 ? `${elevNeg}` : '—', relCols[4], yPos);
-            doc.text(lap.time || '—', relCols[5], yPos);
+            doc.text(normalizeTimeToFormatted(lap.time), relCols[5], yPos);
             if (hasStartHour) {
                 doc.text(departureStr, relCols[6], yPos);
                 doc.text(arrivalStr, relCols[7], yPos);
@@ -718,11 +727,7 @@ async function generateRacePdf(raceId) {
         doc.text(totalDist > 0 ? totalDist.toFixed(2) : '—', relCols[2], yPos);
         doc.text(totalElev > 0 ? `${totalElev}` : '—', relCols[3], yPos);
         doc.text(totalElevNeg > 0 ? `${totalElevNeg}` : '—', relCols[4], yPos);
-        doc.text(race.time || '—', relCols[5], yPos);
-        if (hasStartHour) {
-            doc.text(race.hour, relCols[6], yPos);
-            doc.text(addTimeToHourPdf(race.hour, cumulativePdfSeconds), relCols[7], yPos);
-        }
+        doc.text(normalizeTimeToFormatted(race.time), relCols[5], yPos);
         yPos += 10;
     }
     // ─────────────────────────────────────────────────────────────────────────
