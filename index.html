@@ -45,7 +45,12 @@
                             clip-rule="evenodd" />
                     </svg>
                 </button>
-                <p id="authStatusText" class="text-sm text-green-800"></p>
+                <p id="authStatusText" class="text-sm text-green-800">
+                    <span class="flex items-center text-green-600 animate-pulse">
+                        <i class="fas fa-circle-notch fa-spin mr-2"></i>
+                        <span class="font-medium text-xs sm:text-sm">Vérification de la connexion...</span>
+                    </span>
+                </p>
             </div>
             <div class="flex gap-2">
                 <button id="changeUserBtn"
@@ -107,9 +112,9 @@
                 vos badges de réussite.
             </p>
             <div class="flex flex-col sm:flex-row justify-center gap-4">
-                <button id="heroCtaButton" onclick="openModal('signupModal')"
-                    class="px-4 py-2 rounded-full bg-green-600 hover:bg-green-700 text-white transition flex items-center justify-center gap-2 cursor-pointer">
-                    <i class="fas fa-running"></i> Commencer maintenant
+                <button id="heroCtaButton" disabled
+                    class="px-4 py-2 rounded-full bg-green-600 text-white opacity-50 cursor-not-allowed transition flex items-center justify-center gap-2">
+                    <i class="fas fa-circle-notch fa-spin text-xs"></i> Vérification...
                 </button>
                 <a href="#publicRacesSection"
                     class="px-4 py-2 rounded-full bg-white text-green-700 border-2 border-green-600 hover:bg-green-50 transition flex items-center justify-center gap-2">
@@ -1277,8 +1282,9 @@
                         heroCtaButton.innerHTML = '<i class="fas fa-running"></i> Commencer maintenant';
                         heroCtaButton.onclick = () => openModal('signupModal');
                         heroCtaButton.title = "";
-                        heroCtaButton.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+                        heroCtaButton.classList.remove('bg-blue-600', 'hover:bg-blue-700', 'opacity-50', 'cursor-not-allowed');
                         heroCtaButton.classList.add('bg-green-600', 'hover:bg-green-700');
+                        heroCtaButton.disabled = false;
                     }
 
                     // Cacher les filtres admin si non connecté
