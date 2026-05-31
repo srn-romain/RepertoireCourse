@@ -112,7 +112,7 @@
             function getRealElevation(r) {
                 if (r.terrain === 'relai' && r.relayLaps && r.relayLaps.length > 0) {
                     return r.relayLaps.reduce((sum, lap) => {
-                        if (lap.runner === 'Moi' || !lap.runner) {
+                        if (lap.runner === 'Moi' || !lap.runner || lap.runner === 'Tous ensemble') {
                             return sum + (parseFloat(lap.elev) || 0);
                         }
                         return sum;
@@ -128,7 +128,7 @@
             function getRealElevationNeg(r) {
                 if (r.terrain === 'relai' && r.relayLaps && r.relayLaps.length > 0) {
                     return r.relayLaps.reduce((sum, lap) => {
-                        if (lap.runner === 'Moi' || !lap.runner) {
+                        if (lap.runner === 'Moi' || !lap.runner || lap.runner === 'Tous ensemble') {
                             return sum + (parseFloat(lap.elevNeg) || 0);
                         }
                         return sum;
@@ -205,7 +205,7 @@
                 let dist = 0;
                 if (race.terrain === 'relai' && race.relayLaps && race.relayLaps.length > 0) {
                     dist = race.relayLaps.reduce((sum, lap) => {
-                        if (lap.runner === 'Moi' || !lap.runner) {
+                        if (lap.runner === 'Moi' || !lap.runner || lap.runner === 'Tous ensemble') {
                             return sum + (parseFloat(lap.dist) || 0);
                         }
                         return sum;
@@ -392,7 +392,7 @@
                     let time = 0;
                     if (isRelay) {
                         const totalS = race.relayLaps.reduce((sum, lap) => {
-                            if (lap.runner === 'Moi' || !lap.runner) {
+                            if (lap.runner === 'Moi' || !lap.runner || lap.runner === 'Tous ensemble') {
                                 return sum + (timeToSeconds(lap.time) || 0);
                             }
                             return sum;
