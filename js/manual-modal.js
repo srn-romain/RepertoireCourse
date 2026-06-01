@@ -159,9 +159,13 @@ const manualModalHTML = `
                                 <i class="fas fa-eye text-green-600 mt-0.5"></i>
                                 <span><strong>Aperçu en temps réel :</strong> Visualisez immédiatement le résultat de votre configuration sur une carte d'exemple interactive.</span>
                             </li>
-                            <li class="flex items-start gap-2">
+                             <li class="flex items-start gap-2">
                                 <i class="fas fa-undo text-green-600 mt-0.5"></i>
                                 <span><strong>Réinitialisation :</strong> Un bouton dédié vous permet de revenir à la configuration par défaut à tout moment.</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i class="fas fa-image text-green-600 mt-0.5"></i>
+                                <span><strong>Image par défaut :</strong> Choisissez d'afficher par défaut la photo de la course ou le tracé du parcours sur vos cartes de course. Un système de repli (fallback) intelligent affiche l'autre image si le choix principal n'est pas disponible pour une course spécifique.</span>
                             </li>
                         </ul>
                         <p class="text-[11px] text-blue-600 italic mt-3 flex items-center gap-2">
