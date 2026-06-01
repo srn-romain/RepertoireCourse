@@ -222,7 +222,7 @@ async function loadPublicRaces() {
             const dateStr = raceDate.toLocaleDateString('fr-FR', dateOptions);
 
             let locationDisplay = race.location || '';
-            const maxLength = race.photo ? 15 : 20;
+            const maxLength = (race.photo || race.parcours) ? 15 : 20;
             if (locationDisplay && locationDisplay.length > maxLength) {
                 locationDisplay = locationDisplay.substring(0, maxLength - 3) + '...';
             }
@@ -418,10 +418,12 @@ async function loadPublicRaces() {
                     <div class="absolute bottom-3 right-3 h-28 w-28 group-hover:scale-105 transition-transform duration-300">
                         ${race.photo ?
                     `<img src="${race.photo}" onclick="event.stopPropagation(); zoomImage('${race.photo}')" alt="Photo course" class="h-full w-full object-cover rounded-lg shadow-md border border-green-200 cursor-zoom-in" />`
+                    : (race.parcours ?
+                    `<img src="${race.parcours}" onclick="event.stopPropagation(); zoomImage('${race.parcours}')" alt="Parcours course" class="h-full w-full object-cover rounded-lg shadow-md border border-green-200 cursor-zoom-in" />`
                     :
                     `<div class="h-full w-full flex flex-col items-center justify-center bg-gray-100 rounded-lg border border-gray-300">
                                 <i class="fas fa-running text-gray-300 text-3xl"></i>
-                            </div>`
+                            </div>`)
                 }
                     </div>
                 </div>

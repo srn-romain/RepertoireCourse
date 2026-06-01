@@ -1676,6 +1676,37 @@
                         <!-- Les boutons disponibles seront injectés ici dynamiquement -->
                     </div>
                 </div>
+
+                <!-- Section Image par défaut -->
+                <div class="space-y-3 pt-4 border-t border-gray-100">
+                    <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1.5">
+                        <i class="fas fa-image text-gray-400"></i>
+                        Image sur les cartes par défaut
+                    </h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <!-- Option Image de Course -->
+                        <label class="relative flex items-center gap-3 p-3 bg-white border border-gray-200 rounded-xl cursor-pointer hover:bg-green-50/50 hover:border-green-300 transition-all shadow-sm group">
+                            <input type="radio" name="defaultCardImage" value="photo" class="w-4 h-4 text-green-600 focus:ring-green-500 border-gray-300 rounded-full" checked>
+                            <div class="flex flex-col">
+                                <span class="text-xs sm:text-sm font-semibold text-gray-800 flex items-center gap-1.5">
+                                    <i class="fas fa-camera text-green-600 text-sm"></i> Image de course (par défaut)
+                                </span>
+                                <span class="text-[10px] text-gray-500 mt-0.5">Affiche la photo principale de la course.</span>
+                            </div>
+                        </label>
+                        
+                        <!-- Option Image du Parcours -->
+                        <label class="relative flex items-center gap-3 p-3 bg-white border border-gray-200 rounded-xl cursor-pointer hover:bg-green-50/50 hover:border-green-300 transition-all shadow-sm group">
+                            <input type="radio" name="defaultCardImage" value="parcours" class="w-4 h-4 text-green-600 focus:ring-green-500 border-gray-300 rounded-full">
+                            <div class="flex flex-col">
+                                <span class="text-xs sm:text-sm font-semibold text-gray-800 flex items-center gap-1.5">
+                                    <i class="fas fa-map text-green-600 text-sm"></i> Image du parcours
+                                </span>
+                                <span class="text-[10px] text-gray-500 mt-0.5">Affiche la carte/tracé du parcours.</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
             </div>
             
             <!-- Footer -->
@@ -2037,6 +2068,7 @@
         }
 
         window.customCardButtons = ['edit', 'delete', 'details'];
+        window.defaultCardImage = 'photo';
 
         const AVAILABLE_CARD_BUTTONS = {
             edit: {
@@ -2297,9 +2329,15 @@
                                 } else {
                                     window.customCardButtons = ['edit', 'delete', 'details'];
                                 }
+                                if (targetUserDoc.exists && targetUserDoc.data().defaultCardImage) {
+                                    window.defaultCardImage = targetUserDoc.data().defaultCardImage;
+                                } else {
+                                    window.defaultCardImage = 'photo';
+                                }
                             } catch (err) {
-                                console.error("Error loading target user card buttons:", err);
+                                console.error("Error loading target user card preferences:", err);
                                 window.customCardButtons = ['edit', 'delete', 'details'];
+                                window.defaultCardImage = 'photo';
                             }
 
                             inviteModal.classList.add('hidden');
@@ -2385,11 +2423,18 @@
                                 } else {
                                     window.customCardButtons = ['edit', 'delete', 'details'];
                                 }
+
+                                if (uDoc.data().defaultCardImage) {
+                                    window.defaultCardImage = uDoc.data().defaultCardImage;
+                                } else {
+                                    window.defaultCardImage = 'photo';
+                                }
                             }
                             // Charger les courses APRÈS avoir récupéré la config cardButtons
                             if (typeof loadRaces === 'function') loadRaces();
                         } catch (e) {
-                            console.error("Erreur récup pseudo/photo/cardButtons", e);
+                            console.error("Erreur récup pseudo/photo/cardButtons/defaultCardImage", e);
+                            window.defaultCardImage = 'photo';
                             // Charger les courses même en cas d'erreur (avec config par défaut)
                             if (typeof loadRaces === 'function') loadRaces();
                         }
@@ -3329,11 +3374,33 @@
             racesContainer.innerHTML = '';
 
             sortedRaces.forEach(race => {
+                // Determine which image to show based on preference and fallback
+                let displayedImage = null;
+                let displayedImageAlt = "Photo course";
+                const defaultImagePref = window.defaultCardImage || 'photo';
+                if (defaultImagePref === 'parcours') {
+                    if (race.parcours) {
+                        displayedImage = race.parcours;
+                        displayedImageAlt = "Parcours course";
+                    } else if (race.photo) {
+                        displayedImage = race.photo;
+                        displayedImageAlt = "Photo course";
+                    }
+                } else { // 'photo'
+                    if (race.photo) {
+                        displayedImage = race.photo;
+                        displayedImageAlt = "Photo course";
+                    } else if (race.parcours) {
+                        displayedImage = race.parcours;
+                        displayedImageAlt = "Parcours course";
+                    }
+                }
+
                 const raceDate = new Date(race.date);
                 const year = raceDate.getFullYear();
                 let locationDisplay = race.location || '';
                 // Ajuster la longueur du lieu pour éviter qu'il passe derrière l'image
-                const maxLength = race.photo ? 15 : 20; // Plus court si une photo est présente
+                const maxLength = displayedImage ? 15 : 20; // Plus court si une image est présente
                 if (locationDisplay && locationDisplay.length > maxLength) {
                     locationDisplay = locationDisplay.substring(0, maxLength - 3) + '...';
                 }
@@ -3504,8 +3571,8 @@
                         </div>
                     </div>
                     ` : ''}
-                    ${race.photo ?
-                        `<img src="${race.photo}" alt="Photo course" class="h-full w-full object-cover rounded-lg shadow-md border border-green-200" />`
+                    ${displayedImage ?
+                        `<img src="${displayedImage}" alt="${displayedImageAlt}" class="h-full w-full object-cover rounded-lg shadow-md border border-green-200" />`
                         :
                         `<div class="h-full w-full flex flex-col items-center justify-center bg-gray-100 rounded-lg border border-gray-300">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -8863,7 +8930,53 @@
             }
 
             let tempConfigButtons = [];
+            let tempDefaultCardImage = 'photo';
             let selectedAvailableButtonId = null;
+
+            // Listen for defaultCardImage radio changes
+            setTimeout(() => {
+                document.querySelectorAll('input[name="defaultCardImage"]').forEach(radio => {
+                    radio.addEventListener('change', (e) => {
+                        tempDefaultCardImage = e.target.value;
+                        updateRadioStyles();
+                        updatePreviewImage();
+                    });
+                });
+            }, 0);
+
+            function updateRadioStyles() {
+                document.querySelectorAll('input[name="defaultCardImage"]').forEach(r => {
+                    const label = r.closest('label');
+                    if (label) {
+                        if (r.value === tempDefaultCardImage) {
+                            r.checked = true;
+                            label.classList.add('border-green-500', 'bg-green-50/30');
+                            label.classList.remove('border-gray-200', 'bg-white');
+                        } else {
+                            r.checked = false;
+                            label.classList.remove('border-green-500', 'bg-green-50/30');
+                            label.classList.add('border-gray-200', 'bg-white');
+                        }
+                    }
+                });
+            }
+
+            function updatePreviewImage() {
+                const previewImgContainer = document.querySelector('#cardConfigModal .absolute.bottom-3.right-3.pointer-events-none div');
+                if (previewImgContainer) {
+                    if (tempDefaultCardImage === 'parcours') {
+                        previewImgContainer.innerHTML = `
+                            <i class="fas fa-map text-green-500 text-lg"></i>
+                            <p class="text-[8px] text-gray-400 mt-0.5">Parcours</p>
+                        `;
+                    } else {
+                        previewImgContainer.innerHTML = `
+                            <i class="fas fa-image text-green-500 text-lg"></i>
+                            <p class="text-[8px] text-gray-400 mt-0.5">Photo course</p>
+                        `;
+                    }
+                }
+            }
 
             // Open modal handler
             openCardConfigBtn.addEventListener('click', () => {
@@ -8874,6 +8987,7 @@
                 
                 // Copy the current configuration
                 tempConfigButtons = [...window.customCardButtons];
+                tempDefaultCardImage = window.defaultCardImage || 'photo';
                 selectedAvailableButtonId = null;
                 renderModalState();
                 cardConfigModal.classList.remove('hidden');
@@ -8913,6 +9027,7 @@
                     e.preventDefault();
                     e.stopPropagation();
                     tempConfigButtons = ['edit', 'delete', 'details'];
+                    tempDefaultCardImage = 'photo';
                     selectedAvailableButtonId = null;
                     renderModalState();
                 });
@@ -8944,11 +9059,13 @@
                         const user = auth.currentUser;
                         if (user) {
                             await db.collection('users').doc(user.uid).set({
-                                cardButtons: cleanButtons
+                                cardButtons: cleanButtons,
+                                defaultCardImage: tempDefaultCardImage
                             }, { merge: true });
                             
                             window.customCardButtons = cleanButtons;
-                            console.log("✅ Configuration de la carte enregistrée dans Firestore:", cleanButtons);
+                            window.defaultCardImage = tempDefaultCardImage;
+                            console.log("✅ Configuration de la carte enregistrée dans Firestore:", cleanButtons, tempDefaultCardImage);
                             
                             // Reload dashboard races to reflect custom buttons
                             if (typeof loadRaces === 'function') {
@@ -8968,6 +9085,10 @@
 
             function renderModalState() {
                 const isDesktop = window.matchMedia('(min-width: 768px)').matches;
+                
+                // Update radio buttons checked state and styles
+                updateRadioStyles();
+                updatePreviewImage();
 
                 // 1. Render slots
                 configCardSlots.innerHTML = '';
