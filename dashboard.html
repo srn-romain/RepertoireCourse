@@ -3460,7 +3460,7 @@
                             tagsHtml = `
                                     <span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full"><i class="fas fa-ruler-horizontal text-green-500"></i> ${distVal} km</span>
                                     <span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full"><i class="fas fa-mountain text-green-500"></i> +${elevVal} m</span>
-                                    <span class="px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded-full font-bold">Relai</span>`;
+                                    <span class="px-2 py-1 bg-indigo-100 text-indigo-800 text-xs rounded-full font-bold">Relai</span>`;
                         }
                         // 4. CAS TRAIL
                         else if (race.terrain === 'trail') {
@@ -3474,7 +3474,7 @@
                             tagsHtml = `
                                     <span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full"><i class="fas fa-ruler-horizontal text-green-500"></i> ${distVal} km</span>
                                     <span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full"><i class="fas fa-mountain text-green-500"></i> +${elevVal} m</span>
-                                    ${locHtml}`;
+                                    <span class="px-2 py-1 bg-slate-100 text-slate-800 text-xs rounded-full font-bold">Route</span>`;
                         }
 
                         return tagsHtml;
