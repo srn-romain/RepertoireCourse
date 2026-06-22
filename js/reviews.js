@@ -381,6 +381,7 @@ function initReviewForm() {
 //  Affichage cyclique des avis (index.html)
 // ─────────────────────────────────────────────
 let allReviewsPool = [];
+let reviewsIntervalId = null;
 
 async function initReviewsDisplay() {
     const container = document.getElementById('reviewsStaticContainer');
@@ -414,7 +415,8 @@ async function initReviewsDisplay() {
         updateReviewsAverage();
 
         // Lancer le cycle toutes les 10 secondes
-        setInterval(rotateReviews, 10000);
+        if (reviewsIntervalId) clearInterval(reviewsIntervalId);
+        reviewsIntervalId = setInterval(rotateReviews, 10000);
 
         const section = document.getElementById('reviewsSection');
         if (section) section.classList.remove('hidden');
@@ -424,6 +426,17 @@ async function initReviewsDisplay() {
         const section = document.getElementById('reviewsSection');
         if (section) section.classList.add('hidden');
     }
+}
+
+/**
+ * Force la rotation des avis et réinitialise le timer de 10 secondes
+ */
+function handleReviewsRefresh() {
+    rotateReviews();
+    if (reviewsIntervalId) {
+        clearInterval(reviewsIntervalId);
+    }
+    reviewsIntervalId = setInterval(rotateReviews, 10000);
 }
 
 /**
@@ -469,7 +482,13 @@ function updateReviewsAverage() {
 
     if (starsContainer) starsContainer.innerHTML = starsHtml;
     if (ratingText) ratingText.textContent = `${formattedAvg} / 5`;
-    if (totalText) totalText.textContent = `${totalReviews} ${totalReviews > 1 ? 'avis' : 'avis'}`;
+    if (totalText) {
+        totalText.textContent = `${totalReviews} ${totalReviews > 1 ? 'avis' : 'avis'}`;
+        if (!totalText.dataset.listenerAttached) {
+            totalText.addEventListener('click', handleReviewsRefresh);
+            totalText.dataset.listenerAttached = 'true';
+        }
+    }
 
     // Afficher avec une animation d'apparition douce
     avgContainer.classList.remove('hidden');
@@ -571,7 +590,7 @@ function buildReviewCard(review) {
     }
 
     return `
-    <div class="review-card w-full bg-white rounded-2xl shadow-md border border-gray-100 p-6 flex flex-col gap-4 transform transition-transform hover:scale-[1.02]">
+    <div class="review-card w-full bg-white rounded-2xl shadow-md border border-gray-100 p-6 flex flex-col gap-4">
         <div class="flex items-center gap-3">
             ${avatarHTML}
             <div class="min-w-0">
