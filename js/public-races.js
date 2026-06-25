@@ -365,8 +365,8 @@ async function loadPublicRaces() {
                                 }
                             })();
                             return `${relaySportVal}
-                                             <span class="flex items-center gap-1 px-2 py-1 bg-purple-50 text-purple-800 text-xs rounded-full" title="Relais">
-                                                <i class="fas fa-users text-purple-500"></i> Relais
+                                             <span class="flex items-center gap-1 px-2 py-1 bg-indigo-50 text-indigo-800 text-xs rounded-full" title="Relais">
+                                                <i class="fas fa-users text-indigo-500"></i> Relais
                                              </span>`;
                         })()
                         :
@@ -393,11 +393,17 @@ async function loadPublicRaces() {
                      </span>
                      ` : ''}
                      ${race.terrain === 'relai' ? `
-                     <span class="flex items-center gap-1 px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded-full font-bold">Relais</span>
+                     <span class="flex items-center gap-1 px-2 py-1 bg-indigo-50 text-indigo-800 text-xs rounded-full"><i class="fas fa-users text-indigo-500"></i> Relais</span>
                      ` : ''}
                      ${cityHtml}
                      ${race.terrain === 'hyrox' ? `
-                     <span class="flex items-center gap-1 px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded-full font-bold">Hyrox</span>
+                     <span class="flex items-center gap-1 px-2 py-1 bg-indigo-50 text-indigo-800 text-xs rounded-full"><i class="fas fa-dumbbell text-indigo-500"></i> Hyrox</span>
+                     ` : ''}
+                     ${race.terrain === 'trail' ? `
+                     <span class="flex items-center gap-1 px-2 py-1 bg-indigo-50 text-indigo-800 text-xs rounded-full"><i class="fas fa-tree text-indigo-500"></i> Trail</span>
+                     ` : ''}
+                     ${race.terrain === 'route' || (!race.terrain && race.terrain !== 'hyrox' && race.terrain !== 'relai' && race.terrain !== 'trail') ? `
+                     <span class="flex items-center gap-1 px-2 py-1 bg-indigo-50 text-indigo-800 text-xs rounded-full"><i class="fas fa-road text-indigo-500"></i> Route</span>
                      ` : ''}`
                 }
                         </div>

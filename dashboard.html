@@ -1641,7 +1641,9 @@
                                 <span class="flex items-center gap-1 px-2 py-0.5 bg-blue-50 text-blue-800 text-[10px] rounded-full font-medium">
                                     <i class="fas fa-map-marker-alt text-blue-500"></i> Paris, FR
                                 </span>
-                                <span class="px-2 py-0.5 bg-slate-100 text-slate-800 text-[10px] rounded-full font-bold">Route</span>
+                                <span class="flex items-center gap-1 px-2 py-0.5 bg-indigo-50 text-indigo-800 text-[10px] rounded-full font-medium">
+                                    <i class="fas fa-road text-indigo-500"></i> Route
+                                </span>
                             </div>
                         </div>
                         
@@ -3640,19 +3642,19 @@
                                     tagsHtml = `
                                 ${showDistance ? `<span class="flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-800 text-xs rounded-full"><i class="fas fa-swimmer text-blue-500"></i> ${swimDisplay}</span>` : ''}
                                 ${locHtml}
-                                ${showTerrain ? `<span class="px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded-full font-bold">Triathlon</span>` : ''}`;
+                                ${showTerrain ? `<span class="flex items-center gap-1 px-2 py-1 bg-indigo-50 text-indigo-800 text-xs rounded-full"><i class="fas fa-swimmer text-indigo-500"></i> Triathlon</span>` : ''}`;
                                 } else if (race.raceRelaySport === 'bike') {
                                     tagsHtml = `
                                 ${showDistance ? `<span class="flex items-center gap-1 px-2 py-1 bg-orange-50 text-orange-800 text-xs rounded-full"><i class="fas fa-biking text-orange-500"></i> ${formatDist(race.bikeDistance)} km</span>` : ''}
                                 ${showElevation ? `<span class="flex items-center gap-1 px-2 py-1 bg-orange-50 text-orange-800 text-xs rounded-full"><i class="fas fa-mountain text-orange-500"></i> +${race.bikeElevation || 0} m</span>` : ''}
                                 ${locHtml}
-                                ${showTerrain ? `<span class="px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded-full font-bold">Triathlon</span>` : ''}`;
+                                ${showTerrain ? `<span class="flex items-center gap-1 px-2 py-1 bg-indigo-50 text-indigo-800 text-xs rounded-full"><i class="fas fa-swimmer text-indigo-500"></i> Triathlon</span>` : ''}`;
                                 } else { // Run
                                     tagsHtml = `
                                 ${showDistance ? `<span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full"><i class="fas fa-running text-green-500"></i> ${distVal} km</span>` : ''}
                                 ${showElevation ? `<span class="flex items-center gap-1 px-2 py-1 bg-orange-50 text-orange-800 text-xs rounded-full"><i class="fas fa-mountain text-orange-500"></i> +${race.runElevation || 0} m</span>` : ''}
                                 ${locHtml}
-                                ${showTerrain ? `<span class="px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded-full font-bold">Triathlon</span>` : ''}`;
+                                ${showTerrain ? `<span class="flex items-center gap-1 px-2 py-1 bg-indigo-50 text-indigo-800 text-xs rounded-full"><i class="fas fa-swimmer text-indigo-500"></i> Triathlon</span>` : ''}`;
                                 }
                             } else {
                                 // Mode Solo : Standard 3 sports
@@ -3671,7 +3673,7 @@
                                           <i class="fas fa-running text-green-500"></i> ${distVal} km
                                       </span>` : ''}
                                       ${locHtml}
-                                      ${showTerrain ? `<span class="px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded-full font-bold">Triathlon</span>` : ''}`;
+                                      ${showTerrain ? `<span class="flex items-center gap-1 px-2 py-1 bg-indigo-50 text-indigo-800 text-xs rounded-full"><i class="fas fa-swimmer text-indigo-500"></i> Triathlon</span>` : ''}`;
                             }
                         }
                         // 2. CAS HYROX
@@ -3679,7 +3681,7 @@
                             tagsHtml = `
                                     ${showDistance ? `<span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full"><i class="fas fa-ruler-horizontal text-green-500"></i> ${distVal} km</span>` : ''}
                                     ${locHtml}
-                                    ${showTerrain ? `<span class="px-2 py-1 bg-orange-100 text-orange-800 text-xs rounded-full font-bold">Hyrox</span>` : ''}`;
+                                    ${showTerrain ? `<span class="flex items-center gap-1 px-2 py-1 bg-indigo-50 text-indigo-800 text-xs rounded-full"><i class="fas fa-dumbbell text-indigo-500"></i> Hyrox</span>` : ''}`;
                         }
                         // 3. CAS RELAI (Standard)
                         else if (race.terrain === 'relai') {
@@ -3687,7 +3689,7 @@
                                     ${showDistance ? `<span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full"><i class="fas fa-ruler-horizontal text-green-500"></i> ${distVal} km</span>` : ''}
                                     ${showElevation ? `<span class="flex items-center gap-1 px-2 py-1 bg-orange-50 text-orange-800 text-xs rounded-full"><i class="fas fa-mountain text-orange-500"></i> +${elevVal} m</span>` : ''}
                                     ${locHtml}
-                                    ${showTerrain ? `<span class="px-2 py-1 bg-indigo-100 text-indigo-800 text-xs rounded-full font-bold">Relai</span>` : ''}`;
+                                    ${showTerrain ? `<span class="flex items-center gap-1 px-2 py-1 bg-indigo-50 text-indigo-800 text-xs rounded-full"><i class="fas fa-users text-indigo-500"></i> Relai</span>` : ''}`;
                         }
                         // 4. CAS TRAIL
                         else if (race.terrain === 'trail') {
@@ -3695,7 +3697,7 @@
                                     ${showDistance ? `<span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full"><i class="fas fa-ruler-horizontal text-green-500"></i> ${distVal} km</span>` : ''}
                                     ${showElevation ? `<span class="flex items-center gap-1 px-2 py-1 bg-orange-50 text-orange-800 text-xs rounded-full"><i class="fas fa-mountain text-orange-500"></i> +${elevVal} m</span>` : ''}
                                     ${locHtml}
-                                    ${showTerrain ? `<span class="px-2 py-1 bg-emerald-100 text-emerald-800 text-xs rounded-full font-bold">Trail</span>` : ''}`;
+                                    ${showTerrain ? `<span class="flex items-center gap-1 px-2 py-1 bg-indigo-50 text-indigo-800 text-xs rounded-full"><i class="fas fa-tree text-indigo-500"></i> Trail</span>` : ''}`;
                         }
                         // 5. PAR DÉFAUT (ROUTE)
                         else {
@@ -3703,7 +3705,7 @@
                                     ${showDistance ? `<span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full"><i class="fas fa-ruler-horizontal text-green-500"></i> ${distVal} km</span>` : ''}
                                     ${showElevation ? `<span class="flex items-center gap-1 px-2 py-1 bg-orange-50 text-orange-800 text-xs rounded-full"><i class="fas fa-mountain text-orange-500"></i> +${elevVal} m</span>` : ''}
                                     ${locHtml}
-                                    ${showTerrain ? `<span class="px-2 py-1 bg-slate-100 text-slate-800 text-xs rounded-full font-bold">Route</span>` : ''}`;
+                                    ${showTerrain ? `<span class="flex items-center gap-1 px-2 py-1 bg-indigo-50 text-indigo-800 text-xs rounded-full"><i class="fas fa-road text-indigo-500"></i> Route</span>` : ''}`;
                         }
 
                         return tagsHtml + timeTag + paceTag + priceTag + rankTag;
@@ -9265,7 +9267,9 @@
                     }
                     if (tempConfigTags.includes('terrain')) {
                         html += `
-                            <span class="px-2 py-0.5 bg-slate-100 text-slate-800 text-[10px] rounded-full font-bold">Route</span>`;
+                            <span class="flex items-center gap-1 px-2 py-0.5 bg-indigo-50 text-indigo-800 text-[10px] rounded-full font-medium">
+                                <i class="fas fa-road text-indigo-500"></i> Route
+                            </span>`;
                     }
                     if (tempConfigTags.includes('time')) {
                         html += `
