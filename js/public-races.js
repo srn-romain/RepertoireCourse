@@ -244,12 +244,12 @@ async function loadPublicRaces() {
 
             let badgeAvenir = '';
             if (isToday) {
-                if (hasCompletedTime) badgeAvenir = `<span class="ml-2 px-2 py-1 bg-green-200 text-green-800 text-xs rounded-full animate-pulse">New !</span>`;
-                else badgeAvenir = `<span class="ml-2 px-2 py-1 bg-yellow-200 text-yellow-800 text-xs rounded-full animate-pulse">En cours</span>`;
+                if (hasCompletedTime) badgeAvenir = `<span class="px-2 py-1 bg-green-200 text-green-800 text-xs rounded-full animate-pulse">New !</span>`;
+                else badgeAvenir = `<span class="px-2 py-1 bg-yellow-200 text-yellow-800 text-xs rounded-full animate-pulse">En cours</span>`;
             } else if (isUpcoming) {
-                badgeAvenir = `<span class="ml-2 px-2 py-1 bg-yellow-200 text-yellow-800 text-xs rounded-full animate-pulse">À venir</span>`;
+                badgeAvenir = `<span class="px-2 py-1 bg-yellow-200 text-yellow-800 text-xs rounded-full animate-pulse">À venir</span>`;
             } else if (!isUpcoming && hasCompletedTime && isWithin10Days) {
-                badgeAvenir = `<span class="ml-2 px-2 py-1 bg-green-200 text-green-800 text-xs rounded-full animate-pulse">New !</span>`;
+                badgeAvenir = `<span class="px-2 py-1 bg-green-200 text-green-800 text-xs rounded-full animate-pulse">New !</span>`;
             }
 
             const raceCard = document.createElement('div');
@@ -294,7 +294,7 @@ async function loadPublicRaces() {
             const likeButtonTitle = isInvite ? "Fonctionnalité désactivée pour le compte invité" : (isLiked ? "Je n'aime plus" : "J'aime");
 
             const likeButtonHtml = `
-                <div class="flex flex-col items-end z-10 like-btn-wrapper relative group/likes">
+                <div class="flex flex-col items-end z-10 like-btn-wrapper relative group/likes shrink-0">
                     <div class="flex items-center gap-1">
                         <button onclick="${likeAction}" ${isInvite ? 'disabled' : ''}
                             class="transition flex items-center gap-1 focus:outline-none group/btn pt-1 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -317,7 +317,7 @@ async function loadPublicRaces() {
                         <div>
                             <h3 class="text-xl font-bold text-green-800 mb-1 flex items-center gap-1">
                                 ${favIcon}
-                                ${race.name || 'Course'} ${badgeAvenir}
+                                ${race.name || 'Course'}
                             </h3>
                             <p class="text-green-600 capitalize">
                                 ${dateStr}
@@ -417,6 +417,7 @@ async function loadPublicRaces() {
                     `<i class="fas fa-user-circle text-green-600 text-lg"></i>`
                 }
                             <span class="truncate max-w-[150px] font-semibold">${ownerPseudoDisplay}</span>
+                            ${badgeAvenir}
                         </span>
                     </div>
 

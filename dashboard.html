@@ -3513,19 +3513,19 @@
                     // Si c'est aujourd'hui
                     if (hasCompletedTime) {
                         // Temps complété : afficher "New !"
-                        badgeAvenir = `<span class="ml-2 px-2 py-1 bg-green-200 text-green-800 text-xs rounded-full animate-pulse">New !</span>`;
+                        badgeAvenir = `<span class="px-2 py-1 bg-green-200 text-green-800 text-xs rounded-full animate-pulse">New !</span>`;
                     } else {
                         // Temps non complété : afficher "En cours"
-                        badgeAvenir = `<span class="ml-2 px-2 py-1 bg-yellow-200 text-yellow-800 text-xs rounded-full animate-pulse">En cours</span>`;
+                        badgeAvenir = `<span class="px-2 py-1 bg-yellow-200 text-yellow-800 text-xs rounded-full animate-pulse">En cours</span>`;
                     }
                 } else if (isUpcoming) {
                     // Course à venir : afficher "À venir"
-                    badgeAvenir = `<span class="ml-2 px-2 py-1 bg-yellow-200 text-yellow-800 text-xs rounded-full animate-pulse">À venir</span>`;
+                    badgeAvenir = `<span class="px-2 py-1 bg-yellow-200 text-yellow-800 text-xs rounded-full animate-pulse">À venir</span>`;
                 }
 
                 if (!isUpcoming && hasCompletedTime && isWithin10Days) {
                     // Course passée avec temps complété et dans les 10 derniers jours : afficher "New !"
-                    badgeAvenir = `<span class="ml-2 px-2 py-1 bg-green-200 text-green-800 text-xs rounded-full animate-pulse">New !</span>`;
+                    badgeAvenir = `<span class="px-2 py-1 bg-green-200 text-green-800 text-xs rounded-full animate-pulse">New !</span>`;
                 }
 
                 const raceCard = document.createElement('div');
@@ -3544,7 +3544,7 @@
                     <div>
                         <h3 class="text-xl font-bold text-green-800 mb-1 flex items-center gap-2">
                             ${race.favorite ? '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-500" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>' : ''}
-                            ${race.name} ${badgeAvenir}
+                            ${race.name}
                         </h3>
                         <p class="text-green-600">${raceDate.toLocaleDateString('fr-FR', {
                     day: 'numeric',
@@ -3552,7 +3552,10 @@
                     year: 'numeric'
                 })}</p>
                     </div>
-                    <span class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">${year}</span>
+                    <div class="flex flex-col items-end gap-1 shrink-0">
+                        <span class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">${year}</span>
+                        ${badgeAvenir}
+                    </div>
                 </div>
                 <div class="mt-4 flex flex-col gap-2 pr-28">
                     <div class="flex items-center gap-2 flex-wrap">
