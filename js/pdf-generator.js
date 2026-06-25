@@ -177,7 +177,7 @@ async function generateRacePdf(raceId) {
         doc.setTextColor(...textColor);
         doc.setFont(undefined, 'bold');
         doc.setFontSize(10);
-        let textY1 = yPos + 2.5 + 3.0;
+        let textY1 = yPos + (rowHeight - (lines1.length - 1) * 4.5) / 2 + 1.0;
         lines1.forEach(line => {
             const lineWidth = doc.getTextWidth(line);
             doc.text(line, margin + (col1Width - lineWidth) / 2, textY1);
@@ -186,7 +186,7 @@ async function generateRacePdf(raceId) {
 
         // Draw Col 2 text (centered)
         doc.setFont(undefined, 'normal');
-        let textY2 = yPos + 2.5 + 3.0;
+        let textY2 = yPos + (rowHeight - (lines2.length - 1) * 4.5) / 2 + 1.0;
         const isLieu = label === 'Lieu' && value !== 'Non renseigné';
 
         lines2.forEach(line => {
@@ -343,7 +343,7 @@ async function generateRacePdf(raceId) {
             doc.setTextColor(...textColor);
             doc.setFont(undefined, 'bold');
             doc.setFontSize(10);
-            let textY1 = yPos + 2.5 + 3.0;
+            let textY1 = yPos + (rowHeight - (lines1.length - 1) * 4.5) / 2 + 1.0;
             lines1.forEach(line => {
                 const lineWidth = doc.getTextWidth(line);
                 doc.text(line, margin + (col1Width - lineWidth) / 2, textY1);
@@ -352,7 +352,7 @@ async function generateRacePdf(raceId) {
 
             // Draw Col 2 text (centered)
             doc.setFont(undefined, 'normal');
-            let textY2 = yPos + 2.5 + 3.0;
+            let textY2 = yPos + (rowHeight - (lines2.length - 1) * 4.5) / 2 + 1.0;
             lines2.forEach(line => {
                 const lineWidth = doc.getTextWidth(line);
                 doc.text(line, margin + col1Width + (col2Width - lineWidth) / 2, textY2);
@@ -940,7 +940,7 @@ async function generateRacePdf(raceId) {
                 doc.setFontSize(9);
 
                 const lines = cellLines[colIdx];
-                let textY = yPos + 2.5 + 3.0;
+                let textY = yPos + (rowHeight - (lines.length - 1) * 4.5) / 2 + 1.0;
                 lines.forEach(line => {
                     const textWidth = doc.getTextWidth(line);
                     const textX = currentX + (width - textWidth) / 2;
@@ -974,7 +974,7 @@ async function generateRacePdf(raceId) {
                 doc.rect(margin, yPos, pageWidth - 2 * margin, commentRowHeight, 'FD');
                 
                 doc.setTextColor(100, 116, 139);
-                let commentTextY = yPos + 3;
+                let commentTextY = yPos + (commentRowHeight - (splitComment.length - 1) * 4) / 2 + 0.5;
                 splitComment.forEach(line => {
                     const textWidth = doc.getTextWidth(line);
                     const textX = margin + (pageWidth - 2 * margin - textWidth) / 2;
@@ -1479,7 +1479,7 @@ async function generateRelayTableOnlyPdf(raceId) {
             doc.setFontSize(9);
 
             const lines = cellLines[colIdx];
-            let textY = yPos + 2.5 + 3.0;
+            let textY = yPos + (rowHeight - (lines.length - 1) * 4.5) / 2 + 1.0;
             lines.forEach(line => {
                 const textWidth = doc.getTextWidth(line);
                 const textX = currentX + (width - textWidth) / 2;
