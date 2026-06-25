@@ -383,11 +383,10 @@ async function loadPublicRaces() {
                                      </span>
                          `)
                     :
-                    // STANDARD RACE DISPLAY
-                    `<span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full">
+                    ${formatNumber(race.distance) !== '?' ? `<span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full">
                         <i class="fas fa-ruler-horizontal text-green-500"></i> ${formatNumber(race.distance)} km
-                     </span>
-                     ${race.terrain !== 'hyrox' ? `
+                     </span>` : ''}
+                     ${race.terrain !== 'hyrox' && race.elevation && race.elevation !== '0' && race.elevation !== 0 && race.elevation !== '-' && formatNumber(race.elevation) !== '?' ? `
                      <span class="flex items-center gap-1 px-2 py-1 bg-orange-50 text-orange-800 text-xs rounded-full">
                         <i class="fas fa-mountain text-orange-500"></i> +${formatNumber(race.elevation)} m
                      </span>
