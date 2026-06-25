@@ -3529,7 +3529,7 @@
                 }
 
                 const raceCard = document.createElement('div');
-                raceCard.className = 'bg-white rounded-xl overflow-hidden shadow-md card-hover relative group cursor-pointer';
+                raceCard.className = 'bg-white rounded-xl overflow-hidden shadow-md card-hover relative group cursor-pointer h-full';
                 // Vérifier s'il y a des badges pour cette course
                 const hasBadges = window.raceBadges && window.raceBadges[race.id] && Object.keys(window.raceBadges[race.id]).length > 0;
 
@@ -3539,7 +3539,7 @@
                 // En fait, dans dashboard.html, races est déjà chargé.
 
                 raceCard.innerHTML = `
-                <div class="p-6 relative">
+                <div class="p-6 relative flex flex-col h-full">
                 <div class="flex justify-between items-start">
                     <div>
                         <h3 class="text-xl font-bold text-green-800 mb-1 flex items-center gap-2">
@@ -3718,7 +3718,7 @@
                     })()}
                     </div>
                 </div>
-                <div class="mt-4 flex flex-wrap justify-between items-center gap-2 pr-28">
+                <div class="mt-auto pt-4 flex flex-wrap justify-between items-center gap-2 pr-28">
                     <div class="flex space-x-2 items-center">
                         ${renderCardButtonsHtml(race)}
                     </div>
