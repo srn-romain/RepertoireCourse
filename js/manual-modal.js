@@ -267,6 +267,8 @@ const manualModalHTML = `
                                 <li>• <strong>Relais Classique :</strong> Utilisez le "Tableau de Relais" pour
                                     ajouter chaque segment avec son <strong>coureur</strong> (nom personnalisé), sa <strong>distance</strong>, son <strong>D+</strong>, son <strong>D-</strong> et son <strong>temps</strong>.</li>
                                 <li>• <strong>Calculs Automatiques :</strong> Les totaux de distance et de dénivelé sont recalculés en temps réel selon les segments saisis.</li>
+                                <li>• <strong>Commentaires de relais :</strong> Saisissez des remarques/commentaires pour chaque segment du relais. Dans les PDF, ils s'affichent sous forme de blocs dédiés, centrés et bien alignés.</li>
+                                <li>• <strong>Export PDF ciblé :</strong> Téléchargez uniquement le tableau détaillé de vos relais grâce à un bouton d'export dédié, générant un rapport épuré et centré.</li>
                                 <li>• <strong>Horaires ergonomiques :</strong> Si l'heure de départ de la course est renseignée et que tous les segments ont un temps valide, cliquez sur n'importe quelle ligne de segment pour déplier les horaires associés (Départ / Arrivée) de façon centrée sans défilement horizontal.</li>
                                 <li>• <strong>Dénivelé unifié :</strong> Les dénivelés D+ et D- sont combinés de façon compacte dans la colonne unique <i>Dénivelé</i> (ex: '↑500 ↓200').</li>
                                 <li>• <strong>Pseudo connecté :</strong> Vos propres relais affichent automatiquement votre pseudo dynamique d'utilisateur (ou du propriétaire du carnet) au lieu de la mention standard « Moi ».</li>
