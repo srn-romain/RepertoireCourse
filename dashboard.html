@@ -456,6 +456,7 @@
                                         <th scope="col" class="px-2 py-2">D+ (m)</th>
                                         <th scope="col" class="px-2 py-2">D- (m)</th>
                                         <th scope="col" class="px-2 py-2">Temps</th>
+                                        <th scope="col" class="px-2 py-2">Commentaire</th>
                                         <th scope="col" class="px-2 py-2 w-10"></th>
                                     </tr>
                                 </thead>
@@ -470,6 +471,7 @@
                                         <td class="px-2 py-1" id="relayTotalElevNeg">0</td>
                                         <td class="px-2 py-1" id="relayTotalTime">00:00:00</td>
                                         <td></td>
+                                        <td></td>
                                     </tr>
                                     <tr class="text-green-800">
                                         <td colspan="2" class="px-2 py-2">Total (Moi)</td>
@@ -477,6 +479,7 @@
                                         <td class="px-2 py-2" id="userRelayTotalElev">0</td>
                                         <td class="px-2 py-2" id="userRelayTotalElevNeg">0</td>
                                         <td class="px-2 py-2" id="userRelayTotalTime">00:00:00</td>
+                                        <td></td>
                                         <td></td>
                                     </tr>
                                 </tfoot>
@@ -4337,6 +4340,8 @@
                 const hasAnyElevNeg = race.relayLaps.some(lap => lap.elevNeg !== undefined && lap.elevNeg !== null && lap.elevNeg !== '');
                 // Afficher les colonnes heure seulement si l'heure de départ est connue ET tous les relais ont un temps renseigné (00:00:00 accepté, vide non)
                 const hasStartHour = !!race.hour && race.relayLaps.every(lap => lap.time && lap.time.trim() !== '');
+                const hasAnyComment = race.relayLaps.some(lap => lap.comment && lap.comment.trim() !== '');
+                const showSubRowColumn = hasStartHour || hasAnyComment;
 
                 // Fonction : ajoute HH:MM:SS à une heure de départ "HH:MM"
                 function addTimeToHour(startHour, elapsedSeconds) {
@@ -4398,7 +4403,7 @@
                                         <th class="px-2 py-1">Km</th>
                                         <th class="px-2 py-1">Dénivelé</th>
                                         <th class="px-2 py-1">Temps</th>
-                                        ${hasStartHour ? '<th class="px-2 py-1 text-indigo-600" title="Cliquez sur une ligne pour voir les horaires"><i class="fas fa-clock"></i></th>' : ''}
+                                        ${showSubRowColumn ? '<th class="px-2 py-1 text-indigo-600 text-center" title="Cliquez sur une ligne pour voir les détails"><i class="fas fa-clock"></i></th>' : ''}
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-green-200">
@@ -4414,11 +4419,12 @@
                     cumulativeSeconds += lapSeconds;
                     const arrivalTime = hasStartHour ? addTimeToHour(race.hour, cumulativeSeconds) : null;
                     const subRowId = `relay-sub-${idx}`;
-                    const colCount = hasStartHour ? 6 : 5;
+                    const showRowDetails = hasStartHour || (lap.comment && lap.comment.trim() !== '');
+                    const colCount = showSubRowColumn ? 6 : 5;
                     relayHtml += `
                         <tr
-                            class="${isMoi ? 'bg-blue-50/50 hover:bg-blue-100' : isTousEnsemble ? 'bg-purple-50/60 hover:bg-purple-100' : 'hover:bg-green-100'} transition-colors ${hasStartHour ? 'cursor-pointer select-none' : ''}"
-                            ${hasStartHour ? `onclick="const r=document.getElementById('${subRowId}');r.classList.toggle('hidden');this.querySelector('.relay-chevron')?.classList.toggle('rotate-180');"` : ''}>
+                            class="${isMoi ? 'bg-blue-50/50 hover:bg-blue-100' : isTousEnsemble ? 'bg-purple-50/60 hover:bg-purple-100' : 'hover:bg-green-100'} transition-colors ${showRowDetails ? 'cursor-pointer select-none' : ''}"
+                            ${showRowDetails ? `onclick="toggleRelayRow('${subRowId}', this)"` : ''}>
                             <td class="px-2 py-1 font-medium text-green-700">${idx + 1}</td>
                             <td class="px-2 py-1 ${isMoi ? 'font-bold text-blue-700' : isTousEnsemble ? 'font-bold text-purple-700' : ''}">${isTousEnsemble ? 'Tous' : (isMoi ? currentUserPseudo : lap.runner)}</td>
                             <td class="px-2 py-1">${formatDist(lap.dist)}</td>
@@ -4430,22 +4436,30 @@
                                 })()
                             }</td>
                             <td class="px-2 py-1 font-mono text-xs">${lap.time || '-'}</td>
-                            ${hasStartHour ? `<td class="px-2 py-1 text-center text-indigo-400"><i class="fas fa-chevron-down relay-chevron text-[9px] transition-transform duration-200"></i></td>` : ''}
+                            ${showSubRowColumn ? `<td class="px-2 py-1 text-center text-indigo-400">${showRowDetails ? '<i class="fas fa-chevron-down relay-chevron text-[9px] transition-transform duration-200"></i>' : ''}</td>` : ''}
                         </tr>
-                        ${hasStartHour ? `
+                        ${showRowDetails ? `
                         <tr id="${subRowId}" class="hidden">
                             <td colspan="${colCount}" class="px-3 py-2 bg-indigo-50 border-t border-indigo-100">
-                                <div class="flex items-center justify-center gap-6 text-xs">
-                                    <div class="flex items-center gap-1.5">
-                                        <i class="fas fa-flag text-indigo-400 text-[10px]"></i>
-                                        <span class="text-indigo-500 uppercase text-[10px] font-semibold">Départ</span>
-                                        <span class="font-mono font-bold text-indigo-700">${departureTime}</span>
-                                    </div>
-                                    <div class="flex items-center gap-1.5">
-                                        <i class="fas fa-flag-checkered text-indigo-400 text-[10px]"></i>
-                                        <span class="text-indigo-500 uppercase text-[10px] font-semibold">Arrivée</span>
-                                        <span class="font-mono font-bold text-indigo-700">${arrivalTime}</span>
-                                    </div>
+                                <div class="flex flex-col gap-2">
+                                    ${hasStartHour ? `
+                                    <div class="flex items-center justify-center gap-6 text-xs">
+                                        <div class="flex items-center gap-1.5">
+                                            <i class="fas fa-flag text-indigo-400 text-[10px]"></i>
+                                            <span class="text-indigo-500 uppercase text-[10px] font-semibold">Départ</span>
+                                            <span class="font-mono font-bold text-indigo-700">${departureTime}</span>
+                                        </div>
+                                        <div class="flex items-center gap-1.5">
+                                            <i class="fas fa-flag-checkered text-indigo-400 text-[10px]"></i>
+                                            <span class="text-indigo-500 uppercase text-[10px] font-semibold">Arrivée</span>
+                                            <span class="font-mono font-bold text-indigo-700">${arrivalTime}</span>
+                                        </div>
+                                    </div>` : ''}
+                                    ${lap.comment && lap.comment.trim() !== '' ? `
+                                    <div class="text-[11px] text-indigo-700 text-center ${hasStartHour ? 'mt-2 pt-2 border-t border-indigo-200/60' : ''}">
+                                        <span class="font-semibold text-indigo-500"><i class="fas fa-comment text-indigo-400 mr-1 text-[10px]"></i> Commentaire :</span>
+                                        <span class="italic text-indigo-800">${escapeHtml(lap.comment.trim())}</span>
+                                    </div>` : ''}
                                 </div>
                             </td>
                         </tr>` : ''}
@@ -4467,7 +4481,7 @@
                                             })()
                                         }</td>
                                         <td class="px-2 py-1 font-mono text-xs">${secondsToTime(totalRelayTimeS)}</td>
-                                        ${hasStartHour ? '<td class="px-2 py-1"></td>' : ''}
+                                        ${showSubRowColumn ? '<td class="px-2 py-1"></td>' : ''}
                                     </tr>
                                 </tfoot>
                             </table>
@@ -5709,6 +5723,44 @@
             return [h, m, s].map(v => v.toString().padStart(2, '0')).join(':');
         }
 
+        // Helper to escape HTML characters
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        // Helper to toggle relay row detail accordion
+        window.toggleRelayRow = function (subRowId, clickedRow) {
+            const targetRow = document.getElementById(subRowId);
+            if (!targetRow) return;
+
+            const isOpening = targetRow.classList.contains('hidden');
+
+            if (isOpening) {
+                // Trouver toutes les autres lignes de détails de relais et les masquer
+                const parentTableBody = targetRow.closest('tbody');
+                if (parentTableBody) {
+                    // Masquer toutes les lignes de détails
+                    parentTableBody.querySelectorAll('tr[id^="relay-sub-"]').forEach(row => {
+                        row.classList.add('hidden');
+                    });
+                    // Réinitialiser la rotation de tous les chevrons de relais
+                    parentTableBody.querySelectorAll('.relay-chevron').forEach(chevron => {
+                        chevron.classList.remove('rotate-180');
+                    });
+                }
+            }
+
+            // Basculer la ligne actuelle
+            targetRow.classList.toggle('hidden');
+            clickedRow.querySelector('.relay-chevron')?.classList.toggle('rotate-180');
+        };
+
         // Auto-calculate Total Time and Elevation for Triathlon
         function calculateTriathlonTotals() {
             const terrain = document.getElementById('raceTerrain').value;
@@ -5938,6 +5990,10 @@
                 <td class="px-2 py-2">
                     <input type="text" class="relay-time-input w-24 px-2 py-1 border rounded text-sm focus:ring-green-500 focus:border-green-500"
                         value="${data.time || ''}" placeholder="HH:MM:SS" oninput="handleTimeInput(this); updateRelayData(${index}, 'time', this.value)">
+                </td>
+                <td class="px-2 py-2">
+                    <input type="text" class="relay-comment-input w-full min-w-[120px] px-2 py-1 border rounded text-sm focus:ring-green-500 focus:border-green-500"
+                        value="${data.comment || ''}" placeholder="Commentaire..." oninput="updateRelayData(${index}, 'comment', this.value)">
                 </td>
                 <td class="px-2 py-2"></td>
             `;
