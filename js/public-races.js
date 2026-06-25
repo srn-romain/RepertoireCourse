@@ -262,8 +262,8 @@ async function loadPublicRaces() {
 
             // City conditional
             const cityHtml = (showCity && locationDisplay)
-                ? `<span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full" title="${race.location}">
-                     <i class="fas fa-map-marker-alt text-green-500"></i> ${locationDisplay}
+                ? `<span class="flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-800 text-xs rounded-full" title="${race.location}">
+                     <i class="fas fa-map-marker-alt text-blue-500"></i> ${locationDisplay}
                    </span>`
                 : '';
 
@@ -345,8 +345,8 @@ async function loadPublicRaces() {
                                                             <i class="fas fa-biking text-orange-500"></i> ${distVal}km
                                                          </span>`;
                                     if (elevVal !== '?') {
-                                        html += `<span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full" title="Dénivelé">
-                                                            <i class="fas fa-mountain text-green-500"></i> +${elevVal}m
+                                        html += `<span class="flex items-center gap-1 px-2 py-1 bg-orange-50 text-orange-800 text-xs rounded-full" title="Dénivelé">
+                                                            <i class="fas fa-mountain text-orange-500"></i> +${elevVal}m
                                                          </span>`;
                                     }
                                     return html;
@@ -357,8 +357,8 @@ async function loadPublicRaces() {
                                                             <i class="fas fa-running text-green-500"></i> ${distVal}km
                                                          </span>`;
                                     if (elevVal !== '?') {
-                                        html += `<span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full" title="Dénivelé">
-                                                            <i class="fas fa-mountain text-green-500"></i> +${elevVal}m
+                                        html += `<span class="flex items-center gap-1 px-2 py-1 bg-orange-50 text-orange-800 text-xs rounded-full" title="Dénivelé">
+                                                            <i class="fas fa-mountain text-orange-500"></i> +${elevVal}m
                                                          </span>`;
                                     }
                                     return html;
@@ -388,8 +388,8 @@ async function loadPublicRaces() {
                         <i class="fas fa-ruler-horizontal text-green-500"></i> ${formatNumber(race.distance)} km
                      </span>
                      ${race.terrain !== 'hyrox' ? `
-                     <span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full">
-                        <i class="fas fa-mountain text-green-500"></i> +${formatNumber(race.elevation)} m
+                     <span class="flex items-center gap-1 px-2 py-1 bg-orange-50 text-orange-800 text-xs rounded-full">
+                        <i class="fas fa-mountain text-orange-500"></i> +${formatNumber(race.elevation)} m
                      </span>
                      ` : ''}
                      ${race.terrain === 'relai' ? `
