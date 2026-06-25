@@ -262,8 +262,8 @@ async function loadPublicRaces() {
 
             // City conditional
             const cityHtml = (showCity && locationDisplay)
-                ? `<span class="flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-800 text-xs rounded-full" title="${race.location}">
-                     <i class="fas fa-map-marker-alt text-blue-500"></i> ${locationDisplay}
+                ? `<span class="flex items-center gap-1 px-2 py-1 bg-teal-50 text-teal-800 text-xs rounded-full" title="${race.location}">
+                     <i class="fas fa-map-marker-alt text-teal-500"></i> ${locationDisplay}
                    </span>`
                 : '';
 
@@ -383,7 +383,8 @@ async function loadPublicRaces() {
                                      </span>
                          `)
                     :
-                    ${formatNumber(race.distance) !== '?' ? `<span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full">
+                    `
+                     ${formatNumber(race.distance) !== '?' ? `<span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full">
                         <i class="fas fa-ruler-horizontal text-green-500"></i> ${formatNumber(race.distance)} km
                      </span>` : ''}
                      ${race.terrain !== 'hyrox' && race.elevation && race.elevation !== '0' && race.elevation !== 0 && race.elevation !== '-' && formatNumber(race.elevation) !== '?' ? `

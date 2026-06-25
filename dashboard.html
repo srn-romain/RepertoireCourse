@@ -1638,8 +1638,8 @@
                                 <span class="flex items-center gap-1 px-2 py-0.5 bg-orange-50 text-orange-800 text-[10px] rounded-full font-medium">
                                     <i class="fas fa-mountain text-orange-500"></i> +150 m
                                 </span>
-                                <span class="flex items-center gap-1 px-2 py-0.5 bg-blue-50 text-blue-800 text-[10px] rounded-full font-medium">
-                                    <i class="fas fa-map-marker-alt text-blue-500"></i> Paris, FR
+                                <span class="flex items-center gap-1 px-2 py-0.5 bg-teal-50 text-teal-800 text-[10px] rounded-full font-medium">
+                                    <i class="fas fa-map-marker-alt text-teal-500"></i> Paris, FR
                                 </span>
                                 <span class="flex items-center gap-1 px-2 py-0.5 bg-indigo-50 text-indigo-800 text-[10px] rounded-full font-medium">
                                     <i class="fas fa-road text-indigo-500"></i> Route
@@ -2148,7 +2148,7 @@
 
         window.customCardButtons = ['edit', 'delete', 'details'];
         window.defaultCardImage = 'photo';
-        window.customCardTags = ['distance', 'elevation', 'location', 'terrain', 'time', 'pace', 'price', 'rank'];
+        window.customCardTags = ['distance', 'elevation', 'location', 'terrain'];
 
         const AVAILABLE_CARD_BUTTONS = {
             edit: {
@@ -2417,7 +2417,7 @@
                                 if (targetUserDoc.exists && targetUserDoc.data().cardTags) {
                                     window.customCardTags = targetUserDoc.data().cardTags;
                                 } else {
-                                    window.customCardTags = ['distance', 'elevation', 'location', 'terrain', 'time', 'pace', 'price', 'rank'];
+                                    window.customCardTags = ['distance', 'elevation', 'location', 'terrain'];
                                 }
                             } catch (err) {
                                 console.error("Error loading target user card preferences:", err);
@@ -2518,7 +2518,7 @@
                                 if (uDoc.data().cardTags && Array.isArray(uDoc.data().cardTags)) {
                                     window.customCardTags = uDoc.data().cardTags;
                                 } else {
-                                    window.customCardTags = ['distance', 'elevation', 'location', 'terrain', 'time', 'pace', 'price', 'rank'];
+                                    window.customCardTags = ['distance', 'elevation', 'location', 'terrain'];
                                 }
                             }
                             // Charger les courses APRÈS avoir récupéré la config cardButtons
@@ -3558,7 +3558,7 @@
                     <div class="flex items-center gap-2 flex-wrap">
                         ${(() => {
                         let tagsHtml = '';
-                        const cardTags = window.customCardTags || ['distance', 'elevation', 'location', 'terrain', 'time', 'pace', 'price', 'rank'];
+                        const cardTags = window.customCardTags || ['distance', 'elevation', 'location', 'terrain'];
                         const showDistance = cardTags.includes('distance');
                         const showElevation = cardTags.includes('elevation');
                         const showLocation = cardTags.includes('location');
@@ -3571,8 +3571,8 @@
                         const distVal = formatDist(race.distance);
                         const elevVal = race.elevation || '0';
                         const locHtml = (race.location && showLocation) ? `
-                            <span class="flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-800 text-xs rounded-full">
-                                <i class="fas fa-map-marker-alt text-blue-500"></i> ${locationDisplay}
+                            <span class="flex items-center gap-1 px-2 py-1 bg-teal-50 text-teal-800 text-xs rounded-full">
+                                <i class="fas fa-map-marker-alt text-teal-500"></i> ${locationDisplay}
                             </span>` : '';
 
                         const timeTag = (race.time && race.time !== '00:00:00' && showTime) ? `
@@ -9264,8 +9264,8 @@
                     }
                     if (tempConfigTags.includes('location')) {
                         html += `
-                            <span class="flex items-center gap-1 px-2 py-0.5 bg-blue-50 text-blue-800 text-[10px] rounded-full font-medium">
-                                <i class="fas fa-map-marker-alt text-blue-500"></i> Paris, FR
+                            <span class="flex items-center gap-1 px-2 py-0.5 bg-teal-50 text-teal-800 text-[10px] rounded-full font-medium">
+                                <i class="fas fa-map-marker-alt text-teal-500"></i> Paris, FR
                             </span>`;
                     }
                     if (tempConfigTags.includes('terrain')) {
@@ -9312,7 +9312,7 @@
                 // Copy the current configuration
                 tempConfigButtons = [...window.customCardButtons];
                 tempDefaultCardImage = window.defaultCardImage || 'photo';
-                tempConfigTags = [...(window.customCardTags || ['distance', 'elevation', 'location', 'terrain', 'time', 'pace', 'price', 'rank'])];
+                tempConfigTags = [...(window.customCardTags || ['distance', 'elevation', 'location', 'terrain'])];
                 selectedAvailableButtonId = null;
                 renderModalState();
                 cardConfigModal.classList.remove('hidden');
@@ -9353,7 +9353,7 @@
                     e.stopPropagation();
                     tempConfigButtons = ['edit', 'delete', 'details'];
                     tempDefaultCardImage = 'photo';
-                    tempConfigTags = ['distance', 'elevation', 'location', 'terrain', 'time', 'pace', 'price', 'rank'];
+                    tempConfigTags = ['distance', 'elevation', 'location', 'terrain'];
                     selectedAvailableButtonId = null;
                     renderModalState();
                 });
