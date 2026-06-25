@@ -327,7 +327,7 @@ async function loadPublicRaces() {
                         ${likeButtonHtml}
                     </div>
 
-                    <div class="mt-4 flex flex-col gap-2">
+                    <div class="mt-4 flex flex-col gap-2 pr-28">
                         <div class="flex flex-wrap items-center gap-2">
                             ${race.terrain === 'triathlon' ?
                     (race.raceFormat === 'team' ?
@@ -410,7 +410,7 @@ async function loadPublicRaces() {
                     </div>
 
                     <!-- Footer -->
-                    <div class="mt-4 pt-3 flex items-center justify-between border-t border-green-50">
+                    <div class="mt-4 pt-3 flex items-center justify-between border-t border-green-50 pr-28">
                         <span class="text-xs text-gray-500 flex items-center gap-2" title="${ownerPseudoDisplay}">
                             ${userData.photoURL ?
                     `<img src="${userData.photoURL}" onclick="event.stopPropagation(); zoomImage('${userData.photoURL}')" class="w-6 h-6 rounded-full object-cover border border-green-200 shadow-sm cursor-zoom-in hover:scale-110 transition-transform">` :
