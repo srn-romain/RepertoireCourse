@@ -1112,7 +1112,7 @@ async function generateRelayTableOnlyPdf(raceId) {
     yPos += 10;
 
     // Colonnes
-    const headers = ['Num', 'Relayeur', 'Km', 'Denivele (m)', 'Temps', 'Depart', 'Arrivee', 'Commentaires'];
+    const headers = ['N°', 'Relayeur', 'Km', 'Dénivelé (m)', 'Temps', 'Départ', 'Arrivée', 'Commentaires'];
     const colWidths = [10, 35, 26, 26, 22, 24, 24, 100];
 
     function drawTableHeader() {
@@ -1120,10 +1120,10 @@ async function generateRelayTableOnlyPdf(raceId) {
         doc.setFont(undefined, 'bold');
         doc.setDrawColor(75, 85, 99);
         doc.setLineWidth(0.4);
-        doc.setFillColor(...primaryColor);
 
         let currentX = margin;
         headers.forEach((header, colIdx) => {
+            doc.setFillColor(...primaryColor);
             doc.rect(currentX, yPos, colWidths[colIdx], 9, 'FD');
             doc.setTextColor(255, 255, 255);
             const textWidth = doc.getTextWidth(header);
