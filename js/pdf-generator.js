@@ -96,29 +96,6 @@ async function generateRacePdf(raceId) {
 
     tableData.push(['Temps', race.time || 'Non renseigné']);
 
-    // Vitesse moyenne si temps et distance disponibles
-    if (race.time && race.distance) {
-        const distance = parseFloat(race.distance);
-        const timeStr = race.time;
-        if (!isNaN(distance) && timeStr) {
-            const parts = timeStr.split(':');
-            let hours = 0;
-            if (parts.length === 3) {
-                hours = parseInt(parts[0]) + parseInt(parts[1]) / 60 + parseInt(parts[2]) / 3600;
-            } else if (parts.length === 2) {
-                hours = parseInt(parts[0]) + parseInt(parts[1]) / 60;
-            } else {
-                hours = parseInt(parts[0]);
-            }
-            if (hours > 0) {
-                const speed = distance / hours;
-                const timePerKm = 60 / speed;
-                tableData.push(['Vitesse moyenne', `${speed.toFixed(2)} km/h`]);
-                tableData.push(['Allure moyenne', `${timePerKm.toFixed(2)} min/km`]);
-            }
-        }
-    }
-
     if (race.terrain) {
         const terrainFormatted = race.terrain.charAt(0).toUpperCase() + race.terrain.slice(1);
         tableData.push(['Terrain', terrainFormatted]);
@@ -230,6 +207,163 @@ async function generateRacePdf(raceId) {
     });
 
     yPos += 10;
+
+    // Section Statistiques
+    const statsData = [];
+
+    // 1. Déterminer la distance et l'élévation pour les statistiques
+    let statsDistance = parseFloat(race.distance);
+    let statsElevation = parseFloat(race.elevation);
+
+    if (race.terrain === 'triathlon') {
+        if (race.raceFormat === 'team') {
+            if (race.raceRelaySport === 'swim') {
+                statsDistance = (parseFloat(race.swimDistance) || 0) / 1000;
+                statsElevation = 0;
+            } else if (race.raceRelaySport === 'bike') {
+                statsDistance = parseFloat(race.bikeDistance) || 0;
+                statsElevation = parseFloat(race.bikeElevation) || 0;
+            } else if (race.raceRelaySport === 'run') {
+                statsDistance = parseFloat(race.distance) || 0;
+                statsElevation = parseFloat(race.runElevation) || 0;
+            }
+        } else {
+            const swimKm = (parseFloat(race.swimDistance) || 0) / 1000;
+            const bikeKm = parseFloat(race.bikeDistance) || 0;
+            const runKm = parseFloat(race.distance) || 0;
+            statsDistance = swimKm + bikeKm + runKm;
+        }
+    }
+
+    // 2. Calcul du ratio prix/km
+    const isInviteUser = typeof window.isInvite === 'function' && window.isInvite();
+    if (!isInviteUser && race.price && !isNaN(parseFloat(race.price)) && !isNaN(statsDistance) && statsDistance > 0) {
+        const price = parseFloat(race.price);
+        const pricePerKm = price / statsDistance;
+        statsData.push(['Prix au km', `${pricePerKm.toFixed(2)} €/km`]);
+
+        // Prix au km avec dénivelé (100m D+ = 1km plat)
+        if (!isNaN(statsElevation) && statsElevation > 0) {
+            const equivalentDistance = statsDistance + (statsElevation / 100);
+            const pricePerKmWithElevation = price / equivalentDistance;
+            statsData.push(['Prix au km (ft. déniv.)', `${pricePerKmWithElevation.toFixed(3)} €/km`]);
+        }
+    }
+
+    // 3. Calcul de la vitesse et de la moyenne au km
+    if (race.time && !isNaN(statsDistance) && statsDistance > 0) {
+        const timeStr = race.time;
+        const parts = timeStr.split(':');
+        let hours = 0;
+        if (parts.length === 3) {
+            hours = parseInt(parts[0]) + parseInt(parts[1]) / 60 + parseInt(parts[2]) / 3600;
+        } else if (parts.length === 2) {
+            hours = parseInt(parts[0]) + parseInt(parts[1]) / 60;
+        } else {
+            hours = parseInt(parts[0]);
+        }
+        if (hours > 0) {
+            const speed = statsDistance / hours;
+            const timePerKm = 60 / speed;
+            statsData.push(['Vitesse moyenne', `${speed.toFixed(2)} km/h`]);
+            statsData.push(['Moyenne au km', `${timePerKm.toFixed(2)} min/km`]);
+        }
+    }
+
+    if (statsData.length > 0) {
+        // Page break check for title
+        if (yPos > doc.internal.pageSize.getHeight() - 40) {
+            doc.addPage();
+            yPos = margin;
+        }
+
+        doc.setFontSize(14);
+        doc.setTextColor(...primaryColor);
+        doc.setFont(undefined, 'bold');
+        doc.text('Statistiques de la course', margin, yPos);
+        yPos += 8;
+
+        const sh1 = 'Métrique';
+        const sh2 = 'Valeur';
+
+        function drawStatsTableHeader() {
+            doc.setFontSize(11);
+            doc.setFont(undefined, 'bold');
+            doc.setDrawColor(75, 85, 99);
+            doc.setLineWidth(0.4);
+
+            // Col 1
+            doc.setFillColor(...primaryColor);
+            doc.rect(margin, yPos, col1Width, 9, 'FD');
+            doc.setTextColor(255, 255, 255);
+            const sh1Width = doc.getTextWidth(sh1);
+            doc.text(sh1, margin + (col1Width - sh1Width) / 2, yPos + 6);
+
+            // Col 2
+            doc.setFillColor(...primaryColor);
+            doc.rect(margin + col1Width, yPos, col2Width, 9, 'FD');
+            doc.setTextColor(255, 255, 255);
+            const sh2Width = doc.getTextWidth(sh2);
+            doc.text(sh2, margin + col1Width + (col2Width - sh2Width) / 2, yPos + 6);
+
+            yPos += 9;
+        }
+
+        drawStatsTableHeader();
+
+        statsData.forEach(([label, value], i) => {
+            doc.setFont(undefined, 'normal');
+            doc.setFontSize(10);
+
+            const lines1 = doc.splitTextToSize(label, col1Width - 4);
+            const lines2 = doc.splitTextToSize(value, col2Width - 4);
+
+            const maxLines = Math.max(lines1.length, lines2.length);
+            const rowHeight = Math.max(8, maxLines * 4.5 + 4);
+
+            // Page break check for rows
+            if (yPos + rowHeight > doc.internal.pageSize.getHeight() - margin) {
+                doc.addPage();
+                yPos = margin;
+                drawStatsTableHeader();
+            }
+
+            const bg = i % 2 === 0 ? [240, 253, 244] : [255, 255, 255];
+
+            // Draw cells background and border
+            doc.setFillColor(...bg);
+            doc.setDrawColor(75, 85, 99);
+            doc.setLineWidth(0.4);
+            doc.rect(margin, yPos, col1Width, rowHeight, 'FD');
+
+            doc.setFillColor(...bg);
+            doc.rect(margin + col1Width, yPos, col2Width, rowHeight, 'FD');
+
+            // Draw Col 1 text (centered)
+            doc.setTextColor(...textColor);
+            doc.setFont(undefined, 'bold');
+            doc.setFontSize(10);
+            let textY1 = yPos + 2.5 + 3.0;
+            lines1.forEach(line => {
+                const lineWidth = doc.getTextWidth(line);
+                doc.text(line, margin + (col1Width - lineWidth) / 2, textY1);
+                textY1 += 4.5;
+            });
+
+            // Draw Col 2 text (centered)
+            doc.setFont(undefined, 'normal');
+            let textY2 = yPos + 2.5 + 3.0;
+            lines2.forEach(line => {
+                const lineWidth = doc.getTextWidth(line);
+                doc.text(line, margin + col1Width + (col2Width - lineWidth) / 2, textY2);
+                textY2 += 4.5;
+            });
+
+            yPos += rowHeight;
+        });
+
+        yPos += 10;
+    }
 
     // ─── SECTION TRIATHLON (solo uniquement) ──────────────────────────────────
     if (race.terrain === 'triathlon') {
@@ -842,7 +976,9 @@ async function generateRacePdf(raceId) {
                 doc.setTextColor(100, 116, 139);
                 let commentTextY = yPos + 3;
                 splitComment.forEach(line => {
-                    doc.text(line, margin + 4, commentTextY);
+                    const textWidth = doc.getTextWidth(line);
+                    const textX = margin + (pageWidth - 2 * margin - textWidth) / 2;
+                    doc.text(line, textX, commentTextY);
                     commentTextY += 4;
                 });
                 
@@ -1345,14 +1481,9 @@ async function generateRelayTableOnlyPdf(raceId) {
             const lines = cellLines[colIdx];
             let textY = yPos + 2.5 + 3.0;
             lines.forEach(line => {
-                const isCentered = [0, 2, 3, 4, 5, 6].includes(colIdx);
-                if (isCentered) {
-                    const textWidth = doc.getTextWidth(line);
-                    const textX = currentX + (width - textWidth) / 2;
-                    doc.text(line, textX, textY);
-                } else {
-                    doc.text(line, currentX + 2, textY);
-                }
+                const textWidth = doc.getTextWidth(line);
+                const textX = currentX + (width - textWidth) / 2;
+                doc.text(line, textX, textY);
                 textY += 4.5;
             });
 
@@ -1395,14 +1526,9 @@ async function generateRelayTableOnlyPdf(raceId) {
         }
 
         if (totalText) {
-            const isCentered = [0, 2, 3, 4].includes(colIdx);
-            if (isCentered) {
-                const textWidth = doc.getTextWidth(totalText);
-                const textX = currentX + (width - textWidth) / 2;
-                doc.text(totalText, textX, yPos + 6);
-            } else {
-                doc.text(totalText, currentX + 2, yPos + 6);
-            }
+            const textWidth = doc.getTextWidth(totalText);
+            const textX = currentX + (width - textWidth) / 2;
+            doc.text(totalText, textX, yPos + 6);
         }
 
         currentX += width;
