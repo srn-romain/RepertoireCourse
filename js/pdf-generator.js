@@ -715,6 +715,36 @@ async function generateRacePdf(raceId) {
                 doc.text(arrivalStr, relCols[7], yPos);
             }
             yPos += 7;
+
+            // Ajouter le commentaire/description en dessous de la ligne s'il existe
+            if (lap.comment && lap.comment.trim() !== '') {
+                if (yPos > doc.internal.pageSize.getHeight() - 20) {
+                    doc.addPage();
+                    yPos = margin;
+                }
+                
+                doc.setFillColor(...bg);
+                doc.rect(margin, yPos - 4, pageWidth - 2 * margin, 6, 'F');
+                
+                doc.setFont(undefined, 'italic');
+                doc.setFontSize(8);
+                doc.setTextColor(100, 116, 139);
+                
+                const commentText = `   > Commentaire : ${lap.comment.trim()}`;
+                const splitComment = doc.splitTextToSize(commentText, pageWidth - 2 * margin - 8);
+                
+                splitComment.forEach(line => {
+                    if (yPos > doc.internal.pageSize.getHeight() - 20) {
+                        doc.addPage();
+                        yPos = margin;
+                        doc.setFillColor(...bg);
+                        doc.rect(margin, yPos - 4, pageWidth - 2 * margin, 6, 'F');
+                    }
+                    doc.text(line, margin + 4, yPos - 1);
+                    yPos += 5;
+                });
+                yPos += 1;
+            }
         });
 
         // Ligne de totaux
@@ -1018,3 +1048,267 @@ async function generateRacePdf(raceId) {
 
 // Exposer la fonction globalement
 window.generateRacePdf = generateRacePdf;
+
+// ====================================================================
+// TÉLÉCHARGEMENT UNIQUEMENT DU TABLEAU DES RELAIS DÉTAILLÉ
+// ====================================================================
+async function generateRelayTableOnlyPdf(raceId) {
+    const races = window.races;
+    if (!races || races.length === 0) {
+        console.error('Aucune course disponible');
+        return;
+    }
+
+    const race = races.find(r => r.id === raceId);
+    if (!race || !race.relayLaps || race.relayLaps.length === 0) return;
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ orientation: 'landscape' });
+
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const margin = 15;
+    let yPos = margin;
+
+    const primaryColor = [34, 139, 34]; // Vert
+    const textColor = [55, 65, 81]; // Gris foncé
+
+    // Titre principal
+    doc.setFontSize(16);
+    doc.setTextColor(...primaryColor);
+    doc.setFont(undefined, 'bold');
+    doc.text(`Détails des Relais - ${race.name}`, margin, yPos);
+    yPos += 7;
+
+    // Date et infos générales
+    const raceDate = new Date(race.date);
+    const formattedDate = raceDate.toLocaleDateString('fr-FR', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+    }).replace(/^[a-z]/, c => c.toUpperCase());
+
+    doc.setFontSize(10);
+    doc.setTextColor(...textColor);
+    doc.setFont(undefined, 'normal');
+    
+    // Calculs totaux
+    let totalRelayDist = 0, totalRelayElev = 0, totalRelayElevNeg = 0, totalRelayTimeS = 0;
+    race.relayLaps.forEach(lap => {
+        totalRelayDist += parseFloat(lap.dist) || 0;
+        totalRelayElev += parseInt(lap.elev) || 0;
+        totalRelayElevNeg += parseInt(lap.elevNeg) || 0;
+        totalRelayTimeS += parseTimeToSeconds(lap.time);
+    });
+
+    const hasStartHour = !!race.hour && race.relayLaps.every(lap => lap.time && lap.time.trim() !== '');
+
+    let infoStr = `Date : ${formattedDate} | Distance totale : ${totalRelayDist.toFixed(2)} km | D+ : ${totalRelayElev}m | D- : ${totalRelayElevNeg}m | Temps total : ${secondsToTime(totalRelayTimeS)}`;
+    if (race.hour) {
+        infoStr += ` | Heure de départ : ${race.hour}`;
+    }
+    doc.text(infoStr, margin, yPos);
+    yPos += 10;
+
+    // Colonnes
+    const headers = ['Num', 'Relayeur', 'Km', 'Denivele (m)', 'Temps', 'Depart', 'Arrivee', 'Commentaires'];
+    const colWidths = [10, 35, 26, 26, 22, 24, 24, 100];
+
+    function drawTableHeader() {
+        doc.setFontSize(10);
+        doc.setFont(undefined, 'bold');
+        doc.setDrawColor(75, 85, 99);
+        doc.setLineWidth(0.4);
+        doc.setFillColor(...primaryColor);
+
+        let currentX = margin;
+        headers.forEach((header, colIdx) => {
+            doc.rect(currentX, yPos, colWidths[colIdx], 9, 'FD');
+            doc.setTextColor(255, 255, 255);
+            const textWidth = doc.getTextWidth(header);
+            const textX = currentX + (colWidths[colIdx] - textWidth) / 2;
+            doc.text(header, textX, yPos + 6);
+            currentX += colWidths[colIdx];
+        });
+        yPos += 9;
+    }
+
+    drawTableHeader();
+
+    // Remplissage du tableau
+    let cumulativePdfSeconds = 0;
+    const currentUserPseudo = window.currentUserPseudo || 'Moi';
+
+    race.relayLaps.forEach((lap, i) => {
+        const isMoi = lap.runner === 'Moi' || !lap.runner;
+        const runnerLabel = lap.runner === 'Tous ensemble' ? 'Tous ens.' : (isMoi ? currentUserPseudo : lap.runner);
+        const distStr = lap.dist ? `${parseFloat(lap.dist).toFixed(2)} km` : '—';
+        
+        const dp = lap.elev ? `+${lap.elev}m` : '';
+        const dn = lap.elevNeg ? `-${lap.elevNeg}m` : '';
+        const elevStr = [dp, dn].filter(Boolean).join(' ') || '—';
+
+        const lapTime = lap.time || '—';
+        const lapSec = parseTimeToSeconds(lap.time);
+        
+        const departureStr = hasStartHour ? addTimeToHourPdf(race.hour, cumulativePdfSeconds) : '—';
+        cumulativePdfSeconds += lapSec;
+        const arrivalStr = hasStartHour ? addTimeToHourPdf(race.hour, cumulativePdfSeconds) : '—';
+        
+        const commentStr = lap.comment || '';
+
+        // Préparer les textes des cellules
+        const cellTexts = [
+            `${i + 1}`,
+            runnerLabel,
+            distStr,
+            elevStr,
+            lapTime,
+            departureStr,
+            arrivalStr,
+            commentStr
+        ];
+
+        // Calculer les lignes pour chaque cellule (wrap)
+        const cellLines = [];
+        const cellLinesCount = [];
+        colWidths.forEach((width, colIdx) => {
+            doc.setFont(undefined, 'normal');
+            doc.setFontSize(9);
+            const lines = doc.splitTextToSize(cellTexts[colIdx], width - 4);
+            cellLines.push(lines);
+            cellLinesCount.push(lines.length);
+        });
+
+        // Hauteur de la ligne
+        const maxLines = Math.max(...cellLinesCount);
+        const rowHeight = Math.max(8, maxLines * 4.5 + 4);
+
+        // Page break check
+        if (yPos + rowHeight > pageHeight - margin) {
+            doc.addPage();
+            yPos = margin;
+            drawTableHeader();
+        }
+
+        // Alternance de couleur de fond
+        const bg = i % 2 === 0 ? [240, 253, 244] : [255, 255, 255];
+
+        let currentX = margin;
+        colWidths.forEach((width, colIdx) => {
+            doc.setFillColor(...bg);
+            doc.setDrawColor(75, 85, 99);
+            doc.setLineWidth(0.4);
+            doc.rect(currentX, yPos, width, rowHeight, 'FD');
+
+            doc.setTextColor(55, 65, 81);
+            if (colIdx === 1 && isMoi) {
+                doc.setFont(undefined, 'bold');
+            } else {
+                doc.setFont(undefined, 'normal');
+            }
+            doc.setFontSize(9);
+
+            const lines = cellLines[colIdx];
+            let textY = yPos + 2.5 + 3.0;
+            lines.forEach(line => {
+                const isCentered = [0, 2, 3, 4, 5, 6].includes(colIdx);
+                if (isCentered) {
+                    const textWidth = doc.getTextWidth(line);
+                    const textX = currentX + (width - textWidth) / 2;
+                    doc.text(line, textX, textY);
+                } else {
+                    doc.text(line, currentX + 2, textY);
+                }
+                textY += 4.5;
+            });
+
+            currentX += width;
+        });
+
+        yPos += rowHeight;
+    });
+
+    // Ligne des totaux
+    const totalRowHeight = 9;
+    if (yPos + totalRowHeight > pageHeight - margin) {
+        doc.addPage();
+        yPos = margin;
+        drawTableHeader();
+    }
+
+    let currentX = margin;
+    colWidths.forEach((width, colIdx) => {
+        doc.setFillColor(220, 252, 231);
+        doc.setDrawColor(75, 85, 99);
+        doc.setLineWidth(0.4);
+        doc.rect(currentX, yPos, width, totalRowHeight, 'FD');
+
+        doc.setFont(undefined, 'bold');
+        doc.setTextColor(...primaryColor);
+        doc.setFontSize(9);
+
+        let totalText = '';
+        if (colIdx === 0) {
+            totalText = 'Total';
+        } else if (colIdx === 2) {
+            totalText = `${totalRelayDist.toFixed(2)} km`;
+        } else if (colIdx === 3) {
+            const dp = totalRelayElev > 0 ? `+${totalRelayElev}m` : '';
+            const dn = totalRelayElevNeg > 0 ? `-${totalRelayElevNeg}m` : '';
+            totalText = [dp, dn].filter(Boolean).join(' ') || '—';
+        } else if (colIdx === 4) {
+            totalText = secondsToTime(totalRelayTimeS);
+        }
+
+        if (totalText) {
+            const isCentered = [0, 2, 3, 4].includes(colIdx);
+            if (isCentered) {
+                const textWidth = doc.getTextWidth(totalText);
+                const textX = currentX + (width - textWidth) / 2;
+                doc.text(totalText, textX, yPos + 6);
+            } else {
+                doc.text(totalText, currentX + 2, yPos + 6);
+            }
+        }
+
+        currentX += width;
+    });
+
+    function parseTimeToSeconds(timeStr) {
+        if (!timeStr) return 0;
+        const parts = timeStr.split(':');
+        if (parts.length === 3) {
+            return parseInt(parts[0], 10) * 3600 + parseInt(parts[1], 10) * 60 + parseInt(parts[2], 10);
+        }
+        if (parts.length === 2) {
+            return parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
+        }
+        return parseInt(timeStr, 10) || 0;
+    }
+
+    function secondsToTime(totalSeconds) {
+        const h = Math.floor(totalSeconds / 3600);
+        const m = Math.floor((totalSeconds % 3600) / 60);
+        const s = totalSeconds % 60;
+        return [h, m, s].map(v => v.toString().padStart(2, '0')).join(':');
+    }
+
+    function addTimeToHourPdf(startHour, elapsedSeconds) {
+        if (!startHour) return '';
+        const parts = startHour.split(':').map(Number);
+        const sh = parts[0] || 0;
+        const sm = parts[1] || 0;
+        const totalSec = sh * 3600 + sm * 60 + Math.round(elapsedSeconds);
+        const h = Math.floor(totalSec / 3600) % 24;
+        const m = Math.floor((totalSec % 3600) / 60);
+        const s = totalSec % 60;
+        const pad = n => String(n).padStart(2, '0');
+        return `${pad(h)}:${pad(m)}:${pad(s)}`;
+    }
+
+    window.open(doc.output('bloburl'), '_blank');
+}
+
+window.generateRelayTableOnlyPdf = generateRelayTableOnlyPdf;
