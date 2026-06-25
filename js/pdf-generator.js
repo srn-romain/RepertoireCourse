@@ -83,69 +83,18 @@ async function generateRacePdf(raceId) {
     doc.text('Informations de la course', margin, yPos);
     yPos += 8;
 
-    doc.setFontSize(11);
-    doc.setTextColor(...textColor);
-    doc.setFont(undefined, 'normal');
+    const tableData = [];
+    tableData.push(['Distance', `${race.distance} km`]);
 
-    const info = [
-        ['Distance', `${race.distance} km`],
-        ['Temps', race.time || 'Non renseigné']
-    ];
-
-    // Dénivelé positif D+
     if (race.elevation !== undefined && race.elevation !== null && race.elevation !== '') {
-        info.splice(1, 0, ['Dénivelé +', `${race.elevation} m D+`]);
+        tableData.push(['Dénivelé +', `${race.elevation} m D+`]);
     }
 
-    // Dénivelé négatif D-
     if (race.elevationNeg !== undefined && race.elevationNeg !== null && race.elevationNeg !== '') {
-        const dPlusIdx = info.findIndex(([l]) => l === 'Dénivelé +');
-        info.splice(dPlusIdx >= 0 ? dPlusIdx + 1 : 1, 0, ['Dénivelé -', `${race.elevationNeg} m D-`]);
+        tableData.push(['Dénivelé -', `${race.elevationNeg} m D-`]);
     }
 
-    if (race.terrain) {
-        const terrainFormatted = race.terrain.charAt(0).toUpperCase() + race.terrain.slice(1);
-        info.push(['Terrain', terrainFormatted]);
-    }
-
-    if (race.price !== undefined && race.price !== null && race.price !== '') {
-        info.push(['Prix', `${parseFloat(race.price).toFixed(2)} €`]);
-    }
-
-    // Statut à venir — affiché comme information neutre
-    if (isUpcoming) {
-        info.push(['Statut', 'Course à venir']);
-    }
-
-    info.forEach(([label, value]) => {
-        doc.setFont(undefined, 'bold');
-        doc.text(`${label} : `, margin, yPos);
-        const labelWidth = doc.getTextWidth(`${label} : `);
-        doc.setFont(undefined, 'normal');
-        doc.text(value, margin + labelWidth, yPos);
-        yPos += 7;
-    });
-
-    // Lieu avec lien Google Maps intégré
-    if (race.location) {
-        doc.setFont(undefined, 'bold');
-        doc.text('Lieu : ', margin, yPos);
-        const labelWidth = doc.getTextWidth('Lieu : ');
-        doc.setFont(undefined, 'normal');
-        // Le nom du lieu est directement un lien cliquable vers Google Maps
-        const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(race.location)}`;
-        doc.setTextColor(37, 99, 235); // Bleu pour indiquer que c'est un lien
-        doc.textWithLink(race.location, margin + labelWidth, yPos, { url: googleMapsUrl });
-        doc.setTextColor(...textColor); // Remettre la couleur normale
-        yPos += 7;
-    } else {
-        doc.setFont(undefined, 'bold');
-        doc.text('Lieu : ', margin, yPos);
-        const labelWidth = doc.getTextWidth('Lieu : ');
-        doc.setFont(undefined, 'normal');
-        doc.text('Non renseigné', margin + labelWidth, yPos);
-        yPos += 7;
-    }
+    tableData.push(['Temps', race.time || 'Non renseigné']);
 
     // Vitesse moyenne si temps et distance disponibles
     if (race.time && race.distance) {
@@ -164,20 +113,123 @@ async function generateRacePdf(raceId) {
             if (hours > 0) {
                 const speed = distance / hours;
                 const timePerKm = 60 / speed;
-                yPos += 3;
-                doc.setFont(undefined, 'bold');
-                doc.text('Statistiques :', margin, yPos);
-                yPos += 7;
-                doc.setFont(undefined, 'normal');
-                doc.text(`Vitesse moyenne : ${speed.toFixed(2)} km/h`, margin + 5, yPos);
-                yPos += 7;
-                doc.text(`Temps moyen au km : ${timePerKm.toFixed(2)} min/km`, margin + 5, yPos);
-                yPos += 5;
+                tableData.push(['Vitesse moyenne', `${speed.toFixed(2)} km/h`]);
+                tableData.push(['Allure moyenne', `${timePerKm.toFixed(2)} min/km`]);
             }
         }
     }
 
-    yPos += 5;
+    if (race.terrain) {
+        const terrainFormatted = race.terrain.charAt(0).toUpperCase() + race.terrain.slice(1);
+        tableData.push(['Terrain', terrainFormatted]);
+    }
+
+    if (race.price !== undefined && race.price !== null && race.price !== '') {
+        tableData.push(['Prix', `${parseFloat(race.price).toFixed(2)} €`]);
+    }
+
+    if (isUpcoming) {
+        tableData.push(['Statut', 'Course à venir']);
+    }
+
+    if (race.location) {
+        tableData.push(['Lieu', race.location]);
+    } else {
+        tableData.push(['Lieu', 'Non renseigné']);
+    }
+
+    const col1Width = 70;
+    const col2Width = 100;
+    const h1 = 'Information';
+    const h2 = 'Détail';
+
+    function drawInfoTableHeader() {
+        doc.setFontSize(11);
+        doc.setFont(undefined, 'bold');
+        doc.setDrawColor(75, 85, 99);
+        doc.setLineWidth(0.4);
+
+        // Col 1
+        doc.setFillColor(...primaryColor);
+        doc.rect(margin, yPos, col1Width, 9, 'FD');
+        doc.setTextColor(255, 255, 255);
+        const h1Width = doc.getTextWidth(h1);
+        doc.text(h1, margin + (col1Width - h1Width) / 2, yPos + 6);
+
+        // Col 2
+        doc.setFillColor(...primaryColor);
+        doc.rect(margin + col1Width, yPos, col2Width, 9, 'FD');
+        doc.setTextColor(255, 255, 255);
+        const h2Width = doc.getTextWidth(h2);
+        doc.text(h2, margin + col1Width + (col2Width - h2Width) / 2, yPos + 6);
+
+        yPos += 9;
+    }
+
+    drawInfoTableHeader();
+
+    tableData.forEach(([label, value], i) => {
+        doc.setFont(undefined, 'normal');
+        doc.setFontSize(10);
+
+        const lines1 = doc.splitTextToSize(label, col1Width - 4);
+        const lines2 = doc.splitTextToSize(value, col2Width - 4);
+
+        const maxLines = Math.max(lines1.length, lines2.length);
+        const rowHeight = Math.max(8, maxLines * 4.5 + 4);
+
+        // Page break check
+        if (yPos + rowHeight > doc.internal.pageSize.getHeight() - margin) {
+            doc.addPage();
+            yPos = margin;
+            drawInfoTableHeader();
+        }
+
+        const bg = i % 2 === 0 ? [240, 253, 244] : [255, 255, 255];
+
+        // Draw cells background and border
+        doc.setFillColor(...bg);
+        doc.setDrawColor(75, 85, 99);
+        doc.setLineWidth(0.4);
+        doc.rect(margin, yPos, col1Width, rowHeight, 'FD');
+
+        doc.setFillColor(...bg);
+        doc.rect(margin + col1Width, yPos, col2Width, rowHeight, 'FD');
+
+        // Draw Col 1 text (centered)
+        doc.setTextColor(...textColor);
+        doc.setFont(undefined, 'bold');
+        doc.setFontSize(10);
+        let textY1 = yPos + 2.5 + 3.0;
+        lines1.forEach(line => {
+            const lineWidth = doc.getTextWidth(line);
+            doc.text(line, margin + (col1Width - lineWidth) / 2, textY1);
+            textY1 += 4.5;
+        });
+
+        // Draw Col 2 text (centered)
+        doc.setFont(undefined, 'normal');
+        let textY2 = yPos + 2.5 + 3.0;
+        const isLieu = label === 'Lieu' && value !== 'Non renseigné';
+
+        lines2.forEach(line => {
+            const lineWidth = doc.getTextWidth(line);
+            const textX = margin + col1Width + (col2Width - lineWidth) / 2;
+            if (isLieu) {
+                const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(value)}`;
+                doc.setTextColor(37, 99, 235); // Blue link
+                doc.textWithLink(line, textX, textY2, { url: googleMapsUrl });
+            } else {
+                doc.setTextColor(...textColor);
+                doc.text(line, textX, textY2);
+            }
+            textY2 += 4.5;
+        });
+
+        yPos += rowHeight;
+    });
+
+    yPos += 10;
 
     // ─── SECTION TRIATHLON (solo uniquement) ──────────────────────────────────
     if (race.terrain === 'triathlon') {
@@ -653,112 +705,192 @@ async function generateRacePdf(raceId) {
             return `${pad(h)}:${pad(m)}:${pad(s)}`;
         }
 
-        // Colonnes : #, Coureur, Dist., D+, D-, Temps [, Départ, Arrivée]
-        const relCols = hasStartHour
-            ? [margin, margin + 10, margin + 30, margin + 60, margin + 80, margin + 104, margin + 128, margin + 158]
-            : [margin, margin + 18, margin + 50, margin + 80, margin + 110, margin + 145];
+        const headers = hasStartHour
+            ? ['N°', 'Coureur', 'Dist. (km)', 'D+ (m)', 'D- (m)', 'Temps', 'Départ', 'Arrivée']
+            : ['N°', 'Coureur', 'Dist. (km)', 'D+ (m)', 'D- (m)', 'Temps'];
 
-        // En-tête
-        doc.setFontSize(9);
-        doc.setFillColor(34, 139, 34);
-        doc.rect(margin, yPos - 4, pageWidth - 2 * margin, 7, 'F');
-        doc.setTextColor(255, 255, 255);
-        doc.setFont(undefined, 'bold');
-        doc.text('N°', relCols[0] + 1, yPos);
-        doc.text('Coureur', relCols[1], yPos);
-        doc.text('Dist. (km)', relCols[2], yPos);
-        doc.text('D+ (m)', relCols[3], yPos);
-        doc.text('D- (m)', relCols[4], yPos);
-        doc.text('Temps', relCols[5], yPos);
-        if (hasStartHour) {
-            doc.text('Départ', relCols[6], yPos);
-            doc.text('Arrivée', relCols[7], yPos);
+        const colWidths = hasStartHour
+            ? [10, 30, 22, 18, 18, 22, 25, 25]
+            : [12, 50, 26, 26, 26, 30];
+
+        function drawRelayTableHeader() {
+            doc.setFontSize(9);
+            doc.setFont(undefined, 'bold');
+            doc.setDrawColor(75, 85, 99);
+            doc.setLineWidth(0.4);
+
+            let currentX = margin;
+            headers.forEach((header, colIdx) => {
+                doc.setFillColor(...primaryColor);
+                doc.rect(currentX, yPos, colWidths[colIdx], 9, 'FD');
+                doc.setTextColor(255, 255, 255);
+                const textWidth = doc.getTextWidth(header);
+                const textX = currentX + (colWidths[colIdx] - textWidth) / 2;
+                doc.text(header, textX, yPos + 6);
+                currentX += colWidths[colIdx];
+            });
+            yPos += 9;
         }
-        yPos += 7;
+
+        drawRelayTableHeader();
 
         let totalDist = 0, totalElev = 0, totalElevNeg = 0;
         let cumulativePdfSeconds = 0;
 
         race.relayLaps.forEach((lap, i) => {
-            if (yPos > doc.internal.pageSize.getHeight() - 20) {
-                doc.addPage();
-                yPos = margin;
-            }
-            const bg = i % 2 === 0 ? [240, 255, 240] : [255, 255, 255];
-            doc.setFillColor(...bg);
-            doc.rect(margin, yPos - 4, pageWidth - 2 * margin, 7, 'F');
-            doc.setTextColor(...textColor);
-            doc.setFont(undefined, 'normal');
-            doc.setFontSize(9);
-
             const dist = parseFloat(lap.dist) || 0;
             const elev = parseFloat(lap.elev) || 0;
             const elevNeg = parseFloat(lap.elevNeg) || 0;
             const lapSec = parseTimeToSeconds(lap.time);
-            const departureStr = hasStartHour ? addTimeToHourPdf(race.hour, cumulativePdfSeconds) : null;
+            const departureStr = hasStartHour ? addTimeToHourPdf(race.hour, cumulativePdfSeconds) : '—';
             cumulativePdfSeconds += lapSec;
-            const arrivalStr = hasStartHour ? addTimeToHourPdf(race.hour, cumulativePdfSeconds) : null;
+            const arrivalStr = hasStartHour ? addTimeToHourPdf(race.hour, cumulativePdfSeconds) : '—';
             totalDist += dist;
             totalElev += elev;
             totalElevNeg += elevNeg;
 
             const runnerLabel = lap.runner === 'Tous ensemble' ? 'Tous ens.' : ((lap.runner === 'Moi' || !lap.runner) ? currentUserPseudo : lap.runner);
 
-            doc.text(`${i + 1}`, relCols[0] + 1, yPos);
-            doc.text(runnerLabel, relCols[1], yPos);
-            doc.text(dist > 0 ? dist.toFixed(2) : '—', relCols[2], yPos);
-            doc.text(elev > 0 ? `${elev}` : '—', relCols[3], yPos);
-            doc.text(elevNeg > 0 ? `${elevNeg}` : '—', relCols[4], yPos);
-            doc.text(normalizeTimeToFormatted(lap.time), relCols[5], yPos);
-            if (hasStartHour) {
-                doc.text(departureStr, relCols[6], yPos);
-                doc.text(arrivalStr, relCols[7], yPos);
+            const cellTexts = hasStartHour
+                ? [
+                    `${i + 1}`,
+                    runnerLabel,
+                    dist > 0 ? dist.toFixed(2) : '—',
+                    elev > 0 ? `${elev}` : '—',
+                    elevNeg > 0 ? `${elevNeg}` : '—',
+                    normalizeTimeToFormatted(lap.time),
+                    departureStr,
+                    arrivalStr
+                ]
+                : [
+                    `${i + 1}`,
+                    runnerLabel,
+                    dist > 0 ? dist.toFixed(2) : '—',
+                    elev > 0 ? `${elev}` : '—',
+                    elevNeg > 0 ? `${elevNeg}` : '—',
+                    normalizeTimeToFormatted(lap.time)
+                ];
+
+            // Calculer les lignes pour chaque cellule (wrap)
+            const cellLines = [];
+            const cellLinesCount = [];
+            colWidths.forEach((width, colIdx) => {
+                doc.setFont(undefined, 'normal');
+                doc.setFontSize(9);
+                const lines = doc.splitTextToSize(cellTexts[colIdx], width - 4);
+                cellLines.push(lines);
+                cellLinesCount.push(lines.length);
+            });
+
+            const maxLines = Math.max(...cellLinesCount);
+            const rowHeight = Math.max(8, maxLines * 4.5 + 4);
+
+            // Page break check
+            if (yPos + rowHeight > doc.internal.pageSize.getHeight() - margin) {
+                doc.addPage();
+                yPos = margin;
+                drawRelayTableHeader();
             }
-            yPos += 7;
+
+            const bg = i % 2 === 0 ? [240, 255, 240] : [255, 255, 255];
+
+            let currentX = margin;
+            colWidths.forEach((width, colIdx) => {
+                doc.setFillColor(...bg);
+                doc.setDrawColor(75, 85, 99);
+                doc.setLineWidth(0.4);
+                doc.rect(currentX, yPos, width, rowHeight, 'FD');
+
+                doc.setTextColor(55, 65, 81);
+                doc.setFont(undefined, 'normal');
+                doc.setFontSize(9);
+
+                const lines = cellLines[colIdx];
+                let textY = yPos + 2.5 + 3.0;
+                lines.forEach(line => {
+                    const textWidth = doc.getTextWidth(line);
+                    const textX = currentX + (width - textWidth) / 2;
+                    doc.text(line, textX, textY);
+                    textY += 4.5;
+                });
+
+                currentX += width;
+            });
+
+            yPos += rowHeight;
 
             // Ajouter le commentaire/description en dessous de la ligne s'il existe
             if (lap.comment && lap.comment.trim() !== '') {
-                if (yPos > doc.internal.pageSize.getHeight() - 20) {
+                const commentText = `Commentaire : ${lap.comment.trim()}`;
+                doc.setFont(undefined, 'italic');
+                doc.setFontSize(8);
+                const splitComment = doc.splitTextToSize(commentText, pageWidth - 2 * margin - 8);
+                
+                const commentRowHeight = splitComment.length * 4 + 4;
+                
+                if (yPos + commentRowHeight > doc.internal.pageSize.getHeight() - margin) {
                     doc.addPage();
                     yPos = margin;
+                    drawRelayTableHeader();
                 }
                 
                 doc.setFillColor(...bg);
-                doc.rect(margin, yPos - 4, pageWidth - 2 * margin, 6, 'F');
+                doc.setDrawColor(75, 85, 99);
+                doc.setLineWidth(0.4);
+                doc.rect(margin, yPos, pageWidth - 2 * margin, commentRowHeight, 'FD');
                 
-                doc.setFont(undefined, 'italic');
-                doc.setFontSize(8);
                 doc.setTextColor(100, 116, 139);
-                
-                const commentText = `   > Commentaire : ${lap.comment.trim()}`;
-                const splitComment = doc.splitTextToSize(commentText, pageWidth - 2 * margin - 8);
-                
+                let commentTextY = yPos + 3;
                 splitComment.forEach(line => {
-                    if (yPos > doc.internal.pageSize.getHeight() - 20) {
-                        doc.addPage();
-                        yPos = margin;
-                        doc.setFillColor(...bg);
-                        doc.rect(margin, yPos - 4, pageWidth - 2 * margin, 6, 'F');
-                    }
-                    doc.text(line, margin + 4, yPos - 1);
-                    yPos += 5;
+                    doc.text(line, margin + 4, commentTextY);
+                    commentTextY += 4;
                 });
-                yPos += 1;
+                
+                yPos += commentRowHeight;
             }
         });
 
         // Ligne de totaux
-        doc.setFillColor(220, 252, 231);
-        doc.rect(margin, yPos - 4, pageWidth - 2 * margin, 7, 'F');
-        doc.setFont(undefined, 'bold');
-        doc.setTextColor(...primaryColor);
-        doc.text('TOTAL', relCols[0] + 1, yPos);
-        doc.text('', relCols[1], yPos);
-        doc.text(totalDist > 0 ? totalDist.toFixed(2) : '—', relCols[2], yPos);
-        doc.text(totalElev > 0 ? `${totalElev}` : '—', relCols[3], yPos);
-        doc.text(totalElevNeg > 0 ? `${totalElevNeg}` : '—', relCols[4], yPos);
-        doc.text(normalizeTimeToFormatted(race.time), relCols[5], yPos);
-        yPos += 10;
+        const totalRowHeight = 9;
+        if (yPos + totalRowHeight > doc.internal.pageSize.getHeight() - margin) {
+            doc.addPage();
+            yPos = margin;
+            drawRelayTableHeader();
+        }
+
+        let currentX = margin;
+        colWidths.forEach((width, colIdx) => {
+            doc.setFillColor(220, 252, 231);
+            doc.setDrawColor(75, 85, 99);
+            doc.setLineWidth(0.4);
+            doc.rect(currentX, yPos, width, totalRowHeight, 'FD');
+
+            doc.setFont(undefined, 'bold');
+            doc.setTextColor(...primaryColor);
+            doc.setFontSize(9);
+
+            let totalText = '';
+            if (colIdx === 0) {
+                totalText = 'TOTAL';
+            } else if (colIdx === 2) {
+                totalText = totalDist > 0 ? `${totalDist.toFixed(2)}` : '—';
+            } else if (colIdx === 3) {
+                totalText = totalElev > 0 ? `${totalElev}` : '—';
+            } else if (colIdx === 4) {
+                totalText = totalElevNeg > 0 ? `${totalElevNeg}` : '—';
+            } else if (colIdx === 5) {
+                totalText = normalizeTimeToFormatted(race.time);
+            }
+
+            if (totalText) {
+                const textWidth = doc.getTextWidth(totalText);
+                const textX = currentX + (width - textWidth) / 2;
+                doc.text(totalText, textX, yPos + 6);
+            }
+
+            currentX += width;
+        });
+        yPos += totalRowHeight + 10;
     }
     // ─────────────────────────────────────────────────────────────────────────
 
