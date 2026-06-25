@@ -144,35 +144,56 @@ const manualModalHTML = `
                     <h4 class="text-xl font-bold text-green-700 mb-3 flex items-center gap-2">
                         <i class="fas fa-cog text-green-600"></i> Configuration des Cartes
                     </h4>
-                    <div class="bg-white border border-green-100 rounded-lg p-4 shadow-sm">
-                        <p class="text-sm text-gray-600 mb-3">Personnalisez les boutons d'actions rapides affichés directement sur vos cartes de course pour un accès immédiat :</p>
-                        <ul class="space-y-2 text-sm text-gray-600">
-                            <li class="flex items-start gap-2">
-                                <i class="fas fa-hand-pointer text-green-600 mt-0.5"></i>
-                                <span><strong>Interface intuitive :</strong> Utilisez le glisser-déposer (sur ordinateur) ou de simples clics (sur mobile) pour configurer vos boutons.</span>
-                            </li>
-                            <li class="flex items-start gap-2">
-                                <i class="fas fa-layer-group text-green-600 mt-0.5"></i>
-                                <span><strong>Jusqu'à 3 boutons :</strong> Choisissez un maximum de 3 raccourcis parmi ceux disponibles (Site web, PDF, GPX, Drive, Résultats, etc.).</span>
-                            </li>
-                            <li class="flex items-start gap-2">
-                                <i class="fas fa-eye text-green-600 mt-0.5"></i>
-                                <span><strong>Aperçu en temps réel :</strong> Visualisez immédiatement le résultat de votre configuration sur une carte d'exemple interactive.</span>
-                            </li>
-                             <li class="flex items-start gap-2">
-                                <i class="fas fa-undo text-green-600 mt-0.5"></i>
-                                <span><strong>Réinitialisation :</strong> Un bouton dédié vous permet de revenir à la configuration par défaut à tout moment.</span>
-                            </li>
-                            <li class="flex items-start gap-2">
-                                <i class="fas fa-image text-green-600 mt-0.5"></i>
-                                <span><strong>Image par défaut :</strong> Choisissez d'afficher par défaut la photo de la course ou le tracé du parcours sur vos cartes de course. Un système de repli (fallback) intelligent affiche l'autre image si le choix principal n'est pas disponible pour une course spécifique.</span>
-                            </li>
-                        </ul>
-                        <p class="text-[11px] text-blue-600 italic mt-3 flex items-center gap-2">
-                            <i class="fas fa-lightbulb text-yellow-500"></i>
-                            <span>Cliquez sur le bouton <strong><i class="fas fa-cog mr-1"></i> Configurer la carte</strong> en haut du tableau de bord pour y accéder.</span>
-                        </p>
+                    <div class="space-y-4">
+                        <!-- Boutons d'actions rapides -->
+                        <div class="bg-white border border-green-100 rounded-lg p-4 shadow-sm">
+                            <h5 class="font-bold text-green-800 mb-2 flex items-center gap-2">
+                                <i class="fas fa-hand-pointer text-green-600"></i> Boutons d'actions rapides
+                            </h5>
+                            <p class="text-sm text-gray-600 mb-3">Personnalisez les raccourcis affichés en bas à gauche de chaque carte de course :</p>
+                            <ul class="space-y-2 text-sm text-gray-600">
+                                <li class="flex items-start gap-2">
+                                    <i class="fas fa-arrows-alt text-green-600 mt-0.5"></i>
+                                    <span><strong>Interface intuitive :</strong> Utilisez le glisser-déposer (sur ordinateur) ou de simples clics (sur mobile) pour réorganiser vos boutons.</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <i class="fas fa-layer-group text-green-600 mt-0.5"></i>
+                                    <span><strong>Jusqu'à 3 boutons :</strong> Choisissez parmi Site web, PDF, GPX, Drive, Résultats, etc.</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <i class="fas fa-eye text-green-600 mt-0.5"></i>
+                                    <span><strong>Aperçu en temps réel :</strong> Visualisez immédiatement le résultat sur une carte d'exemple.</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <i class="fas fa-image text-green-600 mt-0.5"></i>
+                                    <span><strong>Image par défaut :</strong> Choisissez d'afficher la photo de la course ou le tracé GPX. Un repli intelligent s'applique si l'image choisie est absente.</span>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <!-- Tags des cartes -->
+                        <div class="bg-white border border-purple-100 rounded-lg p-4 shadow-sm">
+                            <h5 class="font-bold text-purple-800 mb-2 flex items-center gap-2">
+                                <i class="fas fa-tags text-purple-600"></i> Tags affichés sur les cartes
+                            </h5>
+                            <p class="text-xs text-gray-500 mb-2">Badges affichables sur chaque carte :</p>
+                            <div class="flex flex-wrap gap-1.5 mb-3">
+                                <span class="inline-flex items-center gap-1 bg-green-50 border border-green-200 text-green-800 text-[10px] font-medium px-1.5 py-0.5 rounded"><i class="fas fa-ruler-horizontal text-green-500"></i> Distance</span>
+                                <span class="inline-flex items-center gap-1 bg-orange-50 border border-orange-200 text-orange-800 text-[10px] font-medium px-1.5 py-0.5 rounded"><i class="fas fa-mountain text-orange-500"></i> Dénivelé</span>
+                                <span class="inline-flex items-center gap-1 bg-teal-50 border border-teal-200 text-teal-800 text-[10px] font-medium px-1.5 py-0.5 rounded"><i class="fas fa-map-marker-alt text-teal-500"></i> Lieu</span>
+                                <span class="inline-flex items-center gap-1 bg-indigo-50 border border-indigo-200 text-indigo-800 text-[10px] font-medium px-1.5 py-0.5 rounded"><i class="fas fa-road text-indigo-500"></i> Terrain</span>
+                                <span class="inline-flex items-center gap-1 bg-cyan-50 border border-cyan-200 text-cyan-800 text-[10px] font-medium px-1.5 py-0.5 rounded"><i class="fas fa-clock text-cyan-500"></i> Temps</span>
+                                <span class="inline-flex items-center gap-1 bg-violet-50 border border-violet-200 text-violet-800 text-[10px] font-medium px-1.5 py-0.5 rounded"><i class="fas fa-tachometer-alt text-violet-500"></i> Allure</span>
+                                <span class="inline-flex items-center gap-1 bg-red-50 border border-red-200 text-red-800 text-[10px] font-medium px-1.5 py-0.5 rounded"><i class="fas fa-euro-sign text-red-500"></i> Prix</span>
+                                <span class="inline-flex items-center gap-1 bg-yellow-50 border border-yellow-200 text-yellow-800 text-[10px] font-medium px-1.5 py-0.5 rounded"><i class="fas fa-trophy text-yellow-500"></i> Classement</span>
+                            </div>
+                            <p class="text-[11px] text-gray-500 italic">Cochez ou décochez chaque tag dans la section <strong>Tags affichés</strong> du panneau de configuration pour personnaliser l'affichage de toutes vos cartes en un clic.</p>
+                        </div>
                     </div>
+                    <p class="text-[11px] text-blue-600 italic mt-3 flex items-center gap-2">
+                        <i class="fas fa-lightbulb text-yellow-500"></i>
+                        <span>Cliquez sur le bouton <strong><i class="fas fa-cog mr-1"></i> Configurer la carte</strong> en haut du tableau de bord pour accéder à toutes ces options.</span>
+                    </p>
                 </section>
 
                 <!-- Google Drive -->
