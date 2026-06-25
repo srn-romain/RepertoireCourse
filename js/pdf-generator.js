@@ -1008,6 +1008,8 @@ async function generateRacePdf(raceId) {
             let totalText = '';
             if (colIdx === 0) {
                 totalText = 'TOTAL';
+            } else if (colIdx === 1) {
+                totalText = '-';
             } else if (colIdx === 2) {
                 totalText = totalDist > 0 ? `${totalDist.toFixed(2)}` : '—';
             } else if (colIdx === 3) {
@@ -1016,6 +1018,8 @@ async function generateRacePdf(raceId) {
                 totalText = totalElevNeg > 0 ? `${totalElevNeg}` : '—';
             } else if (colIdx === 5) {
                 totalText = normalizeTimeToFormatted(race.time);
+            } else if (hasStartHour && (colIdx === 6 || colIdx === 7)) {
+                totalText = '-';
             }
 
             if (totalText) {
@@ -1515,6 +1519,8 @@ async function generateRelayTableOnlyPdf(raceId) {
         let totalText = '';
         if (colIdx === 0) {
             totalText = 'Total';
+        } else if (colIdx === 1) {
+            totalText = '-';
         } else if (colIdx === 2) {
             totalText = `${totalRelayDist.toFixed(2)} km`;
         } else if (colIdx === 3) {
@@ -1523,6 +1529,8 @@ async function generateRelayTableOnlyPdf(raceId) {
             totalText = [dp, dn].filter(Boolean).join(' ') || '—';
         } else if (colIdx === 4) {
             totalText = secondsToTime(totalRelayTimeS);
+        } else if (colIdx === 5 || colIdx === 6 || colIdx === 7) {
+            totalText = '-';
         }
 
         if (totalText) {
