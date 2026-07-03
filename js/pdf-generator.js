@@ -644,8 +644,9 @@ async function generateRacePdf(raceId) {
         let userRelayElevNeg = 0;
         let userRelayTimeS = 0;
         let userRelayCount = 0;
+        let userRelayLaps = [];
 
-        race.relayLaps.forEach(lap => {
+        race.relayLaps.forEach((lap, idx) => {
             const d = parseFloat(lap.dist) || 0;
             const e = parseInt(lap.elev) || 0;
             const en = parseInt(lap.elevNeg) || 0;
@@ -657,6 +658,7 @@ async function generateRacePdf(raceId) {
                 userRelayElevNeg += en;
                 userRelayTimeS += s;
                 userRelayCount++;
+                userRelayLaps.push(idx + 1);
             }
         });
 
@@ -669,10 +671,10 @@ async function generateRacePdf(raceId) {
 
         const teammateStats = {};
         teammateNames.forEach(name => {
-            teammateStats[name] = { dist: 0, elev: 0, elevNeg: 0, timeS: 0, count: 0 };
+            teammateStats[name] = { dist: 0, elev: 0, elevNeg: 0, timeS: 0, count: 0, laps: [] };
         });
 
-        race.relayLaps.forEach(lap => {
+        race.relayLaps.forEach((lap, idx) => {
             const isTousEnsemble = lap.runner === 'Tous ensemble';
             const targets = isTousEnsemble ? teammateNames : (lap.runner && lap.runner !== 'Moi' ? [lap.runner] : []);
             const d = parseFloat(lap.dist) || 0;
@@ -686,6 +688,7 @@ async function generateRacePdf(raceId) {
                     teammateStats[name].elevNeg += en;
                     teammateStats[name].timeS += s;
                     teammateStats[name].count++;
+                    teammateStats[name].laps.push(idx + 1);
                 }
             });
         });
@@ -710,7 +713,7 @@ async function generateRacePdf(raceId) {
         ];
 
         // Draw Card Function
-        function drawCard(xPos, title, badgeLabel, dist, elev, elevNeg, timeS, count, colors, cardWidth) {
+        function drawCard(xPos, title, badgeLabel, dist, elev, elevNeg, timeS, count, laps, colors, cardWidth) {
             const cardHeight = 34;
 
             // Draw Background and Border
@@ -777,7 +780,7 @@ async function generateRacePdf(raceId) {
             doc.setFont(undefined, 'bold');
             doc.setFontSize(8);
             doc.setTextColor(...colors.title);
-            const footerText = `${count} relais effectué${count > 1 ? 's' : ''}`;
+            const footerText = `${count} relais effectué${count > 1 ? 's' : ''} (${laps.join(', ')})`;
             doc.text(footerText, xPos + cardWidth / 2, yPos + 29.5, { align: 'center' });
         }
 
@@ -802,6 +805,7 @@ async function generateRacePdf(raceId) {
                 elevNeg: userRelayElevNeg,
                 timeS: userRelayTimeS,
                 count: userRelayCount,
+                laps: userRelayLaps,
                 colors: ownerColors
             }
         ];
@@ -817,6 +821,7 @@ async function generateRacePdf(raceId) {
                 elevNeg: st.elevNeg,
                 timeS: st.timeS,
                 count: st.count,
+                laps: st.laps,
                 colors: colors
             });
         });
@@ -846,7 +851,7 @@ async function generateRacePdf(raceId) {
                 }
             }
 
-            drawCard(xPos, p.title, p.badgeLabel, p.dist, p.elev, p.elevNeg, p.timeS, p.count, p.colors, cardWidth);
+            drawCard(xPos, p.title, p.badgeLabel, p.dist, p.elev, p.elevNeg, p.timeS, p.count, p.laps, p.colors, cardWidth);
 
             if (col === 1 || idx === participants.length - 1) {
                 yPos += cardHeight + gap;
@@ -1581,8 +1586,9 @@ async function generateRelayTableOnlyPdf(raceId) {
     // Calcul des statistiques individuelles et par coéquipier pour les cartes
     let userRelayDist = 0, userRelayElev = 0, userRelayElevNeg = 0, userRelayTimeS = 0;
     let userRelayCount = 0;
+    let userRelayLaps = [];
 
-    race.relayLaps.forEach(lap => {
+    race.relayLaps.forEach((lap, idx) => {
         const d = parseFloat(lap.dist) || 0;
         const e = parseInt(lap.elev) || 0;
         const en = parseInt(lap.elevNeg) || 0;
@@ -1594,6 +1600,7 @@ async function generateRelayTableOnlyPdf(raceId) {
             userRelayElevNeg += en;
             userRelayTimeS += s;
             userRelayCount++;
+            userRelayLaps.push(idx + 1);
         }
     });
 
@@ -1605,10 +1612,10 @@ async function generateRelayTableOnlyPdf(raceId) {
 
     const teammateStats = {};
     teammateNames.forEach(name => {
-        teammateStats[name] = { dist: 0, elev: 0, elevNeg: 0, timeS: 0, count: 0 };
+        teammateStats[name] = { dist: 0, elev: 0, elevNeg: 0, timeS: 0, count: 0, laps: [] };
     });
 
-    race.relayLaps.forEach(lap => {
+    race.relayLaps.forEach((lap, idx) => {
         const isTousEnsemble = lap.runner === 'Tous ensemble';
         const targets = isTousEnsemble ? teammateNames : (lap.runner && lap.runner !== 'Moi' ? [lap.runner] : []);
         const d = parseFloat(lap.dist) || 0;
@@ -1622,6 +1629,7 @@ async function generateRelayTableOnlyPdf(raceId) {
                 teammateStats[name].elevNeg += en;
                 teammateStats[name].timeS += s;
                 teammateStats[name].count++;
+                teammateStats[name].laps.push(idx + 1);
             }
         });
     });
@@ -1653,7 +1661,7 @@ async function generateRelayTableOnlyPdf(raceId) {
         return `${timePerKm.toFixed(2)} min/km`;
     }
 
-    function drawCard(xPos, title, badgeLabel, dist, elev, elevNeg, timeS, count, colors, cardWidth) {
+    function drawCard(xPos, title, badgeLabel, dist, elev, elevNeg, timeS, count, laps, colors, cardWidth) {
         const cardHeight = 34;
 
         doc.setFillColor(...colors.bg);
@@ -1712,7 +1720,7 @@ async function generateRelayTableOnlyPdf(raceId) {
         doc.setFont(undefined, 'bold');
         doc.setFontSize(8);
         doc.setTextColor(...colors.title);
-        const footerText = `${count} relais effectué${count > 1 ? 's' : ''}`;
+        const footerText = `${count} relais effectué${count > 1 ? 's' : ''} (${laps.join(', ')})`;
         doc.text(footerText, xPos + cardWidth / 2, yPos + 29.5, { align: 'center' });
     }
 
@@ -1738,6 +1746,7 @@ async function generateRelayTableOnlyPdf(raceId) {
             elevNeg: userRelayElevNeg,
             timeS: userRelayTimeS,
             count: userRelayCount,
+            laps: userRelayLaps,
             colors: ownerColors
         }
     ];
@@ -1753,6 +1762,7 @@ async function generateRelayTableOnlyPdf(raceId) {
             elevNeg: st.elevNeg,
             timeS: st.timeS,
             count: st.count,
+            laps: st.laps,
             colors: colors
         });
     });
@@ -1782,7 +1792,7 @@ async function generateRelayTableOnlyPdf(raceId) {
             }
         }
 
-        drawCard(xPos, p.title, p.badgeLabel, p.dist, p.elev, p.elevNeg, p.timeS, p.count, p.colors, cardWidth);
+        drawCard(xPos, p.title, p.badgeLabel, p.dist, p.elev, p.elevNeg, p.timeS, p.count, p.laps, p.colors, cardWidth);
 
         if (col === 1 || idx === participants.length - 1) {
             yPos += cardHeight + gap;
