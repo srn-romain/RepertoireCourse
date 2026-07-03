@@ -666,7 +666,7 @@ async function generateRacePdf(raceId) {
         const teammateNames = [...new Set(
             race.relayLaps
                 .map(l => l.runner)
-                .filter(r => r && r !== 'Moi' && r !== 'Tous ensemble')
+                .filter(r => r && r !== 'Moi' && r !== 'Tous ensemble' && r !== 'Personne')
         )];
 
         const teammateStats = {};
@@ -676,7 +676,7 @@ async function generateRacePdf(raceId) {
 
         race.relayLaps.forEach((lap, idx) => {
             const isTousEnsemble = lap.runner === 'Tous ensemble';
-            const targets = isTousEnsemble ? teammateNames : (lap.runner && lap.runner !== 'Moi' ? [lap.runner] : []);
+            const targets = isTousEnsemble ? teammateNames : (lap.runner && lap.runner !== 'Moi' && lap.runner !== 'Personne' ? [lap.runner] : []);
             const d = parseFloat(lap.dist) || 0;
             const e = parseInt(lap.elev) || 0;
             const en = parseInt(lap.elevNeg) || 0;
@@ -930,7 +930,7 @@ async function generateRacePdf(raceId) {
             totalElev += elev;
             totalElevNeg += elevNeg;
 
-            const runnerLabel = lap.runner === 'Tous ensemble' ? 'Tous ens.' : ((lap.runner === 'Moi' || !lap.runner) ? currentUserPseudo : lap.runner);
+            const runnerLabel = lap.runner === 'Tous ensemble' ? 'Tous ens.' : ((lap.runner === 'Moi' || !lap.runner) ? currentUserPseudo : (lap.runner === 'Personne' ? '-' : lap.runner));
 
             const cellTexts = hasStartHour
                 ? [
@@ -1461,7 +1461,7 @@ async function generateRelayTableOnlyPdf(raceId) {
 
     race.relayLaps.forEach((lap, i) => {
         const isMoi = lap.runner === 'Moi' || !lap.runner;
-        const runnerLabel = lap.runner === 'Tous ensemble' ? 'Tous ens.' : (isMoi ? currentUserPseudo : lap.runner);
+        const runnerLabel = lap.runner === 'Tous ensemble' ? 'Tous ens.' : (isMoi ? currentUserPseudo : (lap.runner === 'Personne' ? '-' : lap.runner));
         const distStr = lap.dist ? `${parseFloat(lap.dist).toFixed(2)} km` : '—';
         
         const dp = lap.elev ? `+${lap.elev}m` : '';
@@ -1609,7 +1609,7 @@ async function generateRelayTableOnlyPdf(raceId) {
     const teammateNames = [...new Set(
         race.relayLaps
             .map(l => l.runner)
-            .filter(r => r && r !== 'Moi' && r !== 'Tous ensemble')
+            .filter(r => r && r !== 'Moi' && r !== 'Tous ensemble' && r !== 'Personne')
     )];
 
     const teammateStats = {};
@@ -1619,7 +1619,7 @@ async function generateRelayTableOnlyPdf(raceId) {
 
     race.relayLaps.forEach((lap, idx) => {
         const isTousEnsemble = lap.runner === 'Tous ensemble';
-        const targets = isTousEnsemble ? teammateNames : (lap.runner && lap.runner !== 'Moi' ? [lap.runner] : []);
+        const targets = isTousEnsemble ? teammateNames : (lap.runner && lap.runner !== 'Moi' && lap.runner !== 'Personne' ? [lap.runner] : []);
         const d = parseFloat(lap.dist) || 0;
         const e = parseInt(lap.elev) || 0;
         const en = parseInt(lap.elevNeg) || 0;

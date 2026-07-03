@@ -2152,7 +2152,7 @@
             return parseFloat(num.toFixed(4));
         }
 
-        window.customCardButtons = ['edit', 'delete', 'details'];
+        window.customCardButtons = ['edit', 'delete', 'pdf'];
         window.defaultCardImage = 'photo';
         window.customCardTags = ['distance', 'elevation', 'location', 'terrain'];
 
@@ -2179,12 +2179,12 @@
             },
             details: {
                 id: 'details',
-                label: 'Détails',
-                icon: '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M10 12a2 2 0 100-4 2 2 0 000 4z" /><path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" /></svg>',
-                bgColorClass: 'bg-blue-100 text-blue-800 hover:bg-blue-200',
-                colorClass: 'text-blue-600 border-blue-200 hover:bg-blue-50',
-                title: 'Détails',
-                actionClass: 'details-btn',
+                label: 'Export',
+                icon: '<i class="fas fa-file-export"></i>',
+                bgColorClass: 'bg-pink-100 text-pink-800 hover:bg-pink-200',
+                colorClass: 'text-pink-600 border-pink-200 hover:bg-green-50',
+                title: 'Exporter la course',
+                actionClass: 'export-race-btn',
                 isEnabled: (race) => true
             },
             drive: {
@@ -2231,8 +2231,8 @@
                 id: 'pdf',
                 label: 'PDF',
                 icon: '<i class="fas fa-file-pdf"></i>',
-                bgColorClass: 'bg-pink-100 text-pink-800 hover:bg-pink-200',
-                colorClass: 'text-pink-600 border-pink-200 hover:bg-green-50',
+                bgColorClass: 'bg-blue-100 text-blue-800 hover:bg-blue-200',
+                colorClass: 'text-blue-600 border-blue-200 hover:bg-blue-50',
                 title: 'Générer PDF',
                 actionClass: 'pdf-btn',
                 isEnabled: (race) => true
@@ -2280,7 +2280,7 @@
         };
 
         function renderCardButtonsHtml(race) {
-            const buttons = window.customCardButtons || ['edit', 'delete', 'details'];
+            const buttons = window.customCardButtons || ['edit', 'delete', 'pdf'];
             return buttons.map(btnId => {
                 const btnDef = AVAILABLE_CARD_BUTTONS[btnId];
                 if (!btnDef) return '';
@@ -2413,7 +2413,7 @@
                                 if (targetUserDoc.exists && targetUserDoc.data().cardButtons) {
                                     window.customCardButtons = targetUserDoc.data().cardButtons;
                                 } else {
-                                    window.customCardButtons = ['edit', 'delete', 'details'];
+                                    window.customCardButtons = ['edit', 'delete', 'pdf'];
                                 }
                                 if (targetUserDoc.exists && targetUserDoc.data().defaultCardImage) {
                                     window.defaultCardImage = targetUserDoc.data().defaultCardImage;
@@ -2427,7 +2427,7 @@
                                 }
                             } catch (err) {
                                 console.error("Error loading target user card preferences:", err);
-                                window.customCardButtons = ['edit', 'delete', 'details'];
+                                window.customCardButtons = ['edit', 'delete', 'pdf'];
                                 window.defaultCardImage = 'photo';
                             }
 
@@ -2512,7 +2512,7 @@
                                 if (uDoc.data().cardButtons && Array.isArray(uDoc.data().cardButtons)) {
                                     window.customCardButtons = uDoc.data().cardButtons;
                                 } else {
-                                    window.customCardButtons = ['edit', 'delete', 'details'];
+                                    window.customCardButtons = ['edit', 'delete', 'pdf'];
                                 }
 
                                 if (uDoc.data().defaultCardImage) {
@@ -3804,12 +3804,12 @@
                     }
                 });
 
-                // Ajouter un écouteur d'événement pour le bouton détails
-                const detailsBtn = raceCard.querySelector('.details-btn');
-                if (detailsBtn) {
-                    detailsBtn.addEventListener('click', (e) => {
+                // Ajouter un écouteur d'événement pour l'export de la course solo
+                const exportBtn = raceCard.querySelector('.export-race-btn');
+                if (exportBtn) {
+                    exportBtn.addEventListener('click', (e) => {
                         e.stopPropagation(); // Évite de déclencher l'événement de la carte
-                        showRaceDetails(race.id);
+                        exportSingleRace(race.id);
                     });
                 }
 
@@ -3973,6 +3973,35 @@
                     });
                 });
             });
+        }
+
+        // Exporter une seule course au format JSON de sauvegarde
+        function exportSingleRace(raceId) {
+            const race = races.find(r => r.id === raceId);
+            if (!race) return;
+
+            // Créer une copie propre de la course
+            const { id, ...raceData } = race;
+            if (!raceData.hasOwnProperty('public')) {
+                raceData.public = true;
+            }
+
+            const data = {
+                timestamp: new Date().toISOString(),
+                races: [ { id, ...raceData } ],
+                wishlist: []
+            };
+
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data, null, 2));
+            const downloadAnchorNode = document.createElement('a');
+            downloadAnchorNode.setAttribute("href", dataStr);
+            
+            const safeRaceName = race.name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+            downloadAnchorNode.setAttribute("download", `export_course_${safeRaceName}_${new Date().toISOString().slice(0, 10)}.json`);
+            
+            document.body.appendChild(downloadAnchorNode);
+            downloadAnchorNode.click();
+            downloadAnchorNode.remove();
         }
 
         // Fonction pour surligner le texte correspondant à la recherche
@@ -4608,7 +4637,7 @@
                             class="${isMoi ? 'bg-blue-50/50 hover:bg-blue-100' : isTousEnsemble ? 'bg-purple-50/60 hover:bg-purple-100' : 'hover:bg-green-100'} transition-colors ${showRowDetails ? 'cursor-pointer select-none' : ''}"
                             ${showRowDetails ? `onclick="toggleRelayRow('${subRowId}', this)"` : ''}>
                             <td class="px-2 py-1 font-medium text-green-700">${idx + 1}</td>
-                            <td class="px-2 py-1 ${isMoi ? 'font-bold text-blue-700' : isTousEnsemble ? 'font-bold text-purple-700' : ''}">${isTousEnsemble ? 'Tous' : (isMoi ? currentUserPseudo : lap.runner)}</td>
+                            <td class="px-2 py-1 ${isMoi ? 'font-bold text-blue-700' : isTousEnsemble ? 'font-bold text-purple-700' : ''}">${isTousEnsemble ? 'Tous' : (isMoi ? currentUserPseudo : (lap.runner === 'Personne' ? '-' : lap.runner))}</td>
                             <td class="px-2 py-1">${formatDist(lap.dist)}</td>
                             <td class="px-2 py-1 whitespace-nowrap">${
                                 (() => {
@@ -4691,11 +4720,11 @@
                     { bg: 'bg-lime-50',   border: 'border-lime-200',   headerBorder: 'border-lime-300',   title: 'text-lime-800',   sub: 'text-lime-600',   badge: 'bg-lime-100 text-lime-800',   foot: 'border-lime-200',   icon: 'text-lime-500' },
                 ];
 
-                // Collecter les coureurs uniques (hors Moi / vide)
+                // Collecter les coureurs uniques (hors Moi / vide / Personne)
                 const teammateNames = [...new Set(
                     race.relayLaps
                         .map(l => l.runner)
-                        .filter(r => r && r !== 'Moi' && r !== 'Tous ensemble')
+                        .filter(r => r && r !== 'Moi' && r !== 'Tous ensemble' && r !== 'Personne')
                 )];
 
                 if (teammateNames.length > 0) {
@@ -4707,7 +4736,7 @@
 
                     race.relayLaps.forEach((lap, idx) => {
                         const isTousEnsemble = lap.runner === 'Tous ensemble';
-                        const targets = isTousEnsemble ? teammateNames : (lap.runner && lap.runner !== 'Moi' ? [lap.runner] : []);
+                        const targets = isTousEnsemble ? teammateNames : (lap.runner && lap.runner !== 'Moi' && lap.runner !== 'Personne' ? [lap.runner] : []);
                         const d = parseFloat(lap.dist) || 0;
                         const e = parseInt(lap.elev) || 0;
                         const en = parseInt(lap.elevNeg) || 0;
@@ -6159,6 +6188,7 @@
             if (runners.length > 0) {
                 options += `<option value="Tous ensemble" ${data.runner === 'Tous ensemble' ? 'selected' : ''}>All</option>`;
             }
+            options += `<option value="Personne" ${data.runner === 'Personne' ? 'selected' : ''}>Personne</option>`;
 
             tr.innerHTML = `
                 <td class="px-2 py-2 font-medium text-green-900">${index + 1}</td>
@@ -6207,10 +6237,11 @@
                 if (runners.length > 0) {
                     options += `<option value="Tous ensemble" ${currentValue === 'Tous ensemble' ? 'selected' : ''}>All</option>`;
                 }
+                options += `<option value="Personne" ${currentValue === 'Personne' ? 'selected' : ''}>Personne</option>`;
                 select.innerHTML = options;
 
                 // Si la valeur sélectionnée n'est plus dans la liste (ex: accompagnant supprimé), repasser sur 'Moi'
-                if (currentValue !== 'Moi' && currentValue !== 'Tous ensemble' && !runners.includes(currentValue)) {
+                if (currentValue !== 'Moi' && currentValue !== 'Tous ensemble' && currentValue !== 'Personne' && !runners.includes(currentValue)) {
                     select.value = 'Moi';
                     updateRelayData(index, 'runner', 'Moi');
                 }
@@ -7520,31 +7551,7 @@
         if (exportSingleRaceBtn) {
             exportSingleRaceBtn.addEventListener('click', () => {
                 if (currentRaceIdInDetails) {
-                    const race = races.find(r => r.id === currentRaceIdInDetails);
-                    if (!race) return;
-
-                    // Créer une copie propre de la course
-                    const { id, ...raceData } = race;
-                    if (!raceData.hasOwnProperty('public')) {
-                        raceData.public = true;
-                    }
-
-                    const data = {
-                        timestamp: new Date().toISOString(),
-                        races: [ { id, ...raceData } ],
-                        wishlist: []
-                    };
-
-                    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data, null, 2));
-                    const downloadAnchorNode = document.createElement('a');
-                    downloadAnchorNode.setAttribute("href", dataStr);
-                    
-                    const safeRaceName = race.name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
-                    downloadAnchorNode.setAttribute("download", `export_course_${safeRaceName}_${new Date().toISOString().slice(0, 10)}.json`);
-                    
-                    document.body.appendChild(downloadAnchorNode);
-                    downloadAnchorNode.click();
-                    downloadAnchorNode.remove();
+                    exportSingleRace(currentRaceIdInDetails);
                 }
             });
         }
@@ -9409,7 +9416,7 @@
                 resetCardConfigBtn.addEventListener('click', (e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    tempConfigButtons = ['edit', 'delete', 'details'];
+                    tempConfigButtons = ['edit', 'delete', 'pdf'];
                     tempDefaultCardImage = 'photo';
                     tempConfigTags = ['distance', 'elevation', 'location', 'terrain'];
                     selectedAvailableButtonId = null;
