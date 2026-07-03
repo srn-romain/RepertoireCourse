@@ -4759,7 +4759,7 @@
                         const c = teamColors[idx % teamColors.length];
                         const st = teammateStats[name];
                         teammateCardsHtml += `
-                            <div class="${c.bg} p-3 rounded-lg w-full border ${c.border} mb-3 shadow-sm">
+                            <div class="${c.bg} p-3 rounded-lg w-full border ${c.border} shadow-sm">
                                 <div class="flex items-center justify-between border-b ${c.headerBorder} pb-2 mb-3">
                                     <h4 class="font-bold ${c.title} text-sm flex items-center gap-2">
                                         <i class="fas fa-user ${c.icon}"></i> ${name}
@@ -4807,7 +4807,7 @@
                                 Détail par coéquipier
                                 <i class="fas fa-chevron-down toggle-chevron text-[10px] text-green-500 transition-transform duration-200"></i>
                             </button>
-                            <div class="hidden mt-3 space-y-1">
+                            <div class="hidden mt-3 space-y-3">
                                 ${teammateCardsHtml}
                             </div>
                         </div>
