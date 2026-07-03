@@ -4546,7 +4546,13 @@
                             </div>
                             <div>
                                 <p class="text-[10px] text-blue-600 uppercase">Dénivelé</p>
-                                <p class="font-bold text-blue-800 text-xs">\u2191${userRelayElev}m \u2193${userRelayElevNeg}m</p>
+                                <p class="font-bold text-blue-800 text-[9px] sm:text-[11px] whitespace-nowrap">${
+                                    (() => {
+                                        const dp = userRelayElev > 0 ? `\u2191${userRelayElev}m` : '';
+                                        const dn = userRelayElevNeg > 0 ? `\u2193${userRelayElevNeg}m` : '';
+                                        return [dp, dn].filter(Boolean).join(' ') || '0m';
+                                    })()
+                                }</p>
                             </div>
                             <div>
                                 <p class="text-[10px] text-blue-600 uppercase">Temps</p>
@@ -4738,7 +4744,13 @@
                                     </div>
                                     <div>
                                         <p class="text-[10px] ${c.sub} uppercase">Dénivelé</p>
-                                        <p class="font-bold ${c.title} text-xs">\u2191${st.elev}m \u2193${st.elevNeg}m</p>
+                                        <p class="font-bold ${c.title} text-[9px] sm:text-[11px] whitespace-nowrap">${
+                                            (() => {
+                                                const dp = st.elev > 0 ? `\u2191${st.elev}m` : '';
+                                                const dn = st.elevNeg > 0 ? `\u2193${st.elevNeg}m` : '';
+                                                return [dp, dn].filter(Boolean).join(' ') || '0m';
+                                            })()
+                                        }</p>
                                     </div>
                                     <div>
                                         <p class="text-[10px] ${c.sub} uppercase">Temps</p>
