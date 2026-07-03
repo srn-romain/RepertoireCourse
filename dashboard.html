@@ -1136,7 +1136,7 @@
                             <span class="font-bold text-gray-700">Dossier Google Drive</span>
                         </button>
                     </div>
-                    <div id="detailsActionsContainer" class="flex gap-3 mt-6 pt-4 border-t border-gray-200">
+                    <div id="detailsActionsContainer" class="flex flex-wrap sm:flex-nowrap gap-2 sm:gap-3 mt-6 pt-4 border-t border-gray-200">
                         <button id="editFromDetailsBtn"
                             class="flex-1 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors flex items-center justify-center gap-2">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20"
@@ -1155,6 +1155,12 @@
                                     clip-rule="evenodd" />
                             </svg>
                             PDF
+                        </button>
+                        <button id="exportSingleRaceBtn"
+                            class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+                            title="Exporter cette course au format JSON">
+                            <i class="fas fa-file-export"></i>
+                            Exporter
                         </button>
                     </div>
                     <p id="detailsTimestamps" class="text-[10px] text-gray-400 italic mt-2 text-center"></p>
@@ -3115,6 +3121,7 @@
         const nextRaceBtn = document.getElementById('nextRaceBtn');
         const editFromDetailsBtn = document.getElementById('editFromDetailsBtn');
         const generatePdfBtn = document.getElementById('generatePdfBtn');
+        const exportSingleRaceBtn = document.getElementById('exportSingleRaceBtn');
         const authStatusBar = document.getElementById('authStatusBar');
         const authStatusText = document.getElementById('authStatusText');
         const disconnectBtn = document.getElementById('disconnectBtn');
@@ -4536,8 +4543,8 @@
                                 <p class="font-bold text-blue-800 text-xs">${userRelayDist.toFixed(2)} km</p>
                             </div>
                             <div>
-                                <p class="text-[10px] text-blue-600 uppercase">D+</p>
-                                <p class="font-bold text-blue-800 text-xs">${userRelayElev} m</p>
+                                <p class="text-[10px] text-blue-600 uppercase">Dénivelé</p>
+                                <p class="font-bold text-blue-800 text-xs">\u2191${userRelayElev}m \u2193${userRelayElevNeg}m</p>
                             </div>
                             <div>
                                 <p class="text-[10px] text-blue-600 uppercase">Temps</p>
@@ -4597,8 +4604,8 @@
                             <td class="px-2 py-1">${formatDist(lap.dist)}</td>
                             <td class="px-2 py-1 whitespace-nowrap">${
                                 (() => {
-                                    const dp = lap.elev ? `↑${lap.elev}` : '';
-                                    const dn = lap.elevNeg ? `↓${lap.elevNeg}` : '';
+                                    const dp = lap.elev ? `\u2191${lap.elev}` : '';
+                                    const dn = lap.elevNeg ? `\u2193${lap.elevNeg}` : '';
                                     return [dp, dn].filter(Boolean).join(' ') || '-';
                                 })()
                             }</td>
@@ -4642,8 +4649,8 @@
                                         <td class="px-2 py-1">${totalRelayDist.toFixed(2)} km</td>
                                         <td class="px-2 py-1 whitespace-nowrap">${
                                             (() => {
-                                                const dp = totalRelayElev > 0 ? `↑${totalRelayElev}m` : '';
-                                                const dn = totalRelayElevNeg > 0 ? `↓${totalRelayElevNeg}m` : '';
+                                                const dp = totalRelayElev > 0 ? `\u2191${totalRelayElev}m` : '';
+                                                const dn = totalRelayElevNeg > 0 ? `\u2193${totalRelayElevNeg}m` : '';
                                                 return [dp, dn].filter(Boolean).join(' ') || '-';
                                             })()
                                         }</td>
@@ -4727,8 +4734,8 @@
                                         <p class="font-bold ${c.title} text-xs">${st.dist.toFixed(2)} km</p>
                                     </div>
                                     <div>
-                                        <p class="text-[10px] ${c.sub} uppercase">D+</p>
-                                        <p class="font-bold ${c.title} text-xs">${st.elev} m</p>
+                                        <p class="text-[10px] ${c.sub} uppercase">Dénivelé</p>
+                                        <p class="font-bold ${c.title} text-xs">\u2191${st.elev}m \u2193${st.elevNeg}m</p>
                                     </div>
                                     <div>
                                         <p class="text-[10px] ${c.sub} uppercase">Temps</p>
@@ -7493,6 +7500,39 @@
                 generateRacePdf(currentRaceIdInDetails);
             }
         });
+
+        // Bouton Exporter depuis la modale de détails
+        if (exportSingleRaceBtn) {
+            exportSingleRaceBtn.addEventListener('click', () => {
+                if (currentRaceIdInDetails) {
+                    const race = races.find(r => r.id === currentRaceIdInDetails);
+                    if (!race) return;
+
+                    // Créer une copie propre de la course
+                    const { id, ...raceData } = race;
+                    if (!raceData.hasOwnProperty('public')) {
+                        raceData.public = true;
+                    }
+
+                    const data = {
+                        timestamp: new Date().toISOString(),
+                        races: [ { id, ...raceData } ],
+                        wishlist: []
+                    };
+
+                    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data, null, 2));
+                    const downloadAnchorNode = document.createElement('a');
+                    downloadAnchorNode.setAttribute("href", dataStr);
+                    
+                    const safeRaceName = race.name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+                    downloadAnchorNode.setAttribute("download", `export_course_${safeRaceName}_${new Date().toISOString().slice(0, 10)}.json`);
+                    
+                    document.body.appendChild(downloadAnchorNode);
+                    downloadAnchorNode.click();
+                    downloadAnchorNode.remove();
+                }
+            });
+        }
 
         raceForm.addEventListener('submit', saveRace);
 

@@ -710,68 +710,60 @@ async function generateRacePdf(raceId) {
         ];
 
         // Draw Card Function
-        function drawCard(title, badgeLabel, dist, elev, timeS, count, colors) {
+        function drawCard(xPos, title, badgeLabel, dist, elev, elevNeg, timeS, count, colors, cardWidth) {
             const cardHeight = 34;
-            const cardWidth = pageWidth - 2 * margin;
-
-            // Page break check
-            if (yPos + cardHeight > doc.internal.pageSize.getHeight() - margin) {
-                doc.addPage();
-                yPos = margin;
-            }
 
             // Draw Background and Border
             doc.setFillColor(...colors.bg);
             doc.setDrawColor(...colors.border);
             doc.setLineWidth(0.4);
-            doc.roundedRect(margin, yPos, cardWidth, cardHeight, 3, 3, 'FD');
+            doc.roundedRect(xPos, yPos, cardWidth, cardHeight, 3, 3, 'FD');
 
             // Draw Title
             doc.setFont(undefined, 'bold');
-            doc.setFontSize(11);
+            doc.setFontSize(10.5);
             doc.setTextColor(...colors.title);
-            doc.text(title, margin + 6, yPos + 7);
+            doc.text(title, xPos + 6, yPos + 7);
 
             // Draw Badge
             doc.setFont(undefined, 'bold');
-            doc.setFontSize(8);
+            doc.setFontSize(7.5);
             const badgeTextWidth = doc.getTextWidth(badgeLabel);
-            const badgeWidth = badgeTextWidth + 6;
-            const badgeHeight = 5;
-            const badgeX = margin + cardWidth - badgeWidth - 6;
+            const badgeWidth = badgeTextWidth + 4;
+            const badgeHeight = 4.5;
+            const badgeX = xPos + cardWidth - badgeWidth - 6;
             const badgeY = yPos + 3.5;
 
             doc.setFillColor(...colors.badgeBg);
             doc.roundedRect(badgeX, badgeY, badgeWidth, badgeHeight, 1.5, 1.5, 'F');
             doc.setTextColor(...colors.badgeText);
-            doc.text(badgeLabel, badgeX + 3, badgeY + 3.8);
+            doc.text(badgeLabel, badgeX + 2, badgeY + 3.4);
 
             // Draw Header Underline
             doc.setDrawColor(...colors.border);
             doc.setLineWidth(0.2);
-            doc.line(margin + 6, yPos + 10.5, margin + cardWidth - 6, yPos + 10.5);
+            doc.line(xPos + 6, yPos + 10.5, xPos + cardWidth - 6, yPos + 10.5);
 
-            // Stats
             const stats = [
                 { label: 'DISTANCE', value: `${dist.toFixed(2)} km` },
-                { label: 'D+', value: `${elev} m` },
+                { label: 'DÉNIVELÉ', value: `+${elev}m -${elevNeg}m` },
                 { label: 'TEMPS', value: formatSecondsToTime(timeS) },
                 { label: 'ALLURE', value: calculateLapPace(dist, timeS) }
             ];
 
             const colWidth = (cardWidth - 12) / 4;
             stats.forEach((stat, i) => {
-                const colX = margin + 6 + i * colWidth + colWidth / 2;
+                const colX = xPos + 6 + i * colWidth + colWidth / 2;
 
                 // Label
                 doc.setFont(undefined, 'normal');
-                doc.setFontSize(8);
+                doc.setFontSize(7.5);
                 doc.setTextColor(...colors.sub);
                 doc.text(stat.label, colX, yPos + 15.5, { align: 'center' });
 
                 // Value
                 doc.setFont(undefined, 'bold');
-                doc.setFontSize(10.5);
+                doc.setFontSize(9.5);
                 doc.setTextColor(...colors.title);
                 doc.text(stat.value, colX, yPos + 21, { align: 'center' });
             });
@@ -779,16 +771,14 @@ async function generateRacePdf(raceId) {
             // Draw Footer Divider
             doc.setDrawColor(...colors.border);
             doc.setLineWidth(0.2);
-            doc.line(margin + 6, yPos + 24.5, margin + cardWidth - 6, yPos + 24.5);
+            doc.line(xPos + 6, yPos + 24.5, xPos + cardWidth - 6, yPos + 24.5);
 
             // Draw Footer
             doc.setFont(undefined, 'bold');
-            doc.setFontSize(8.5);
+            doc.setFontSize(8);
             doc.setTextColor(...colors.title);
             const footerText = `${count} relais effectué${count > 1 ? 's' : ''}`;
-            doc.text(footerText, margin + cardWidth / 2, yPos + 29.5, { align: 'center' });
-
-            yPos += cardHeight + 6; // Move yPos down
+            doc.text(footerText, xPos + cardWidth / 2, yPos + 29.5, { align: 'center' });
         }
 
         // Draw Section Title for Performances
@@ -803,14 +793,64 @@ async function generateRacePdf(raceId) {
         doc.text('Performances des Participants', margin, yPos);
         yPos += 8;
 
-        // Render Owner Card
-        drawCard(`Ma performance (${currentUserPseudo})`, 'INDIVIDUEL', userRelayDist, userRelayElev, userRelayTimeS, userRelayCount, ownerColors);
+        const participants = [
+            {
+                title: currentUserPseudo,
+                badgeLabel: 'INDIVIDUEL',
+                dist: userRelayDist,
+                elev: userRelayElev,
+                elevNeg: userRelayElevNeg,
+                timeS: userRelayTimeS,
+                count: userRelayCount,
+                colors: ownerColors
+            }
+        ];
 
-        // Render Teammates Cards
         teammateNames.forEach((name, idx) => {
             const st = teammateStats[name];
             const colors = teammateColorsList[idx % teammateColorsList.length];
-            drawCard(name, 'COÉQUIPIER', st.dist, st.elev, st.timeS, st.count, colors);
+            participants.push({
+                title: name,
+                badgeLabel: 'COÉQUIPIER',
+                dist: st.dist,
+                elev: st.elev,
+                elevNeg: st.elevNeg,
+                timeS: st.timeS,
+                count: st.count,
+                colors: colors
+            });
+        });
+
+        const gap = 4;
+        const cardWidth = (pageWidth - 2 * margin - gap) / 2;
+        const cardHeight = 34;
+
+        participants.forEach((p, idx) => {
+            const col = idx % 2;
+            const isLast = idx === participants.length - 1;
+
+            let xPos;
+            if (col === 0 && isLast) {
+                // Centrer le dernier participant s'il est seul sur sa ligne
+                const availableWidth = pageWidth - 2 * margin;
+                xPos = margin + (availableWidth - cardWidth) / 2;
+            } else {
+                xPos = margin + col * (cardWidth + gap);
+            }
+
+            // Page break check only on new row
+            if (col === 0) {
+                if (yPos + cardHeight > doc.internal.pageSize.getHeight() - margin) {
+                    doc.addPage();
+                    yPos = margin;
+                }
+            }
+
+            drawCard(xPos, p.title, p.badgeLabel, p.dist, p.elev, p.elevNeg, p.timeS, p.count, p.colors, cardWidth);
+
+            if (col === 1 || idx === participants.length - 1) {
+                yPos += cardHeight + gap;
+            }
         });
 
         // Now draw "Segments du Relai" section title and table
@@ -1475,11 +1515,7 @@ async function generateRelayTableOnlyPdf(raceId) {
             doc.rect(currentX, yPos, width, rowHeight, 'FD');
 
             doc.setTextColor(55, 65, 81);
-            if (colIdx === 1 && isMoi) {
-                doc.setFont(undefined, 'bold');
-            } else {
-                doc.setFont(undefined, 'normal');
-            }
+            doc.setFont(undefined, 'normal');
             doc.setFontSize(9);
 
             const lines = cellLines[colIdx];
@@ -1540,6 +1576,217 @@ async function generateRelayTableOnlyPdf(raceId) {
         }
 
         currentX += width;
+    });
+
+    // Calcul des statistiques individuelles et par coéquipier pour les cartes
+    let userRelayDist = 0, userRelayElev = 0, userRelayElevNeg = 0, userRelayTimeS = 0;
+    let userRelayCount = 0;
+
+    race.relayLaps.forEach(lap => {
+        const d = parseFloat(lap.dist) || 0;
+        const e = parseInt(lap.elev) || 0;
+        const en = parseInt(lap.elevNeg) || 0;
+        const s = parseTimeToSeconds(lap.time);
+
+        if (lap.runner === 'Moi' || !lap.runner || lap.runner === 'Tous ensemble') {
+            userRelayDist += d;
+            userRelayElev += e;
+            userRelayElevNeg += en;
+            userRelayTimeS += s;
+            userRelayCount++;
+        }
+    });
+
+    const teammateNames = [...new Set(
+        race.relayLaps
+            .map(l => l.runner)
+            .filter(r => r && r !== 'Moi' && r !== 'Tous ensemble')
+    )];
+
+    const teammateStats = {};
+    teammateNames.forEach(name => {
+        teammateStats[name] = { dist: 0, elev: 0, elevNeg: 0, timeS: 0, count: 0 };
+    });
+
+    race.relayLaps.forEach(lap => {
+        const isTousEnsemble = lap.runner === 'Tous ensemble';
+        const targets = isTousEnsemble ? teammateNames : (lap.runner && lap.runner !== 'Moi' ? [lap.runner] : []);
+        const d = parseFloat(lap.dist) || 0;
+        const e = parseInt(lap.elev) || 0;
+        const en = parseInt(lap.elevNeg) || 0;
+        const s = parseTimeToSeconds(lap.time);
+        targets.forEach(name => {
+            if (teammateStats[name]) {
+                teammateStats[name].dist += d;
+                teammateStats[name].elev += e;
+                teammateStats[name].elevNeg += en;
+                teammateStats[name].timeS += s;
+                teammateStats[name].count++;
+            }
+        });
+    });
+
+    // Configuration des couleurs pour les cartes
+    const ownerColors = {
+        bg: [239, 246, 255],      // bg-blue-50
+        border: [191, 219, 254],  // border-blue-200
+        title: [30, 58, 138],     // text-blue-800
+        sub: [37, 99, 235],       // text-blue-600
+        badgeBg: [219, 234, 254], // bg-blue-100
+        badgeText: [30, 58, 138]  // text-blue-800
+    };
+
+    const teammateColorsList = [
+        { bg: [255, 247, 237], border: [254, 215, 170], title: [154, 52, 18], sub: [234, 88, 12], badgeBg: [254, 215, 170], badgeText: [154, 52, 18] }, // Orange
+        { bg: [245, 243, 255], border: [233, 213, 252], title: [91, 33, 182], sub: [124, 58, 237], badgeBg: [233, 213, 252], badgeText: [91, 33, 182] }, // Violet
+        { bg: [255, 241, 242], border: [254, 205, 211], title: [159, 18, 57], sub: [225, 29, 72], badgeBg: [254, 205, 211], badgeText: [159, 18, 57] }, // Rose
+        { bg: [240, 253, 240], border: [204, 251, 241], title: [19, 78, 74], sub: [13, 148, 136], badgeBg: [204, 251, 241], badgeText: [19, 78, 74] }, // Teal
+        { bg: [254, 252, 232], border: [254, 240, 138], title: [120, 53, 4], sub: [217, 119, 6], badgeBg: [254, 240, 138], badgeText: [120, 53, 4] }, // Amber
+        { bg: [236, 254, 255], border: [207, 250, 254], title: [21, 94, 117], sub: [8, 145, 178], badgeBg: [207, 250, 254], badgeText: [21, 94, 117] }  // Cyan
+    ];
+
+    function calculateLapPace(dist, seconds) {
+        if (!dist || !seconds || dist <= 0) return '-';
+        const speed = dist / (seconds / 3600);
+        if (speed <= 0) return '-';
+        const timePerKm = 60 / speed;
+        return `${timePerKm.toFixed(2)} min/km`;
+    }
+
+    function drawCard(xPos, title, badgeLabel, dist, elev, elevNeg, timeS, count, colors, cardWidth) {
+        const cardHeight = 34;
+
+        doc.setFillColor(...colors.bg);
+        doc.setDrawColor(...colors.border);
+        doc.setLineWidth(0.4);
+        doc.roundedRect(xPos, yPos, cardWidth, cardHeight, 3, 3, 'FD');
+
+        doc.setFont(undefined, 'bold');
+        doc.setFontSize(10.5);
+        doc.setTextColor(...colors.title);
+        doc.text(title, xPos + 6, yPos + 7);
+
+        doc.setFont(undefined, 'bold');
+        doc.setFontSize(7.5);
+        const badgeTextWidth = doc.getTextWidth(badgeLabel);
+        const badgeWidth = badgeTextWidth + 4;
+        const badgeHeight = 4.5;
+        const badgeX = xPos + cardWidth - badgeWidth - 6;
+        const badgeY = yPos + 3.5;
+
+        doc.setFillColor(...colors.badgeBg);
+        doc.roundedRect(badgeX, badgeY, badgeWidth, badgeHeight, 1.5, 1.5, 'F');
+        doc.setTextColor(...colors.badgeText);
+        doc.text(badgeLabel, badgeX + 2, badgeY + 3.4);
+
+        doc.setDrawColor(...colors.border);
+        doc.setLineWidth(0.2);
+        doc.line(xPos + 6, yPos + 10.5, xPos + cardWidth - 6, yPos + 10.5);
+
+        const stats = [
+            { label: 'DISTANCE', value: `${dist.toFixed(2)} km` },
+            { label: 'DÉNIVELÉ', value: `+${elev}m -${elevNeg}m` },
+            { label: 'TEMPS', value: secondsToTime(timeS) },
+            { label: 'ALLURE', value: calculateLapPace(dist, timeS) }
+        ];
+
+        const colWidth = (cardWidth - 12) / 4;
+        stats.forEach((stat, i) => {
+            const colX = xPos + 6 + i * colWidth + colWidth / 2;
+
+            doc.setFont(undefined, 'normal');
+            doc.setFontSize(7.5);
+            doc.setTextColor(...colors.sub);
+            doc.text(stat.label, colX, yPos + 15.5, { align: 'center' });
+
+            doc.setFont(undefined, 'bold');
+            doc.setFontSize(9.5);
+            doc.setTextColor(...colors.title);
+            doc.text(stat.value, colX, yPos + 21, { align: 'center' });
+        });
+
+        doc.setDrawColor(...colors.border);
+        doc.setLineWidth(0.2);
+        doc.line(xPos + 6, yPos + 24.5, xPos + cardWidth - 6, yPos + 24.5);
+
+        doc.setFont(undefined, 'bold');
+        doc.setFontSize(8);
+        doc.setTextColor(...colors.title);
+        const footerText = `${count} relais effectué${count > 1 ? 's' : ''}`;
+        doc.text(footerText, xPos + cardWidth / 2, yPos + 29.5, { align: 'center' });
+    }
+
+    // Titre de la section performances
+    yPos += totalRowHeight + 10;
+    if (yPos > pageHeight - 40) {
+        doc.addPage();
+        yPos = margin;
+    }
+
+    doc.setFontSize(14);
+    doc.setTextColor(...primaryColor);
+    doc.setFont(undefined, 'bold');
+    doc.text('Performances des Participants', margin, yPos);
+    yPos += 8;
+
+    const participants = [
+        {
+            title: currentUserPseudo,
+            badgeLabel: 'INDIVIDUEL',
+            dist: userRelayDist,
+            elev: userRelayElev,
+            elevNeg: userRelayElevNeg,
+            timeS: userRelayTimeS,
+            count: userRelayCount,
+            colors: ownerColors
+        }
+    ];
+
+    teammateNames.forEach((name, idx) => {
+        const st = teammateStats[name];
+        const colors = teammateColorsList[idx % teammateColorsList.length];
+        participants.push({
+            title: name,
+            badgeLabel: 'COÉQUIPIER',
+            dist: st.dist,
+            elev: st.elev,
+            elevNeg: st.elevNeg,
+            timeS: st.timeS,
+            count: st.count,
+            colors: colors
+        });
+    });
+
+    const gap = 4;
+    const cardWidth = (pageWidth - 2 * margin - gap) / 2;
+    const cardHeight = 34;
+
+    participants.forEach((p, idx) => {
+        const col = idx % 2;
+        const isLast = idx === participants.length - 1;
+
+        let xPos;
+        if (col === 0 && isLast) {
+            // Centrer le dernier participant s'il est seul sur sa ligne
+            const availableWidth = pageWidth - 2 * margin;
+            xPos = margin + (availableWidth - cardWidth) / 2;
+        } else {
+            xPos = margin + col * (cardWidth + gap);
+        }
+
+        // Page break check only on new row
+        if (col === 0) {
+            if (yPos + cardHeight > pageHeight - margin) {
+                doc.addPage();
+                yPos = margin;
+            }
+        }
+
+        drawCard(xPos, p.title, p.badgeLabel, p.dist, p.elev, p.elevNeg, p.timeS, p.count, p.colors, cardWidth);
+
+        if (col === 1 || idx === participants.length - 1) {
+            yPos += cardHeight + gap;
+        }
     });
 
     function parseTimeToSeconds(timeStr) {
