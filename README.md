@@ -1,125 +1,141 @@
-# Configuration Firebase Authentication et Firestore
+# Configuration Firebase Authentication & Firestore (RépertoireCourse)
 
-## 📋 Résumé des modifications
+Ce document décrit l'architecture de la base de données, la gestion des utilisateurs, les rôles ainsi que les règles de sécurité Firestore de l'application **RépertoireCourse**.
 
-Le code a été adapté pour utiliser **Firebase Authentication** au lieu de l'authentification par mot de passe hashé. Les règles Firestore ont été configurées pour être très strictes selon vos besoins.
+---
 
-## 🔐 Configuration Firebase Authentication
+## 👥 Rôles et Gestion des Comptes
 
-### 1. Créer les comptes utilisateurs
+L'application gère trois rôles distincts d'utilisateurs. L'authentification s'appuie sur **Firebase Authentication** et la gestion des rôles est enregistrée dans le document de chaque utilisateur dans Firestore.
 
-Dans la console Firebase (https://console.firebase.google.com), créez deux comptes utilisateurs :
+### 1. Comptes Utilisateurs Traditionnels (`role: 'user'`)
+*   **Nombre** : Illimité.
+*   **Création** : Créés automatiquement lors de l'inscription via le formulaire standard (`signup.html`).
+*   **Droits** : Chaque utilisateur dispose d'un espace personnel et isolé. Il peut créer, lire, modifier et supprimer ses propres courses et sa propre wishlist. Il peut également gérer ses préférences (UI, confidentialité, thèmes) et laisser un avis dans la collection globale des avis.
 
-1. **Compte Admin** :
-   - Email : `admin@votredomaine.com` (ou l'email de votre choix)
-   - Mot de passe : (celui que vous souhaitez)
-   - Rôle : `admin`
+### 2. Compte Administrateur (`role: 'admin'`)
+*   **Nombre** : **Unique** (un seul compte existant).
+*   **Droits** : 
+    *   Accès complet et superviseur à l'application.
+    *   Possibilité de lister tous les utilisateurs, de consulter leurs données (wishlist) et de visualiser les statistiques cumulées de tous les utilisateurs (via `js/admin-modal.js` et `js/admin-stats.js`).
+    *   Accès en écriture globale pour la modération ou la maintenance.
 
-2. **Compte Invité** :
-   - Email : `invite@votredomaine.com` (ou l'email de votre choix)
-   - Mot de passe : (celui que vous souhaitez)
-   - Rôle : `invite`
+### 3. Compte Invité (`role: 'invite'`)
+*   **Nombre** : **Unique** (un seul compte existant).
+*   **Droits** :
+    *   Accès en **lecture seule** uniquement.
+    *   Lors de la connexion, un modal de sélection s'affiche pour lui demander de choisir le carnet (l'adresse email) d'un utilisateur standard à consulter.
+    *   Il peut ensuite naviguer dans les courses et la wishlist de l'utilisateur choisi.
+    *   **Confidentialité** : Les prix exacts des courses lui sont masqués (remplacés par des tranches de prix ou floutés dans l'interface, ex: "0-20 €").
 
-### 2. Créer la collection `users` dans Firestore
+---
 
-Pour chaque utilisateur créé, créez un document dans la collection `users` avec l'ID correspondant à l'UID de l'utilisateur Firebase :
+## 🗄️ Structure de la Base de Données Firestore
 
-**Document pour l'admin** :
-- Collection : `users`
-- Document ID : `[UID_DE_L_ADMIN]`
-- Champs :
-  ```json
-  {
-    "role": "admin",
-    "email": "admin@votredomaine.com"
+Firestore est organisé avec une structure imbriquée (subcollections) afin de garantir la séparation et la sécurité des données de chaque utilisateur.
+
+```mermaid
+graph TD
+    users["/users (Collection Racine)"] --> userDoc["{userId} (Document Utilisateur)"]
+    userDoc --> races["races (Subcollection)"]
+    userDoc --> wishlist["wishlist (Subcollection)"]
+    reviews["/reviews (Collection Racine)"] --> reviewDoc["{userId} (Document Avis)"]
+```
+
+### 1. Collection racine `/users`
+Contient les profils et les préférences de chaque utilisateur. Le `Document ID` correspond à l'UID Firebase de l'utilisateur.
+*   **Champs principaux** : `email`, `role`, `pseudo`, `photoURL`, `createdAt`, `lastLogin`.
+*   **Champs de configuration** : `privacy` (options d'affichage public), `uiPreferences` (préférences visuelles), `cardButtons` (boutons actifs sur les cartes), `cardTags` (tags visibles).
+
+### 2. Subcollection `/users/{userId}/races`
+Contient toutes les courses créées par l'utilisateur `{userId}`.
+
+### 3. Subcollection `/users/{userId}/wishlist`
+Contient la liste de souhaits (wishlist) de l'utilisateur `{userId}`.
+
+### 4. Collection racine `/reviews`
+Contient les avis laissés par les utilisateurs connectés. Le `Document ID` correspond à l'UID de l'auteur de l'avis.
+*   **Champs principaux** : `stars`, `message`, `pseudo`, `photoURL`, `uid`, `updatedAt`, `approved` (brouillon ou publié).
+
+---
+
+## 📜 Règles de Sécurité Firestore (`firestore.rules`)
+
+Voici les règles de sécurité à configurer dans votre console Firebase (**Firestore Database > Rules**) pour assurer le respect des permissions et la protection des données :
+
+```javascript
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // --- FONCTIONS UTILS ---
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && (
+        (request.auth.token.admin == true) || 
+        (getUserData().role == 'admin')
+      );
+    }
+    
+    function isInvite() {
+      return isAuthenticated() && getUserData().role == 'invite';
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // --- RÈGLES DES COLLECTIONS ---
+
+    // 1. Profils Utilisateurs
+    match /users/{userId} {
+      // Les admins et invités peuvent lister les profils pour choisir un carnet dans le dashboard
+      // Le propriétaire peut lire ses propres informations
+      allow read: if isOwner(userId) || isAdmin() || isInvite();
+      allow write: if isOwner(userId) || isAdmin();
+      allow list: if isAdmin() || isInvite();
+
+      // 2. Subcollection : Courses
+      match /races/{raceId} {
+        // Accès complet pour le propriétaire et l'admin
+        // Lecture seule autorisée pour le compte invité
+        allow read: if isOwner(userId) || isAdmin() || isInvite();
+        allow write: if isOwner(userId) || isAdmin();
+      }
+
+      // 3. Subcollection : Wishlist
+      match /wishlist/{wishId} {
+        // Accès complet pour le propriétaire et l'admin
+        // Lecture seule autorisée pour le compte invité
+        allow read: if isOwner(userId) || isAdmin() || isInvite();
+        allow write: if isOwner(userId) || isAdmin();
+      }
+    }
+
+    // 4. Avis des Utilisateurs
+    match /reviews/{userId} {
+      // Tout le monde (y compris le public non connecté) peut lire les avis
+      allow read, list: if true;
+      // Seul l'auteur de l'avis ou l'admin peut écrire ou supprimer
+      allow write: if isOwner(userId) || isAdmin();
+    }
   }
-  ```
+}
+```
 
-**Document pour l'invité** :
-- Collection : `users`
-- Document ID : `[UID_DE_L_INVITE]`
-- Champs :
-  ```json
-  {
-    "role": "invite",
-    "email": "invite@votredomaine.com"
-  }
-  ```
+---
 
-> **Note** : Pour obtenir l'UID d'un utilisateur, allez dans Firebase Console > Authentication > Users, et copiez l'UID de chaque utilisateur.
+## 🛠️ Dépannage et Maintenance
 
-## 📜 Règles Firestore
-
-Les règles Firestore sont dans le fichier `firestore.rules`. Voici ce qu'elles font :
-
-### Collection `races`
-- **Lecture publique** : Tous les utilisateurs (même non connectés) peuvent lire les courses
-  - ⚠️ **Note importante** : Firestore ne peut pas filtrer les champs individuels dans les règles de lecture. Le masquage du prix pour les non-authentifiés se fait côté client dans le code JavaScript.
-- **Écriture** : Seuls les admins peuvent créer, modifier ou supprimer des courses
-
-### Collection `wishlist`
-- **Lecture** : Seuls les utilisateurs authentifiés (admin ou invite) peuvent lire
-- **Écriture** : Seuls les admins peuvent créer, modifier ou supprimer
-
-### Collection `users`
-- **Lecture** : Chaque utilisateur peut lire ses propres données
-- **Écriture** : Seuls les admins peuvent modifier
-
-### Toutes les autres collections
-- **Bloquées** : Aucune lecture ni écriture n'est autorisée
-
-## 🚀 Déploiement des règles
-
-1. Copiez le contenu du fichier `firestore.rules`
-2. Allez dans Firebase Console > Firestore Database > Rules
-3. Collez les règles et cliquez sur "Publish"
-
-## 🔑 Permissions selon le rôle
-
-### Utilisateur non connecté (Public)
-- ✅ Peut voir les cards de courses sur la page d'accueil (sans le prix)
-- ✅ Peut rechercher par nom uniquement
-- ❌ Ne peut pas voir les détails complets (prix, notes, etc.)
-- ❌ Ne peut pas modifier, supprimer ou ajouter des courses
-- ❌ Ne peut pas accéder à la wishlist
-
-### Utilisateur Invité (`invite`)
-- ✅ Peut voir toutes les courses avec tous les détails (sauf le prix exact)
-- ✅ Peut rechercher dans tous les champs
-- ✅ Peut utiliser les filtres avancés
-- ✅ Peut voir les fourchettes de prix (ex: "0-20 €")
-- ❌ Ne peut pas voir le prix exact
-- ❌ Ne peut pas modifier, supprimer ou ajouter des courses
-- ❌ Ne peut pas éditer la wishlist
-
-### Utilisateur Admin (`admin`)
-- ✅ Accès complet à toutes les fonctionnalités
-- ✅ Peut voir tous les prix exacts
-- ✅ Peut créer, modifier et supprimer des courses
-- ✅ Peut éditer la wishlist
-- ✅ Peut voir toutes les statistiques (y compris le prix total)
-
-## 📝 Notes importantes
-
-1. **Masquage du prix** : Le prix est masqué côté client pour les non-authentifiés et les invités. Les règles Firestore autorisent la lecture complète, mais le code JavaScript filtre l'affichage.
-
-2. **Custom Claims** : Le code supporte aussi les custom claims Firebase si vous préférez les utiliser. Pour cela, vous devrez configurer une Cloud Function qui définit les custom claims lors de la création d'un utilisateur.
-
-3. **Sécurité** : Les règles Firestore sont la première ligne de défense. Même si quelqu'un modifie le code JavaScript, il ne pourra pas contourner les règles Firestore.
-
-## 🛠️ Dépannage
-
-### L'utilisateur ne peut pas se connecter
-- Vérifiez que l'utilisateur existe dans Firebase Authentication
-- Vérifiez que le document correspondant existe dans la collection `users` avec le bon UID
-- Vérifiez que le champ `role` est bien défini (`admin` ou `invite`)
-
-### Les règles ne fonctionnent pas
-- Vérifiez que les règles ont été publiées dans Firebase Console
-- Vérifiez la syntaxe des règles (pas d'erreurs dans la console Firebase)
-- Vérifiez que l'utilisateur est bien authentifié (regardez dans la console du navigateur)
-
-### Le prix s'affiche pour les invités
-- Vérifiez que le code JavaScript filtre bien le prix pour les invités
-- Vérifiez que `isInvite()` retourne bien `true` pour l'utilisateur invité
-
+### Comment définir un rôle Admin ou Invité ?
+1. Créez le compte normalement via le formulaire d'inscription (ou directement dans Firebase Authentication console).
+2. Rendez-vous dans la base de données **Firestore**, localisez le document correspondant à l'UID du compte dans la collection `users`.
+3. Modifiez le champ `role` : remplacez `'user'` par `'admin'` ou `'invite'`.
