@@ -858,6 +858,8 @@ async function generateRacePdf(raceId) {
             }
         });
 
+        yPos += 8; // Petit espace supplémentaire à la fin des cartes des participants
+
         // Now draw "Segments du Relai" section title and table
         if (yPos > doc.internal.pageSize.getHeight() - 60) {
             doc.addPage();
