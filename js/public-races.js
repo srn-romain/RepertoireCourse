@@ -253,7 +253,7 @@ async function loadPublicRaces() {
             }
 
             const raceCard = document.createElement('div');
-            raceCard.className = 'bg-white rounded-xl overflow-hidden shadow-md card-hover relative group';
+            raceCard.className = 'bg-white rounded-xl overflow-hidden shadow-md card-hover relative group h-full';
 
             // Favorite Icon conditional
             const favIcon = (showFavorite && race.favorite)
@@ -312,8 +312,9 @@ async function loadPublicRaces() {
 
             // === CARD CONTENT ===
             raceCard.innerHTML = `
-                <div class="p-6 relative">
-                    <div class="flex justify-between items-start">
+                <div class="p-6 relative h-full flex flex-col justify-between">
+                    <div>
+                        <div class="flex justify-between items-start">
                         <div>
                             <h3 class="text-xl font-bold text-green-800 mb-1 flex items-center gap-1">
                                 ${favIcon}
@@ -408,6 +409,7 @@ async function loadPublicRaces() {
                 }
                         </div>
                     </div>
+</div>
 
                     <!-- Footer -->
                     <div class="mt-4 pt-3 flex items-center justify-between border-t border-green-50 pr-28">
