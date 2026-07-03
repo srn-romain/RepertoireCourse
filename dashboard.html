@@ -4571,7 +4571,7 @@
                         <div class="grid grid-cols-4 gap-2 text-center">
                             <div>
                                 <p class="text-[10px] text-blue-600 uppercase">Distance</p>
-                                <p class="font-bold text-blue-800 text-xs">${userRelayDist.toFixed(2)} km</p>
+                                <p class="font-bold text-blue-800 text-xs whitespace-nowrap">${userRelayDist.toFixed(2)}&nbsp;km</p>
                             </div>
                             <div>
                                 <p class="text-[10px] text-blue-600 uppercase">Dénivelé</p>
@@ -4585,11 +4585,11 @@
                             </div>
                             <div>
                                 <p class="text-[10px] text-blue-600 uppercase">Temps</p>
-                                <p class="font-bold text-blue-800 text-xs">${secondsToTime(userRelayTimeS)}</p>
+                                <p class="font-bold text-blue-800 text-xs whitespace-nowrap">${secondsToTime(userRelayTimeS)}</p>
                             </div>
                             <div>
                                 <p class="text-[10px] text-blue-600 uppercase">Allure</p>
-                                <p class="font-bold text-blue-800 text-xs">${calculatePace(userRelayDist, userRelayTimeS)}</p>
+                                <p class="font-bold text-blue-800 text-xs whitespace-nowrap">${calculatePace(userRelayDist, userRelayTimeS)}</p>
                             </div>
                         </div>
                         <div class="mt-3 pt-2 border-t border-blue-200 flex items-center justify-center gap-2">
@@ -4609,12 +4609,12 @@
                             <table class="w-full text-xs text-left text-green-800">
                                 <thead class="bg-green-100 text-green-900 uppercase font-semibold">
                                     <tr>
-                                        <th class="px-2 py-1">#</th>
-                                        <th class="px-2 py-1">Coureur</th>
-                                        <th class="px-2 py-1">Km</th>
-                                        <th class="px-2 py-1">Dénivelé</th>
-                                        <th class="px-2 py-1">Temps</th>
-                                        ${showSubRowColumn ? '<th class="px-2 py-1 text-indigo-600 text-center" title="Cliquez sur une ligne pour voir les détails"><i class="fas fa-clock"></i></th>' : ''}
+                                        <th class="pl-1.5 pr-1 py-1 w-6 text-center">#</th>
+                                        <th class="pl-1 pr-2 py-1">Coureur</th>
+                                        <th class="px-1.5 py-1">Km</th>
+                                        <th class="px-1.5 py-1">Dénivelé</th>
+                                        <th class="px-1.5 py-1">Temps</th>
+                                        ${showSubRowColumn ? '<th class="px-1 py-1 text-indigo-600 text-center" title="Cliquez sur une ligne pour voir les détails"><i class="fas fa-clock"></i></th>' : ''}
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-green-200">
@@ -4636,18 +4636,18 @@
                         <tr
                             class="${isMoi ? 'bg-blue-50/50 hover:bg-blue-100' : isTousEnsemble ? 'bg-purple-50/60 hover:bg-purple-100' : 'hover:bg-green-100'} transition-colors ${showRowDetails ? 'cursor-pointer select-none' : ''}"
                             ${showRowDetails ? `onclick="toggleRelayRow('${subRowId}', this)"` : ''}>
-                            <td class="px-2 py-1 font-medium text-green-700">${idx + 1}</td>
-                            <td class="px-2 py-1 ${isMoi ? 'font-bold text-blue-700' : isTousEnsemble ? 'font-bold text-purple-700' : ''}">${isTousEnsemble ? 'Tous' : (isMoi ? currentUserPseudo : (lap.runner === 'Personne' ? '-' : lap.runner))}</td>
-                            <td class="px-2 py-1">${formatDist(lap.dist)}</td>
-                            <td class="px-2 py-1 whitespace-nowrap">${
+                            <td class="pl-1.5 pr-1 py-1 font-medium text-green-700 text-center">${idx + 1}</td>
+                            <td class="pl-1 pr-2 py-1 ${isMoi ? 'font-bold text-blue-700' : isTousEnsemble ? 'font-bold text-purple-700' : ''}">${isTousEnsemble ? 'Tous' : (isMoi ? currentUserPseudo : (lap.runner === 'Personne' ? '-' : lap.runner))}</td>
+                            <td class="px-1.5 py-1">${formatDist(lap.dist)}</td>
+                            <td class="px-1.5 py-1 whitespace-nowrap">${
                                 (() => {
                                     const dp = lap.elev ? `\u2191${lap.elev}` : '';
                                     const dn = lap.elevNeg ? `\u2193${lap.elevNeg}` : '';
                                     return [dp, dn].filter(Boolean).join(' ') || '-';
                                 })()
                             }</td>
-                            <td class="px-2 py-1 font-mono text-xs">${lap.time || '-'}</td>
-                            ${showSubRowColumn ? `<td class="px-2 py-1 text-center text-indigo-400">${showRowDetails ? '<i class="fas fa-chevron-down relay-chevron text-[9px] transition-transform duration-200"></i>' : ''}</td>` : ''}
+                            <td class="px-1.5 py-1 font-mono text-xs">${lap.time || '-'}</td>
+                            ${showSubRowColumn ? `<td class="px-1 py-1 text-center text-indigo-400">${showRowDetails ? '<i class="fas fa-chevron-down relay-chevron text-[9px] transition-transform duration-200"></i>' : ''}</td>` : ''}
                         </tr>
                         ${showRowDetails ? `
                         <tr id="${subRowId}" class="hidden">
@@ -4682,17 +4682,17 @@
                                 </tbody>
                                 <tfoot class="bg-green-100 font-bold">
                                     <tr>
-                                        <td colspan="2" class="px-2 py-1">Total Groupe</td>
-                                        <td class="px-2 py-1">${totalRelayDist.toFixed(2)} km</td>
-                                        <td class="px-2 py-1 whitespace-nowrap">${
+                                        <td colspan="2" class="pl-1.5 pr-2 py-1">Total Grp</td>
+                                        <td class="px-1.5 py-1 whitespace-nowrap">${totalRelayDist.toFixed(2)}&nbsp;km</td>
+                                        <td class="px-1.5 py-1 whitespace-nowrap">${
                                             (() => {
                                                 const dp = totalRelayElev > 0 ? `\u2191${totalRelayElev}m` : '';
                                                 const dn = totalRelayElevNeg > 0 ? `\u2193${totalRelayElevNeg}m` : '';
                                                 return [dp, dn].filter(Boolean).join(' ') || '-';
                                             })()
                                         }</td>
-                                        <td class="px-2 py-1 font-mono text-xs">${secondsToTime(totalRelayTimeS)}</td>
-                                        ${showSubRowColumn ? '<td class="px-2 py-1"></td>' : ''}
+                                        <td class="px-1.5 py-1 font-mono text-xs">${secondsToTime(totalRelayTimeS)}</td>
+                                        ${showSubRowColumn ? '<td class="px-1 py-1"></td>' : ''}
                                     </tr>
                                 </tfoot>
                             </table>
@@ -4769,7 +4769,7 @@
                                 <div class="grid grid-cols-4 gap-2 text-center">
                                     <div>
                                         <p class="text-[10px] ${c.sub} uppercase">Distance</p>
-                                        <p class="font-bold ${c.title} text-xs">${st.dist.toFixed(2)} km</p>
+                                        <p class="font-bold ${c.title} text-xs whitespace-nowrap">${st.dist.toFixed(2)}&nbsp;km</p>
                                     </div>
                                     <div>
                                         <p class="text-[10px] ${c.sub} uppercase">Dénivelé</p>
@@ -4783,11 +4783,11 @@
                                     </div>
                                     <div>
                                         <p class="text-[10px] ${c.sub} uppercase">Temps</p>
-                                        <p class="font-bold ${c.title} text-xs">${secondsToTime(st.timeS)}</p>
+                                        <p class="font-bold ${c.title} text-xs whitespace-nowrap">${secondsToTime(st.timeS)}</p>
                                     </div>
                                     <div>
                                         <p class="text-[10px] ${c.sub} uppercase">Allure</p>
-                                        <p class="font-bold ${c.title} text-xs">${calculatePace(st.dist, st.timeS)}</p>
+                                        <p class="font-bold ${c.title} text-xs whitespace-nowrap">${calculatePace(st.dist, st.timeS)}</p>
                                     </div>
                                 </div>
                                 <div class="mt-3 pt-2 border-t ${c.foot} flex items-center justify-center gap-2">
