@@ -1357,12 +1357,16 @@ async function generateRacePdf(raceId) {
         }
     }
 
-    // Générer le nom du fichier
-    const fileName = `${race.name.replace(/[^a-z0-9]/gi, '_')}_${raceDate.toISOString().split('T')[0]}.pdf`;
+    // Générer le nom du fichier unique (avec horodatage HHMMSS pour unicité dans la même minute)
+    const now = new Date();
+    const timestamp = `${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}${String(now.getSeconds()).padStart(2, '0')}`;
+    const datePart = raceDate.toISOString().split('T')[0];
+    const safeRaceName = race.name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+    const fileName = `course_${safeRaceName}_${datePart}_${timestamp}.pdf`;
 
-    // Sauvegarder le PDF (ou ouvrir dans un nouvel onglet)
-    // doc.save(fileName); 
-    window.open(doc.output('bloburl'), '_blank');
+    // Sauvegarder le PDF directement pour forcer le nom de téléchargement unique
+    doc.setProperties({ title: fileName });
+    doc.save(fileName);
 }
 
 // Exposer la fonction globalement
@@ -1833,7 +1837,16 @@ async function generateRelayTableOnlyPdf(raceId) {
         return `${pad(h)}:${pad(m)}:${pad(s)}`;
     }
 
-    window.open(doc.output('bloburl'), '_blank');
+    // Générer le nom du fichier unique (avec horodatage HHMMSS pour unicité dans la même minute)
+    const now = new Date();
+    const timestamp = `${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}${String(now.getSeconds()).padStart(2, '0')}`;
+    const datePart = raceDate.toISOString().split('T')[0];
+    const safeRaceName = race.name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+    const fileName = `relais_${safeRaceName}_${datePart}_${timestamp}.pdf`;
+
+    // Sauvegarder le PDF directement pour forcer le nom de téléchargement unique
+    doc.setProperties({ title: fileName });
+    doc.save(fileName);
 }
 
 window.generateRelayTableOnlyPdf = generateRelayTableOnlyPdf;
