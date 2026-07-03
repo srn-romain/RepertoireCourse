@@ -158,7 +158,7 @@ const manualModalHTML = `
                                 </li>
                                 <li class="flex items-start gap-2">
                                     <i class="fas fa-layer-group text-green-600 mt-0.5"></i>
-                                    <span><strong>Jusqu'à 3 boutons :</strong> Choisissez parmi Site web, PDF, GPX, Drive, Résultats, etc.</span>
+                                    <span><strong>Choix des boutons :</strong> Choisissez parmi Modifier, Supprimer, PDF, Site web, GPX, Drive, Résultats ou Export (téléchargement JSON d'une course individuelle). Par défaut, les boutons activés sont <strong>Modifier, Supprimer et PDF</strong>. Vous pouvez afficher jusqu'à 3 boutons par carte.</span>
                                 </li>
                                 <li class="flex items-start gap-2">
                                     <i class="fas fa-eye text-green-600 mt-0.5"></i>
@@ -246,7 +246,11 @@ const manualModalHTML = `
                             </li>
                             <li class="flex items-center gap-3">
                                 <span class="inline-flex items-center justify-center w-24 py-1 bg-red-600 text-white rounded text-xs font-semibold shrink-0"><i class="fas fa-file-pdf mr-1.5"></i>PDF</span>
-                                <span><strong class="text-gray-800">Export PDF</strong> — générez un rapport esthétique de vos performances.</span>
+                                <span><strong class="text-gray-800">Export PDF</strong> — générez un rapport esthétique de vos performances (avec nom de fichier unique et horodaté).</span>
+                            </li>
+                            <li class="flex items-center gap-3">
+                                <span class="inline-flex items-center justify-center w-24 py-1 bg-pink-100 border border-pink-200 text-pink-800 rounded text-xs font-semibold shrink-0"><i class="fas fa-file-export mr-1.5"></i>Export</span>
+                                <span><strong class="text-gray-800">Exporter la course</strong> — téléchargez la sauvegarde JSON de cette course spécifique.</span>
                             </li>
                         </ul>
                         <p class="text-xs text-gray-400 italic mt-3">💡 Ces boutons sont visibles uniquement dans la modale de détail d'une course.</p>
@@ -286,12 +290,14 @@ const manualModalHTML = `
                             <p class="text-sm text-gray-600 mb-2">Gérez les courses d'équipe avec précision :</p>
                             <ul class="text-xs text-gray-600 ml-4 space-y-1">
                                 <li>• <strong>Relais Classique :</strong> Utilisez le "Tableau de Relais" pour
-                                    ajouter chaque segment avec son <strong>coureur</strong> (nom personnalisé), sa <strong>distance</strong>, son <strong>D+</strong>, son <strong>D-</strong> et son <strong>temps</strong>.</li>
+                                    ajouter chaque segment avec son <strong>coureur</strong> (nom personnalisé ou option <strong>"Personne"</strong> pour ne pas comptabiliser les stats), sa <strong>distance</strong>, son <strong>D+</strong>, son <strong>D-</strong> et son <strong>temps</strong>.</li>
+                                <li>• <strong>Attribution "Personne" :</strong> Permet de ne lier un relais à aucun participant. Ce relais s'affiche sous la mention <code>"-"</code> et ses données (km, dénivelé, temps) ne sont imputées à personne.</li>
                                 <li>• <strong>Calculs Automatiques :</strong> Les totaux de distance et de dénivelé sont recalculés en temps réel selon les segments saisis.</li>
                                 <li>• <strong>Commentaires de relais :</strong> Saisissez des remarques/commentaires pour chaque segment du relais. Dans les PDF, ils s'affichent sous forme de blocs dédiés, centrés et bien alignés.</li>
-                                <li>• <strong>Export PDF ciblé :</strong> Téléchargez uniquement le tableau détaillé de vos relais grâce à un bouton d'export dédié, générant un rapport épuré et centré.</li>
+                                <li>• <strong>Export PDF ciblé & unique :</strong> Téléchargez uniquement le tableau détaillé de vos relais grâce à un bouton d'export dédié. Le PDF généré possède un nom de fichier unique à la seconde près et centre le dernier coéquipier si le nombre de participants est impair.</li>
                                 <li>• <strong>Horaires ergonomiques :</strong> Si l'heure de départ de la course est renseignée et que tous les segments ont un temps valide, cliquez sur n'importe quelle ligne de segment pour déplier les horaires associés (Départ / Arrivée) de façon centrée sans défilement horizontal.</li>
-                                <li>• <strong>Dénivelé unifié :</strong> Les dénivelés D+ et D- sont combinés de façon compacte dans la colonne unique <i>Dénivelé</i> (ex: '↑500 ↓200').</li>
+                                <li>• <strong>Dénivelé unifié & compact :</strong> Les dénivelés D+ et D- sont combinés sur une seule ligne (ex: '↑500m ↓200m' ou seulement '↑500m' si D- est nul) pour éviter les retours à la ligne disgracieux. Les PDF utilisent le format simplifié '+' / '-'.</li>
+                                <li>• <strong>Détail des relais effectués :</strong> Le numéro des relais courus par chaque coéquipier est affiché à côté de son total de relais, par exemple : <code>2 relais effectués (1, 3)</code>.</li>
                                 <li>• <strong>Pseudo connecté :</strong> Vos propres relais affichent automatiquement votre pseudo dynamique d'utilisateur (ou du propriétaire du carnet) au lieu de la mention standard « Moi ».</li>
                                 <li>• <strong>Triathlon en Relais :</strong> Sélectionnez "En équipe (Relais)" puis
                                     choisissez votre discipline (Nageur, Cycliste ou Coureur) pour n'enregistrer que
