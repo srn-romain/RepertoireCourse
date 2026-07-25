@@ -134,6 +134,42 @@ const manualModalHTML = `
                                         class="fas fa-trash text-red-600"></i> et confirmez la suppression
                                     définitive.
                                 </p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Sélection Multiple et Actions en masse -->
+                <section class="mb-8">
+                    <h4 class="text-xl font-bold text-emerald-700 mb-3 flex items-center gap-2">
+                        <i class="fas fa-tasks text-emerald-600"></i> Sélection Multiple & Actions en masse
+                    </h4>
+                    <div class="bg-white border border-emerald-100 rounded-lg p-5 shadow-sm space-y-4">
+                        <p class="text-sm text-gray-700 leading-relaxed">
+                            Vous pouvez sélectionner plusieurs courses simultanément sur le tableau de bord pour effectuer des actions groupées rapidement et en toute sécurité.
+                        </p>
+
+                        <div class="grid md:grid-cols-2 gap-4">
+                            <div class="bg-emerald-50/60 border border-emerald-200 rounded-xl p-3.5">
+                                <h5 class="font-bold text-emerald-800 text-sm mb-1.5 flex items-center gap-2">
+                                    <i class="fas fa-hand-pointer text-emerald-600"></i> Activation & Sélection
+                                </h5>
+                                <ul class="text-xs text-gray-600 space-y-1.5">
+                                    <li>• <strong>Clic prolongé :</strong> Maintenez le clic ou le doigt pendant ~500ms sur une carte pour la sélectionner et basculer en mode sélection.</li>
+                                    <li>• <strong>Bouton "Sélectionner" :</strong> Cliquez sur le bouton d'outils dans la barre de filtres pour activer ou désactiver manuellement le mode.</li>
+                                    <li>• <strong>Désélection automatique :</strong> Si vous décochez la dernière course sélectionnée (ou via "Tout désélec."), le mode se ferme automatiquement.</li>
+                                </ul>
+                            </div>
+
+                            <div class="bg-slate-50 border border-slate-200 rounded-xl p-3.5">
+                                <h5 class="font-bold text-slate-800 text-sm mb-1.5 flex items-center gap-2">
+                                    <i class="fas fa-tools text-slate-600"></i> Actions en masse disponibles
+                                </h5>
+                                <ul class="text-xs text-gray-600 space-y-1.5">
+                                    <li>• <strong>Exporter :</strong> Téléchargez un fichier JSON unique contenant les courses sélectionnées.</li>
+                                    <li>• <strong>Note commune :</strong> Ajoutez une note concaténée à la fin des notes existantes de chaque course sélectionnée (avec un retour à la ligne automatique).</li>
+                                    <li>• <strong>Favoris :</strong> Marquez ou démarquez en lot les courses sélectionnées comme favorites.</li>
+                                    <li>• <strong>Suppression sécurisée :</strong> Supprimez les courses sélectionnées grâce à une modale de confirmation en 2 étapes.</li>
+                                </ul>
                             </div>
                         </div>
                     </div>

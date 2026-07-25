@@ -136,17 +136,15 @@
                     <i class="fas fa-star text-white text-xs"></i>
                 </span>
                 <div class="flex-1">
-                    <span class="font-bold text-green-800 text-sm">Dernière version : <i>Juillet 2026</i></span>
+                    <span class="font-bold text-green-800 text-sm">Dernière version : <i>Août 2026</i></span>
                     <span class="ml-2 text-xs bg-green-600 text-white px-2 py-0.5 rounded-full animate-bounce">Nouveau
                     </span>
                 </div>
             </div>
             <div class="px-5 py-4">
                 <ul class="space-y-1.5 text-sm text-green-800">
-                    <li class="flex items-start gap-2"><span class="text-green-500 mt-0.5">▸</span><span><strong>📄 Génération PDF de relais </strong> - Exportez uniquement le tableau détaillé des relais en un clic avec une mise en page propre.</span></li>
-                    <li class="flex items-start gap-2"><span class="text-green-500 mt-0.5">▸</span><span><strong>💬 Commentaires de relais </strong> - Saisissez et consultez des commentaires individuels pour chaque segment, maintenant parfaitement centrés dans le PDF.</span></li>
-                    <li class="flex items-start gap-2"><span class="text-green-500 mt-0.5">▸</span><span><strong>🎨 Design des PDF modernisé </strong> - Revue globale de la mise en page des détails et statistiques de course sous forme de tableaux bordés et centrés.</span></li>
-                    <li class="flex items-start gap-2"><span class="text-green-500 mt-0.5">▸</span><span><strong>🏷️ Tags des cartes configurables </strong> - Choisissez quels tags (Distance, Dénivelé, Lieu, Terrain, Temps, Allure, Prix, Classement) afficher sur vos cartes de course depuis le panneau de configuration.</span></li>
+                    <li class="flex items-start gap-2"><span class="text-green-500 mt-0.5">▸</span><span><strong>☑️ Sélection multiple & Clic prolongé </strong> - Maintenez le clic (~500ms) ou utilisez le bouton dédié pour sélectionner vos courses avec mise en relief émeraude.</span></li>
+                    <li class="flex items-start gap-2"><span class="text-green-500 mt-0.5">▸</span><span><strong>⚡ Actions en masse </strong> - Exporter la sélection en JSON, ajouter une note commune, gérer les favoris et supprimer en lot avec double validation.</span></li>
                 </ul>
             </div>
             <!-- Bouton ouvrir/fermer l'historique -->
@@ -160,6 +158,26 @@
         <!-- Historique — caché par défaut, géré en JS -->
         <div id="clHistory" class="hidden">
             <div class="ml-4 border-l-2 border-dashed border-green-200 pl-4 mt-2 space-y-3 pb-2">
+
+                <!-- idx=0 : Juillet 2026 -->
+                <div class="cl-card cl-hidden" data-cl-idx="0">
+                    <div class="bg-white border border-teal-100 rounded-xl shadow-sm overflow-hidden mb-3">
+                        <div class="flex items-center gap-3 px-5 py-3 bg-teal-50 border-b border-teal-100">
+                            <span class="flex items-center justify-center w-7 h-7 bg-teal-500 rounded-full shrink-0">
+                                <i class="fas fa-history text-white text-xs"></i>
+                            </span>
+                            <span class="font-bold text-teal-800 text-sm">Juillet 2026</span>
+                        </div>
+                        <div class="px-5 py-3">
+                            <ul class="space-y-1 text-sm text-teal-800">
+                                <li class="flex items-start gap-2"><span class="text-teal-500 mt-0.5">▸</span><span><strong>📄 Génération PDF de relais </strong> - Exportez uniquement le tableau détaillé des relais en un clic avec une mise en page propre.</span></li>
+                                <li class="flex items-start gap-2"><span class="text-teal-500 mt-0.5">▸</span><span><strong>💬 Commentaires de relais </strong> - Saisissez et consultez des commentaires individuels pour chaque segment, maintenant parfaitement centrés dans le PDF.</span></li>
+                                <li class="flex items-start gap-2"><span class="text-teal-500 mt-0.5">▸</span><span><strong>🎨 Design des PDF modernisé </strong> - Revue globale de la mise en page des détails et statistiques de course sous forme de tableaux bordés et centrés.</span></li>
+                                <li class="flex items-start gap-2"><span class="text-teal-500 mt-0.5">▸</span><span><strong>🏷️ Tags des cartes configurables </strong> - Choisissez quels tags (Distance, Dénivelé, Lieu, Terrain, Temps, Allure, Prix, Classement) afficher sur vos cartes de course depuis le panneau de configuration.</span></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
 
                 <!-- idx=0 : Juin 2026 -->
                 <div class="cl-card cl-hidden" data-cl-idx="0">
