@@ -7548,84 +7548,103 @@
 
             const favorite = document.getElementById('raceFavorite').checked;
 
-            const raceData = {
+            // Collecter la valeur brute/traitée pour chaque champ potentiel
+            const rawFields = {
                 name,
                 date,
-                hour,
-                distance,
-                elevation,
+                hour: hour ? hour.trim() : null,
+                distance: isNaN(distance) ? null : distance,
+                elevation: isNaN(elevation) ? null : elevation,
                 elevationNeg: isNaN(elevationNeg) ? null : elevationNeg,
-                time,
+                time: time ? time.trim() : null,
                 rankPos: rankPos ? parseInt(rankPos) : null,
                 rankTotal: rankTotal ? parseInt(rankTotal) : null,
                 rankGenderPos: rankGenderPos ? parseInt(rankGenderPos) : null,
                 rankGenderTotal: rankGenderTotal ? parseInt(rankGenderTotal) : null,
-                swimTime,
-                bikeTime,
-                runTime,
-                location,
-                terrain,
-                notes,
-                swimDistance: isNaN(swimDistance) ? null : swimDistance,
-                bikeDistance: isNaN(bikeDistance) ? null : bikeDistance,
-                price: parseFloat(price),
-                bibNumber: bibNumber || null,
-                bikeElevation: isNaN(bikeElevation) ? null : bikeElevation,
-                bikeElevationNeg: isNaN(bikeElevationNeg) ? null : bikeElevationNeg,
-                runElevation: isNaN(runElevation) ? null : runElevation,
-                runElevationNeg: isNaN(runElevationNeg) ? null : runElevationNeg,
-                website,
-                resultUrl,
-                gpxUrl,
-                driveId,
-                companions: currentCompanions,
+                location: location ? location.trim() : null,
+                terrain: terrain || 'route',
+                notes: notes ? notes : null,
+                price: (price !== '' && !isNaN(parseFloat(price))) ? parseFloat(price) : null,
+                bibNumber: bibNumber ? bibNumber.trim() : null,
+                website: website ? website.trim() : null,
+                resultUrl: resultUrl ? resultUrl.trim() : null,
+                gpxUrl: gpxUrl ? gpxUrl.trim() : null,
+                driveId: driveId ? driveId.trim() : null,
+                companions: (currentCompanions && currentCompanions.length > 0) ? currentCompanions : null,
                 favorite: favorite || false,
-                public: document.getElementById('racePublic').checked,
-                // Add Relay fields
-                raceFormat: document.querySelector('input[name="raceFormat"]:checked') ? document.querySelector('input[name="raceFormat"]:checked').value : 'solo',
-                raceRelaySport: document.getElementById('raceRelaySport').value,
-                relayLaps: (terrain === 'relai') ? relayLapsData : null,
-                hyroxLaps: (terrain === 'hyrox') ? hyroxData : null
+                public: document.getElementById('racePublic').checked
             };
 
-            // Set fixed distance for Hyrox
-            if (terrain === 'hyrox') {
-                raceData.distance = 8.00;
+            // Champs spécifiques par type de terrain
+            if (terrain === 'triathlon') {
+                const raceFormatVal = document.querySelector('input[name="raceFormat"]:checked') ? document.querySelector('input[name="raceFormat"]:checked').value : 'solo';
+                rawFields.raceFormat = raceFormatVal;
+
+                if (raceFormatVal === 'team') {
+                    const relaySportVal = document.getElementById('raceRelaySport').value;
+                    rawFields.raceRelaySport = relaySportVal;
+                    if (relaySportVal === 'swim') {
+                        rawFields.swimDistance = isNaN(swimDistance) ? null : swimDistance;
+                        rawFields.swimTime = swimTime ? swimTime.trim() : null;
+                    } else if (relaySportVal === 'bike') {
+                        rawFields.bikeDistance = isNaN(bikeDistance) ? null : bikeDistance;
+                        rawFields.bikeTime = bikeTime ? bikeTime.trim() : null;
+                        rawFields.bikeElevation = isNaN(bikeElevation) ? null : bikeElevation;
+                        rawFields.bikeElevationNeg = isNaN(bikeElevationNeg) ? null : bikeElevationNeg;
+                    } else if (relaySportVal === 'run') {
+                        rawFields.runTime = runTime ? runTime.trim() : null;
+                        rawFields.runElevation = isNaN(runElevation) ? null : runElevation;
+                        rawFields.runElevationNeg = isNaN(runElevationNeg) ? null : runElevationNeg;
+                    }
+                } else {
+                    rawFields.swimDistance = isNaN(swimDistance) ? null : swimDistance;
+                    rawFields.swimTime = swimTime ? swimTime.trim() : null;
+                    rawFields.bikeDistance = isNaN(bikeDistance) ? null : bikeDistance;
+                    rawFields.bikeTime = bikeTime ? bikeTime.trim() : null;
+                    rawFields.bikeElevation = isNaN(bikeElevation) ? null : bikeElevation;
+                    rawFields.bikeElevationNeg = isNaN(bikeElevationNeg) ? null : bikeElevationNeg;
+                    rawFields.runTime = runTime ? runTime.trim() : null;
+                    rawFields.runElevation = isNaN(runElevation) ? null : runElevation;
+                    rawFields.runElevationNeg = isNaN(runElevationNeg) ? null : runElevationNeg;
+                }
+            } else if (terrain === 'relai') {
+                rawFields.relayLaps = (relayLapsData && relayLapsData.length > 0) ? relayLapsData : null;
+            } else if (terrain === 'hyrox') {
+                rawFields.distance = 8.00;
+                rawFields.hyroxLaps = (hyroxData && hyroxData.length > 0) ? hyroxData : null;
             }
 
-            // Clear unselected sports data for Relay Triathlon
-            if (raceData.terrain === 'triathlon' && raceData.raceFormat === 'team') {
-                const sport = raceData.raceRelaySport;
-                if (sport === 'swim') {
-                    raceData.bikeDistance = null;
-                    raceData.bikeTime = null;
-                    raceData.bikeElevation = null;
-                    raceData.bikeElevationNeg = null;
-                    raceData.distance = null; // Run distance
-                    raceData.runTime = null;
-                    raceData.runElevation = null;
-                    raceData.runElevationNeg = null;
-                    // Optionally set total time to swim time if logical?
-                    // raceData.time = raceData.swimTime;
-                } else if (sport === 'bike') {
-                    raceData.swimDistance = null;
-                    raceData.swimTime = null;
-                    raceData.distance = null; // Run distance
-                    raceData.runTime = null;
-                    raceData.runElevation = null;
-                    raceData.runElevationNeg = null;
-                } else if (sport === 'run') {
-                    raceData.swimDistance = null;
-                    raceData.swimTime = null;
-                    raceData.bikeDistance = null;
-                    raceData.bikeTime = null;
-                    raceData.bikeElevation = null;
-                    raceData.bikeElevationNeg = null;
-                }
-            } else if (raceData.terrain === 'triathlon' && raceData.raceFormat === 'solo') {
-                // Ensure relay sport is empty if solo
-                raceData.raceRelaySport = null;
+            // Liste de tous les champs connus pouvant exister en BDD
+            const allPossibleFields = [
+                'name', 'date', 'hour', 'distance', 'elevation', 'elevationNeg', 'time',
+                'rankPos', 'rankTotal', 'rankGenderPos', 'rankGenderTotal', 'location',
+                'terrain', 'notes', 'price', 'bibNumber', 'website', 'resultUrl', 'gpxUrl',
+                'driveId', 'companions', 'favorite', 'public', 'raceFormat', 'raceRelaySport',
+                'swimDistance', 'bikeDistance', 'swimTime', 'bikeTime', 'runTime',
+                'bikeElevation', 'bikeElevationNeg', 'runElevation', 'runElevationNeg',
+                'relayLaps', 'hyroxLaps'
+            ];
+
+            function isValidValue(val) {
+                if (val === null || val === undefined) return false;
+                if (typeof val === 'string' && val.trim() === '') return false;
+                if (typeof val === 'number' && isNaN(val)) return false;
+                if (Array.isArray(val) && val.length === 0) return false;
+                return true;
             }
+
+            const currentRace = id ? races.find(r => r.id === id) : null;
+            const raceData = {};
+
+            allPossibleFields.forEach(key => {
+                const val = rawFields[key];
+                if (isValidValue(val)) {
+                    raceData[key] = val;
+                } else if (currentRace && currentRace[key] !== undefined && currentRace[key] !== null) {
+                    // Si le champ existait en BDD avant mais est maintenant supprimé / non renseigné, on demande à Firestore de le supprimer
+                    raceData[key] = firebase.firestore.FieldValue.delete();
+                }
+            });
 
             // TENTATIVE DE RECUPERATION AUTOMATIQUE D'IMAGE SI ABSENTE
             // AJOUT : Automatique si (Site ou Nom) et Pas de photo
