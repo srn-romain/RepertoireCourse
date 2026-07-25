@@ -990,7 +990,13 @@
                         </svg>
                     </button>
                     <h3 id="detailsTitle" class="text-2xl font-bold text-green-800 mb-2"></h3>
-                    <p id="detailsDate" class="text-green-600 mb-4"></p>
+                    <p id="detailsDate" class="text-green-600 mb-2"></p>
+                    <div id="detailsBibContainer" class="mb-4 hidden">
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200" title="Numéro de dossard">
+                            <i class="fas fa-id-badge text-slate-400"></i>
+                            <span id="detailsBibText"></span>
+                        </span>
+                    </div>
 
                     <div class="grid grid-cols-2 gap-4 mb-4">
                         <!-- Triathlon specific fields -->
@@ -4803,16 +4809,6 @@
                 heureHtml = `<span class="ml-2 px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">${hourDisplay}</span>`;
             }
 
-            // Ajout du dossard (s'il est renseigné)
-            let dossardHtml = '';
-            const bibVal = (race.bibNumber !== undefined && race.bibNumber !== null) ? String(race.bibNumber).trim() : '';
-            if (bibVal !== '') {
-                const bibDisplay = fieldMatchesSearch(bibVal, searchQuery)
-                    ? highlightSearchMatch(bibVal, searchQuery)
-                    : bibVal;
-                dossardHtml = `<span class="ml-2 px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full font-medium inline-flex items-center gap-1" title="Dossard n° ${bibVal}"><i class="fas fa-id-badge text-green-600"></i> Dossard n°${bibDisplay}</span>`;
-            }
-
             // Date avec surlignage si correspond
             const dateStr = raceDate.toLocaleDateString('fr-FR', {
                 weekday: 'long',
@@ -4827,7 +4823,7 @@
                 ? highlightSearchMatch(dateStr, searchQuery)
                 : dateStr;
 
-            document.getElementById('detailsDate').innerHTML = dateDisplay + heureHtml + dossardHtml + badgeAvenir;
+            document.getElementById('detailsDate').innerHTML = dateDisplay + heureHtml + badgeAvenir;
 
             // Gestion des champs Triathlon
             const swimContainer = document.getElementById('detailsSwimContainer');
@@ -5963,13 +5959,24 @@
             }
             if (detailTerrainText) detailTerrainText.textContent = terrainLabel;
 
-            // Gestion des Badges et des J'aime
+            // Gestion des Badges, des J'aime et du Dossard
             const badgeButton = document.getElementById('BadgeButton');
             const gridContainer = badgeButton.parentElement;
 
-            // Nettoyage préalable (row supplémentaire)
+            // Nettoyage préalable des conteneurs dynamiques en bas de grille
             let likesRow = document.getElementById('detailsLikesRow');
             if (likesRow) likesRow.remove();
+            let bibRow = document.getElementById('detailsBibBottomRow');
+            if (bibRow) bibRow.remove();
+
+            // Récupération du dossard et réinitialisation de son conteneur du haut
+            const bibContainer = document.getElementById('detailsBibContainer');
+            const bibText = document.getElementById('detailsBibText');
+            if (bibContainer) bibContainer.classList.add('hidden');
+
+            const bibVal = (race.bibNumber !== undefined && race.bibNumber !== null) ? String(race.bibNumber).trim() : '';
+            const hasBib = bibVal !== '';
+            const bibDisplay = hasBib ? (fieldMatchesSearch(bibVal, searchQuery) ? highlightSearchMatch(bibVal, searchQuery) : bibVal) : '';
 
             // Reset l'en-tête du bouton Badge (remettre l'icône et le texte d'origine)
             const badgeTitleP = badgeButton.querySelector('p');
@@ -6019,15 +6026,9 @@
                 : '';
 
             if (hasBadges) {
-                // Cas 1 : Il y a des badges
+                // Cas 1 : La course comporte des badges (ils restent dans le carré BadgeButton)
                 if (detailBadgeText) detailBadgeText.innerHTML = badgeHtml;
 
-                // On ajoute une nouvelle ligne en dessous pour les J'aime
-                likesRow = document.createElement('div');
-                likesRow.id = 'detailsLikesRow';
-                likesRow.className = 'bg-green-50 p-3 rounded-lg w-full mb-4 border border-green-100';
-
-                // Tooltip and trigger HTML
                 const likeHoverHtml = (likeCount > 0) ? `
                     <div class="like-hover-trigger-modal inline-flex items-center gap-2 cursor-help relative group/likes-modal"
                          data-liked-by='${JSON.stringify(likedBy)}'>
@@ -6045,18 +6046,43 @@
                     </div>
                 ` : `<span class="font-normal text-green-800 flex items-center gap-2">${likeText} ${likesLockIcon}</span>`;
 
-                likesRow.innerHTML = `
-                    <p class="text-sm text-green-600 flex items-center gap-2 mb-1">
-                        <i class="fas fa-heart text-green-500"></i>
-                        <span>J'aime (communauté)</span>
-                    </p>
-                    ${likeHoverHtml}
-                `;
-                // Insérer après le conteneur grid
+                likesRow = document.createElement('div');
+                likesRow.id = 'detailsLikesRow';
+
+                if (hasBib) {
+                    // Si la course a aussi un dossard : grille à 2 colonnes en bas (J'aime à gauche, Dossard à droite)
+                    likesRow.className = 'grid grid-cols-2 gap-4 mb-4';
+                    likesRow.innerHTML = `
+                        <div class="bg-green-50 p-3 rounded-lg flex flex-col justify-center">
+                            <p class="text-sm text-green-600 flex items-center gap-2 mb-1">
+                                <i class="fas fa-heart text-green-500"></i>
+                                <span>J'aime</span>
+                            </p>
+                            ${likeHoverHtml}
+                        </div>
+                        <div class="bg-green-50 p-3 rounded-lg flex flex-col justify-center">
+                            <p class="text-sm text-green-600 flex items-center gap-2 mb-1">
+                                <i class="fas fa-id-badge text-green-500"></i>
+                                <span>Dossard</span>
+                            </p>
+                            <p class="font-semibold text-green-800 text-sm">N°${bibDisplay}</p>
+                        </div>
+                    `;
+                } else {
+                    // Pas de dossard : J'aime sur toute la largeur
+                    likesRow.className = 'bg-green-50 p-3 rounded-lg w-full mb-4 border border-green-100';
+                    likesRow.innerHTML = `
+                        <p class="text-sm text-green-600 flex items-center gap-2 mb-1">
+                            <i class="fas fa-heart text-green-500"></i>
+                            <span>J'aime (communauté)</span>
+                        </p>
+                        ${likeHoverHtml}
+                    `;
+                }
                 gridContainer.parentNode.insertBefore(likesRow, gridContainer.nextSibling);
 
             } else {
-                // Cas 2 : Pas de badges
+                // Cas 2 : Pas de badges -> J'aime dans BadgeButton
                 badgeTitleP.innerHTML = `
                     <i class="fas fa-heart text-green-500"></i>
                     <span>J'aime</span>
@@ -6081,6 +6107,12 @@
                     ` : `<span class="font-normal text-green-800 text-sm flex items-center gap-2">${likeText} ${likesLockIcon}</span>`;
 
                     detailBadgeText.innerHTML = likeHoverHtml;
+                }
+
+                // Si la course n'a pas de badge mais a un dossard -> afficher le dossard en haut sous la date
+                if (hasBib && bibContainer && bibText) {
+                    bibText.innerHTML = `Dossard n°${bibDisplay}`;
+                    bibContainer.classList.remove('hidden');
                 }
             }
 
