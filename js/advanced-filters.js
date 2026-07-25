@@ -170,6 +170,7 @@
                         ${race.time || ''} 
                         ${race.rating || ''} 
                         ${race.notes || ''} 
+                        ${race.bibNumber || ''} 
                         ${race.rankPos || ''}/${race.rankTotal || ''} 
                         ${race.rankPos || ''} / ${race.rankTotal || ''}
                         ${race.rankGenderPos || ''}/${race.rankGenderTotal || ''}

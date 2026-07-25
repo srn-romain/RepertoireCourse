@@ -105,6 +105,10 @@ async function generateRacePdf(raceId) {
         tableData.push(['Prix', `${parseFloat(race.price).toFixed(2)} €`]);
     }
 
+    if (race.bibNumber) {
+        tableData.push(['N° Dossard', String(race.bibNumber)]);
+    }
+
     if (isUpcoming) {
         tableData.push(['Statut', 'Course à venir']);
     }

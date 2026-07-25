@@ -692,11 +692,19 @@
                             class="w-full px-3 py-2 border border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
                             placeholder="Lieu course">
                     </div>
-                    <div class="mb-4">
-                        <label for="racePrice" class="block text-green-700 mb-2">Prix (€)</label>
-                        <input type="number" id="racePrice" name="racePrice"
-                            class="w-full px-3 py-2 border border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                            step="0.001" min="0" placeholder="00,00">
+                    <div class="mb-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label for="racePrice" class="block text-green-700 mb-2">Prix (€)</label>
+                            <input type="number" id="racePrice" name="racePrice"
+                                class="w-full px-3 py-2 border border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                                step="0.001" min="0" placeholder="00,00">
+                        </div>
+                        <div>
+                            <label for="raceBibNumber" class="block text-green-700 mb-2">Numéro de dossard</label>
+                            <input type="text" id="raceBibNumber" name="raceBibNumber"
+                                class="w-full px-3 py-2 border border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                                placeholder="Ex: 1234">
+                        </div>
                     </div>
                     <div id="raceGpxContainer" class="mb-4">
                         <div class="flex items-end justify-between mb-2">
@@ -3505,6 +3513,8 @@
                 toggleBtnActive(document.getElementById('btnUnderline'), false);
             }
             document.getElementById('raceId').value = '';
+            const raceBibNumberInput = document.getElementById('raceBibNumber');
+            if (raceBibNumberInput) raceBibNumberInput.value = (prefillData && prefillData.bibNumber) ? prefillData.bibNumber : '';
 
             // Stocker l'ID de la wishlist si provient de là
             if (prefillData && prefillData.wishlistId) {
@@ -4793,6 +4803,16 @@
                 heureHtml = `<span class="ml-2 px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">${hourDisplay}</span>`;
             }
 
+            // Ajout du dossard (s'il est renseigné)
+            let dossardHtml = '';
+            const bibVal = (race.bibNumber !== undefined && race.bibNumber !== null) ? String(race.bibNumber).trim() : '';
+            if (bibVal !== '') {
+                const bibDisplay = fieldMatchesSearch(bibVal, searchQuery)
+                    ? highlightSearchMatch(bibVal, searchQuery)
+                    : bibVal;
+                dossardHtml = `<span class="ml-2 px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full font-medium inline-flex items-center gap-1" title="Dossard n° ${bibVal}"><i class="fas fa-id-badge text-green-600"></i> Dossard n°${bibDisplay}</span>`;
+            }
+
             // Date avec surlignage si correspond
             const dateStr = raceDate.toLocaleDateString('fr-FR', {
                 weekday: 'long',
@@ -4807,7 +4827,7 @@
                 ? highlightSearchMatch(dateStr, searchQuery)
                 : dateStr;
 
-            document.getElementById('detailsDate').innerHTML = dateDisplay + heureHtml + badgeAvenir;
+            document.getElementById('detailsDate').innerHTML = dateDisplay + heureHtml + dossardHtml + badgeAvenir;
 
             // Gestion des champs Triathlon
             const swimContainer = document.getElementById('detailsSwimContainer');
@@ -5279,27 +5299,6 @@
                             <span class="text-[11px] text-blue-700 font-semibold">${userRelayCount} relai${userRelayCount > 1 ? 's' : ''} effectué${userRelayCount > 1 ? 's' : ''} (${userRelayLaps.join(', ')})</span>
                         </div>
                     </div>
-
-                    <div class="bg-green-50 p-3 rounded-lg w-full border border-green-100 mb-4 shadow-sm">
-                        <div class="flex items-center justify-between border-b border-green-200 pb-2 mb-3">
-                            <h4 class="font-bold text-green-800 text-sm flex items-center gap-2">
-                                <i class="fas fa-users text-green-600"></i> Performance du Groupe
-                            </h4>
-                            <span class="text-[10px] bg-green-100 text-green-800 px-2 py-0.5 rounded-full font-bold uppercase">Relais Complet</span>
-                        </div>
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-xs text-left text-green-800">
-                                <thead class="bg-green-100 text-green-900 uppercase font-semibold">
-                                    <tr>
-                                        <th class="pl-1.5 pr-1 py-1 w-6 text-center">#</th>
-                                        <th class="pl-1 pr-2 py-1">Coureur</th>
-                                        <th class="px-1.5 py-1">Km</th>
-                                        <th class="px-1.5 py-1">Dénivelé</th>
-                                        <th class="px-1.5 py-1">Temps</th>
-                                        ${showSubRowColumn ? '<th class="px-1 py-1 text-indigo-600 text-center" title="Cliquez sur une ligne pour voir les détails"><i class="fas fa-clock"></i></th>' : ''}
-                                    </tr>
-                                </thead>
-                                <tbody class="divide-y divide-green-200">
                 `;
 
 
@@ -7213,6 +7212,7 @@
                 updateNotesFormatState();
             }
             document.getElementById('racePrice').value = (race.price !== undefined && race.price !== null) ? race.price : '';
+            document.getElementById('raceBibNumber').value = race.bibNumber || '';
             document.getElementById('raceWebsite').value = race.website || '';
             document.getElementById('raceResultUrl').value = race.resultUrl || '';
             document.getElementById('raceGpxUrl').value = race.gpxUrl || '';
@@ -7429,6 +7429,7 @@
             if (editor) document.getElementById('raceNotes').value = editor.innerHTML;
             const notes = document.getElementById('raceNotes').value;
             const price = document.getElementById('racePrice').value;
+            const bibNumber = document.getElementById('raceBibNumber') ? document.getElementById('raceBibNumber').value.trim() : '';
             const website = document.getElementById('raceWebsite').value.trim();
             const resultUrl = document.getElementById('raceResultUrl').value.trim();
             const gpxUrl = document.getElementById('raceGpxUrl').value.trim();
@@ -7568,6 +7569,7 @@
                 swimDistance: isNaN(swimDistance) ? null : swimDistance,
                 bikeDistance: isNaN(bikeDistance) ? null : bikeDistance,
                 price: parseFloat(price),
+                bibNumber: bibNumber || null,
                 bikeElevation: isNaN(bikeElevation) ? null : bikeElevation,
                 bikeElevationNeg: isNaN(bikeElevationNeg) ? null : bikeElevationNeg,
                 runElevation: isNaN(runElevation) ? null : runElevation,
@@ -8077,6 +8079,7 @@
                         ${race.time || ''}
                         ${race.rating || ''}
                         ${race.notes || ''}
+                        ${race.bibNumber || ''}
                         ${race.rankPos || ''}/${race.rankTotal || ''}
                         ${race.rankPos || ''} / ${race.rankTotal || ''}
                         ${race.rankGenderPos || ''}/${race.rankGenderTotal || ''}
