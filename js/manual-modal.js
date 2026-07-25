@@ -97,6 +97,7 @@ const manualModalHTML = `
                                     <div>• Nom de la course <span class="text-red-500">*</span></div>
                                     <div>• Date <span class="text-red-500">*</span></div>
                                     <div>• Distance (km) <span class="text-red-500">*</span></div>
+                                    <div>• Numéro de dossard</div>
                                     <div>• Dénivelé positif D+ (m)</div>
                                     <div>• Dénivelé négatif D- (m)</div>
                                     <div>• Temps de course</div>
@@ -419,9 +420,9 @@ const manualModalHTML = `
                         </div>
                         <p class="text-[11px] text-blue-600 italic mt-3 flex items-center gap-2">
                             <i class="fas fa-lightbulb text-yellow-500"></i>
-                            <span><strong>Recherche Intelligente :</strong> La barre de recherche principale ne se
-                             limite pas aux noms. Elle scanne instantanément toutes les données de vos courses
-                              (lieux, notes, accompagnants, etc.) pour vous offrir un résultat immédiat.</span>
+                             <span><strong>Recherche Intelligente :</strong> La barre de recherche principale ne se
+                              limite pas aux noms. Elle scanne instantanément toutes les données de vos courses
+                               (lieux, notes, numéro de dossard, accompagnants, etc.) pour vous offrir un résultat immédiat.</span>
                         </p>
                     </div>
                 </section>
