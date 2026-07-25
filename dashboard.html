@@ -326,6 +326,12 @@
                     </svg>
                     Favoris
                 </button>
+                <button id="toggleSelectionModeBtn"
+                    class="px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 hover:bg-emerald-200 transition flex items-center gap-1.5 text-xs font-semibold"
+                    title="Activer la sélection multiple (ou clic prolongé sur une carte)">
+                    <i class="fas fa-tasks"></i>
+                    <span>Sélectionner</span>
+                </button>
             </div>
         </div>
 
@@ -1391,6 +1397,147 @@
                     class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors">
                     Supprimer
                 </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Barre flottante d'actions en masse -->
+    <div id="bulkActionsBar" class="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 transition-all duration-300 translate-y-32 opacity-0 pointer-events-none max-w-[95vw] w-auto">
+        <div class="bg-slate-900/95 backdrop-blur-md text-white rounded-2xl p-2.5 md:p-3 shadow-2xl border border-slate-700/80 flex items-center justify-between gap-2 overflow-x-auto whitespace-nowrap">
+            <div class="flex items-center gap-2 shrink-0">
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-500/20 text-emerald-300 font-bold text-xs rounded-full border border-emerald-500/40 shadow-sm" id="selectedCountText">
+                    0 sélectionnée(s)
+                </span>
+            </div>
+
+            <div class="flex items-center gap-1.5 shrink-0">
+                <button id="bulkSelectAllBtn" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-medium transition flex items-center gap-1.5 border border-slate-700 shrink-0">
+                    <i class="far fa-check-square text-emerald-400"></i>
+                    <span id="bulkSelectAllText">Tout sélec.</span>
+                </button>
+                <button id="bulkExportBtn" class="px-2.5 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-semibold transition flex items-center gap-1.5 shadow-sm shrink-0">
+                    <i class="fas fa-file-export"></i>
+                    <span>Exporter</span>
+                </button>
+                <button id="bulkAddNoteBtn" class="px-2.5 py-1.5 bg-teal-600 hover:bg-teal-500 text-white rounded-xl text-xs font-semibold transition flex items-center gap-1.5 shadow-sm shrink-0">
+                    <i class="fas fa-sticky-note"></i>
+                    <span>Note commune</span>
+                </button>
+                <button id="bulkToggleFavBtn" class="px-2.5 py-1.5 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-xs font-semibold transition flex items-center gap-1.5 shadow-sm shrink-0">
+                    <i class="fas fa-star text-amber-300"></i>
+                    <span>Favoris</span>
+                </button>
+                <button id="bulkDeleteBtn" class="px-2.5 py-1.5 bg-red-600 hover:bg-red-500 text-white rounded-xl text-xs font-semibold transition flex items-center gap-1.5 shadow-sm shrink-0">
+                    <i class="fas fa-trash-alt"></i>
+                    <span>Supprimer</span>
+                </button>
+                <div class="h-5 w-px bg-slate-700 mx-0.5 shrink-0"></div>
+                <button id="closeSelectionModeBtn" class="px-2 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white rounded-xl text-xs transition shrink-0" title="Quitter la sélection">
+                    <i class="fas fa-times text-sm"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal d'ajout de note commune en masse -->
+    <div id="bulkNoteModal" class="fixed inset-0 flex items-center justify-center z-50 hidden modal">
+        <div class="absolute inset-0 bg-black bg-opacity-50 blur-bg" id="bulkNoteModalOverlay"></div>
+        <div class="bg-white rounded-2xl p-6 shadow-2xl z-10 max-w-lg w-full mx-4 transform transition-all relative border border-teal-100">
+            <div class="flex items-center justify-between mb-4 pb-3 border-b border-gray-100">
+                <h3 class="text-lg font-bold text-gray-900 flex items-center gap-2">
+                    <i class="fas fa-sticky-note text-teal-600"></i>
+                    Ajouter une note commune
+                </h3>
+                <button id="closeBulkNoteModalBtn" class="text-gray-400 hover:text-gray-600 p-1">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <p class="text-xs text-gray-600 mb-4 bg-teal-50 p-3 rounded-xl border border-teal-100 leading-relaxed">
+                Cette note sera ajoutée à la fin des notes existantes pour les <strong id="bulkNoteCountText" class="text-teal-800 font-bold">0 course(s)</strong> sélectionnée(s). Un retour à la ligne sera automatiquement inséré si une note existait déjà.
+            </p>
+
+            <div class="mb-4">
+                <label for="bulkNoteInput" class="block text-xs font-semibold text-gray-700 mb-1.5">Note à ajouter :</label>
+                <textarea id="bulkNoteInput" rows="4" placeholder="Ex: Course effectuée entre amis, superbe météo !" class="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"></textarea>
+            </div>
+
+            <div class="flex justify-end gap-3 pt-2">
+                <button id="cancelBulkNoteBtn" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-semibold transition">
+                    Annuler
+                </button>
+                <button id="confirmBulkNoteBtn" class="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-2 shadow-md shadow-teal-600/20">
+                    <i class="fas fa-check"></i>
+                    <span>Ajouter aux courses</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de suppression en masse (double validation) -->
+    <div id="bulkDeleteModal" class="fixed inset-0 flex items-center justify-center z-50 hidden modal">
+        <div class="absolute inset-0 bg-black bg-opacity-60 blur-bg" id="bulkDeleteModalOverlay"></div>
+        <div class="bg-white rounded-2xl p-6 shadow-2xl z-10 max-w-lg w-full mx-4 transform transition-all relative border border-red-100">
+            
+            <!-- ÉTAPE 1 : Confirmation initiale & Liste des courses -->
+            <div id="bulkDeleteStep1">
+                <div class="flex items-center gap-3 text-red-600 mb-3">
+                    <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center shrink-0">
+                        <i class="fas fa-exclamation-triangle text-xl text-red-600"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-gray-900">Supprimer les courses sélectionnées</h3>
+                        <p class="text-xs text-red-600 font-semibold">Étape 1 sur 2 : Confirmation</p>
+                    </div>
+                </div>
+
+                <p class="text-xs text-gray-600 mb-2">
+                    Vous êtes sur le point de supprimer les <strong id="bulkDeleteCountText" class="text-red-700 font-bold">0</strong> course(s) suivante(s) :
+                </p>
+
+                <div id="bulkDeleteRaceList" class="max-h-36 overflow-y-auto bg-gray-50 border border-gray-200 rounded-xl p-3 mb-4 text-xs text-gray-700 flex flex-col gap-1.5">
+                    <!-- Rempli en JS -->
+                </div>
+
+                <div class="flex justify-end gap-3 pt-2">
+                    <button id="cancelBulkDeleteStep1Btn" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-semibold transition">
+                        Annuler
+                    </button>
+                    <button id="proceedBulkDeleteStep2Btn" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-2 shadow-md shadow-red-600/20">
+                        <span>Continuer vers la confirmation</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- ÉTAPE 2 : Double validation finale -->
+            <div id="bulkDeleteStep2" class="hidden">
+                <div class="flex items-center gap-3 text-red-600 mb-3">
+                    <div class="w-10 h-10 rounded-full bg-red-600 text-white flex items-center justify-center shrink-0 animate-pulse">
+                        <i class="fas fa-skull-crossbones text-lg"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-red-600">Confirmation définitive requise</h3>
+                        <p class="text-xs text-red-500 font-semibold">Étape 2 sur 2 : Action irréversible</p>
+                    </div>
+                </div>
+
+                <div class="bg-red-50 border border-red-200 rounded-xl p-3.5 mb-4 text-xs text-red-800 leading-relaxed">
+                    <p class="font-bold mb-1"><i class="fas fa-exclamation-circle mr-1"></i> Attention !</p>
+                    Cette action supprimera définitivement ces courses de votre base de données sans possibilité de récupération.
+                </div>
+
+                <p class="text-xs font-semibold text-gray-700 mb-2">Veuillez cliquer sur le bouton ci-dessous pour valider définitivement la suppression :</p>
+
+                <div class="flex justify-end gap-3 pt-2">
+                    <button id="backBulkDeleteStep1Btn" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-semibold transition">
+                        Retour
+                    </button>
+                    <button id="finalConfirmBulkDeleteBtn" class="px-4 py-2 bg-red-700 hover:bg-red-800 text-white rounded-xl text-xs font-bold transition flex items-center gap-2 shadow-lg shadow-red-500/30">
+                        <i class="fas fa-trash-alt"></i>
+                        <span>OUI, SUPPRIMER DÉFINITIVEMENT</span>
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -3440,8 +3587,396 @@
             document.getElementById('raceName').focus();
         }
 
+        // ===================================================================
+        // SELECTION MULTIPLE ET ACTIONS EN MASSE
+        // ===================================================================
+        let isSelectionMode = false;
+        let selectedRaceIds = new Set();
+        let currentlyDisplayedRaces = [];
+
+        const toggleSelectionModeBtn = document.getElementById('toggleSelectionModeBtn');
+        const bulkActionsBar = document.getElementById('bulkActionsBar');
+        const selectedCountBadge = document.getElementById('selectedCountBadge');
+        const selectedCountText = document.getElementById('selectedCountText');
+        const bulkSelectAllBtn = document.getElementById('bulkSelectAllBtn');
+        const bulkSelectAllText = document.getElementById('bulkSelectAllText');
+        const bulkExportBtn = document.getElementById('bulkExportBtn');
+        const bulkAddNoteBtn = document.getElementById('bulkAddNoteBtn');
+        const bulkToggleFavBtn = document.getElementById('bulkToggleFavBtn');
+        const bulkDeleteBtn = document.getElementById('bulkDeleteBtn');
+        const closeSelectionModeBtn = document.getElementById('closeSelectionModeBtn');
+
+        // Modale Note commune
+        const bulkNoteModal = document.getElementById('bulkNoteModal');
+        const bulkNoteModalOverlay = document.getElementById('bulkNoteModalOverlay');
+        const closeBulkNoteModalBtn = document.getElementById('closeBulkNoteModalBtn');
+        const cancelBulkNoteBtn = document.getElementById('cancelBulkNoteBtn');
+        const confirmBulkNoteBtn = document.getElementById('confirmBulkNoteBtn');
+        const bulkNoteInput = document.getElementById('bulkNoteInput');
+        const bulkNoteCountText = document.getElementById('bulkNoteCountText');
+
+        // Modale Suppression en masse (double validation)
+        const bulkDeleteModal = document.getElementById('bulkDeleteModal');
+        const bulkDeleteModalOverlay = document.getElementById('bulkDeleteModalOverlay');
+        const bulkDeleteStep1 = document.getElementById('bulkDeleteStep1');
+        const bulkDeleteStep2 = document.getElementById('bulkDeleteStep2');
+        const bulkDeleteCountText = document.getElementById('bulkDeleteCountText');
+        const bulkDeleteRaceList = document.getElementById('bulkDeleteRaceList');
+        const cancelBulkDeleteStep1Btn = document.getElementById('cancelBulkDeleteStep1Btn');
+        const proceedBulkDeleteStep2Btn = document.getElementById('proceedBulkDeleteStep2Btn');
+        const backBulkDeleteStep1Btn = document.getElementById('backBulkDeleteStep1Btn');
+        const finalConfirmBulkDeleteBtn = document.getElementById('finalConfirmBulkDeleteBtn');
+
+        // Basculer le mode sélection
+        function toggleSelectionMode(forceState) {
+            if (typeof forceState === 'boolean') {
+                isSelectionMode = forceState;
+            } else {
+                isSelectionMode = !isSelectionMode;
+            }
+
+            if (!isSelectionMode) {
+                selectedRaceIds.clear();
+            }
+
+            if (toggleSelectionModeBtn) {
+                if (isSelectionMode) {
+                    toggleSelectionModeBtn.classList.remove('bg-emerald-100', 'text-emerald-800', 'hover:bg-emerald-200');
+                    toggleSelectionModeBtn.classList.add('bg-emerald-600', 'text-white', 'hover:bg-emerald-700', 'shadow-sm');
+                    toggleSelectionModeBtn.querySelector('span').textContent = 'Mode Sélection actif';
+                } else {
+                    toggleSelectionModeBtn.classList.remove('bg-emerald-600', 'text-white', 'hover:bg-emerald-700', 'shadow-sm');
+                    toggleSelectionModeBtn.classList.add('bg-emerald-100', 'text-emerald-800', 'hover:bg-emerald-200');
+                    toggleSelectionModeBtn.querySelector('span').textContent = 'Sélectionner';
+                }
+            }
+
+            if (racesContainer) {
+                if (isSelectionMode) {
+                    racesContainer.classList.add('selection-mode-active');
+                } else {
+                    racesContainer.classList.remove('selection-mode-active');
+                }
+            }
+
+            updateSelectionUI();
+        }
+
+        // Sélectionner / Désélectionner une course
+        function toggleRaceSelection(raceId) {
+            if (!isSelectionMode) {
+                toggleSelectionMode(true);
+            }
+
+            if (selectedRaceIds.has(raceId)) {
+                selectedRaceIds.delete(raceId);
+            } else {
+                selectedRaceIds.add(raceId);
+            }
+
+            if (isSelectionMode && selectedRaceIds.size === 0) {
+                toggleSelectionMode(false);
+                return;
+            }
+
+            updateSelectionUI();
+        }
+
+        // Tout sélectionner / Tout désélectionner
+        function toggleSelectAllRaces() {
+            const allDisplayedIds = currentlyDisplayedRaces.map(r => r.id);
+            const areAllSelected = allDisplayedIds.length > 0 && allDisplayedIds.every(id => selectedRaceIds.has(id));
+
+            if (areAllSelected) {
+                allDisplayedIds.forEach(id => selectedRaceIds.delete(id));
+            } else {
+                allDisplayedIds.forEach(id => selectedRaceIds.add(id));
+            }
+
+            if (isSelectionMode && selectedRaceIds.size === 0) {
+                toggleSelectionMode(false);
+                return;
+            }
+
+            updateSelectionUI();
+        }
+
+        // Mettre à jour les éléments d'interface du mode sélection
+        function updateSelectionUI() {
+            const count = selectedRaceIds.size;
+            if (selectedCountBadge) selectedCountBadge.textContent = count;
+            if (selectedCountText) selectedCountText.textContent = `${count} sélectionnée${count > 1 ? 's' : ''}`;
+
+            if (bulkActionsBar) {
+                if (isSelectionMode) {
+                    bulkActionsBar.classList.remove('translate-y-32', 'opacity-0', 'pointer-events-none');
+                    bulkActionsBar.classList.add('translate-y-0', 'opacity-100', 'pointer-events-auto');
+                } else {
+                    bulkActionsBar.classList.remove('translate-y-0', 'opacity-100', 'pointer-events-auto');
+                    bulkActionsBar.classList.add('translate-y-32', 'opacity-0', 'pointer-events-none');
+                }
+            }
+
+            const allDisplayedIds = currentlyDisplayedRaces.map(r => r.id);
+            const areAllSelected = allDisplayedIds.length > 0 && allDisplayedIds.every(id => selectedRaceIds.has(id));
+            if (bulkSelectAllText) {
+                bulkSelectAllText.textContent = areAllSelected ? 'Tout désélec.' : 'Tout sélec.';
+            }
+
+            document.querySelectorAll('.race-card-item').forEach(card => {
+                const id = card.dataset.raceId;
+                const isSelected = selectedRaceIds.has(id);
+                const checkboxContainer = card.querySelector('.selection-checkbox-container');
+                const checkboxBadge = card.querySelector('.selection-checkbox-badge');
+
+                if (isSelected) {
+                    card.classList.add('race-card-selected');
+                } else {
+                    card.classList.remove('race-card-selected');
+                }
+
+                if (checkboxContainer) {
+                    if (isSelectionMode) {
+                        checkboxContainer.classList.remove('opacity-0', 'scale-75', 'pointer-events-none');
+                        checkboxContainer.classList.add('opacity-100', 'scale-100');
+                    } else {
+                        checkboxContainer.classList.remove('opacity-100', 'scale-100');
+                        checkboxContainer.classList.add('opacity-0', 'scale-75', 'pointer-events-none');
+                    }
+                }
+
+                if (checkboxBadge) {
+                    if (isSelected) {
+                        checkboxBadge.classList.remove('bg-white/90', 'border-slate-300', 'text-transparent');
+                        checkboxBadge.classList.add('bg-emerald-500', 'border-emerald-600', 'text-white');
+                    } else {
+                        checkboxBadge.classList.remove('bg-emerald-500', 'border-emerald-600', 'text-white');
+                        checkboxBadge.classList.add('bg-white/90', 'border-slate-300', 'text-transparent');
+                    }
+                }
+            });
+        }
+
+        // Action : Exporter les courses sélectionnées
+        function exportSelectedRaces() {
+            if (selectedRaceIds.size === 0) {
+                alert('Veuillez sélectionner au moins une course à exporter.');
+                return;
+            }
+
+            const selectedRaces = races.filter(r => selectedRaceIds.has(r.id)).map(r => {
+                const { id, ...raceData } = r;
+                if (!raceData.hasOwnProperty('public')) raceData.public = true;
+                return { id, ...raceData };
+            });
+
+            const data = {
+                timestamp: new Date().toISOString(),
+                races: selectedRaces,
+                wishlist: []
+            };
+
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data, null, 2));
+            const downloadAnchorNode = document.createElement('a');
+            downloadAnchorNode.setAttribute("href", dataStr);
+            const dateStr = new Date().toISOString().slice(0, 10);
+            downloadAnchorNode.setAttribute("download", `export_courses_${selectedRaceIds.size}_selection_${dateStr}.json`);
+            document.body.appendChild(downloadAnchorNode);
+            downloadAnchorNode.click();
+            downloadAnchorNode.remove();
+        }
+
+        // Action : Note commune
+        async function openBulkNoteModal() {
+            if (await isInviteAsync()) {
+                showPermissionDeniedModal('ajouter des notes en masse');
+                return;
+            }
+            if (selectedRaceIds.size === 0) {
+                alert('Veuillez sélectionner au moins une course.');
+                return;
+            }
+            bulkNoteCountText.textContent = `${selectedRaceIds.size} course(s)`;
+            bulkNoteInput.value = '';
+            bulkNoteModal.classList.remove('hidden');
+            bulkNoteInput.focus();
+        }
+
+        async function confirmApplyBulkNote() {
+            const noteToAdd = bulkNoteInput.value.trim();
+            if (!noteToAdd) {
+                alert('Veuillez saisir un texte de note.');
+                return;
+            }
+
+            if (!racesCollection) return;
+
+            confirmBulkNoteBtn.disabled = true;
+            confirmBulkNoteBtn.innerHTML = '<svg class="animate-spin h-4 w-4 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>';
+
+            try {
+                const updatePromises = [];
+                selectedRaceIds.forEach(id => {
+                    const currentRace = races.find(r => r.id === id);
+                    let updatedNotes = noteToAdd;
+                    if (currentRace && currentRace.notes && currentRace.notes.trim() !== '') {
+                        updatedNotes = `${currentRace.notes.trim()}\n${noteToAdd}`;
+                    }
+                    updatePromises.push(racesCollection.doc(id).update({ notes: updatedNotes }));
+                });
+
+                await Promise.all(updatePromises);
+                bulkNoteModal.classList.add('hidden');
+                await loadRaces();
+                updateSelectionUI();
+            } catch (err) {
+                console.error('Erreur ajout note commune:', err);
+                alert('Erreur lors de l\'ajout de la note commune.');
+            } finally {
+                confirmBulkNoteBtn.disabled = false;
+                confirmBulkNoteBtn.innerHTML = '<i class="fas fa-check"></i><span>Ajouter aux courses</span>';
+            }
+        }
+
+        // Action : Suppression en masse (Double Validation)
+        async function openBulkDeleteModal() {
+            if (await isInviteAsync()) {
+                showPermissionDeniedModal('supprimer des courses en masse');
+                return;
+            }
+            if (selectedRaceIds.size === 0) {
+                alert('Veuillez sélectionner au moins une course.');
+                return;
+            }
+
+            bulkDeleteCountText.textContent = selectedRaceIds.size;
+            const selectedRaces = races.filter(r => selectedRaceIds.has(r.id));
+
+            bulkDeleteRaceList.innerHTML = selectedRaces.map(r => `
+                <div class="flex items-center justify-between py-1 border-b border-gray-100 last:border-0">
+                    <span class="font-bold text-gray-800">${r.name}</span>
+                    <span class="text-gray-500 text-[11px]">${r.date ? new Date(r.date).toLocaleDateString('fr-FR') : ''}</span>
+                </div>
+            `).join('');
+
+            bulkDeleteStep1.classList.remove('hidden');
+            bulkDeleteStep2.classList.add('hidden');
+            bulkDeleteModal.classList.remove('hidden');
+        }
+
+        async function confirmFinalBulkDelete() {
+            if (!racesCollection || selectedRaceIds.size === 0) return;
+
+            finalConfirmBulkDeleteBtn.disabled = true;
+            finalConfirmBulkDeleteBtn.innerHTML = '<svg class="animate-spin h-4 w-4 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>';
+
+            try {
+                const deletePromises = [];
+                selectedRaceIds.forEach(id => {
+                    deletePromises.push(racesCollection.doc(id).delete());
+                });
+
+                await Promise.all(deletePromises);
+                bulkDeleteModal.classList.add('hidden');
+                toggleSelectionMode(false);
+                await loadRaces();
+            } catch (err) {
+                console.error('Erreur lors de la suppression en masse:', err);
+                alert('Erreur lors de la suppression des courses.');
+            } finally {
+                finalConfirmBulkDeleteBtn.disabled = false;
+                finalConfirmBulkDeleteBtn.innerHTML = '<i class="fas fa-trash-alt"></i><span>OUI, SUPPRIMER DÉFINITIVEMENT</span>';
+            }
+        }
+
+        // Action : Basculer les favoris en masse
+        async function toggleBulkFavorites() {
+            if (await isInviteAsync()) {
+                showPermissionDeniedModal('modifier les favoris en masse');
+                return;
+            }
+            if (selectedRaceIds.size === 0) {
+                alert('Veuillez sélectionner au moins une course.');
+                return;
+            }
+
+            const selectedRaces = races.filter(r => selectedRaceIds.has(r.id));
+            const allAreFavorites = selectedRaces.every(r => r.favorite);
+            const targetState = !allAreFavorites;
+
+            try {
+                const updatePromises = [];
+                selectedRaceIds.forEach(id => {
+                    updatePromises.push(racesCollection.doc(id).update({ favorite: targetState }));
+                });
+                await Promise.all(updatePromises);
+                await loadRaces();
+                updateSelectionUI();
+            } catch (err) {
+                console.error('Erreur bascule favoris:', err);
+                alert('Erreur lors de la mise à jour des favoris.');
+            }
+        }
+
+        // Écouteurs d'événements pour la sélection multiple
+        if (toggleSelectionModeBtn) {
+            toggleSelectionModeBtn.addEventListener('click', () => toggleSelectionMode());
+        }
+        if (closeSelectionModeBtn) {
+            closeSelectionModeBtn.addEventListener('click', () => toggleSelectionMode(false));
+        }
+        if (bulkSelectAllBtn) {
+            bulkSelectAllBtn.addEventListener('click', toggleSelectAllRaces);
+        }
+        if (bulkExportBtn) {
+            bulkExportBtn.addEventListener('click', exportSelectedRaces);
+        }
+        if (bulkAddNoteBtn) {
+            bulkAddNoteBtn.addEventListener('click', openBulkNoteModal);
+        }
+        if (cancelBulkNoteBtn) {
+            cancelBulkNoteBtn.addEventListener('click', () => bulkNoteModal.classList.add('hidden'));
+        }
+        if (closeBulkNoteModalBtn) {
+            closeBulkNoteModalBtn.addEventListener('click', () => bulkNoteModal.classList.add('hidden'));
+        }
+        if (bulkNoteModalOverlay) {
+            bulkNoteModalOverlay.addEventListener('click', () => bulkNoteModal.classList.add('hidden'));
+        }
+        if (confirmBulkNoteBtn) {
+            confirmBulkNoteBtn.addEventListener('click', confirmApplyBulkNote);
+        }
+        if (bulkToggleFavBtn) {
+            bulkToggleFavBtn.addEventListener('click', toggleBulkFavorites);
+        }
+        if (bulkDeleteBtn) {
+            bulkDeleteBtn.addEventListener('click', openBulkDeleteModal);
+        }
+        if (cancelBulkDeleteStep1Btn) {
+            cancelBulkDeleteStep1Btn.addEventListener('click', () => bulkDeleteModal.classList.add('hidden'));
+        }
+        if (bulkDeleteModalOverlay) {
+            bulkDeleteModalOverlay.addEventListener('click', () => bulkDeleteModal.classList.add('hidden'));
+        }
+        if (proceedBulkDeleteStep2Btn) {
+            proceedBulkDeleteStep2Btn.addEventListener('click', () => {
+                bulkDeleteStep1.classList.add('hidden');
+                bulkDeleteStep2.classList.remove('hidden');
+            });
+        }
+        if (backBulkDeleteStep1Btn) {
+            backBulkDeleteStep1Btn.addEventListener('click', () => {
+                bulkDeleteStep2.classList.add('hidden');
+                bulkDeleteStep1.classList.remove('hidden');
+            });
+        }
+        if (finalConfirmBulkDeleteBtn) {
+            finalConfirmBulkDeleteBtn.addEventListener('click', confirmFinalBulkDelete);
+        }
+
         // Display races
         function displayRaces(racesToDisplay) {
+            currentlyDisplayedRaces = racesToDisplay;
             // Mettre à jour le compteur de résultats
             const resultsCountEl = document.getElementById('filterResultsCount');
             if (resultsCountEl && typeof races !== 'undefined') {
@@ -3535,8 +4070,10 @@
                     badgeAvenir = `<span class="px-2 py-1 bg-green-200 text-green-800 text-xs rounded-full animate-pulse">New !</span>`;
                 }
 
+                const isSelected = selectedRaceIds.has(race.id);
                 const raceCard = document.createElement('div');
-                raceCard.className = 'bg-white rounded-xl overflow-hidden shadow-md card-hover relative group cursor-pointer h-full';
+                raceCard.className = `bg-white rounded-xl overflow-hidden shadow-md card-hover relative group cursor-pointer h-full race-card-item ${isSelected ? 'race-card-selected' : ''}`;
+                raceCard.setAttribute('data-race-id', race.id);
                 // Vérifier s'il y a des badges pour cette course
                 const hasBadges = window.raceBadges && window.raceBadges[race.id] && Object.keys(window.raceBadges[race.id]).length > 0;
 
@@ -3547,6 +4084,12 @@
 
                 raceCard.innerHTML = `
                 <div class="p-6 relative flex flex-col h-full">
+                <!-- Checkbox de sélection -->
+                <div class="selection-checkbox-container absolute top-3 left-3 z-30 transition-all duration-200 ${isSelectionMode ? 'opacity-100 scale-100' : 'opacity-0 scale-75 pointer-events-none'}">
+                    <div class="selection-checkbox-badge w-7 h-7 rounded-lg flex items-center justify-center border-2 transition-all shadow-md ${isSelected ? 'bg-emerald-500 border-emerald-600 text-white' : 'bg-white/90 border-slate-300 text-transparent hover:border-emerald-400'}">
+                        <i class="fas fa-check text-xs font-bold"></i>
+                    </div>
+                </div>
                 <div class="flex justify-between items-start">
                     <div>
                         <h3 class="text-xl font-bold text-green-800 mb-1 flex items-center gap-2">
@@ -3797,9 +4340,55 @@
                     });
                 }
 
-                // Rendre toute la carte cliquable (sauf si clic sur trigger de likes ou boutons/liens)
+                // Gestion du long-press et clic en mode sélection
+                let pressTimer = null;
+                let isLongPress = false;
+
+                const startPress = (e) => {
+                    if (e.target.closest('button') || e.target.closest('a') || e.target.closest('.like-hover-trigger')) return;
+                    isLongPress = false;
+                    pressTimer = setTimeout(() => {
+                        isLongPress = true;
+                        if (navigator.vibrate) navigator.vibrate(40);
+                        if (!isSelectionMode) {
+                            toggleSelectionMode(true);
+                        }
+                        toggleRaceSelection(race.id);
+                    }, 500);
+                };
+
+                const cancelPress = () => {
+                    if (pressTimer) {
+                        clearTimeout(pressTimer);
+                        pressTimer = null;
+                    }
+                };
+
+                raceCard.addEventListener('mousedown', startPress);
+                raceCard.addEventListener('touchstart', startPress, { passive: true });
+                raceCard.addEventListener('mouseup', cancelPress);
+                raceCard.addEventListener('mouseleave', cancelPress);
+                raceCard.addEventListener('touchend', cancelPress);
+                raceCard.addEventListener('touchcancel', cancelPress);
+                raceCard.addEventListener('touchmove', cancelPress);
+
                 raceCard.addEventListener('click', (e) => {
-                    if (!e.target.closest('button') && !e.target.closest('a') && !e.target.closest('.like-hover-trigger')) {
+                    if (isLongPress) {
+                        isLongPress = false;
+                        e.preventDefault();
+                        e.stopPropagation();
+                        return;
+                    }
+
+                    if (e.target.closest('button') || e.target.closest('a') || e.target.closest('.like-hover-trigger')) {
+                        return;
+                    }
+
+                    if (isSelectionMode) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        toggleRaceSelection(race.id);
+                    } else {
                         showRaceDetails(race.id);
                     }
                 });
@@ -3973,6 +4562,7 @@
                     });
                 });
             });
+            updateSelectionUI();
         }
 
         // Exporter une seule course au format JSON de sauvegarde
