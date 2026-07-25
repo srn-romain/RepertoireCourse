@@ -11,12 +11,18 @@
     let activeCompanionsFilter = '';
 
     // Attendre que tout soit chargé
+    let waitLogged = false;
     function initAdvancedFilters() {
         if (isInitialized) return;
 
+        const displayFn = window.displayRaces || (typeof displayRaces !== 'undefined' ? displayRaces : null);
+
         // Vérifier que les dépendances sont disponibles
-        if (typeof window.races === 'undefined' || typeof window.displayRaces === 'undefined') {
-            console.log('[advanced-filters] En attente des dépendances...');
+        if (typeof window.races === 'undefined' || !displayFn) {
+            if (!waitLogged) {
+                console.log('[advanced-filters] En attente des dépendances...');
+                waitLogged = true;
+            }
             setTimeout(initAdvancedFilters, 100);
             return;
         }

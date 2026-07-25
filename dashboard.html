@@ -3132,12 +3132,13 @@
             if (isUserAuthenticated) {
                 const isInvite = sessionStorage.getItem('authLevel') === 'invite';
                 if (!isInvite) {
+                    const priceFormatted = totalPrice.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
                     statsHtml += `
                         <div class="stat-price md:before:content-['|'] md:before:mr-3 md:before:opacity-30">
                             <span id="totalPriceStat" class="font-semibold group relative cursor-pointer inline-block">
                                 <span class="opacity-40">Prix total</span>
                                 <span class="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-2 py-1 bg-green-700 text-white text-xs rounded shadow-lg hidden group-hover:block z-50 whitespace-nowrap">
-                                    ${totalPrice.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} € dépensés
+                                    ${priceFormatted} € dépensés
                                 </span>
                             </span>
                         </div>
@@ -3976,6 +3977,7 @@
 
         // Display races
         function displayRaces(racesToDisplay) {
+            window.displayRaces = displayRaces;
             currentlyDisplayedRaces = racesToDisplay;
             // Mettre à jour le compteur de résultats
             const resultsCountEl = document.getElementById('filterResultsCount');
@@ -4080,7 +4082,159 @@
                 // Calcul des likes et noms (pour le survol)
                 const likedBy = race.likedBy || [];
                 const likeCount = likedBy.length;
-                // En fait, dans dashboard.html, races est déjà chargé.
+
+                const raceDateFormatted = raceDate.toLocaleDateString('fr-FR', {
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric'
+                });
+
+                const cardTagsHtml = (() => {
+                    let tagsHtml = '';
+                    const cardTags = window.customCardTags || ['distance', 'elevation', 'location', 'terrain'];
+                    const showDistance = cardTags.includes('distance');
+                    const showElevation = cardTags.includes('elevation');
+                    const showLocation = cardTags.includes('location');
+                    const showTerrain = cardTags.includes('terrain');
+                    const showTime = cardTags.includes('time');
+                    const showPace = cardTags.includes('pace');
+                    const showPrice = cardTags.includes('price');
+                    const showRank = cardTags.includes('rank');
+
+                    const distVal = formatDist(race.distance);
+                    const elevVal = race.elevation || '0';
+                    const locHtml = (race.location && showLocation) ? `
+                        <span class="flex items-center gap-1 px-2 py-1 bg-teal-50 text-teal-800 text-xs rounded-full">
+                            <i class="fas fa-map-marker-alt text-teal-500"></i> ${locationDisplay}
+                        </span>` : '';
+
+                    const timeTag = (race.time && race.time !== '00:00:00' && showTime) ? `
+                        <span class="flex items-center gap-1 px-2 py-1 bg-cyan-50 text-cyan-800 text-xs rounded-full">
+                            <i class="fas fa-stopwatch text-cyan-500"></i> ${race.time}
+                        </span>` : '';
+
+                    const parsedPrice = parseFloat(race.price);
+                    const priceTag = (showPrice && race.price !== undefined && race.price !== null && race.price !== '' && !isNaN(parsedPrice)) ? `
+                        <span class="flex items-center gap-1 px-2 py-1 bg-red-50 text-red-800 text-xs rounded-full">
+                            <i class="fas fa-euro-sign text-red-500"></i> ${parsedPrice.toFixed(2)} €
+                        </span>` : '';
+
+                    let rankTag = '';
+                    if (showRank && race.rankPos) {
+                        const totalStr = race.rankTotal ? `/${race.rankTotal}` : '';
+                        rankTag = `
+                            <span class="flex items-center gap-1 px-2 py-1 bg-yellow-50 text-yellow-800 text-xs rounded-full">
+                                <i class="fas fa-medal text-yellow-500"></i> ${race.rankPos}${totalStr}
+                            </span>`;
+                    } else if (showRank && race.rankGenderPos) {
+                        const totalStr = race.rankGenderTotal ? `/${race.rankGenderTotal}` : '';
+                        rankTag = `
+                            <span class="flex items-center gap-1 px-2 py-1 bg-yellow-50 text-yellow-800 text-xs rounded-full">
+                                <i class="fas fa-medal text-yellow-500"></i> ${race.rankGenderPos}${totalStr} (cat.)
+                            </span>`;
+                    }
+
+                    let paceTag = '';
+                    if (showPace && race.time && race.time !== '00:00:00') {
+                        const raceDist = parseFloat(race.distance) || 0;
+                        const parts = race.time.split(':');
+                        let hours = 0;
+                        if (parts.length === 3) {
+                            hours = parseInt(parts[0]) + parseInt(parts[1]) / 60 + parseInt(parts[2]) / 3600;
+                        } else if (parts.length === 2) {
+                            hours = parseInt(parts[0]) + parseInt(parts[1]) / 60;
+                        } else {
+                            hours = parseInt(parts[0]);
+                        }
+
+                        if (raceDist > 0 && hours > 0) {
+                            const speed = raceDist / hours;
+                            if (speed >= 15) {
+                                paceTag = `
+                                    <span class="flex items-center gap-1 px-2 py-1 bg-violet-50 text-violet-800 text-xs rounded-full">
+                                        <i class="fas fa-tachometer-alt text-violet-500"></i> ${speed.toFixed(1)} km/h
+                                    </span>`;
+                            } else {
+                                const timePerKm = 60 / speed;
+                                const minPart = Math.floor(timePerKm);
+                                const secPart = Math.round((timePerKm - minPart) * 60);
+                                paceTag = `
+                                    <span class="flex items-center gap-1 px-2 py-1 bg-violet-50 text-violet-800 text-xs rounded-full">
+                                        <i class="fas fa-running text-violet-500"></i> ${minPart}:${String(secPart).padStart(2, '0')} /km
+                                    </span>`;
+                            }
+                        }
+                    }
+
+                    if (race.terrain === 'triathlon') {
+                        if (race.raceFormat === 'team') {
+                            if (race.raceRelaySport === 'swim') {
+                                const swimDist = parseFloat(race.swimDistance);
+                                const swimDisplay = isNaN(swimDist) ? '? m' : (swimDist > 999 ? (swimDist / 1000).toFixed(2) + ' km' : swimDist + ' m');
+                                tagsHtml = `
+                            ${showDistance && !isNaN(swimDist) ? `<span class="flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-800 text-xs rounded-full"><i class="fas fa-swimmer text-blue-500"></i> ${swimDisplay}</span>` : ''}
+                            ${locHtml}
+                            ${showTerrain ? `<span class="flex items-center gap-1 px-2 py-1 bg-indigo-50 text-indigo-800 text-xs rounded-full"><i class="fas fa-trophy text-indigo-500"></i> Triathlon</span>` : ''}`;
+                            } else if (race.raceRelaySport === 'bike') {
+                                const bikeDistFormatted = formatDist(race.bikeDistance);
+                                const hasBikeElevation = race.bikeElevation && race.bikeElevation !== '0' && race.bikeElevation !== 0 && race.bikeElevation !== '-';
+                                tagsHtml = `
+                            ${showDistance && bikeDistFormatted !== '-' ? `<span class="flex items-center gap-1 px-2 py-1 bg-orange-50 text-orange-800 text-xs rounded-full"><i class="fas fa-biking text-orange-500"></i> ${bikeDistFormatted} km</span>` : ''}
+                            ${showElevation && hasBikeElevation ? `<span class="flex items-center gap-1 px-2 py-1 bg-orange-50 text-orange-800 text-xs rounded-full"><i class="fas fa-mountain text-orange-500"></i> +${race.bikeElevation} m</span>` : ''}
+                            ${locHtml}
+                            ${showTerrain ? `<span class="flex items-center gap-1 px-2 py-1 bg-indigo-50 text-indigo-800 text-xs rounded-full"><i class="fas fa-trophy text-indigo-500"></i> Triathlon</span>` : ''}`;
+                            } else {
+                                const hasRunElevation = race.runElevation && race.runElevation !== '0' && race.runElevation !== 0 && race.runElevation !== '-';
+                                tagsHtml = `
+                            ${showDistance && distVal !== '-' ? `<span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full"><i class="fas fa-running text-green-500"></i> ${distVal} km</span>` : ''}
+                            ${showElevation && hasRunElevation ? `<span class="flex items-center gap-1 px-2 py-1 bg-orange-50 text-orange-800 text-xs rounded-full"><i class="fas fa-mountain text-orange-500"></i> +${race.runElevation} m</span>` : ''}
+                            ${locHtml}
+                            ${showTerrain ? `<span class="flex items-center gap-1 px-2 py-1 bg-indigo-50 text-indigo-800 text-xs rounded-full"><i class="fas fa-trophy text-indigo-500"></i> Triathlon</span>` : ''}`;
+                            }
+                        } else {
+                            const swimDist = parseFloat(race.swimDistance);
+                            const swimDisplay = isNaN(swimDist) ? '? m' : (swimDist > 999 ? (swimDist / 1000).toFixed(2) + ' km' : swimDist + ' m');
+                            const bikeDistFormatted = formatDist(race.bikeDistance);
+
+                            tagsHtml = `
+                                  ${showDistance ? `
+                                  ${!isNaN(swimDist) ? `<span class="flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-800 text-xs rounded-full" title="Natation"><i class="fas fa-swimmer text-blue-500"></i> ${swimDisplay}</span>` : ''}
+                                  ${bikeDistFormatted !== '-' ? `<span class="flex items-center gap-1 px-2 py-1 bg-orange-50 text-orange-800 text-xs rounded-full" title="Vélo"><i class="fas fa-biking text-orange-500"></i> ${bikeDistFormatted} km</span>` : ''}
+                                  ${distVal !== '-' ? `<span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full" title="Course à pied"><i class="fas fa-running text-green-500"></i> ${distVal} km</span>` : ''}
+                                  ` : ''}
+                                  ${locHtml}
+                                  ${showTerrain ? `<span class="flex items-center gap-1 px-2 py-1 bg-indigo-50 text-indigo-800 text-xs rounded-full"><i class="fas fa-trophy text-indigo-500"></i> Triathlon</span>` : ''}`;
+                        }
+                    } else if (race.terrain === 'hyrox') {
+                        tagsHtml = `
+                                ${showDistance && distVal !== '-' ? `<span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full"><i class="fas fa-ruler-horizontal text-green-500"></i> ${distVal} km</span>` : ''}
+                                ${locHtml}
+                                ${showTerrain ? `<span class="flex items-center gap-1 px-2 py-1 bg-indigo-50 text-indigo-800 text-xs rounded-full"><i class="fas fa-dumbbell text-indigo-500"></i> Hyrox</span>` : ''}`;
+                    } else if (race.terrain === 'relai') {
+                        const hasElevation = race.elevation && race.elevation !== '0' && race.elevation !== 0 && race.elevation !== '-';
+                        tagsHtml = `
+                                ${showDistance && distVal !== '-' ? `<span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full"><i class="fas fa-ruler-horizontal text-green-500"></i> ${distVal} km</span>` : ''}
+                                ${showElevation && hasElevation ? `<span class="flex items-center gap-1 px-2 py-1 bg-orange-50 text-orange-800 text-xs rounded-full"><i class="fas fa-mountain text-orange-500"></i> +${elevVal} m</span>` : ''}
+                                ${locHtml}
+                                ${showTerrain ? `<span class="flex items-center gap-1 px-2 py-1 bg-indigo-50 text-indigo-800 text-xs rounded-full"><i class="fas fa-users text-indigo-500"></i> Relai</span>` : ''}`;
+                    } else if (race.terrain === 'trail') {
+                        const hasElevation = race.elevation && race.elevation !== '0' && race.elevation !== 0 && race.elevation !== '-';
+                        tagsHtml = `
+                                ${showDistance && distVal !== '-' ? `<span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full"><i class="fas fa-ruler-horizontal text-green-500"></i> ${distVal} km</span>` : ''}
+                                ${showElevation && hasElevation ? `<span class="flex items-center gap-1 px-2 py-1 bg-orange-50 text-orange-800 text-xs rounded-full"><i class="fas fa-mountain text-orange-500"></i> +${elevVal} m</span>` : ''}
+                                ${locHtml}
+                                ${showTerrain ? `<span class="flex items-center gap-1 px-2 py-1 bg-indigo-50 text-indigo-800 text-xs rounded-full"><i class="fas fa-tree text-indigo-500"></i> Trail</span>` : ''}`;
+                    } else {
+                        const hasElevation = race.elevation && race.elevation !== '0' && race.elevation !== 0 && race.elevation !== '-';
+                        tagsHtml = `
+                                ${showDistance && distVal !== '-' ? `<span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full"><i class="fas fa-ruler-horizontal text-green-500"></i> ${distVal} km</span>` : ''}
+                                ${showElevation && hasElevation ? `<span class="flex items-center gap-1 px-2 py-1 bg-orange-50 text-orange-800 text-xs rounded-full"><i class="fas fa-mountain text-orange-500"></i> +${elevVal} m</span>` : ''}
+                                ${locHtml}
+                                ${showTerrain ? `<span class="flex items-center gap-1 px-2 py-1 bg-indigo-50 text-indigo-800 text-xs rounded-full"><i class="fas fa-road text-indigo-500"></i> Route</span>` : ''}`;
+                    }
+
+                    return tagsHtml + timeTag + paceTag + priceTag + rankTag;
+                })();
 
                 raceCard.innerHTML = `
                 <div class="p-6 relative flex flex-col h-full">
@@ -4096,11 +4250,7 @@
                             ${race.favorite ? '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-500" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>' : ''}
                             ${race.name}
                         </h3>
-                        <p class="text-green-600">${raceDate.toLocaleDateString('fr-FR', {
-                    day: 'numeric',
-                    month: 'long',
-                    year: 'numeric'
-                })}</p>
+                        <p class="text-green-600">${raceDateFormatted}</p>
                     </div>
                     <div class="flex flex-col items-end gap-1 shrink-0">
                         <span class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">${year}</span>
@@ -4109,163 +4259,7 @@
                 </div>
                 <div class="mt-4 flex flex-col gap-2 pr-28">
                     <div class="flex items-center gap-2 flex-wrap">
-                        ${(() => {
-                        let tagsHtml = '';
-                        const cardTags = window.customCardTags || ['distance', 'elevation', 'location', 'terrain'];
-                        const showDistance = cardTags.includes('distance');
-                        const showElevation = cardTags.includes('elevation');
-                        const showLocation = cardTags.includes('location');
-                        const showTerrain = cardTags.includes('terrain');
-                        const showTime = cardTags.includes('time');
-                        const showPace = cardTags.includes('pace');
-                        const showPrice = cardTags.includes('price');
-                        const showRank = cardTags.includes('rank');
-
-                        const distVal = formatDist(race.distance);
-                        const elevVal = race.elevation || '0';
-                        const locHtml = (race.location && showLocation) ? `
-                            <span class="flex items-center gap-1 px-2 py-1 bg-teal-50 text-teal-800 text-xs rounded-full">
-                                <i class="fas fa-map-marker-alt text-teal-500"></i> ${locationDisplay}
-                            </span>` : '';
-
-                        const timeTag = (race.time && race.time !== '00:00:00' && showTime) ? `
-                            <span class="flex items-center gap-1 px-2 py-1 bg-cyan-50 text-cyan-800 text-xs rounded-full">
-                                <i class="fas fa-stopwatch text-cyan-500"></i> ${race.time}
-                            </span>` : '';
-
-                        const parsedPrice = parseFloat(race.price);
-                        const priceTag = (showPrice && race.price !== undefined && race.price !== null && race.price !== '' && !isNaN(parsedPrice)) ? `
-                            <span class="flex items-center gap-1 px-2 py-1 bg-red-50 text-red-800 text-xs rounded-full">
-                                <i class="fas fa-euro-sign text-red-500"></i> ${parsedPrice.toFixed(2)} €
-                            </span>` : '';
-
-                        let rankTag = '';
-                        if (showRank && race.rankPos) {
-                            const totalStr = race.rankTotal ? `/${race.rankTotal}` : '';
-                            rankTag = `
-                                <span class="flex items-center gap-1 px-2 py-1 bg-yellow-50 text-yellow-800 text-xs rounded-full">
-                                    <i class="fas fa-medal text-yellow-500"></i> ${race.rankPos}${totalStr}
-                                </span>`;
-                        } else if (showRank && race.rankGenderPos) {
-                            const totalStr = race.rankGenderTotal ? `/${race.rankGenderTotal}` : '';
-                            rankTag = `
-                                <span class="flex items-center gap-1 px-2 py-1 bg-yellow-50 text-yellow-800 text-xs rounded-full">
-                                    <i class="fas fa-medal text-yellow-500"></i> ${race.rankGenderPos}${totalStr} (cat.)
-                                </span>`;
-                        }
-
-                        let paceTag = '';
-                        if (showPace && race.time && race.time !== '00:00:00') {
-                            const raceDist = parseFloat(race.distance) || 0;
-                            const parts = race.time.split(':');
-                            let hours = 0;
-                            if (parts.length === 3) {
-                                hours = parseInt(parts[0]) + parseInt(parts[1]) / 60 + parseInt(parts[2]) / 3600;
-                            } else if (parts.length === 2) {
-                                hours = parseInt(parts[0]) + parseInt(parts[1]) / 60;
-                            } else {
-                                hours = parseInt(parts[0]);
-                            }
-
-                            if (raceDist > 0 && hours > 0) {
-                                const speed = raceDist / hours;
-                                if (speed >= 15) {
-                                    paceTag = `
-                                        <span class="flex items-center gap-1 px-2 py-1 bg-violet-50 text-violet-800 text-xs rounded-full">
-                                            <i class="fas fa-tachometer-alt text-violet-500"></i> ${speed.toFixed(1)} km/h
-                                        </span>`;
-                                } else {
-                                    const timePerKm = 60 / speed;
-                                    const minPart = Math.floor(timePerKm);
-                                    const secPart = Math.round((timePerKm - minPart) * 60);
-                                    paceTag = `
-                                        <span class="flex items-center gap-1 px-2 py-1 bg-violet-50 text-violet-800 text-xs rounded-full">
-                                            <i class="fas fa-running text-violet-500"></i> ${minPart}:${String(secPart).padStart(2, '0')} /km
-                                        </span>`;
-                                }
-                            }
-                        }
-
-                        // 1. CAS TRIATHLON
-                        if (race.terrain === 'triathlon') {
-                            if (race.raceFormat === 'team') {
-                                // Mode Équipe : Un seul sport
-                                if (race.raceRelaySport === 'swim') {
-                                    const swimDist = parseFloat(race.swimDistance);
-                                    const swimDisplay = isNaN(swimDist) ? '? m' : (swimDist > 999 ? (swimDist / 1000).toFixed(2) + ' km' : swimDist + ' m');
-                                    tagsHtml = `
-                                ${showDistance && !isNaN(swimDist) ? `<span class="flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-800 text-xs rounded-full"><i class="fas fa-swimmer text-blue-500"></i> ${swimDisplay}</span>` : ''}
-                                ${locHtml}
-                                ${showTerrain ? `<span class="flex items-center gap-1 px-2 py-1 bg-indigo-50 text-indigo-800 text-xs rounded-full"><i class="fas fa-trophy text-indigo-500"></i> Triathlon</span>` : ''}`;
-                                } else if (race.raceRelaySport === 'bike') {
-                                    const bikeDistFormatted = formatDist(race.bikeDistance);
-                                    const hasBikeElevation = race.bikeElevation && race.bikeElevation !== '0' && race.bikeElevation !== 0 && race.bikeElevation !== '-';
-                                    tagsHtml = `
-                                ${showDistance && bikeDistFormatted !== '-' ? `<span class="flex items-center gap-1 px-2 py-1 bg-orange-50 text-orange-800 text-xs rounded-full"><i class="fas fa-biking text-orange-500"></i> ${bikeDistFormatted} km</span>` : ''}
-                                ${showElevation && hasBikeElevation ? `<span class="flex items-center gap-1 px-2 py-1 bg-orange-50 text-orange-800 text-xs rounded-full"><i class="fas fa-mountain text-orange-500"></i> +${race.bikeElevation} m</span>` : ''}
-                                ${locHtml}
-                                ${showTerrain ? `<span class="flex items-center gap-1 px-2 py-1 bg-indigo-50 text-indigo-800 text-xs rounded-full"><i class="fas fa-trophy text-indigo-500"></i> Triathlon</span>` : ''}`;
-                                } else { // Run
-                                    const hasRunElevation = race.runElevation && race.runElevation !== '0' && race.runElevation !== 0 && race.runElevation !== '-';
-                                    tagsHtml = `
-                                ${showDistance && distVal !== '-' ? `<span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full"><i class="fas fa-running text-green-500"></i> ${distVal} km</span>` : ''}
-                                ${showElevation && hasRunElevation ? `<span class="flex items-center gap-1 px-2 py-1 bg-orange-50 text-orange-800 text-xs rounded-full"><i class="fas fa-mountain text-orange-500"></i> +${race.runElevation} m</span>` : ''}
-                                ${locHtml}
-                                ${showTerrain ? `<span class="flex items-center gap-1 px-2 py-1 bg-indigo-50 text-indigo-800 text-xs rounded-full"><i class="fas fa-trophy text-indigo-500"></i> Triathlon</span>` : ''}`;
-                                }
-                            } else {
-                                // Mode Solo : Standard 3 sports
-                                const swimDist = parseFloat(race.swimDistance);
-                                const swimDisplay = isNaN(swimDist) ? '? m' : (swimDist > 999 ? (swimDist / 1000).toFixed(2) + ' km' : swimDist + ' m');
-                                const bikeDistFormatted = formatDist(race.bikeDistance);
-
-                                tagsHtml = `
-                                      ${showDistance ? `
-                                      ${!isNaN(swimDist) ? `<span class="flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-800 text-xs rounded-full" title="Natation"><i class="fas fa-swimmer text-blue-500"></i> ${swimDisplay}</span>` : ''}
-                                      ${bikeDistFormatted !== '-' ? `<span class="flex items-center gap-1 px-2 py-1 bg-orange-50 text-orange-800 text-xs rounded-full" title="Vélo"><i class="fas fa-biking text-orange-500"></i> ${bikeDistFormatted} km</span>` : ''}
-                                      ${distVal !== '-' ? `<span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full" title="Course à pied"><i class="fas fa-running text-green-500"></i> ${distVal} km</span>` : ''}
-                                      ` : ''}
-                                      ${locHtml}
-                                      ${showTerrain ? `<span class="flex items-center gap-1 px-2 py-1 bg-indigo-50 text-indigo-800 text-xs rounded-full"><i class="fas fa-trophy text-indigo-500"></i> Triathlon</span>` : ''}`;
-                            }
-                        }
-                        // 2. CAS HYROX
-                        else if (race.terrain === 'hyrox') {
-                            tagsHtml = `
-                                    ${showDistance && distVal !== '-' ? `<span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full"><i class="fas fa-ruler-horizontal text-green-500"></i> ${distVal} km</span>` : ''}
-                                    ${locHtml}
-                                    ${showTerrain ? `<span class="flex items-center gap-1 px-2 py-1 bg-indigo-50 text-indigo-800 text-xs rounded-full"><i class="fas fa-dumbbell text-indigo-500"></i> Hyrox</span>` : ''}`;
-                        }
-                        // 3. CAS RELAI (Standard)
-                        else if (race.terrain === 'relai') {
-                            const hasElevation = race.elevation && race.elevation !== '0' && race.elevation !== 0 && race.elevation !== '-';
-                            tagsHtml = `
-                                    ${showDistance && distVal !== '-' ? `<span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full"><i class="fas fa-ruler-horizontal text-green-500"></i> ${distVal} km</span>` : ''}
-                                    ${showElevation && hasElevation ? `<span class="flex items-center gap-1 px-2 py-1 bg-orange-50 text-orange-800 text-xs rounded-full"><i class="fas fa-mountain text-orange-500"></i> +${elevVal} m</span>` : ''}
-                                    ${locHtml}
-                                    ${showTerrain ? `<span class="flex items-center gap-1 px-2 py-1 bg-indigo-50 text-indigo-800 text-xs rounded-full"><i class="fas fa-users text-indigo-500"></i> Relai</span>` : ''}`;
-                        }
-                        // 4. CAS TRAIL
-                        else if (race.terrain === 'trail') {
-                            const hasElevation = race.elevation && race.elevation !== '0' && race.elevation !== 0 && race.elevation !== '-';
-                            tagsHtml = `
-                                    ${showDistance && distVal !== '-' ? `<span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full"><i class="fas fa-ruler-horizontal text-green-500"></i> ${distVal} km</span>` : ''}
-                                    ${showElevation && hasElevation ? `<span class="flex items-center gap-1 px-2 py-1 bg-orange-50 text-orange-800 text-xs rounded-full"><i class="fas fa-mountain text-orange-500"></i> +${elevVal} m</span>` : ''}
-                                    ${locHtml}
-                                    ${showTerrain ? `<span class="flex items-center gap-1 px-2 py-1 bg-indigo-50 text-indigo-800 text-xs rounded-full"><i class="fas fa-tree text-indigo-500"></i> Trail</span>` : ''}`;
-                        }
-                        // 5. PAR DÉFAUT (ROUTE)
-                        else {
-                            const hasElevation = race.elevation && race.elevation !== '0' && race.elevation !== 0 && race.elevation !== '-';
-                            tagsHtml = `
-                                    ${showDistance && distVal !== '-' ? `<span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full"><i class="fas fa-ruler-horizontal text-green-500"></i> ${distVal} km</span>` : ''}
-                                    ${showElevation && hasElevation ? `<span class="flex items-center gap-1 px-2 py-1 bg-orange-50 text-orange-800 text-xs rounded-full"><i class="fas fa-mountain text-orange-500"></i> +${elevVal} m</span>` : ''}
-                                    ${locHtml}
-                                    ${showTerrain ? `<span class="flex items-center gap-1 px-2 py-1 bg-indigo-50 text-indigo-800 text-xs rounded-full"><i class="fas fa-road text-indigo-500"></i> Route</span>` : ''}`;
-                        }
-
-                        return tagsHtml + timeTag + paceTag + priceTag + rankTag;
-                    })()}
+                        ${cardTagsHtml}
                     </div>
                 </div>
                 <div class="mt-auto pt-4 flex flex-wrap justify-between items-center gap-2 pr-28">
@@ -5064,18 +5058,18 @@
                 // Style container like stats box
                 detailsCompanions.className = 'bg-green-50 rounded-lg p-4 mb-4 text-center block';
 
-                let content = '<h4 class="font-bold text-green-800 text-center mb-3 text-sm border-b border-green-200 pb-2">Accompagnants</h4>';
-                content += '<ul class="grid grid-cols-2 gap-1 text-left">';
-
-                race.companions.forEach(comp => {
+                const companionsLi = race.companions.map(comp => {
                     const name = typeof comp === 'object' ? comp.name : comp;
                     const type = typeof comp === 'object' ? comp.type : 'runner';
                     const iconClass = type === 'spectator' ? 'fa-eye' : 'fa-running';
-                    content += `<li class="flex items-center gap-2 text-sm text-green-800"><i class="fas ${iconClass} text-green-600 w-4"></i><span>${name}</span></li>`;
-                });
+                    return `<li class="flex items-center gap-2 text-sm text-green-800"><i class="fas ${iconClass} text-green-600 w-4"></i><span>${name}</span></li>`;
+                }).join('');
 
-                content += '</ul>';
-                detailsCompanions.innerHTML = content;
+                detailsCompanions.innerHTML = `
+                    <h4 class="font-bold text-green-800 text-center mb-3 text-sm border-b border-green-200 pb-2">Accompagnants</h4>
+                    <ul class="grid grid-cols-2 gap-1 text-left">
+                        ${companionsLi}
+                    </ul>`;
                 detailsCompanions.classList.remove('hidden');
             } else {
                 detailsCompanions.classList.add('hidden');
@@ -5212,7 +5206,7 @@
 
 
                 let cumulativeSeconds = 0;
-                race.relayLaps.forEach((lap, idx) => {
+                const relayLapsRowsHtml = race.relayLaps.map((lap, idx) => {
                     const isMoi = lap.runner === 'Moi' || !lap.runner;
                     const isTousEnsemble = lap.runner === 'Tous ensemble';
                     const lapSeconds = timeToSeconds(lap.time);
@@ -5222,20 +5216,19 @@
                     const subRowId = `relay-sub-${idx}`;
                     const showRowDetails = hasStartHour || (lap.comment && lap.comment.trim() !== '');
                     const colCount = showSubRowColumn ? 6 : 5;
-                    relayHtml += `
+                    const dp = lap.elev ? `\u2191${lap.elev}` : '';
+                    const dn = lap.elevNeg ? `\u2193${lap.elevNeg}` : '';
+                    const lapElevStr = [dp, dn].filter(Boolean).join(' ') || '-';
+                    const runnerDisplay = isTousEnsemble ? 'Tous' : (isMoi ? currentUserPseudo : (lap.runner === 'Personne' ? '-' : lap.runner));
+
+                    return `
                         <tr
                             class="${isMoi ? 'bg-blue-50/50 hover:bg-blue-100' : isTousEnsemble ? 'bg-purple-50/60 hover:bg-purple-100' : 'hover:bg-green-100'} transition-colors ${showRowDetails ? 'cursor-pointer select-none' : ''}"
                             ${showRowDetails ? `onclick="toggleRelayRow('${subRowId}', this)"` : ''}>
                             <td class="pl-1.5 pr-1 py-1 font-medium text-green-700 text-center">${idx + 1}</td>
-                            <td class="pl-1 pr-2 py-1 ${isMoi ? 'font-bold text-blue-700' : isTousEnsemble ? 'font-bold text-purple-700' : ''}">${isTousEnsemble ? 'Tous' : (isMoi ? currentUserPseudo : (lap.runner === 'Personne' ? '-' : lap.runner))}</td>
+                            <td class="pl-1 pr-2 py-1 ${isMoi ? 'font-bold text-blue-700' : isTousEnsemble ? 'font-bold text-purple-700' : ''}">${runnerDisplay}</td>
                             <td class="px-1.5 py-1">${formatDist(lap.dist)}</td>
-                            <td class="px-1.5 py-1 whitespace-nowrap">${
-                                (() => {
-                                    const dp = lap.elev ? `\u2191${lap.elev}` : '';
-                                    const dn = lap.elevNeg ? `\u2193${lap.elevNeg}` : '';
-                                    return [dp, dn].filter(Boolean).join(' ') || '-';
-                                })()
-                            }</td>
+                            <td class="px-1.5 py-1 whitespace-nowrap">${lapElevStr}</td>
                             <td class="px-1.5 py-1 font-mono text-xs">${lap.time || '-'}</td>
                             ${showSubRowColumn ? `<td class="px-1 py-1 text-center text-indigo-400">${showRowDetails ? '<i class="fas fa-chevron-down relay-chevron text-[9px] transition-transform duration-200"></i>' : ''}</td>` : ''}
                         </tr>
@@ -5265,22 +5258,40 @@
                             </td>
                         </tr>` : ''}
                     `;
-                });
+                }).join('');
 
-                // Ligne totaux Groupe
+                const totalRelayDp = totalRelayElev > 0 ? `\u2191${totalRelayElev}m` : '';
+                const totalRelayDn = totalRelayElevNeg > 0 ? `\u2193${totalRelayElevNeg}m` : '';
+                const totalRelayElevStr = [totalRelayDp, totalRelayDn].filter(Boolean).join(' ') || '-';
+
                 relayHtml += `
+                    <div class="bg-green-50 p-3 rounded-lg w-full border border-green-100 mb-4 shadow-sm">
+                        <div class="flex items-center justify-between border-b border-green-200 pb-2 mb-3">
+                            <h4 class="font-bold text-green-800 text-sm flex items-center gap-2">
+                                <i class="fas fa-users text-green-600"></i> Performance du Groupe
+                            </h4>
+                            <span class="text-[10px] bg-green-100 text-green-800 px-2 py-0.5 rounded-full font-bold uppercase">Relais Complet</span>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-xs text-left text-green-800">
+                                <thead class="bg-green-100 text-green-900 uppercase font-semibold">
+                                    <tr>
+                                        <th class="pl-1.5 pr-1 py-1 w-6 text-center">#</th>
+                                        <th class="pl-1 pr-2 py-1">Coureur</th>
+                                        <th class="px-1.5 py-1">Km</th>
+                                        <th class="px-1.5 py-1">Dénivelé</th>
+                                        <th class="px-1.5 py-1">Temps</th>
+                                        ${showSubRowColumn ? '<th class="px-1 py-1 text-indigo-600 text-center" title="Cliquez sur une ligne pour voir les détails"><i class="fas fa-clock"></i></th>' : ''}
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-green-200">
+                                    ${relayLapsRowsHtml}
                                 </tbody>
                                 <tfoot class="bg-green-100 font-bold">
                                     <tr>
                                         <td colspan="2" class="pl-1.5 pr-2 py-1">Total Grp</td>
                                         <td class="px-1.5 py-1 whitespace-nowrap">${totalRelayDist.toFixed(2)}&nbsp;km</td>
-                                        <td class="px-1.5 py-1 whitespace-nowrap">${
-                                            (() => {
-                                                const dp = totalRelayElev > 0 ? `\u2191${totalRelayElev}m` : '';
-                                                const dn = totalRelayElevNeg > 0 ? `\u2193${totalRelayElevNeg}m` : '';
-                                                return [dp, dn].filter(Boolean).join(' ') || '-';
-                                            })()
-                                        }</td>
+                                        <td class="px-1.5 py-1 whitespace-nowrap">${totalRelayElevStr}</td>
                                         <td class="px-1.5 py-1 font-mono text-xs">${secondsToTime(totalRelayTimeS)}</td>
                                         ${showSubRowColumn ? '<td class="px-1 py-1"></td>' : ''}
                                     </tr>
@@ -5297,6 +5308,7 @@
                         </div>
                     </div>
                 `;
+
                 // ── Calcul des stats par coéquipier ──────────────────────────────────────
                 // Palette de couleurs : une par coureur (hors Moi)
                 const teamColors = [
@@ -5344,11 +5356,14 @@
                     });
 
                     // Générer les cartes HTML
-                    let teammateCardsHtml = '';
-                    teammateNames.forEach((name, idx) => {
+                    const teammateCardsHtml = teammateNames.map((name, idx) => {
                         const c = teamColors[idx % teamColors.length];
                         const st = teammateStats[name];
-                        teammateCardsHtml += `
+                        const tDp = st.elev > 0 ? `\u2191${st.elev}m` : '';
+                        const tDn = st.elevNeg > 0 ? `\u2193${st.elevNeg}m` : '';
+                        const teammateElevStr = [tDp, tDn].filter(Boolean).join(' ') || '0m';
+
+                        return `
                             <div class="${c.bg} p-3 rounded-lg w-full border ${c.border} shadow-sm">
                                 <div class="flex items-center justify-between border-b ${c.headerBorder} pb-2 mb-3">
                                     <h4 class="font-bold ${c.title} text-sm flex items-center gap-2">
@@ -5363,13 +5378,7 @@
                                     </div>
                                     <div>
                                         <p class="text-[10px] ${c.sub} uppercase">Dénivelé</p>
-                                        <p class="font-bold ${c.title} text-[9px] sm:text-[11px] whitespace-nowrap">${
-                                            (() => {
-                                                const dp = st.elev > 0 ? `\u2191${st.elev}m` : '';
-                                                const dn = st.elevNeg > 0 ? `\u2193${st.elevNeg}m` : '';
-                                                return [dp, dn].filter(Boolean).join(' ') || '0m';
-                                            })()
-                                        }</p>
+                                        <p class="font-bold ${c.title} text-[9px] sm:text-[11px] whitespace-nowrap">${teammateElevStr}</p>
                                     </div>
                                     <div>
                                         <p class="text-[10px] ${c.sub} uppercase">Temps</p>
@@ -5386,7 +5395,7 @@
                                 </div>
                             </div>
                         `;
-                    });
+                    }).join('');
 
                     relayHtml += `
                         <div class="w-full mb-2">
@@ -5424,7 +5433,17 @@
                     }
                 }
             } else if (race.terrain === 'hyrox' && race.hyroxLaps && race.hyroxLaps.length > 0) {
-                let hyroxHtml = `
+                const hyroxRowsHtml = hyroxEvents.map((eventName, idx) => {
+                    const lapTime = race.hyroxLaps[idx] || '-';
+                    return `
+                        <tr class="hover:bg-orange-100 transition-colors">
+                            <td class="px-2 py-1 font-medium text-orange-700">${eventName}</td>
+                            <td class="px-2 py-1 font-mono text-xs">${lapTime}</td>
+                        </tr>
+                    `;
+                }).join('');
+
+                const hyroxHtml = `
                     <div class="bg-orange-50 p-3 rounded-lg w-full border border-orange-100 mb-4 shadow-sm">
                         <h4 class="font-bold text-orange-800 text-center mb-3 text-sm border-b border-orange-200 pb-2">Détails Hyrox</h4>
                         <div class="overflow-x-auto">
@@ -5436,19 +5455,7 @@
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-orange-200">
-                `;
-
-                hyroxEvents.forEach((eventName, idx) => {
-                    const lapTime = race.hyroxLaps[idx] || '-';
-                    hyroxHtml += `
-                        <tr class="hover:bg-orange-100 transition-colors">
-                            <td class="px-2 py-1 font-medium text-orange-700">${eventName}</td>
-                            <td class="px-2 py-1 font-mono text-xs">${lapTime}</td>
-                        </tr>
-                    `;
-                });
-
-                hyroxHtml += `
+                                    ${hyroxRowsHtml}
                                 </tbody>
                             </table>
                         </div>
@@ -5553,18 +5560,20 @@
             const avgSpeedContainer = document.getElementById('averageSpeedInfo');
             if (statsList.length > 0) {
                 // Affichage "Rectangle centré"
-                let html = `<div class="bg-green-50 p-3 rounded-lg w-full border border-green-100 mb-4 shadow-sm">
-                    <h4 class="font-bold text-green-800 text-center mb-3 text-sm border-b border-green-200 pb-2">Statistiques calculées</h4>
-                    <div class="flex flex-col gap-2 text-sm items-center">`;
-
-                statsList.forEach(item => {
-                    html += `<div class="flex items-center justify-between w-full max-w-sm px-4">
+                const statsItemsHtml = statsList.map(item => `
+                    <div class="flex items-center justify-between w-full max-w-sm px-4">
                         <span class="text-green-600">${item.label} :</span>
                         <span class="font-semibold text-green-800 text-right">${item.value}</span>
-                    </div>`;
-                });
+                    </div>
+                `).join('');
 
-                html += `</div></div>`;
+                const html = `
+                    <div class="bg-green-50 p-3 rounded-lg w-full border border-green-100 mb-4 shadow-sm">
+                        <h4 class="font-bold text-green-800 text-center mb-3 text-sm border-b border-green-200 pb-2">Statistiques calculées</h4>
+                        <div class="flex flex-col gap-2 text-sm items-center">
+                            ${statsItemsHtml}
+                        </div>
+                    </div>`;
                 avgSpeedContainer.innerHTML = html;
                 avgSpeedContainer.className = "mb-2 w-full";
             } else {
