@@ -1,6 +1,6 @@
 {
     "name": "Carnet de Courses",
-    "short_name": "CarnetCourses",
+    "short_name": "Courses",
     "description": "Suivez, organisez et analysez toutes vos courses sportives : trail, route, triathlon, relai, Hyrox et plus encore.",
     "start_url": "/RepertoireCourse/index.html",
     "scope": "/RepertoireCourse/",
@@ -32,7 +32,7 @@
     "shortcuts": [
         {
             "name": "Tableau de bord",
-            "short_name": "Dashboard",
+            "short_name": "Courses",
             "description": "Accéder à votre tableau de bord de courses",
             "url": "/RepertoireCourse/dashboard.html",
             "icons": [
