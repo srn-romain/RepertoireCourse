@@ -190,10 +190,11 @@ async function loadPublicRaces() {
             const isOwner = currentUser && (uid === currentUser.uid);
             const privacy = userData.privacy || {};
 
-            // 1. Pseudo
+            // 1. Pseudo & Photo
             let ownerPseudoDisplay = userData.pseudo;
             if (privacy.showPseudo === false) {
                 ownerPseudoDisplay = "Utilisateur Anonyme";
+                userData.photoURL = null;
             }
 
             // 2. City
