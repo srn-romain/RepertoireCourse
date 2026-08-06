@@ -3509,7 +3509,8 @@
                     option.dataset.wishlistId = item.id;
                     option.dataset.date = item.date || item.raceDate || '';
                     option.dataset.link = item.link || item.website || item.siteUrl || '';
-                    option.textContent = item.name + (item.category ? ` (${item.category})` : '');
+                    const catStr = item.category ? ` (${item.category.toLowerCase()})` : '';
+                    option.textContent = item.name + catStr;
                     wishlistCheckSelect.appendChild(option);
                 });
                 wishlistCheckSelect.disabled = false;
@@ -8607,7 +8608,7 @@
         // Helper pour afficher un élément de wishlist dans le mode classique
         function createWishlistItemElement(item, isFav) {
             const li = document.createElement('li');
-            li.className = 'py-1 flex flex-col sm:flex-row sm:items-center justify-between gap-1';
+            li.className = 'py-1 flex items-center gap-1.5';
 
             const formattedAddedDate = item.addedAt ? new Date(item.addedAt).toLocaleDateString('fr-FR') : '';
             const addedText = formattedAddedDate ? `Ajouté le ${formattedAddedDate}` : '';
@@ -8655,29 +8656,23 @@
             if (addedText) nameElem.title = addedText;
             leftDiv.appendChild(nameElem);
 
-            const rightDiv = document.createElement('div');
-            rightDiv.className = 'flex items-center flex-wrap gap-2 text-xs text-gray-500';
-
-            // Date de la course ou date d'ajout en gris par défaut si absente
+            // Date de la course ou date d'ajout en gris directement collée après le nom
             const raceDateStr = item.date || item.raceDate;
             if (raceDateStr) {
                 const formattedDate = new Date(raceDateStr + (raceDateStr.includes('T') ? '' : 'T00:00:00')).toLocaleDateString('fr-FR');
                 const dateBadge = document.createElement('span');
-                dateBadge.className = 'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800';
+                dateBadge.className = 'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 ml-1';
                 dateBadge.innerHTML = `<i class="far fa-calendar-alt mr-1 text-green-600"></i>${formattedDate}`;
-                rightDiv.appendChild(dateBadge);
+                leftDiv.appendChild(dateBadge);
             } else if (item.addedAt) {
                 const formattedAddedDate = new Date(item.addedAt).toLocaleDateString('fr-FR');
                 const addedSpan = document.createElement('span');
-                addedSpan.className = 'text-xs text-gray-400';
+                addedSpan.className = 'text-xs text-gray-400 ml-1';
                 addedSpan.textContent = formattedAddedDate;
-                rightDiv.appendChild(addedSpan);
+                leftDiv.appendChild(addedSpan);
             }
 
             li.appendChild(leftDiv);
-            if (rightDiv.children.length > 0) {
-                li.appendChild(rightDiv);
-            }
             return li;
         }
 
@@ -9085,7 +9080,8 @@
                     list.innerHTML = '';
                     similarItems.forEach(item => {
                         const li = document.createElement('li');
-                        li.textContent = item.name;
+                        const catStr = item.category ? ` <span class="italic text-gray-500 text-xs">(${item.category.toLowerCase()})</span>` : '';
+                        li.innerHTML = `${item.name}${catStr}`;
                         list.appendChild(li);
                     });
 
@@ -9332,7 +9328,7 @@
                         li.innerHTML = `
                             <label class="flex items-center space-x-2 w-full cursor-pointer">
                                 <input type="checkbox" class="wishlist-delete-checkbox form-checkbox h-5 w-5 text-green-600 rounded focus:ring-green-500" value="${item.id}">
-                                <span class="text-gray-800 font-medium">${item.name} <span class="text-xs text-gray-500 font-normal">(${item.category || 'N/A'})</span></span>
+                                <span class="text-gray-800 font-medium">${item.name} <span class="text-xs text-gray-500 font-normal italic">(${item.category ? item.category.toLowerCase() : 'N/A'})</span></span>
                             </label>
                         `;
                         listContainer.appendChild(li);
