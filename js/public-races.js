@@ -102,9 +102,9 @@ async function loadPublicRaces() {
         return;
     }
 
-    // Show loading spinner
+    // Show loading runner animation
     setPublicFiltersLoading(true); // Ensure frozen
-    grid.innerHTML = '<div class="col-span-full flex justify-center items-center py-12"><i class="fas fa-circle-notch fa-spin text-green-500 text-4xl"></i></div>';
+    grid.innerHTML = typeof getRunnerLoaderHTML === 'function' ? getRunnerLoaderHTML(3) : '<div class="col-span-full flex justify-center items-center py-12"><i class="fas fa-circle-notch fa-spin text-green-500 text-4xl"></i></div>';
 
     try {
         const snapshot = await db.collectionGroup('races')

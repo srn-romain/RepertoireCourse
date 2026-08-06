@@ -38,6 +38,7 @@
         }
     </script>
     <link rel="stylesheet" href="css/index.css">
+    <link rel="stylesheet" href="css/runner-loader.css">
 </head>
 
 <body class="min-h-screen flex flex-col bg-green-50 bg-opacity-90">
@@ -993,9 +994,65 @@
 
             <div id="publicRacesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <!-- Les courses seront chargées ici dynamiquement -->
-                <div class="col-span-1 md:col-span-2 lg:col-span-3 text-center py-12">
-                    <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
-                    <p class="mt-2 text-gray-500">Chargement des courses...</p>
+                <div class="col-span-1 md:col-span-2 lg:col-span-3 flex justify-center items-center py-8 w-full">
+                    <div class="runner-loader-container">
+                        <div class="runner-void-bg">
+                            <div class="runner-wind-line wl-1"></div>
+                            <div class="runner-wind-line wl-2"></div>
+                            <div class="runner-wind-line wl-3"></div>
+                            <div class="runner-wind-line wl-4"></div>
+                            <div class="runner-particle p-1"></div>
+                            <div class="runner-particle p-2"></div>
+                            <div class="runner-particle p-3"></div>
+                        </div>
+                        <svg class="runner-svg-character" viewBox="0 0 160 115" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                                <linearGradient id="runnerGradIndex" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" stop-color="#34d399" />
+                                    <stop offset="100%" stop-color="#059669" />
+                                </linearGradient>
+                                <linearGradient id="runnerGradDarkIndex" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" stop-color="#059669" />
+                                    <stop offset="100%" stop-color="#047857" />
+                                </linearGradient>
+                                <filter id="runnerGlowIndex" x="-30%" y="-30%" width="160%" height="160%">
+                                    <feGaussianBlur stdDeviation="1.5" result="blur" />
+                                    <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                                </filter>
+                            </defs>
+                            <ellipse class="runner-shadow-anim" cx="70" cy="96" rx="22" ry="4" fill="rgba(16, 185, 129, 0.25)" />
+                            <g class="runner-body-anim">
+                                <g class="runner-arm-back">
+                                    <path d="M 82 40 L 68 50" stroke="url(#runnerGradDarkIndex)" stroke-width="4.5" stroke-linecap="round" fill="none" />
+                                    <g class="runner-forearm-back">
+                                        <path d="M 68 50 L 60 60" stroke="url(#runnerGradDarkIndex)" stroke-width="4" stroke-linecap="round" fill="none" />
+                                    </g>
+                                </g>
+                                <g class="runner-leg-back">
+                                    <path d="M 70 62 L 54 76" stroke="url(#runnerGradDarkIndex)" stroke-width="5" stroke-linecap="round" fill="none" />
+                                    <g class="runner-shin-back">
+                                        <path d="M 54 76 L 44 96 L 50 96" stroke="url(#runnerGradDarkIndex)" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+                                    </g>
+                                </g>
+                                <path d="M 82 40 L 70 62" stroke="url(#runnerGradIndex)" stroke-width="6" stroke-linecap="round" filter="url(#runnerGlowIndex)" />
+                                <circle cx="90" cy="26" r="8.5" fill="url(#runnerGradIndex)" filter="url(#runnerGlowIndex)" />
+                                <path d="M 94 25 L 97 26 L 94 28" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" fill="none" opacity="0.9" />
+                                <g class="runner-leg-front">
+                                    <path d="M 70 62 L 86 78" stroke="url(#runnerGradIndex)" stroke-width="5.5" stroke-linecap="round" fill="none" filter="url(#runnerGlowIndex)" />
+                                    <g class="runner-shin-front">
+                                        <path d="M 86 78 L 78 96 L 86 96" stroke="url(#runnerGradIndex)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none" filter="url(#runnerGlowIndex)" />
+                                    </g>
+                                </g>
+                                <g class="runner-arm-front">
+                                    <path d="M 82 40 L 94 52" stroke="url(#runnerGradIndex)" stroke-width="5" stroke-linecap="round" fill="none" filter="url(#runnerGlowIndex)" />
+                                    <g class="runner-forearm-front">
+                                        <path d="M 94 52 L 104 44" stroke="url(#runnerGradIndex)" stroke-width="4.5" stroke-linecap="round" fill="none" filter="url(#runnerGlowIndex)" />
+                                    </g>
+                                </g>
+                            </g>
+                            <line class="runner-track-line" x1="10" y1="96" x2="150" y2="96" stroke="#10b981" stroke-width="2.5" stroke-dasharray="8 6" stroke-linecap="round" opacity="0.75" />
+                        </svg>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1133,6 +1190,7 @@
     <script src="js/isInvite.js"></script>
 
     <!-- Auth Modals & Logic (Injects Login/Signup Modals) -->
+    <script src="js/runner-loader.js"></script>
     <script src="js/modal-auth.js"></script>
     <script src="js/public-races.js"></script>
     <script src="js/user-settings.js"></script>

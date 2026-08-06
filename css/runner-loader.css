@@ -1,0 +1,207 @@
+/* css/runner-loader.css - Custom Runner Stickman Loading Animation (Anatomically Correct Facing Right) */
+
+.runner-loader-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem 1rem;
+    width: 100%;
+    user-select: none;
+}
+
+.runner-loader-container,
+.runner-loader-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    padding: 0.5rem;
+    width: 240px;
+    height: 135px;
+    overflow: hidden;
+}
+
+/* Void / Speed background effect */
+.runner-void-bg {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    background: transparent;
+}
+
+/* Speed / Wind Lines sliding left */
+.runner-wind-line {
+    position: absolute;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(16, 185, 129, 0.45), transparent);
+    border-radius: 2px;
+}
+
+.runner-wind-line.wl-1 { top: 18%; width: 70px; animation: runnerWind 0.75s linear infinite; }
+.runner-wind-line.wl-2 { top: 38%; width: 110px; animation: runnerWind 0.55s linear infinite 0.12s; }
+.runner-wind-line.wl-3 { top: 58%; width: 60px; animation: runnerWind 0.85s linear infinite 0.25s; }
+.runner-wind-line.wl-4 { top: 76%; width: 85px; animation: runnerWind 0.65s linear infinite 0.05s; }
+
+@keyframes runnerWind {
+    0% { transform: translateX(240px); opacity: 0; }
+    20% { opacity: 0.8; }
+    80% { opacity: 0.8; }
+    100% { transform: translateX(-140px); opacity: 0; }
+}
+
+/* Flying speed particles */
+.runner-particle {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background-color: rgba(52, 211, 153, 0.7);
+    border-radius: 50%;
+    box-shadow: 0 0 6px rgba(16, 185, 129, 0.8);
+}
+
+.runner-particle.p-1 { top: 22%; animation: runnerWind 1.1s linear infinite 0.1s; }
+.runner-particle.p-2 { top: 48%; animation: runnerWind 0.8s linear infinite 0.35s; }
+.runner-particle.p-3 { top: 68%; animation: runnerWind 1.25s linear infinite 0.2s; }
+
+/* SVG Character element */
+.runner-svg-character {
+    width: 160px;
+    height: 115px;
+    overflow: visible;
+}
+
+/* Ground Line Animation */
+.runner-track-line {
+    animation: runnerTrackDash 0.35s linear infinite;
+}
+
+@keyframes runnerTrackDash {
+    0% { stroke-dashoffset: 0; }
+    100% { stroke-dashoffset: -14; }
+}
+
+/* Shadow pulse under runner */
+.runner-shadow-anim {
+    transform-origin: 70px 96px;
+    animation: runnerShadowPulse 0.35s ease-in-out infinite alternate;
+}
+
+@keyframes runnerShadowPulse {
+    0% { transform: scaleX(1.1); opacity: 0.35; }
+    100% { transform: scaleX(0.65); opacity: 0.12; }
+}
+
+/* Body Bobbing & Leaning */
+.runner-body-anim {
+    transform-origin: 70px 62px;
+    animation: runnerBodyBob 0.35s ease-in-out infinite alternate;
+}
+
+@keyframes runnerBodyBob {
+    0% { transform: translateY(0px) rotate(1deg); }
+    100% { transform: translateY(-7px) rotate(-1.5deg); }
+}
+
+/* Legs - Front Leg (Hip origin 70px 62px) */
+.runner-leg-front {
+    transform-origin: 70px 62px;
+    animation: runnerLegFront 0.6s ease-in-out infinite;
+}
+
+@keyframes runnerLegFront {
+    0% { transform: rotate(-35deg); }
+    50% { transform: rotate(35deg); }
+    100% { transform: rotate(-35deg); }
+}
+
+/* Front Shin (Knee origin 86px 78px) */
+.runner-shin-front {
+    transform-origin: 86px 78px;
+    animation: runnerShinFront 0.6s ease-in-out infinite;
+}
+
+@keyframes runnerShinFront {
+    0% { transform: rotate(-25deg); }
+    30% { transform: rotate(-45deg); }
+    60% { transform: rotate(10deg); }
+    100% { transform: rotate(-25deg); }
+}
+
+/* Legs - Back Leg (Hip origin 70px 62px) */
+.runner-leg-back {
+    transform-origin: 70px 62px;
+    animation: runnerLegBack 0.6s ease-in-out infinite;
+}
+
+@keyframes runnerLegBack {
+    0% { transform: rotate(35deg); }
+    50% { transform: rotate(-35deg); }
+    100% { transform: rotate(35deg); }
+}
+
+/* Back Shin (Knee origin 54px 76px) */
+.runner-shin-back {
+    transform-origin: 54px 76px;
+    animation: runnerShinBack 0.6s ease-in-out infinite;
+}
+
+@keyframes runnerShinBack {
+    0% { transform: rotate(10deg); }
+    50% { transform: rotate(-25deg); }
+    80% { transform: rotate(-45deg); }
+    100% { transform: rotate(10deg); }
+}
+
+/* Arms - Front Arm (Shoulder origin 82px 40px) */
+.runner-arm-front {
+    transform-origin: 82px 40px;
+    animation: runnerArmFront 0.6s ease-in-out infinite;
+}
+
+@keyframes runnerArmFront {
+    0% { transform: rotate(35deg); }
+    50% { transform: rotate(-35deg); }
+    100% { transform: rotate(35deg); }
+}
+
+/* Front Forearm (Elbow origin 94px 52px) */
+.runner-forearm-front {
+    transform-origin: 94px 52px;
+    animation: runnerForearmFront 0.6s ease-in-out infinite;
+}
+
+@keyframes runnerForearmFront {
+    0% { transform: rotate(10deg); }
+    50% { transform: rotate(35deg); }
+    100% { transform: rotate(10deg); }
+}
+
+/* Arms - Back Arm (Shoulder origin 82px 40px) */
+.runner-arm-back {
+    transform-origin: 82px 40px;
+    animation: runnerArmBack 0.6s ease-in-out infinite;
+}
+
+@keyframes runnerArmBack {
+    0% { transform: rotate(-35deg); }
+    50% { transform: rotate(35deg); }
+    100% { transform: rotate(-35deg); }
+}
+
+/* Back Forearm (Elbow origin 68px 50px) */
+.runner-forearm-back {
+    transform-origin: 68px 50px;
+    animation: runnerForearmBack 0.6s ease-in-out infinite;
+}
+
+@keyframes runnerForearmBack {
+    0% { transform: rotate(35deg); }
+    50% { transform: rotate(10deg); }
+    100% { transform: rotate(35deg); }
+}
