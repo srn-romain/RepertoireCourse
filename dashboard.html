@@ -2294,7 +2294,7 @@
 
     <!-- Bouton Retour en haut -->
     <button id="scrollToTopBtn"
-        class="fixed bottom-6 right-6 bg-green-600 hover:bg-green-700 text-white rounded-full p-3 shadow-lg transition-all duration-300 transform translate-y-20 opacity-0 z-2 focus:outline-none">
+        class="fixed bottom-6 right-6 bg-green-600 hover:bg-green-700 text-white rounded-full p-3 shadow-lg transition-all duration-300 transform translate-y-20 opacity-0 z-40 focus:outline-none">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18" />
         </svg>
@@ -2302,7 +2302,7 @@
 
     <!-- Bouton Anniversaire (Souvenirs) -->
     <button id="anniversaryBtn"
-        class="fixed bottom-6 left-6 bg-purple-600 hover:bg-purple-700 text-white rounded-full p-3 shadow-lg transition-all duration-300 z-2 focus:outline-none"
+        class="fixed bottom-6 left-6 bg-purple-600 hover:bg-purple-700 text-white rounded-full p-3 shadow-lg transition-all duration-300 z-40 focus:outline-none"
         title="Voir mon souvenir le plus proche">
         <i class="fas fa-history text-xl"></i>
     </button>
@@ -7434,7 +7434,7 @@
                 if (timeInput) {
                     timeInput.value = '';
                     timeInput.disabled = true;
-                    timeInput.placeholder = "Disponible après la course";
+                    timeInput.placeholder = "Ex: 01:30:00";
                     timeInput.classList.add('bg-gray-100', 'cursor-not-allowed');
                 }
                 const rankPosInput = document.getElementById('raceRankPos');
@@ -7446,7 +7446,8 @@
                     if (input) {
                         input.value = '';
                         input.disabled = true;
-                        input.placeholder = "Post-course";
+                        if (input.id.includes('Pos')) input.placeholder = "Ex: 42";
+                        else input.placeholder = "Total";
                         input.classList.add('bg-gray-100', 'cursor-not-allowed');
                     }
                 });
@@ -7454,7 +7455,7 @@
                     if (input) {
                         input.value = '';
                         input.disabled = true;
-                        input.placeholder = "Post-course";
+                        input.placeholder = "HH:MM:SS";
                         input.classList.add('bg-gray-100', 'cursor-not-allowed');
                     }
                 });
@@ -7462,19 +7463,19 @@
                 document.querySelectorAll('.relay-time-input').forEach(input => {
                     input.value = '';
                     input.disabled = true;
-                    input.placeholder = "Post-course";
+                    input.placeholder = "HH:MM:SS";
                     input.classList.add('bg-gray-100', 'cursor-not-allowed');
                 });
                 // Disable hyrox time inputs
                 document.querySelectorAll('.hyrox-time-input').forEach(input => {
                     input.value = '';
                     input.disabled = true;
-                    input.placeholder = "Post-course";
+                    input.placeholder = "HH:MM:SS";
                     input.classList.add('bg-gray-100', 'cursor-not-allowed');
                 });
                 // Disable hyrox total display
                 const hyroxTotal = document.getElementById('hyroxTotalTime');
-                if (hyroxTotal) hyroxTotal.textContent = 'Post-course';
+                if (hyroxTotal) hyroxTotal.textContent = '00:00:00';
             } else {
                 if (timeInput) {
                     timeInput.disabled = false;
@@ -9513,17 +9514,9 @@
             const anniversaryBtn = document.getElementById('anniversaryBtn');
             const scrollToTopBtn = document.getElementById('scrollToTopBtn');
 
-            const detailsModal = document.getElementById('detailsModal');
-            const statsModal = document.getElementById('statsModal');
-            const badgesModal = document.getElementById('badgesModal');
-            const wishlistModal = document.getElementById('wishlistModal');
-
-            // Vérifier si au moins une modale est affichée
-            const isAnyModalOpen =
-                (detailsModal && !detailsModal.classList.contains('hidden')) ||
-                (statsModal && !statsModal.classList.contains('hidden')) ||
-                (badgesModal && !badgesModal.classList.contains('hidden')) ||
-                (wishlistModal && !wishlistModal.classList.contains('hidden'));
+            // Vérifier si au moins une modale est affichée sur le dashboard
+            const openModals = document.querySelectorAll('.modal:not(.hidden)');
+            const isAnyModalOpen = openModals.length > 0;
 
             // Ajouter/retirer la classe anniversary-behind pour les deux boutons
             if (isAnyModalOpen) {
@@ -9535,15 +9528,9 @@
             }
         }
 
-        // Observer les changements de classe sur les modales
+        // Observer les changements de classe sur TOUTES les modales
         function setupModalObservers() {
-            const modalsToObserve = [
-                document.getElementById('detailsModal'),
-                document.getElementById('statsModal'),
-                document.getElementById('badgesModal'),
-                document.getElementById('wishlistModal')
-            ];
-
+            const modalsToObserve = document.querySelectorAll('.modal');
             const observer = new MutationObserver(updateAnniversaryButtonZIndex);
 
             modalsToObserve.forEach(modal => {
