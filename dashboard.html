@@ -8608,7 +8608,7 @@
         // Helper pour afficher un élément de wishlist dans le mode classique
         function createWishlistItemElement(item, isFav) {
             const li = document.createElement('li');
-            li.className = 'py-1 flex items-center gap-1.5';
+            li.className = 'py-1.5 flex items-center justify-between gap-2 border-b border-gray-50 last:border-0';
 
             const formattedAddedDate = item.addedAt ? new Date(item.addedAt).toLocaleDateString('fr-FR') : '';
             const addedText = formattedAddedDate ? `Ajouté le ${formattedAddedDate}` : '';
@@ -8629,7 +8629,7 @@
             }
 
             const leftDiv = document.createElement('div');
-            leftDiv.className = 'flex items-center flex-wrap gap-1.5';
+            leftDiv.className = 'flex items-center gap-1.5 min-w-0 flex-1 my-auto';
             if (addedText) leftDiv.title = addedText;
 
             if (isFav) {
@@ -8646,33 +8646,39 @@
                 nameElem.href = siteUrl.startsWith('http') ? siteUrl : `https://${siteUrl}`;
                 nameElem.target = '_blank';
                 nameElem.rel = 'noopener noreferrer';
-                nameElem.className = 'text-gray-800 hover:text-blue-600 hover:underline transition-colors cursor-pointer inline-flex items-center gap-1';
-                nameElem.innerHTML = `${item.name} <i class="fas fa-external-link-alt text-[10px] text-blue-500"></i>`;
+                nameElem.className = 'text-gray-800 hover:text-green-700 hover:underline transition-colors cursor-pointer inline-flex items-center gap-1 break-words whitespace-normal leading-snug min-w-0 flex-1 group';
+                nameElem.innerHTML = `<span>${item.name}</span> <i class="fas fa-external-link-alt text-[10px] text-green-600 group-hover:text-green-800 flex-shrink-0"></i>`;
             } else {
                 nameElem = document.createElement('span');
-                nameElem.className = 'text-gray-800';
+                nameElem.className = 'text-gray-800 break-words whitespace-normal leading-snug min-w-0 flex-1';
                 nameElem.textContent = item.name;
             }
             if (addedText) nameElem.title = addedText;
             leftDiv.appendChild(nameElem);
 
-            // Date de la course ou date d'ajout en gris directement collée après le nom
+            const rightDiv = document.createElement('div');
+            rightDiv.className = 'flex items-center flex-shrink-0 my-auto text-xs text-gray-500 ml-2';
+
+            // Date de la course ou date d'ajout en gris centrée verticalement sur la hauteur de l'item
             const raceDateStr = item.date || item.raceDate;
             if (raceDateStr) {
                 const formattedDate = new Date(raceDateStr + (raceDateStr.includes('T') ? '' : 'T00:00:00')).toLocaleDateString('fr-FR');
                 const dateBadge = document.createElement('span');
-                dateBadge.className = 'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 ml-1';
+                dateBadge.className = 'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 whitespace-nowrap';
                 dateBadge.innerHTML = `<i class="far fa-calendar-alt mr-1 text-green-600"></i>${formattedDate}`;
-                leftDiv.appendChild(dateBadge);
+                rightDiv.appendChild(dateBadge);
             } else if (item.addedAt) {
                 const formattedAddedDate = new Date(item.addedAt).toLocaleDateString('fr-FR');
                 const addedSpan = document.createElement('span');
-                addedSpan.className = 'text-xs text-gray-400 ml-1';
+                addedSpan.className = 'text-xs text-gray-400 whitespace-nowrap';
                 addedSpan.textContent = formattedAddedDate;
-                leftDiv.appendChild(addedSpan);
+                rightDiv.appendChild(addedSpan);
             }
 
             li.appendChild(leftDiv);
+            if (rightDiv.children.length > 0) {
+                li.appendChild(rightDiv);
+            }
             return li;
         }
 
