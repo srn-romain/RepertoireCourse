@@ -348,7 +348,64 @@
 
         <!-- Races Grid -->
         <div id="racesContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <!-- Races will be added here by JavaScript -->
+            <!-- Loader immédiat avant exécution JS -->
+            <div class="col-span-1 md:col-span-2 lg:col-span-3 flex justify-center items-center py-6 w-full">
+                <div class="runner-loader-container">
+                    <div class="runner-void-bg">
+                        <div class="runner-wind-line wl-1"></div>
+                        <div class="runner-wind-line wl-2"></div>
+                        <div class="runner-wind-line wl-3"></div>
+                        <div class="runner-wind-line wl-4"></div>
+                    </div>
+                    <svg class="runner-svg-character" viewBox="0 0 160 115" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <linearGradient id="runnerGradDash" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#34d399" />
+                                <stop offset="100%" stop-color="#059669" />
+                            </linearGradient>
+                            <linearGradient id="runnerGradDarkDash" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#059669" />
+                                <stop offset="100%" stop-color="#047857" />
+                            </linearGradient>
+                            <filter id="runnerGlowDash" x="-20%" y="-20%" width="140%" height="140%">
+                                <feGaussianBlur stdDeviation="1.2" result="blur" />
+                                <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                            </filter>
+                        </defs>
+                        <ellipse class="runner-shadow-anim" cx="70" cy="94" rx="20" ry="3.5" fill="rgba(16, 185, 129, 0.25)" />
+                        <g class="runner-body-anim">
+                            <g class="runner-arm-back">
+                                <path d="M 80 38 L 68 48" stroke="url(#runnerGradDarkDash)" stroke-width="4.5" stroke-linecap="round" fill="none" />
+                                <g class="runner-forearm-back">
+                                    <path d="M 68 48 L 60 56" stroke="url(#runnerGradDarkDash)" stroke-width="4" stroke-linecap="round" fill="none" />
+                                </g>
+                            </g>
+                            <g class="runner-thigh-back">
+                                <path d="M 70 60 L 56 74" stroke="url(#runnerGradDarkDash)" stroke-width="5" stroke-linecap="round" fill="none" />
+                                <g class="runner-shin-back">
+                                    <path d="M 56 74 L 46 94 L 52 94" stroke="url(#runnerGradDarkDash)" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+                                </g>
+                            </g>
+                            <path d="M 80 38 L 70 60" stroke="url(#runnerGradDash)" stroke-width="6" stroke-linecap="round" filter="url(#runnerGlowDash)" />
+                            <circle cx="88" cy="22" r="7.5" fill="url(#runnerGradDash)" filter="url(#runnerGlowDash)" />
+                            <path d="M 92 21 L 95 22 L 92 24" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" fill="none" opacity="0.9" />
+                            <g class="runner-thigh-front">
+                                <path d="M 70 60 L 84 74" stroke="url(#runnerGradDash)" stroke-width="5.5" stroke-linecap="round" fill="none" filter="url(#runnerGlowDash)" />
+                                <g class="runner-shin-front">
+                                    <path d="M 84 74 L 78 94 L 86 94" stroke="url(#runnerGradDash)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none" filter="url(#runnerGlowDash)" />
+                                </g>
+                            </g>
+                            <g class="runner-arm-front">
+                                <path d="M 80 38 L 92 48" stroke="url(#runnerGradDash)" stroke-width="5" stroke-linecap="round" fill="none" filter="url(#runnerGlowDash)" />
+                                <g class="runner-forearm-front">
+                                    <path d="M 92 48 L 100 38" stroke="url(#runnerGradDash)" stroke-width="4.5" stroke-linecap="round" fill="none" filter="url(#runnerGlowDash)" />
+                                </g>
+                            </g>
+                        </g>
+                        <line class="runner-track-line" x1="10" y1="94" x2="150" y2="94" stroke="#10b981" stroke-width="2" stroke-dasharray="8 6" stroke-linecap="round" opacity="0.75" />
+                    </svg>
+                </div>
+            </div>
         </div>
     </div>
 
