@@ -430,24 +430,27 @@ const manualModalHTML = `
                 <!-- Wishlist -->
                 <section class="mb-8">
                     <h4 class="text-xl font-bold text-green-700 mb-3 flex items-center gap-2">
-                        <i class="fas fa-heart text-green-600"></i> Wishlist
+                        <i class="fas fa-heart text-green-600"></i> Wishlist & Courses Futures
                     </h4>
                     <div class="bg-white border border-blue-100 rounded-lg p-4 shadow-sm">
-                        <p class="text-sm text-gray-600 mb-3">Planifiez vos courses futures et suivez leur
-                            réalisation :
+                        <p class="text-sm text-gray-600 mb-3">Planifiez vos projets de course et enregistrez toutes leurs informations utiles :
                         </p>
                         <ul class="space-y-2 text-sm text-gray-600">
                             <li class="flex items-start gap-2">
                                 <i class="fas fa-check-circle text-green-600 mt-0.5"></i>
-                                <span>Ajoutez des courses à votre liste de souhaits</span>
+                                <span><strong>Date & Lien du site :</strong> Lors de l'édition de la wishlist, vous pouvez saisir la date prévue de la course ainsi que l'URL de son site officiel.</span>
                             </li>
                             <li class="flex items-start gap-2">
                                 <i class="fas fa-check-circle text-green-600 mt-0.5"></i>
-                                <span>Cochez-les une fois réalisées</span>
+                                <span><strong>Lien cliquable direct :</strong> Cliquez sur le nom de la course dans votre wishlist pour être redirigé vers son site officiel.</span>
                             </li>
                             <li class="flex items-start gap-2">
                                 <i class="fas fa-check-circle text-green-600 mt-0.5"></i>
-                                <span>Suivez votre progression d'objectifs</span>
+                                <span><strong>Date d'ajout (Tooltip & Clic prolongé) :</strong> Survolez la course (ou faites un clic prolongé sur mobile) pour afficher la date exacte à laquelle vous l'avez ajoutée à votre wishlist.</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i class="fas fa-check-circle text-green-600 mt-0.5"></i>
+                                <span><strong>Reprise automatique :</strong> Lorsque vous ajoutez une course depuis la wishlist, son nom, sa catégorie, sa date et le lien du site sont automatiquement injectés dans le formulaire d'ajout.</span>
                             </li>
                         </ul>
                     </div>
