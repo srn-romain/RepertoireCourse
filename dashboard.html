@@ -1672,31 +1672,31 @@
                     </div>
                 </div>
 
-                <div id="wishlistDisplay" class="mb-4">
-                    <!-- Bulle d'information si moins de 10 éléments -->
-                    <div id="wishlistSearchInfoBubble" class="hidden mb-3 p-2.5 bg-green-50/80 border border-green-200 rounded-lg flex items-center gap-2 text-xs text-green-800 shadow-xs transition-all">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <!-- Bulle d'information si moins de 10 éléments -->
+                <div id="wishlistSearchInfoBubble" class="hidden mb-3 p-2.5 bg-green-50/80 border border-green-200 rounded-lg flex items-center gap-2 text-xs text-green-800 shadow-xs transition-all">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span id="wishlistSearchInfoText">La recherche est disponible à partir de 10 courses dans votre wishlist.</span>
+                </div>
+
+                <!-- Champ de recherche si 10 éléments ou plus -->
+                <div id="wishlistSearchContainer" class="hidden mb-3 relative">
+                    <div class="relative flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute left-3 text-gray-400 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                         </svg>
-                        <span id="wishlistSearchInfoText">La recherche est disponible à partir de 10 courses dans votre wishlist.</span>
-                    </div>
-
-                    <!-- Champ de recherche si 10 éléments ou plus -->
-                    <div id="wishlistSearchContainer" class="hidden mb-3 relative">
-                        <div class="relative flex items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute left-3 text-gray-400 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        <input type="text" id="wishlistSearchInput" placeholder="Rechercher une course..."
+                            class="w-full pl-9 pr-8 py-2 text-xs sm:text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent bg-gray-50/50 focus:bg-white transition-all">
+                        <button id="clearWishlistSearchBtn" type="button" class="hidden absolute right-2.5 text-gray-400 hover:text-gray-600 text-xs p-1 focus:outline-none">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                             </svg>
-                            <input type="text" id="wishlistSearchInput" placeholder="Rechercher une course..."
-                                class="w-full pl-9 pr-8 py-2 text-xs sm:text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent bg-gray-50/50 focus:bg-white transition-all">
-                            <button id="clearWishlistSearchBtn" type="button" class="hidden absolute right-2.5 text-gray-400 hover:text-gray-600 text-xs p-1 focus:outline-none">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                            </button>
-                        </div>
+                        </button>
                     </div>
+                </div>
 
+                <div id="wishlistDisplay" class="mb-4">
                     <ul id="wishlistItems" class="list-disc pl-5 space-y-0.1 text-gray-700">
                         <!-- Les éléments de la liste seront ajoutés ici -->
                     </ul>
@@ -1709,6 +1709,7 @@
                 <div id="wishlistEditForm" class="hidden">
                     <div class="mb-4">
                         <ul id="wishlistEditList" class="space-y-3"></ul>
+                        <p id="emptyWishlistEditSearch" class="text-center text-gray-500 italic py-4 hidden text-xs sm:text-sm">Aucune course ne correspond à votre recherche</p>
                         <div class="mt-4 p-3 bg-green-50/60 rounded-xl border border-green-200 space-y-3">
                             <h4 class="text-xs font-bold text-green-800 uppercase tracking-wider">Ajouter une course à la wishlist</h4>
                             <div>
@@ -8633,13 +8634,13 @@
         const wishlistSearchInfoBubble = document.getElementById('wishlistSearchInfoBubble');
         const wishlistSearchInfoText = document.getElementById('wishlistSearchInfoText');
         const emptyWishlistSearch = document.getElementById('emptyWishlistSearch');
+        const emptyWishlistEditSearch = document.getElementById('emptyWishlistEditSearch');
         let wishlistEditItems = [];
 
         // Mettre à jour l'état de la recherche (barre de recherche ou bulle d'info selon le nombre d'éléments)
         function updateWishlistSearchState(totalItems) {
-            if (wishlistSearchInput) wishlistSearchInput.value = '';
-            if (clearWishlistSearchBtn) clearWishlistSearchBtn.classList.add('hidden');
             if (emptyWishlistSearch) emptyWishlistSearch.classList.add('hidden');
+            if (emptyWishlistEditSearch) emptyWishlistEditSearch.classList.add('hidden');
 
             if (totalItems >= 10) {
                 if (wishlistSearchContainer) wishlistSearchContainer.classList.remove('hidden');
@@ -8655,7 +8656,7 @@
             }
         }
 
-        // Filtrage en direct dans la wishlist
+        // Filtrage en direct dans la wishlist (modes affichage et édition)
         function handleWishlistSearch() {
             if (!wishlistSearchInput) return;
             const query = wishlistSearchInput.value.trim().toLowerCase();
@@ -8668,12 +8669,19 @@
                 }
             }
 
+            const isEditMode = wishlistEditForm && !wishlistEditForm.classList.contains('hidden');
+
             if (!query) {
                 if (emptyWishlistSearch) emptyWishlistSearch.classList.add('hidden');
-                renderWishlistItems(wishlistEditItems);
-                if (emptyWishlist) {
-                    if (wishlistEditItems.length > 0) emptyWishlist.classList.add('hidden');
-                    else emptyWishlist.classList.remove('hidden');
+                if (emptyWishlistEditSearch) emptyWishlistEditSearch.classList.add('hidden');
+                if (isEditMode) {
+                    renderWishlistEditList(wishlistEditItems);
+                } else {
+                    renderWishlistItems(wishlistEditItems);
+                    if (emptyWishlist) {
+                        if (wishlistEditItems.length > 0) emptyWishlist.classList.add('hidden');
+                        else emptyWishlist.classList.remove('hidden');
+                    }
                 }
                 return;
             }
@@ -8686,12 +8694,20 @@
                 return name.includes(query) || cat.includes(query) || date.includes(query) || link.includes(query);
             });
 
-            renderWishlistItems(filtered);
-
-            if (filtered.length === 0) {
-                if (emptyWishlistSearch) emptyWishlistSearch.classList.remove('hidden');
+            if (isEditMode) {
+                renderWishlistEditList(filtered);
+                if (filtered.length === 0) {
+                    if (emptyWishlistEditSearch) emptyWishlistEditSearch.classList.remove('hidden');
+                } else {
+                    if (emptyWishlistEditSearch) emptyWishlistEditSearch.classList.add('hidden');
+                }
             } else {
-                if (emptyWishlistSearch) emptyWishlistSearch.classList.add('hidden');
+                renderWishlistItems(filtered);
+                if (filtered.length === 0) {
+                    if (emptyWishlistSearch) emptyWishlistSearch.classList.remove('hidden');
+                } else {
+                    if (emptyWishlistSearch) emptyWishlistSearch.classList.add('hidden');
+                }
             }
         }
 
@@ -8914,7 +8930,7 @@
                         items.push({ id: doc.id, ...doc.data() });
                     });
                     wishlistEditItems = items;
-                    renderWishlistEditList(wishlistEditItems);
+                    updateWishlistSearchState(wishlistEditItems.length);
                     wishlistDisplay.classList.add('hidden');
                     wishlistEditForm.classList.remove('hidden');
                     editWishlistBtn.classList.add('hidden');
@@ -8923,6 +8939,7 @@
                     if (newDateInput) newDateInput.value = '';
                     const newLinkInput = document.getElementById('newWishlistItemLink');
                     if (newLinkInput) newLinkInput.value = '';
+                    handleWishlistSearch();
                 })
                 .catch((error) => {
                     console.error("Erreur lors du chargement de la wishlist:", error);
