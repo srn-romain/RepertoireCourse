@@ -2159,11 +2159,11 @@
             </div>
             <div class="flex flex-col w-full space-y-2">
                 <button id="confirmAddSimilar"
-                    class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition w-full">
+                    class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition w-full font-medium text-sm">
                     Non c'est une course différente que j'ajoute
                 </button>
                 <button id="cancelAddSimilar"
-                    class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition w-full">
+                    class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition w-full font-medium text-sm">
                     Ah mince je l'ai déjà ajoutée
                 </button>
             </div>
@@ -9234,19 +9234,23 @@
 
         let pendingWishlistItemToAdd = null;
 
+        function clearWishlistAddFormInputs() {
+            newWishlistItemInput.value = '';
+            const newDateInput = document.getElementById('newWishlistItemDate');
+            if (newDateInput) newDateInput.value = '';
+            const newLinkInput = document.getElementById('newWishlistItemLink');
+            if (newLinkInput) newLinkInput.value = '';
+            document.querySelectorAll('input[name="wishlistCategory"]').forEach(r => r.checked = false);
+            addWishlistItemBtn.disabled = true;
+            addWishlistItemBtn.classList.add('opacity-50', 'cursor-not-allowed');
+        }
+
         function addWishlistItemToFirebase(item) {
             wishlistCollection.add(item).then((docRef) => {
                 item.id = docRef.id;
                 wishlistEditItems.push(item);
                 renderWishlistEditList(wishlistEditItems);
-                newWishlistItemInput.value = '';
-                const newDateInput = document.getElementById('newWishlistItemDate');
-                if (newDateInput) newDateInput.value = '';
-                const newLinkInput = document.getElementById('newWishlistItemLink');
-                if (newLinkInput) newLinkInput.value = '';
-                addWishlistItemBtn.disabled = true;
-                addWishlistItemBtn.classList.add('opacity-50', 'cursor-not-allowed');
-                document.querySelectorAll('input[name="wishlistCategory"]').forEach(r => r.checked = false);
+                clearWishlistAddFormInputs();
             });
         }
 
@@ -9267,10 +9271,82 @@
                 if (similarItems.length > 0) {
                     const list = document.getElementById('similarItemsList');
                     list.innerHTML = '';
+
                     similarItems.forEach(item => {
                         const li = document.createElement('li');
+                        li.className = 'p-3 bg-white border border-gray-200 rounded-lg flex flex-col gap-2 shadow-xs list-none';
+
                         const catStr = item.category ? ` <span class="italic text-gray-500 text-xs">(${item.category.toLowerCase()})</span>` : '';
-                        li.innerHTML = `${item.name}${catStr}`;
+                        const targetDate = item.date || item.raceDate;
+                        const targetLink = item.link || item.website || item.siteUrl;
+
+                        const dateBadge = targetDate ? `<span class="text-[11px] text-green-700 bg-green-50 px-1.5 py-0.5 rounded border border-green-200">📅 ${new Date(targetDate + (targetDate.includes('T') ? '' : 'T00:00:00')).toLocaleDateString('fr-FR')}</span>` : `<span class="text-[11px] text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200">📅 Sans date</span>`;
+                        const linkBadge = targetLink ? `<span class="text-[11px] text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200">🔗 Site web</span>` : `<span class="text-[11px] text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200">🔗 Sans site</span>`;
+
+                        const infoDiv = document.createElement('div');
+                        infoDiv.className = 'w-full';
+                        infoDiv.innerHTML = `<div class="font-semibold text-gray-800 text-xs sm:text-sm break-words">${item.name}${catStr}</div><div class="flex flex-wrap gap-1 mt-1">${dateBadge}${linkBadge}</div>`;
+                        li.appendChild(infoDiv);
+
+                        // Vérification si le type de course (catégorie) change
+                        const oldCatFormatted = item.category ? (item.category.charAt(0).toUpperCase() + item.category.slice(1)) : '';
+                        const newCatFormatted = category.value ? (category.value.charAt(0).toUpperCase() + category.value.slice(1)) : '';
+                        const isCategoryChanged = oldCatFormatted && newCatFormatted && oldCatFormatted.toLowerCase() !== newCatFormatted.toLowerCase();
+
+                        if (isCategoryChanged) {
+                            const warningPill = document.createElement('div');
+                            warningPill.className = 'mt-1 p-2 bg-amber-50 border border-amber-300 text-amber-800 text-[11px] rounded-lg flex items-start gap-1.5 leading-tight';
+                            warningPill.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-amber-600 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg><span><strong>Attention :</strong> Le type de course changera (${oldCatFormatted} ➔ ${newCatFormatted}). Votre nouvelle saisie remplacera l'ancienne.</span>`;
+                            li.appendChild(warningPill);
+                        }
+
+                        // Proposer un bouton de mise à jour spécifique sous l'élément si de nouvelles infos sont apportées ou si le type change
+                        const canAddDate = dateVal && !targetDate;
+                        const canAddLink = linkVal && !targetLink;
+                        const canUpdateDate = dateVal && targetDate !== dateVal;
+                        const canUpdateLink = linkVal && targetLink !== linkVal;
+
+                        if (canAddDate || canAddLink || canUpdateDate || canUpdateLink || isCategoryChanged) {
+                            const updateBtn = document.createElement('button');
+                            updateBtn.type = 'button';
+                            updateBtn.className = 'w-full py-1.5 px-3 text-xs bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition flex items-center justify-center gap-1.5 mt-1 shadow-xs';
+
+                            let btnText = "Compléter cette course";
+                            if (isCategoryChanged) {
+                                btnText = `Mettre à jour & remplacer par ${newCatFormatted}`;
+                            } else if (canAddDate && canAddLink) {
+                                btnText = "Compléter cette course (date + site web)";
+                            } else if (canAddDate) {
+                                btnText = "Compléter cette course (ajouter la date)";
+                            } else if (canAddLink) {
+                                btnText = "Compléter cette course (ajouter le site web)";
+                            }
+
+                            updateBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg> ${btnText}`;
+                            updateBtn.title = "Compléter uniquement cette course avec les informations saisies";
+
+                            updateBtn.onclick = function (e) {
+                                e.stopPropagation();
+                                if (dateVal) item.date = dateVal;
+                                if (linkVal) item.link = linkVal;
+                                if (category.value) item.category = category.value;
+
+                                if (item.id) {
+                                    wishlistCollection.doc(item.id).update({
+                                        date: item.date || '',
+                                        link: item.link || '',
+                                        category: item.category
+                                    }).catch(err => console.error("Erreur lors de la mise à jour wishlist:", err));
+                                }
+                                renderWishlistEditList(wishlistEditItems);
+                                pendingWishlistItemToAdd = null;
+                                document.getElementById('wishlistSimilarityModal').classList.add('hidden');
+                                clearWishlistAddFormInputs();
+                            };
+
+                            li.appendChild(updateBtn);
+                        }
+
                         list.appendChild(li);
                     });
 
@@ -9318,10 +9394,7 @@
             cancelAddSimilarBtn.onclick = function () {
                 pendingWishlistItemToAdd = null;
                 document.getElementById('wishlistSimilarityModal').classList.add('hidden');
-                newWishlistItemInput.value = '';
-                addWishlistItemBtn.disabled = true;
-                addWishlistItemBtn.classList.add('opacity-50', 'cursor-not-allowed');
-                document.querySelectorAll('input[name="wishlistCategory"]').forEach(r => r.checked = false);
+                clearWishlistAddFormInputs();
             };
         }
 
