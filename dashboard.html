@@ -8960,7 +8960,32 @@
             }
         });
 
-        // Afficher la liste éditable
+        // Helper pour mettre à jour la pastille d'information d'un élément d'édition
+        function updateWishlistEditPastille(item, li) {
+            const pastilleSpan = li.querySelector('.wishlist-edit-pastille');
+            if (!pastilleSpan) return;
+
+            const hasDate = !!(item.date || item.raceDate);
+            const hasLink = !!(item.link || item.website || item.siteUrl);
+
+            if (!hasDate || !hasLink) {
+                let missing = [];
+                if (!hasDate) missing.push('date');
+                if (!hasLink) missing.push('lien site web');
+                const missingText = `Informations à compléter : ${missing.join(' et ')}`;
+
+                pastilleSpan.className = 'wishlist-edit-pastille px-2 py-0.5 bg-amber-100 text-amber-800 border border-amber-300 rounded-full text-[10px] font-semibold flex items-center gap-1 flex-shrink-0 cursor-help transition-all';
+                pastilleSpan.title = missingText;
+                pastilleSpan.dataset.incomplete = 'true';
+                pastilleSpan.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse flex-shrink-0"></span><span class="hidden sm:inline">Incomplet</span>`;
+            } else {
+                pastilleSpan.className = 'wishlist-edit-pastille hidden';
+                pastilleSpan.dataset.incomplete = 'false';
+                pastilleSpan.innerHTML = '';
+            }
+        }
+
+        // Afficher la liste éditable avec éléments dépliables/repliables et pastille d'incomplétude
         function renderWishlistEditList(items) {
             // Sort items by category and then by name
             items.sort((a, b) => {
@@ -8975,25 +9000,35 @@
             });
 
             wishlistEditList.innerHTML = '';
-            // Compter le nombre de favoris
             const favoriteCount = items.filter(item => item.favorite).length;
+
             items.forEach((item, idx) => {
                 const li = document.createElement('li');
-                li.className = 'p-2.5 bg-gray-50 border border-gray-200 rounded-lg space-y-2 overflow-hidden w-full box-border';
+                li.className = 'bg-white border border-gray-200 rounded-xl overflow-hidden shadow-2xs transition-all w-full box-border list-none';
 
-                // Top row
-                const topRow = document.createElement('div');
-                topRow.className = 'flex flex-wrap sm:flex-nowrap items-center gap-1.5 sm:gap-2 w-full min-w-0';
+                // --- HEADER (AFFICHAGE SIMPLIFIÉ QUAND REPLIÉ, S'AGRANDIT ADAPTATIVEMENT AU SURVOL) ---
+                const headerRow = document.createElement('div');
+                headerRow.className = 'p-3 flex items-center justify-between gap-2 cursor-pointer hover:bg-gray-50/80 transition-colors select-none';
 
-                // Toujours afficher une étoile, colorée si favori, grise sinon
+                // Gauche : Chevron + Étoile + Titre texte + Badge Catégorie
+                const headerLeft = document.createElement('div');
+                headerLeft.className = 'flex items-center gap-2 min-w-0 flex-1';
+
+                // Chevron icône
+                const chevronSvg = document.createElement('span');
+                chevronSvg.className = 'text-gray-400 flex-shrink-0 transition-transform duration-200 chevron-icon';
+                chevronSvg.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>`;
+                headerLeft.appendChild(chevronSvg);
+
+                // Étoile Favori
                 const star = document.createElement('span');
-                star.className = 'cursor-pointer flex-shrink-0';
+                star.className = 'cursor-pointer flex-shrink-0 star-btn';
                 if (item.favorite) {
                     star.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.966a1 1 0 00.95.69h4.175c.969 0 1.371 1.24.588 1.81l-3.38 2.455a1 1 0 00-.364 1.118l1.287 3.966c.3.921-.755 1.688-1.54 1.118l-3.38-2.455a1 1 0 00-1.175 0l-3.38 2.455c-.784.57-1.838-.197-1.539-1.118l1.287-3.966a1 1 0 00-.364-1.118L2.049 9.393c-.783-.57-.38-1.81.588-1.81h4.175a1 1 0 00.95-.69l1.286-3.966z"/></svg>';
                     star.onclick = function (e) {
                         e.stopPropagation();
                         item.favorite = false;
-                        renderWishlistEditList(items);
+                        handleWishlistSearch();
                     };
                 } else {
                     star.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-300" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.966a1 1 0 00.95.69h4.175c.969 0 1.371 1.24.588 1.81l-3.38 2.455a1 1 0 00-.364 1.118l1.287 3.966c.3.921-.755 1.688-1.54 1.118l-3.38-2.455a1 1 0 00-1.175 0l-3.38 2.455c-.784.57-1.838-.197-1.539-1.118l1.287-3.966a1 1 0 00-.364-1.118L2.049 9.393c-.783-.57-.38-1.81.588-1.81h4.175a1 1 0 00.95-.69l1.286-3.966z"/></svg>';
@@ -9004,24 +9039,112 @@
                             return;
                         }
                         item.favorite = true;
-                        renderWishlistEditList(items);
+                        handleWishlistSearch();
                     };
                 }
-                topRow.appendChild(star);
+                headerLeft.appendChild(star);
 
-                // Champ nom éditable
+                // Titre texte simple si replié
+                const nameSpan = document.createElement('span');
+                nameSpan.className = 'font-bold text-gray-800 text-xs sm:text-sm truncate item-name-header transition-all';
+                nameSpan.textContent = item.name || 'Course sans nom';
+                headerLeft.appendChild(nameSpan);
+
+                // Badge Catégorie
+                const catFormatted = item.category ? (item.category.charAt(0).toUpperCase() + item.category.slice(1)) : 'Route';
+                const catBadge = document.createElement('span');
+                catBadge.className = 'text-[11px] px-2 py-0.5 bg-green-100 text-green-800 rounded-full font-medium flex-shrink-0 item-cat-badge transition-all';
+                catBadge.textContent = catFormatted;
+                headerLeft.appendChild(catBadge);
+                headerRow.appendChild(headerLeft);
+
+                // Droite du header : Pastille d'incomplétude + Bouton supprimer (Croix rouge)
+                const headerRight = document.createElement('div');
+                headerRight.className = 'flex items-center gap-2 flex-shrink-0 ml-1';
+
+                const pastilleSpan = document.createElement('span');
+                pastilleSpan.className = 'wishlist-edit-pastille hidden';
+                headerRight.appendChild(pastilleSpan);
+
+                // Bouton suppression croix rouge (Ancien affichage)
+                const delBtn = document.createElement('button');
+                delBtn.type = 'button';
+                delBtn.className = 'p-1 rounded hover:bg-red-100 flex-shrink-0 text-red-600 transition del-btn';
+                delBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>';
+                delBtn.title = 'Supprimer cette course';
+                delBtn.onclick = function (e) {
+                    e.stopPropagation();
+                    if (item.id) {
+                        wishlistCollection.doc(item.id).delete().then(() => {
+                            const index = items.findIndex(i => i === item);
+                            if (index !== -1) items.splice(index, 1);
+                            updateWishlistSearchState(items.length);
+                            handleWishlistSearch();
+                        });
+                    } else {
+                        const index = items.findIndex(i => i === item);
+                        if (index !== -1) items.splice(index, 1);
+                        updateWishlistSearchState(items.length);
+                        handleWishlistSearch();
+                    }
+                };
+                headerRight.appendChild(delBtn);
+
+                headerRow.appendChild(headerRight);
+                li.appendChild(headerRow);
+
+                // --- GESTION DU SURVOL ADAPTATIF POUR MASQUER PROGRESSIVEMENT CATÉGORIE PUIS PASTILLE ---
+                headerRow.onmouseenter = function () {
+                    // Étape 0 : vérifier si le titre déborde
+                    if (nameSpan.scrollWidth > nameSpan.clientWidth + 1) {
+                        // Étape 1 : Masquer la catégorie
+                        catBadge.style.display = 'none';
+
+                        // Étape 2 : Si le titre déborde toujours malgré le masquage de la catégorie, masquer la pastille incomplet aussi
+                        if (nameSpan.scrollWidth > nameSpan.clientWidth + 1) {
+                            if (pastilleSpan) pastilleSpan.style.display = 'none';
+                        }
+                    }
+                };
+
+                headerRow.onmouseleave = function () {
+                    // Restaurer l'affichage par défaut lors de la sortie du survol
+                    catBadge.style.display = '';
+                    if (pastilleSpan && pastilleSpan.dataset.incomplete === 'true') {
+                        pastilleSpan.style.display = '';
+                    }
+                };
+
+                // --- CONTENU ÉDITABLE DÉPLIABLE (SE DÉVOILE QUAND DÉPLIÉ) ---
+                const bodyDiv = document.createElement('div');
+                bodyDiv.className = 'wishlist-item-body hidden p-3 pt-2 bg-gray-50/70 border-t border-gray-100 space-y-3';
+
+                // Ligne 1 : Champ Nom modifiable & Sélecteur Catégorie
+                const row1 = document.createElement('div');
+                row1.className = 'grid grid-cols-1 sm:grid-cols-3 gap-2';
+
+                const nameCol = document.createElement('div');
+                nameCol.className = 'sm:col-span-2';
+                const nameLabel = document.createElement('label');
+                nameLabel.className = 'block text-[11px] font-semibold text-gray-700 mb-1';
+                nameLabel.textContent = 'Nom de la course';
                 const nameInput = document.createElement('input');
                 nameInput.type = 'text';
                 nameInput.value = item.name || '';
-                nameInput.className = 'flex-1 min-w-[100px] px-2 py-1 border border-green-200 rounded text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-green-400 bg-white transition min-w-0';
-                nameInput.onchange = function () {
+                nameInput.className = 'w-full px-2.5 py-1.5 border border-green-300 rounded-lg text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-green-400 bg-white transition';
+                nameInput.oninput = function () {
                     item.name = nameInput.value;
+                    nameSpan.textContent = item.name || 'Course sans nom';
                 };
-                topRow.appendChild(nameInput);
+                nameCol.appendChild(nameLabel);
+                nameCol.appendChild(nameInput);
 
-                // Sélecteur de catégorie
+                const catCol = document.createElement('div');
+                const catLabel = document.createElement('label');
+                catLabel.className = 'block text-[11px] font-semibold text-gray-700 mb-1';
+                catLabel.textContent = 'Catégorie';
                 const categorySelect = document.createElement('select');
-                categorySelect.className = 'px-1.5 sm:px-2 py-1 border border-green-200 rounded text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-green-400 bg-white flex-shrink-0 max-w-[110px] sm:max-w-none text-gray-700 cursor-pointer min-w-0';
+                categorySelect.className = 'w-full px-2 py-1.5 border border-green-300 rounded-lg text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-green-400 bg-white text-gray-700 cursor-pointer';
                 ['route', 'trail', 'triathlon', 'relai'].forEach(cat => {
                     const opt = document.createElement('option');
                     opt.value = cat;
@@ -9029,72 +9152,68 @@
                     if (item.category === cat) opt.selected = true;
                     categorySelect.appendChild(opt);
                 });
-                categorySelect.value = item.category || '';
+                categorySelect.value = item.category || 'route';
                 categorySelect.onchange = function () {
                     item.category = categorySelect.value;
+                    catBadge.textContent = categorySelect.value.charAt(0).toUpperCase() + categorySelect.value.slice(1);
                 };
-                topRow.appendChild(categorySelect);
+                catCol.appendChild(catLabel);
+                catCol.appendChild(categorySelect);
 
-                // Bouton supprimer (icône poubelle)
-                const delBtn = document.createElement('button');
-                delBtn.className = 'p-1 rounded hover:bg-red-100 flex-shrink-0 ml-auto sm:ml-0';
-                delBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>';
-                delBtn.title = 'Supprimer';
-                delBtn.onclick = function (e) {
-                    e.stopPropagation();
-                    if (item.id) {
-                        wishlistCollection.doc(item.id).delete().then(() => {
-                            items.splice(idx, 1);
-                            renderWishlistEditList(items);
-                        });
-                    } else {
-                        items.splice(idx, 1);
-                        renderWishlistEditList(items);
-                    }
-                };
-                topRow.appendChild(delBtn);
-                li.appendChild(topRow);
+                row1.appendChild(nameCol);
+                row1.appendChild(catCol);
+                bodyDiv.appendChild(row1);
 
-                // Bottom row: Date & Link inputs
-                const bottomRow = document.createElement('div');
-                bottomRow.className = 'grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs pt-1 border-t border-gray-200 w-full min-w-0';
+                // Ligne 2 : Date & Lien site web
+                const row2 = document.createElement('div');
+                row2.className = 'grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs';
 
-                // Date input
-                const dateContainer = document.createElement('div');
-                dateContainer.className = 'flex items-center space-x-1 min-w-0';
-                const dateLabel = document.createElement('span');
-                dateLabel.className = 'text-gray-500 whitespace-nowrap';
-                dateLabel.innerHTML = '<i class="far fa-calendar-alt text-green-600 mr-1"></i>Date :';
+                const dateCol = document.createElement('div');
+                const dateLabel = document.createElement('label');
+                dateLabel.className = 'block text-[11px] font-semibold text-gray-700 mb-1';
+                dateLabel.innerHTML = '<i class="far fa-calendar-alt text-green-600 mr-1"></i>Date de la course';
                 const dateInput = document.createElement('input');
                 dateInput.type = 'date';
                 dateInput.value = item.date || item.raceDate || '';
-                dateInput.className = 'w-full min-w-0 px-2 py-0.5 border border-green-200 rounded focus:outline-none focus:ring-1 focus:ring-green-400 bg-white text-gray-700 text-xs';
+                dateInput.className = 'w-full px-2.5 py-1.5 border border-green-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-green-400 bg-white text-gray-700';
                 dateInput.onchange = function () {
                     item.date = dateInput.value;
+                    updateWishlistEditPastille(item, li);
                 };
-                dateContainer.appendChild(dateLabel);
-                dateContainer.appendChild(dateInput);
+                dateCol.appendChild(dateLabel);
+                dateCol.appendChild(dateInput);
 
-                // Link input
-                const linkContainer = document.createElement('div');
-                linkContainer.className = 'flex items-center space-x-1 min-w-0';
-                const linkLabel = document.createElement('span');
-                linkLabel.className = 'text-gray-500 whitespace-nowrap';
-                linkLabel.innerHTML = '<i class="fas fa-link text-green-600 mr-1"></i>Lien :';
+                const linkCol = document.createElement('div');
+                const linkLabel = document.createElement('label');
+                linkLabel.className = 'block text-[11px] font-semibold text-gray-700 mb-1';
+                linkLabel.innerHTML = '<i class="fas fa-link text-green-600 mr-1"></i>Lien du site web';
                 const linkInput = document.createElement('input');
                 linkInput.type = 'url';
                 linkInput.placeholder = 'https://...';
                 linkInput.value = item.link || item.website || item.siteUrl || '';
-                linkInput.className = 'w-full min-w-0 px-2 py-0.5 border border-green-200 rounded focus:outline-none focus:ring-1 focus:ring-green-400 bg-white text-gray-700 text-xs';
+                linkInput.className = 'w-full px-2.5 py-1.5 border border-green-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-green-400 bg-white text-gray-700';
                 linkInput.onchange = function () {
                     item.link = linkInput.value;
+                    updateWishlistEditPastille(item, li);
                 };
-                linkContainer.appendChild(linkLabel);
-                linkContainer.appendChild(linkInput);
+                linkCol.appendChild(linkLabel);
+                linkCol.appendChild(linkInput);
 
-                bottomRow.appendChild(dateContainer);
-                bottomRow.appendChild(linkContainer);
-                li.appendChild(bottomRow);
+                row2.appendChild(dateCol);
+                row2.appendChild(linkCol);
+                bodyDiv.appendChild(row2);
+
+                li.appendChild(bodyDiv);
+
+                // Déplier / replier au clic sur l'en-tête (sauf boutons étoile et suppression)
+                headerRow.onclick = function (e) {
+                    if (e.target.closest('.star-btn') || e.target.closest('.del-btn')) return;
+                    bodyDiv.classList.toggle('hidden');
+                    chevronSvg.classList.toggle('rotate-180');
+                };
+
+                // Initialiser l'état de la pastille (masquée si complet)
+                updateWishlistEditPastille(item, li);
 
                 wishlistEditList.appendChild(li);
             });
