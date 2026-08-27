@@ -58,13 +58,6 @@ function updateBadgesButtonVisibility() {
     const badgesBtn = document.getElementById('badgesBtn');
     if (!badgesBtn) return;
 
-    // Check if authenticated (relying on global isAuthenticated)
-    if (typeof isAuthenticated === 'function' && !isAuthenticated()) {
-        badgesBtn.classList.add('hidden');
-        return;
-    }
-
-    // Always show if authenticated (as per user request, default is true)
     badgesBtn.classList.remove('hidden');
 }
 
