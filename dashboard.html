@@ -1711,7 +1711,14 @@
                         <ul id="wishlistEditList" class="space-y-3"></ul>
                         <p id="emptyWishlistEditSearch" class="text-center text-gray-500 italic py-4 hidden text-xs sm:text-sm">Aucune course ne correspond à votre recherche</p>
                         <div class="mt-4 p-3 bg-green-50/60 rounded-xl border border-green-200 space-y-3">
-                            <h4 class="text-xs font-bold text-green-800 uppercase tracking-wider">Ajouter une course à la wishlist</h4>
+                            <div class="flex items-center justify-between">
+                                <h4 class="text-xs font-bold text-green-800 uppercase tracking-wider">Ajouter une course à la wishlist</h4>
+                                <span id="newWishlistItemFavoriteBtn" class="cursor-pointer flex-shrink-0 select-none" title="Mettre cette course en favori (max 3 favoris)">
+                                    <svg id="newWishlistItemStarIcon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-300 transition-colors" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.966a1 1 0 00.95.69h4.175c.969 0 1.371 1.24.588 1.81l-3.38 2.455a1 1 0 00-.364 1.118l1.287 3.966c.3.921-.755 1.688-1.54 1.118l-3.38-2.455a1 1 0 00-1.175 0l-3.38 2.455c-.784.57-1.838-.197-1.539-1.118l1.287-3.966a1 1 0 00-.364-1.118L2.049 9.393c-.783-.57-.38-1.81.588-1.81h4.175a1 1 0 00.95-.69l1.286-3.966z"/>
+                                    </svg>
+                                </span>
+                            </div>
                             <div>
                                 <label for="newWishlistItemInput" class="block text-xs font-medium text-green-800 mb-1">Nom de la course <span class="text-red-500">*</span></label>
                                 <input id="newWishlistItemInput" type="text" placeholder="Ex: Marathon de Paris..."
@@ -9034,7 +9041,8 @@
                     star.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-300" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.966a1 1 0 00.95.69h4.175c.969 0 1.371 1.24.588 1.81l-3.38 2.455a1 1 0 00-.364 1.118l1.287 3.966c.3.921-.755 1.688-1.54 1.118l-3.38-2.455a1 1 0 00-1.175 0l-3.38 2.455c-.784.57-1.838-.197-1.539-1.118l1.287-3.966a1 1 0 00-.364-1.118L2.049 9.393c-.783-.57-.38-1.81.588-1.81h4.175a1 1 0 00.95-.69l1.286-3.966z"/></svg>';
                     star.onclick = function (e) {
                         e.stopPropagation();
-                        if (favoriteCount >= 3) {
+                        const currentTotalFavs = items.filter(i => i.favorite).length + (isNewItemFavorite ? 1 : 0);
+                        if (currentTotalFavs >= 3) {
                             document.getElementById('favoriteAlertModal').classList.remove('hidden');
                             return;
                         }
@@ -9369,6 +9377,42 @@
         }
 
         let pendingWishlistItemToAdd = null;
+        let isNewItemFavorite = false;
+
+        function updateNewItemFavoriteBtnState() {
+            const btn = document.getElementById('newWishlistItemFavoriteBtn');
+            if (!btn) return;
+
+            const yellowSvg = '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.966a1 1 0 00.95.69h4.175c.969 0 1.371 1.24.588 1.81l-3.38 2.455a1 1 0 00-.364 1.118l1.287 3.966c.3.921-.755 1.688-1.54 1.118l-3.38-2.455a1 1 0 00-1.175 0l-3.38 2.455c-.784.57-1.838-.197-1.539-1.118l1.287-3.966a1 1 0 00-.364-1.118L2.049 9.393c-.783-.57-.38-1.81.588-1.81h4.175a1 1 0 00.95-.69l1.286-3.966z"/></svg>';
+            const graySvg = '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-300" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.966a1 1 0 00.95.69h4.175c.969 0 1.371 1.24.588 1.81l-3.38 2.455a1 1 0 00-.364 1.118l1.287 3.966c.3.921-.755 1.688-1.54 1.118l-3.38-2.455a1 1 0 00-1.175 0l-3.38 2.455c-.784.57-1.838-.197-1.539-1.118l1.287-3.966a1 1 0 00-.364-1.118L2.049 9.393c-.783-.57-.38-1.81.588-1.81h4.175a1 1 0 00.95-.69l1.286-3.966z"/></svg>';
+
+            if (isNewItemFavorite) {
+                btn.innerHTML = yellowSvg;
+                btn.title = 'Favori sélectionné (max 3 favoris)';
+            } else {
+                btn.innerHTML = graySvg;
+                btn.title = 'Mettre en favori (max 3 favoris)';
+            }
+        }
+
+        document.addEventListener('click', function (e) {
+            const favBtn = e.target.closest('#newWishlistItemFavoriteBtn');
+            if (favBtn) {
+                e.preventDefault();
+                e.stopPropagation();
+                const savedFavsCount = wishlistEditItems.filter(i => i.favorite).length;
+                if (!isNewItemFavorite) {
+                    if (savedFavsCount >= 3) {
+                        document.getElementById('favoriteAlertModal').classList.remove('hidden');
+                        return;
+                    }
+                    isNewItemFavorite = true;
+                } else {
+                    isNewItemFavorite = false;
+                }
+                updateNewItemFavoriteBtnState();
+            }
+        });
 
         function clearWishlistAddFormInputs() {
             newWishlistItemInput.value = '';
@@ -9377,6 +9421,8 @@
             const newLinkInput = document.getElementById('newWishlistItemLink');
             if (newLinkInput) newLinkInput.value = '';
             document.querySelectorAll('input[name="wishlistCategory"]').forEach(r => r.checked = false);
+            isNewItemFavorite = false;
+            updateNewItemFavoriteBtnState();
             addWishlistItemBtn.disabled = true;
             addWishlistItemBtn.classList.add('opacity-50', 'cursor-not-allowed');
         }
@@ -9490,7 +9536,7 @@
 
                     pendingWishlistItemToAdd = {
                         name,
-                        favorite: false,
+                        favorite: isNewItemFavorite,
                         category: category.value,
                         date: dateVal,
                         link: linkVal,
@@ -9503,7 +9549,7 @@
 
                 const newItem = {
                     name,
-                    favorite: false,
+                    favorite: isNewItemFavorite,
                     category: category.value,
                     date: dateVal,
                     link: linkVal,
