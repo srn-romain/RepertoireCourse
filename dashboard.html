@@ -3601,7 +3601,9 @@
                     option.dataset.date = item.date || item.raceDate || '';
                     option.dataset.link = item.link || item.website || item.siteUrl || '';
                     const catStr = item.category ? ` (${item.category.toLowerCase()})` : '';
-                    option.textContent = item.name + catStr;
+                    const isFav = item.favorite === true || item.isFavorite === true;
+                    const starStr = isFav ? '★ ' : '  ';
+                    option.textContent = starStr + item.name + catStr;
                     wishlistCheckSelect.appendChild(option);
                 });
                 wishlistCheckSelect.disabled = false;
