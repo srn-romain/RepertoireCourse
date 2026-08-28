@@ -8788,9 +8788,9 @@
 
                     const updateBtn = document.createElement('button');
                     updateBtn.type = 'button';
-                    updateBtn.className = 'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-900 hover:bg-amber-200 border border-amber-300 transition-colors whitespace-nowrap cursor-pointer shadow-2xs';
+                    updateBtn.className = 'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-amber-50 text-amber-800 hover:bg-amber-100 border border-amber-200 transition-colors whitespace-nowrap cursor-pointer';
                     updateBtn.title = `Passer la date en ${nextYear} (+1 an)`;
-                    updateBtn.innerHTML = `<i class="far fa-clock text-amber-600"></i> ${formattedDate} <span class="font-bold text-amber-900 bg-amber-200/90 px-1 py-0.2 rounded text-[10px] ml-0.5">➡️ ${nextYear} ?</span>`;
+                    updateBtn.innerHTML = `${formattedDate} <span class="font-bold text-amber-900">➔ ${nextYear}</span>`;
                     updateBtn.onclick = function (e) {
                         e.stopPropagation();
                         updateWishlistItemYearPlusOne(item);
