@@ -8893,10 +8893,9 @@
             const max5MonthsDate = new Date(today);
             max5MonthsDate.setMonth(max5MonthsDate.getMonth() + 5);
 
-            // Filtrer les 2 à 3 courses suivantes qui ont lieu dans les 5 prochains mois
+            // Filtrer TOUTES les courses suivantes qui ont lieu dans les 5 prochains mois
             const subsequentUpcoming = upcomingItems
-                .filter(u => u.diffDays > minDiff && u.raceDate.getTime() <= max5MonthsDate.getTime())
-                .slice(0, 3);
+                .filter(u => u.diffDays > minDiff && u.raceDate.getTime() <= max5MonthsDate.getTime());
 
             const moreContainer = document.getElementById('nextWishlistMoreContainer');
             const toggleBtn = document.getElementById('toggleNextWishlistMoreBtn');
@@ -8907,7 +8906,8 @@
             if (moreContainer && toggleBtn && moreText && moreList) {
                 if (subsequentUpcoming.length > 0) {
                     const count = subsequentUpcoming.length;
-                    moreText.textContent = `Courses suivantes (${count} dans les 5 prochains mois)`;
+                    const label = count === 1 ? 'Course suivante' : 'Courses suivantes';
+                    moreText.textContent = `${label} (${count} dans les 5 prochains mois)`;
                     moreList.innerHTML = '';
 
                     // S'assurer que l'accordéon est replié par défaut au ré-affichage
