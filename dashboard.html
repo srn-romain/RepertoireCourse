@@ -1697,6 +1697,14 @@
                 </div>
 
                 <div id="wishlistDisplay" class="mb-4">
+                    <!-- Bloc d'information : Courses à venir dans les 6 prochains mois (s'affiche si au moins 10 courses dans la wishlist) -->
+                    <div id="nextWishlistRaceContainer" class="hidden mb-3 p-3 bg-green-50/70 border border-green-200/80 rounded-xl text-xs">
+                        <div id="nextWishlistRaceTitle" class="font-bold text-green-800 text-xs mb-1.5 uppercase tracking-wider">
+                            Courses à venir (6 prochains mois) :
+                        </div>
+                        <div id="nextWishlistRaceList" class="space-y-1.5"></div>
+                    </div>
+
                     <ul id="wishlistItems" class="list-disc pl-5 space-y-0.1 text-gray-700">
                         <!-- Les éléments de la liste seront ajoutés ici -->
                     </ul>
@@ -8764,9 +8772,122 @@
             return li;
         }
 
+        // Helper pour créer la ligne d'affichage d'une course à venir
+        function createWishlistNextRow(item, raceDate, diffDays) {
+            const row = document.createElement('div');
+            row.className = 'flex items-center justify-between gap-2 py-0.5 text-xs text-gray-800';
+
+            const left = document.createElement('div');
+            left.className = 'flex items-center gap-1.5 min-w-0 flex-1';
+
+            if (item.favorite) {
+                const star = document.createElement('span');
+                star.className = 'inline-flex items-center flex-shrink-0';
+                star.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-yellow-400 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.966a1 1 0 00.95.69h4.175c.969 0 1.371 1.24.588 1.81l-3.38 2.455a1 1 0 00-.364 1.118l1.287 3.966c.3.921-.755 1.688-1.54 1.118l-3.38-2.455a1 1 0 00-1.175 0l-3.38 2.455c-.784.57-1.838-.197-1.539-1.118l1.287-3.966a1 1 0 00-.364-1.118L2.049 9.393c-.783-.57-.38-1.81.588-1.81h4.175a1 1 0 00.95-.69l1.286-3.966z"/></svg>';
+                left.appendChild(star);
+            }
+
+            const siteUrl = item.link || item.website || item.siteUrl;
+            let nameElem;
+            if (siteUrl) {
+                nameElem = document.createElement('a');
+                nameElem.href = siteUrl.startsWith('http') ? siteUrl : `https://${siteUrl}`;
+                nameElem.target = '_blank';
+                nameElem.rel = 'noopener noreferrer';
+                nameElem.className = 'font-semibold text-gray-800 hover:text-green-700 hover:underline inline-flex items-center gap-1 truncate min-w-0';
+                nameElem.innerHTML = `<span class="truncate">${item.name}</span> <i class="fas fa-external-link-alt text-[9px] text-green-600 flex-shrink-0"></i>`;
+            } else {
+                nameElem = document.createElement('span');
+                nameElem.className = 'font-semibold text-gray-800 truncate min-w-0';
+                nameElem.textContent = item.name;
+            }
+            left.appendChild(nameElem);
+
+            const right = document.createElement('div');
+            right.className = 'flex items-center gap-1.5 flex-shrink-0 text-xs ml-auto';
+
+            const formattedDate = raceDate.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+            const countdownText = diffDays === 0 ? "Aujourd'hui !" : (diffDays === 1 ? "Demain !" : `J-${diffDays}`);
+
+            right.innerHTML = `<span class="text-gray-500 font-medium">${formattedDate}</span><span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-green-600 text-white whitespace-nowrap">${countdownText}</span>`;
+
+            row.appendChild(left);
+            row.appendChild(right);
+            return row;
+        }
+
+        // Helper pour afficher toutes les courses à venir dans les 6 prochains mois par ordre de date
+        function renderNextWishlistRace(items) {
+            const nextContainer = document.getElementById('nextWishlistRaceContainer');
+            const nextTitle = document.getElementById('nextWishlistRaceTitle');
+            const nextList = document.getElementById('nextWishlistRaceList');
+            const searchInput = document.getElementById('wishlistSearchInput');
+
+            if (!nextContainer || !nextTitle || !nextList) return;
+
+            const searchActive = searchInput && searchInput.value.trim().length > 0;
+            // Condition : au moins 10 courses dans la wishlist et pas de recherche active
+            if (!items || items.length < 10 || searchActive) {
+                nextContainer.classList.add('hidden');
+                return;
+            }
+
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            // Date limite : 6 mois à partir d'aujourd'hui
+            const max6MonthsDate = new Date(today);
+            max6MonthsDate.setMonth(max6MonthsDate.getMonth() + 6);
+
+            const upcomingItems = [];
+            items.forEach(item => {
+                const dateStr = item.date || item.raceDate;
+                if (!dateStr) return;
+                const raceDate = new Date(dateStr + (dateStr.includes('T') ? '' : 'T00:00:00'));
+                if (isNaN(raceDate.getTime())) return;
+                raceDate.setHours(0, 0, 0, 0);
+
+                if (raceDate.getTime() >= today.getTime() && raceDate.getTime() <= max6MonthsDate.getTime()) {
+                    const diffMs = raceDate.getTime() - today.getTime();
+                    const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
+                    upcomingItems.push({
+                        item,
+                        raceDate,
+                        diffDays
+                    });
+                }
+            });
+
+            if (upcomingItems.length === 0) {
+                nextContainer.classList.add('hidden');
+                return;
+            }
+
+            // Trier toutes les courses par ordre chronologique de date (la plus proche en premier)
+            upcomingItems.sort((a, b) => a.raceDate.getTime() - b.raceDate.getTime());
+
+            // Adapte le titre au singulier/pluriel
+            if (upcomingItems.length > 1) {
+                nextTitle.textContent = `Prochaines courses (${upcomingItems.length} dans les 6 prochains mois) :`;
+            } else {
+                nextTitle.textContent = "La prochaine course (6 prochains mois) :";
+            }
+
+            nextList.innerHTML = '';
+            upcomingItems.forEach(({ item, raceDate, diffDays }) => {
+                nextList.appendChild(createWishlistNextRow(item, raceDate, diffDays));
+            });
+
+            nextContainer.classList.remove('hidden');
+        }
+
         // Afficher les éléments de la wishlist
         function renderWishlistItems(items) {
             wishlistItems.innerHTML = '';
+
+            // Affichage de la ou des prochaines courses les plus proches dans la wishlist
+            renderNextWishlistRace(wishlistEditItems);
+
             // Séparer par catégorie
             const categories = ['route', 'trail', 'triathlon', 'relai'];
             categories.forEach(cat => {
