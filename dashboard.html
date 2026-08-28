@@ -1716,6 +1716,19 @@
                         </div>
                     </div>
 
+                    <!-- Bulle d'avertissement/suggestion si au moins une course a une date passée -->
+                    <div id="pastWishlistDatesInfoBubble" class="hidden mb-3 p-2.5 bg-amber-50/90 border border-amber-200 rounded-xl flex flex-wrap sm:flex-nowrap items-center justify-between gap-2 text-xs text-amber-900 shadow-2xs">
+                        <div class="flex items-center gap-2 min-w-0 flex-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-amber-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span id="pastWishlistDatesText" class="font-medium">Certaines courses ont une date passée.</span>
+                        </div>
+                        <button id="updateAllPastWishlistDatesBtn" type="button" class="px-2.5 py-1 bg-amber-600 hover:bg-amber-700 text-white font-semibold rounded-lg text-[11px] transition-colors whitespace-nowrap">
+                            Passer en N+1 (+1 an)
+                        </button>
+                    </div>
+
                     <ul id="wishlistItems" class="list-disc pl-5 space-y-0.1 text-gray-700">
                         <!-- Les éléments de la liste seront ajoutés ici -->
                     </ul>
@@ -8763,11 +8776,33 @@
             // Date de la course ou date d'ajout en gris centrée verticalement sur la hauteur de l'item
             const raceDateStr = item.date || item.raceDate;
             if (raceDateStr) {
-                const formattedDate = new Date(raceDateStr + (raceDateStr.includes('T') ? '' : 'T00:00:00')).toLocaleDateString('fr-FR');
-                const dateBadge = document.createElement('span');
-                dateBadge.className = 'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 whitespace-nowrap';
-                dateBadge.innerHTML = `<i class="far fa-calendar-alt mr-1 text-green-600"></i>${formattedDate}`;
-                rightDiv.appendChild(dateBadge);
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const raceDateObj = new Date(raceDateStr + (raceDateStr.includes('T') ? '' : 'T00:00:00'));
+                raceDateObj.setHours(0, 0, 0, 0);
+
+                if (raceDateObj.getTime() < today.getTime()) {
+                    const newDateStr = getYearPlusOneDate(raceDateStr);
+                    const nextYear = newDateStr ? newDateStr.split('-')[0] : '';
+                    const formattedDate = raceDateObj.toLocaleDateString('fr-FR');
+
+                    const updateBtn = document.createElement('button');
+                    updateBtn.type = 'button';
+                    updateBtn.className = 'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-900 hover:bg-amber-200 border border-amber-300 transition-colors whitespace-nowrap cursor-pointer shadow-2xs';
+                    updateBtn.title = `Passer la date en ${nextYear} (+1 an)`;
+                    updateBtn.innerHTML = `<i class="far fa-clock text-amber-600"></i> ${formattedDate} <span class="font-bold text-amber-900 bg-amber-200/90 px-1 py-0.2 rounded text-[10px] ml-0.5">➡️ ${nextYear} ?</span>`;
+                    updateBtn.onclick = function (e) {
+                        e.stopPropagation();
+                        updateWishlistItemYearPlusOne(item);
+                    };
+                    rightDiv.appendChild(updateBtn);
+                } else {
+                    const formattedDate = raceDateObj.toLocaleDateString('fr-FR');
+                    const dateBadge = document.createElement('span');
+                    dateBadge.className = 'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 whitespace-nowrap';
+                    dateBadge.innerHTML = `<i class="far fa-calendar-alt mr-1 text-green-600"></i>${formattedDate}`;
+                    rightDiv.appendChild(dateBadge);
+                }
             } else if (item.addedAt) {
                 const formattedAddedDate = new Date(item.addedAt).toLocaleDateString('fr-FR');
                 const addedSpan = document.createElement('span');
@@ -8781,6 +8816,134 @@
                 li.appendChild(rightDiv);
             }
             return li;
+        }
+
+        // Helper pour calculer la date de l'année N+1 par rapport à l'année en cours
+        function getYearPlusOneDate(dateStr) {
+            if (!dateStr) return null;
+            const parts = dateStr.split('T')[0].split('-');
+            if (parts.length !== 3) return null;
+            const currentYear = new Date().getFullYear();
+            let targetYear = currentYear + 1;
+            let month = parts[1];
+            let day = parts[2];
+
+            if (month === '02' && day === '29') {
+                const isLeap = (targetYear % 4 === 0 && targetYear % 100 !== 0) || (targetYear % 400 === 0);
+                if (!isLeap) day = '28';
+            }
+            return `${targetYear}-${month}-${day}`;
+        }
+
+        // Fonction pour mettre à jour la date d'une course wishlist en N+1
+        async function updateWishlistItemYearPlusOne(item) {
+            if (await isInviteAsync()) {
+                showPermissionDeniedModal('modifier la date d\'une course');
+                return;
+            }
+            const oldDateStr = item.date || item.raceDate;
+            const newDateStr = getYearPlusOneDate(oldDateStr);
+            if (!newDateStr) return;
+
+            const updateObj = { date: newDateStr };
+            if (item.raceDate) updateObj.raceDate = newDateStr;
+
+            wishlistCollection.doc(item.id).update(updateObj)
+                .then(() => {
+                    item.date = newDateStr;
+                    if (item.raceDate) item.raceDate = newDateStr;
+                    renderWishlistItems(wishlistEditItems);
+                    if (wishlistEditForm && !wishlistEditForm.classList.contains('hidden')) {
+                        renderWishlistEditList(wishlistEditItems);
+                    }
+                })
+                .catch(err => console.error("Erreur lors de la mise à jour N+1:", err));
+        }
+
+        // Fonction pour mettre à jour TOUTES les courses passées de la wishlist en N+1
+        async function updateAllPastWishlistItemsYearPlusOne() {
+            if (await isInviteAsync()) {
+                showPermissionDeniedModal('modifier la date d\'une course');
+                return;
+            }
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            const pastItems = wishlistEditItems.filter(item => {
+                const dStr = item.date || item.raceDate;
+                if (!dStr) return false;
+                const d = new Date(dStr + (dStr.includes('T') ? '' : 'T00:00:00'));
+                if (isNaN(d.getTime())) return false;
+                d.setHours(0, 0, 0, 0);
+                return d.getTime() < today.getTime();
+            });
+
+            if (pastItems.length === 0) return;
+
+            const batch = db.batch();
+            pastItems.forEach(item => {
+                const oldDateStr = item.date || item.raceDate;
+                const newDateStr = getYearPlusOneDate(oldDateStr);
+                if (newDateStr) {
+                    const ref = wishlistCollection.doc(item.id);
+                    const updateObj = { date: newDateStr };
+                    if (item.raceDate) updateObj.raceDate = newDateStr;
+                    batch.update(ref, updateObj);
+                    item.date = newDateStr;
+                    if (item.raceDate) item.raceDate = newDateStr;
+                }
+            });
+
+            batch.commit()
+                .then(() => {
+                    renderWishlistItems(wishlistEditItems);
+                    if (wishlistEditForm && !wishlistEditForm.classList.contains('hidden')) {
+                        renderWishlistEditList(wishlistEditItems);
+                    }
+                })
+                .catch(err => console.error("Erreur lors du report groupé N+1:", err));
+        }
+
+        // Helper pour mettre à jour la bulle d'information des dates passées
+        function updatePastWishlistDatesInfoBubble(items) {
+            const bubble = document.getElementById('pastWishlistDatesInfoBubble');
+            const textElem = document.getElementById('pastWishlistDatesText');
+            const updateAllBtn = document.getElementById('updateAllPastWishlistDatesBtn');
+
+            if (!bubble || !textElem) return;
+
+            const searchInput = document.getElementById('wishlistSearchInput');
+            const searchActive = searchInput && searchInput.value.trim().length > 0;
+
+            if (searchActive) {
+                bubble.classList.add('hidden');
+                return;
+            }
+
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            const pastItems = items.filter(item => {
+                const dStr = item.date || item.raceDate;
+                if (!dStr) return false;
+                const d = new Date(dStr + (dStr.includes('T') ? '' : 'T00:00:00'));
+                if (isNaN(d.getTime())) return false;
+                d.setHours(0, 0, 0, 0);
+                return d.getTime() < today.getTime();
+            });
+
+            if (pastItems.length > 0) {
+                const count = pastItems.length;
+                textElem.textContent = count === 1
+                    ? "1 course a une date passée."
+                    : `${count} courses ont une date passée.`;
+                if (updateAllBtn) {
+                    updateAllBtn.onclick = updateAllPastWishlistItemsYearPlusOne;
+                }
+                bubble.classList.remove('hidden');
+            } else {
+                bubble.classList.add('hidden');
+            }
         }
 
         // Helper pour créer la ligne d'affichage d'une course à venir
@@ -8944,6 +9107,7 @@
 
             // Affichage de la ou des prochaines courses les plus proches dans la wishlist
             renderNextWishlistRace(wishlistEditItems);
+            updatePastWishlistDatesInfoBubble(wishlistEditItems);
 
             // Séparer par catégorie
             const categories = ['route', 'trail', 'triathlon', 'relai'];
