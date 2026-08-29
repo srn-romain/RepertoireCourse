@@ -690,17 +690,13 @@
                 // Statistiques sur les prix
                 if (stats.priceStats && Object.keys(stats.priceStats).length > 0) {
                     const ps = stats.priceStats;
-                    // Vérifier si l'utilisateur est invité
-                    const isInvite = sessionStorage.getItem('authLevel') === 'invite';
-                    const blurClass = isInvite ? 'blur-text' : '';
-
                     html += `<div class="bg-green-100 p-4 rounded-lg"><h4 class="font-bold text-green-800 mb-3">Statistiques sur les prix</h4>`;
                     html += `<ul class="list-disc list-inside space-y-2">`;
                     html += `<li><strong>Moyenne :</strong> <span class="text-green-600 font-semibold">${ps.mean} €</span></li>`;
-                    html += `<li><strong>Médiane :</strong> <span class="text-green-600 font-semibold ${blurClass}">${ps.median} €</span></li>`;
-                    html += `<li><strong>Étendue :</strong> <span class="text-green-600 font-semibold ${blurClass}">${ps.range} €</span></li>`;
-                    html += `<li><strong>Écart-type :</strong> <span class="text-green-600 font-semibold ${blurClass}">${ps.standardDeviation.toFixed(2)} €</span></li>`;
-                    html += `<li><strong>Total :</strong> <span class="text-green-600 font-semibold ${blurClass}">${ps.sum} €</span></li>`;
+                    html += `<li><strong>Médiane :</strong> <span class="text-green-600 font-semibold">${ps.median} €</span></li>`;
+                    html += `<li><strong>Étendue :</strong> <span class="text-green-600 font-semibold">${ps.range} €</span></li>`;
+                    html += `<li><strong>Écart-type :</strong> <span class="text-green-600 font-semibold">${ps.standardDeviation.toFixed(2)} €</span></li>`;
+                    html += `<li><strong>Total :</strong> <span class="text-green-600 font-semibold">${ps.sum} €</span></li>`;
                     html += `</ul></div>`;
                 }
 
@@ -1060,10 +1056,7 @@
                     html += `<select id="chartTypeSelect" class="px-2 py-1 border-0 border-b-2 border-green-400 bg-transparent text-green-800 text-sm font-normal cursor-pointer hover:border-green-600 focus:outline-none focus:border-green-600">`;
                     html += `<option value="distance">des distances</option>`;
 
-                    // Vérifier si l'utilisateur est invité
-                    const isInvite = sessionStorage.getItem('authLevel') === 'invite';
-
-                    if (stats.racesWithPrice && stats.racesWithPrice.length > 0 && !isInvite) {
+                    if (stats.racesWithPrice && stats.racesWithPrice.length > 0) {
                         html += `<option value="price">des prix</option>`;
                     }
                     if (stats.racesWithTime && stats.racesWithTime.length > 0) {
@@ -1075,10 +1068,10 @@
                     if (stats.racesWithElevationNeg && stats.racesWithElevationNeg.length > 0) {
                         html += `<option value="elevationNeg">des dénivelés D-</option>`;
                     }
-                    if (stats.racesWithPricePerKm && stats.racesWithPricePerKm.length > 0 && !isInvite) {
+                    if (stats.racesWithPricePerKm && stats.racesWithPricePerKm.length > 0) {
                         html += `<option value="pricePerKm">du prix au km</option>`;
                     }
-                    if (stats.racesWithPricePerKmWithElevation && stats.racesWithPricePerKmWithElevation.length > 0 && !isInvite) {
+                    if (stats.racesWithPricePerKmWithElevation && stats.racesWithPricePerKmWithElevation.length > 0) {
                         html += `<option value="pricePerKmWithElevation">du prix au km (ft. dénivelé)</option>`;
                     }
                     html += `</select>`;
@@ -1305,11 +1298,6 @@
                 if (chartType === 'time') barColor = 'bg-blue-500';
                 if (chartType === 'elevation') barColor = 'bg-purple-500';
                 if (chartType.startsWith('pricePerKm')) barColor = 'bg-red-500';
-
-                // Vérifier si l'utilisateur est invité pour les graphiques de prix
-                const isInvite = sessionStorage.getItem('authLevel') === 'invite';
-                const blurClass = (isInvite && (chartType === 'price' || chartType.startsWith('pricePerKm'))) ? 'blur-text' : '';
-
                 const rank = rankings[index];
                 let rankColor = 'text-green-800 bg-green-100';
                 if (rank === 1) rankColor = 'text-yellow-800 bg-yellow-100 border border-yellow-300';
@@ -1327,7 +1315,7 @@
                             <span class="font-medium text-sm truncate mr-2" title="${item.race.name} (${new Date(item.race.date).getFullYear()})">
                                 ${getUniqueRaceName(item.race, fullSortedRaces.map(r => r.race), true)}
                             </span>
-                            <span class="text-sm font-bold text-gray-700 ${blurClass}">${formatValue(item.value)} ${unit}</span>
+                            <span class="text-sm font-bold text-gray-700">${formatValue(item.value)} ${unit}</span>
                         </div>
                         <div class="w-full bg-gray-200 rounded-full h-2.5">
                             <div class="${barColor} h-2.5 rounded-full transition-all duration-500" style="width: ${percent}%"></div>

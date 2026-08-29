@@ -73,11 +73,6 @@ input[type="search"]::-webkit-search-results-decoration {
     backdrop-filter: blur(5px);
 }
 
-.blur-text {
-    filter: blur(5px);
-    user-select: none;
-    pointer-events: none;
-}
 
 .modal-content {
     max-height: 80vh;

@@ -23,10 +23,9 @@ L'application gère trois rôles distincts d'utilisateurs. L'authentification s'
 ### 3. Compte Invité (`role: 'invite'`)
 *   **Nombre** : **Unique** (un seul compte existant).
 *   **Droits** :
-    *   Accès en **lecture seule** uniquement.
+    *   Accès en **lecture seule** uniquement (aucune modification autorisée).
     *   Lors de la connexion, un modal de sélection s'affiche pour lui demander de choisir le carnet (l'adresse email) d'un utilisateur standard à consulter.
-    *   Il peut ensuite naviguer dans les courses et la wishlist de l'utilisateur choisi.
-    *   **Confidentialité** : Les prix exacts des courses lui sont masqués (remplacés par des tranches de prix ou floutés dans l'interface, ex: "0-20 €").
+    *   Il peut ensuite naviguer et consulter l'intégralité des données du carnet choisi (courses, détails, statistiques complètes, prix, graphiques, wishlist, PDF, etc.).
 
 ---
 

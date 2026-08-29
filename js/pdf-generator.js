@@ -240,8 +240,7 @@ async function generateRacePdf(raceId) {
     }
 
     // 2. Calcul du ratio prix/km
-    const isInviteUser = typeof window.isInvite === 'function' && window.isInvite();
-    if (!isInviteUser && race.price && !isNaN(parseFloat(race.price)) && !isNaN(statsDistance) && statsDistance > 0) {
+    if (race.price && !isNaN(parseFloat(race.price)) && !isNaN(statsDistance) && statsDistance > 0) {
         const price = parseFloat(race.price);
         const pricePerKm = price / statsDistance;
         statsData.push(['Prix au km', `${pricePerKm.toFixed(2)} €/km`]);
