@@ -18,14 +18,14 @@ const reviewFormHTML = `
             <div class="group relative inline-block">
                 <i class="fas fa-info-circle text-gray-300 hover:text-blue-400 cursor-help transition-colors text-xs"></i>
                 <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block w-48 bg-gray-800 text-white text-[10px] p-2 rounded-lg shadow-xl z-50 text-center leading-snug">
-                    Votre avis sera affiché dans le carrousel de la page d'accueil pour aider les autres utilisateurs ✨
+                    Votre avis sera affiché dans le carrousel de la page d'accueil pour aider les autres utilisateurs
                     <div class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-800"></div>
                 </div>
             </div>
         </h3>
         <div id="reviewStatusBadge" class="hidden text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full"></div>
     </div>
-    <p class="text-xs text-gray-400 mb-3 italic">Votre retour aide la communauté à découvrir l'application ✨</p>
+    <p class="text-xs text-gray-400 mb-3 italic">Votre retour aide la communauté à découvrir l'application</p>
 
     <div class="bg-gradient-to-br from-yellow-50 to-amber-50 border border-yellow-200 rounded-xl p-4 space-y-3">
         <!-- État actuel explication -->
