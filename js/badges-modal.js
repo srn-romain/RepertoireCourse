@@ -406,8 +406,19 @@
      * 3. Plus longue distance (km max)
      */
     function calculateRecordCocardes(racesList) {
+        const totalRaces = (racesList && Array.isArray(racesList)) ? racesList.length : 0;
+        const isUnlocked = totalRaces >= 5;
+
         if (!racesList || !Array.isArray(racesList) || racesList.length === 0) {
-            return { pace: null, elevation: null, distance: null, byRaceId: {} };
+            return {
+                isUnlocked: false,
+                totalRaces: 0,
+                requiredRaces: 5,
+                pace: null,
+                elevation: null,
+                distance: null,
+                byRaceId: {}
+            };
         }
 
         const todayStr = new Date().toISOString().split('T')[0];
@@ -473,23 +484,28 @@
         });
 
         const byRaceId = {};
-        if (fastestPace && fastestPace.race) {
-            if (!byRaceId[fastestPace.race.id]) byRaceId[fastestPace.race.id] = {};
-            byRaceId[fastestPace.race.id].hasPace = true;
-            byRaceId[fastestPace.race.id].paceInfo = fastestPace;
-        }
-        if (maxElevationRace && maxElevationRace.race) {
-            if (!byRaceId[maxElevationRace.race.id]) byRaceId[maxElevationRace.race.id] = {};
-            byRaceId[maxElevationRace.race.id].hasElevation = true;
-            byRaceId[maxElevationRace.race.id].elevationInfo = maxElevationRace;
-        }
-        if (maxDistanceRace && maxDistanceRace.race) {
-            if (!byRaceId[maxDistanceRace.race.id]) byRaceId[maxDistanceRace.race.id] = {};
-            byRaceId[maxDistanceRace.race.id].hasDistance = true;
-            byRaceId[maxDistanceRace.race.id].distanceInfo = maxDistanceRace;
+        if (isUnlocked) {
+            if (fastestPace && fastestPace.race) {
+                if (!byRaceId[fastestPace.race.id]) byRaceId[fastestPace.race.id] = {};
+                byRaceId[fastestPace.race.id].hasPace = true;
+                byRaceId[fastestPace.race.id].paceInfo = fastestPace;
+            }
+            if (maxElevationRace && maxElevationRace.race) {
+                if (!byRaceId[maxElevationRace.race.id]) byRaceId[maxElevationRace.race.id] = {};
+                byRaceId[maxElevationRace.race.id].hasElevation = true;
+                byRaceId[maxElevationRace.race.id].elevationInfo = maxElevationRace;
+            }
+            if (maxDistanceRace && maxDistanceRace.race) {
+                if (!byRaceId[maxDistanceRace.race.id]) byRaceId[maxDistanceRace.race.id] = {};
+                byRaceId[maxDistanceRace.race.id].hasDistance = true;
+                byRaceId[maxDistanceRace.race.id].distanceInfo = maxDistanceRace;
+            }
         }
 
         return {
+            isUnlocked,
+            totalRaces,
+            requiredRaces: 5,
             pace: fastestPace,
             elevation: maxElevationRace,
             distance: maxDistanceRace,
@@ -875,11 +891,13 @@
 
         // 2. SECTION DES 3 GRANDES COCARDES RECORDS (Détaillées avant les niveaux)
         const rec = data.recordCocardes || calculateRecordCocardes(racesData);
+        const isRecUnlocked = rec && rec.isUnlocked;
+
         html += `
-        <div class="mb-6 bg-white border border-amber-200/80 rounded-xl p-4 shadow-sm">
+        <div class="mb-6 bg-white border ${isRecUnlocked ? 'border-amber-200/80' : 'border-gray-300'} rounded-xl p-4 shadow-sm relative overflow-hidden">
             <div class="flex items-center justify-between mb-3 border-b border-gray-100 pb-2.5">
                 <div class="flex items-center gap-2.5">
-                    <svg width="20" height="26" viewBox="0 0 28 38" fill="none" xmlns="http://www.w3.org/2000/svg" class="shrink-0 filter drop-shadow-xs">
+                    <svg width="20" height="26" viewBox="0 0 28 38" fill="none" xmlns="http://www.w3.org/2000/svg" class="shrink-0 ${isRecUnlocked ? 'filter drop-shadow-xs' : 'opacity-60'}">
                         <path d="M7 16 L2 35 L8.5 36 L12 18 Z" fill="#DC2626"/>
                         <path d="M16 18 L19.5 36 L26 35 L21 16 Z" fill="#2563EB"/>
                         <circle cx="14" cy="14" r="13" fill="#DC2626"/>
@@ -888,9 +906,73 @@
                     </svg>
                     <h4 class="font-bold text-gray-800 text-sm sm:text-base">Les 3 Cocardes Records</h4>
                 </div>
-                <span class="text-[11px] text-gray-400">Attribuées sur le dashboard et dans la fiche de course</span>
+                ${isRecUnlocked ? `
+                    <span class="text-[11px] text-gray-400">Attribuées sur le dashboard et dans la fiche de course</span>
+                ` : `
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-300 text-xs font-semibold">
+                        <i class="fas fa-lock text-[10px] text-amber-600"></i> ${rec.totalRaces || 0} / 5 courses
+                    </span>
+                `}
             </div>
+        `;
 
+        if (!isRecUnlocked) {
+            html += `
+            <div class="relative rounded-lg overflow-hidden">
+                <!-- 3 cartes records en arrière-plan floutées -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3 filter blur-[1.5px] opacity-40 select-none pointer-events-none p-1">
+                    <div class="bg-gray-50 border border-dashed border-gray-300 rounded-lg p-3 flex flex-col justify-between">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-gray-200 text-gray-600 text-[11px] font-semibold">
+                                <i class="fas fa-bolt text-[10px]"></i> RP Temps au km
+                            </span>
+                            <span class="text-xs">⚡</span>
+                        </div>
+                        <div class="text-xs text-gray-400 italic py-2">Allure record au km</div>
+                    </div>
+
+                    <div class="bg-gray-50 border border-dashed border-gray-300 rounded-lg p-3 flex flex-col justify-between">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-gray-200 text-gray-600 text-[11px] font-semibold">
+                                <i class="fas fa-mountain text-[10px]"></i> Plus de Dénivelé
+                            </span>
+                            <span class="text-xs">⛰️</span>
+                        </div>
+                        <div class="text-xs text-gray-400 italic py-2">Dénivelé D+ record</div>
+                    </div>
+
+                    <div class="bg-gray-50 border border-dashed border-gray-300 rounded-lg p-3 flex flex-col justify-between">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-gray-200 text-gray-600 text-[11px] font-semibold">
+                                <i class="fas fa-route text-[10px]"></i> Course la Plus Longue
+                            </span>
+                            <span class="text-xs">🏃‍♂️</span>
+                        </div>
+                        <div class="text-xs text-gray-400 italic py-2">Distance record en km</div>
+                    </div>
+                </div>
+
+                <!-- Cadenas superposé par-dessus la section -->
+                <div class="absolute inset-0 z-10 flex flex-col items-center justify-center p-4 bg-gray-900/15 backdrop-blur-xs rounded-lg text-center">
+                    <div class="bg-white/95 backdrop-blur-md border border-gray-200/90 rounded-xl p-4 shadow-xl max-w-sm mx-auto flex flex-col items-center">
+                        <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-amber-50 to-amber-100 border border-amber-300 text-amber-600 flex items-center justify-center text-xl mb-2 shadow-xs">
+                            <i class="fas fa-lock"></i>
+                        </div>
+                        <h5 class="text-xs sm:text-sm font-bold text-gray-900 mb-1">Cocardes Records Verrouillées</h5>
+                        <p class="text-[11px] text-gray-600 max-w-xs mx-auto mb-2 leading-relaxed">
+                            Enregistrez au moins <strong>5 courses</strong> dans votre carnet pour débloquer l'attribution des 3 cocardes records.
+                        </p>
+                        <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 border border-amber-200 text-[11px] text-amber-900 font-semibold shadow-xs">
+                            <i class="fas fa-lock text-amber-600 text-[10px]"></i>
+                            <span>Progression : <strong class="text-green-700">${rec.totalRaces || 0} / 5</strong> courses</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        `;
+        } else {
+            html += `
             <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <!-- 1. RP Allure -->
                 <div class="bg-gradient-to-br from-amber-50/50 to-orange-50/30 border border-amber-200/70 rounded-lg p-3 flex flex-col justify-between transition hover:border-amber-400">
@@ -970,6 +1052,7 @@
             </div>
         </div>
         `;
+        }
 
         // 3. ONGLETS DE NIVEAUX
         html += `
@@ -1044,32 +1127,50 @@
                 </div>
             `;
 
-            // Si le niveau est verrouillé : gros cadenas et explication claire
-            if (!st.isUnlocked && prevLvl) {
-                html += `
-                <div class="p-6 bg-gray-50/90 text-center flex flex-col items-center justify-center border-b border-gray-200">
-                    <div class="w-16 h-16 rounded-2xl bg-white border-2 border-gray-300 text-gray-400 flex items-center justify-center text-3xl mb-3 shadow-xs">
-                        <i class="fas fa-lock text-amber-600"></i>
-                    </div>
-                    <h5 class="text-base font-bold text-gray-800 mb-1 flex items-center gap-2">
-                        <span>Niveau ${lvl.levelNumber} (${lvl.name}) verrouillé</span>
-                    </h5>
-                    <p class="text-xs text-gray-600 max-w-md mx-auto mb-3 leading-relaxed">
-                        Vous devez débloquer au moins <strong>${lvl.requiredFromPrevious} badges</strong> du niveau précédent (<strong>${prevLvl.emoji} ${prevLvl.name}</strong>) pour ouvrir ce niveau. Aucune mission de ce palier ne peut être validée tant qu'il n'est pas débloqué.
-                    </p>
-                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-gray-300 text-xs text-gray-700 font-medium shadow-xs">
-                        <span>Progression requise : <strong class="text-green-700">${prevUnlockedCount} / ${lvl.requiredFromPrevious}</strong> badges débloqués sur ${prevLvl.name}</span>
-                    </div>
-                </div>
-                `;
-            }
-
             // Grille des badges
             html += `
-                <div class="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 ${st.isUnlocked ? 'bg-white' : 'bg-gray-100/50 opacity-60'}">
+                <div class="relative overflow-hidden">
+                    <div class="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 ${st.isUnlocked ? 'bg-white' : 'bg-gray-100/40 filter blur-[1.5px] opacity-35 select-none pointer-events-none'}">
             `;
 
-            lvl.badgeIds.forEach(badgeId => {
+            lvl.badgeIds.forEach((badgeId, badgeIndex) => {
+                if (!st.isUnlocked) {
+                    // Carte mystère floutée en arrière-plan
+                    html += `
+                    <div class="badge-card rounded-lg p-3.5 border border-dashed border-gray-300 bg-gray-50/80 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between mb-2.5">
+                                <span class="text-[11px] font-semibold px-2 py-0.5 rounded bg-gray-200 text-gray-600 border border-gray-300">
+                                    🔒 ${lvl.name} • Mission #${badgeIndex + 1}
+                                </span>
+                                <span class="text-xs font-bold text-gray-400">
+                                    +${lvl.pointsPerBadge} pts
+                                </span>
+                            </div>
+
+                            <div class="flex items-start gap-2.5 mb-2">
+                                <div class="w-9 h-9 rounded-lg flex items-center justify-center text-sm shrink-0 bg-gray-200 text-gray-400">
+                                    <i class="fas fa-lock"></i>
+                                </div>
+                                <div class="flex-grow">
+                                    <h5 class="font-semibold text-sm text-gray-500 flex items-center gap-1.5">
+                                        <span>Mission Secrète</span>
+                                    </h5>
+                                    <p class="text-xs text-gray-400 mt-0.5 italic">Débloquez le niveau ${lvl.levelNumber} pour révéler ce défi...</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-3 pt-2.5 border-t border-gray-200/60">
+                            <div class="text-[11px] text-gray-400 flex items-center gap-1">
+                                <i class="fas fa-lock text-[10px]"></i> Défi masqué
+                            </div>
+                        </div>
+                    </div>
+                    `;
+                    return;
+                }
+
                 const badge = BADGES_DEFINITIONS[badgeId];
                 const badgeState = data.unlockedBadges[badgeId] || { unlocked: false, races: [] };
                 const isUnlocked = badgeState.unlocked && st.isUnlocked;
@@ -1079,13 +1180,13 @@
                 <div class="badge-card rounded-lg p-3.5 border transition flex flex-col justify-between ${
                     isUnlocked 
                         ? 'bg-white border-green-200 hover:border-green-300 shadow-xs' 
-                        : (st.isUnlocked ? 'bg-gray-50/80 border-gray-200 opacity-75' : 'bg-white border-dashed border-gray-300')
+                        : 'bg-gray-50/80 border-gray-200 opacity-75'
                 }">
                     <!-- Haut de la carte -->
                     <div>
                         <div class="flex items-center justify-between mb-2.5">
-                            <span class="text-[11px] font-semibold px-2 py-0.5 rounded ${st.isUnlocked ? lvl.cocarde.pillBg : 'bg-gray-200 text-gray-600 border border-gray-300'} border">
-                                ${st.isUnlocked ? lvl.emoji : '🔒'} ${lvl.name}
+                            <span class="text-[11px] font-semibold px-2 py-0.5 rounded ${lvl.cocarde.pillBg} border">
+                                ${lvl.emoji} ${lvl.name}
                             </span>
                             <span class="text-xs font-bold ${isUnlocked ? 'text-green-700' : 'text-gray-400'}">
                                 +${lvl.pointsPerBadge} pts
@@ -1101,7 +1202,7 @@
                                 <i class="fas ${isUnlocked ? badge.icon : 'fa-lock'}"></i>
                             </div>
                             <div class="flex-grow">
-                                <h5 class="font-semibold text-sm ${st.isUnlocked ? 'text-gray-800' : 'text-gray-600'} flex items-center gap-1.5">
+                                <h5 class="font-semibold text-sm text-gray-800 flex items-center gap-1.5">
                                     <span>${badge.name}</span>
                                     ${isUnlocked ? `<i class="fas fa-check text-green-600 text-xs" title="Badge débloqué"></i>` : ''}
                                 </h5>
@@ -1138,10 +1239,8 @@
                     html += `</div>`;
                 } else if (isUnlocked) {
                     html += `<div class="text-[11px] font-semibold text-green-700 flex items-center gap-1"><i class="fas fa-check"></i> Défi accompli</div>`;
-                } else if (!st.isUnlocked) {
-                    html += `<div class="text-[11px] text-amber-700 font-medium flex items-center gap-1"><i class="fas fa-lock text-[10px]"></i> Verrouillé (niveau non atteint)</div>`;
                 } else {
-                    html += `<div class="text-[11px] text-gray-400 flex items-center gap-1"><i class="fas fa-hourglass-half text-[10px]"></i> Objectif non encore réalisé</div>`;
+                    html += `<div class="text-[11px] text-gray-400 flex items-center gap-1"><i class="fas fa-hourglass-start text-[10px]"></i> Défi en attente</div>`;
                 }
 
                 html += `
@@ -1149,6 +1248,31 @@
                 </div>
                 `;
             });
+
+            html += `</div>`; // fin grid
+
+            // Si le niveau est verrouillé : gros cadenas superposé directement par-dessus les missions
+            if (!st.isUnlocked && prevLvl) {
+                html += `
+                <div class="absolute inset-0 z-10 flex flex-col items-center justify-center p-6 bg-gray-900/15 backdrop-blur-xs text-center">
+                    <div class="bg-white/95 backdrop-blur-md border border-gray-200/90 rounded-2xl p-6 shadow-2xl max-w-md mx-auto flex flex-col items-center">
+                        <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-50 to-amber-100 border border-amber-300 text-amber-600 flex items-center justify-center text-3xl mb-3 shadow-md transform hover:scale-105 transition">
+                            <i class="fas fa-lock"></i>
+                        </div>
+                        <h5 class="text-base font-extrabold text-gray-900 mb-1 flex items-center gap-2">
+                            <span>Niveau ${lvl.levelNumber} : ${lvl.name} verrouillé</span>
+                        </h5>
+                        <p class="text-xs text-gray-600 max-w-sm mx-auto mb-3 leading-relaxed">
+                            Vous devez débloquer au moins <strong>${lvl.requiredFromPrevious} badges</strong> du niveau précédent (<strong>${prevLvl.emoji} ${prevLvl.name}</strong>) pour ouvrir ce niveau et révéler ses défis secrets.
+                        </p>
+                        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-50 border border-amber-200 text-xs text-amber-900 font-semibold shadow-xs">
+                            <i class="fas fa-lock text-amber-600 text-[11px]"></i>
+                            <span>Progression requise : <strong class="text-green-700">${prevUnlockedCount} / ${lvl.requiredFromPrevious}</strong> badges sur ${prevLvl.name}</span>
+                        </div>
+                    </div>
+                </div>
+                `;
+            }
 
             html += `
                 </div>
