@@ -919,51 +919,59 @@
 
         if (!isRecUnlocked) {
             html += `
-            <div class="relative rounded-lg overflow-hidden">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-3 filter blur-[1.5px] opacity-40 select-none pointer-events-none p-1">
-                    <div class="bg-gray-50 border border-dashed border-gray-300 rounded-lg p-3 flex flex-col justify-between">
-                        <div class="flex items-center justify-between mb-2">
+            <div class="relative rounded-xl overflow-hidden min-h-[105px] flex items-center">
+                <!-- 3 cartes records en arrière-plan floutées -->
+                <div class="w-full grid grid-cols-1 md:grid-cols-3 gap-3 filter blur-[1.5px] opacity-35 select-none pointer-events-none p-1">
+                    <div class="bg-gray-50 border border-dashed border-gray-300 rounded-lg p-3 min-h-[90px] flex flex-col justify-between">
+                        <div class="flex items-center justify-between">
                             <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-gray-200 text-gray-600 text-[11px] font-semibold">
                                 <i class="fas fa-bolt text-[10px]"></i> RP Temps au km
                             </span>
                             <span class="text-xs">⚡</span>
                         </div>
-                        <div class="text-xs text-gray-400 italic py-2">Allure record au km</div>
+                        <div class="text-xs text-gray-400 italic">Allure record au km</div>
                     </div>
 
-                    <div class="bg-gray-50 border border-dashed border-gray-300 rounded-lg p-3 flex flex-col justify-between">
-                        <div class="flex items-center justify-between mb-2">
+                    <div class="bg-gray-50 border border-dashed border-gray-300 rounded-lg p-3 min-h-[90px] flex flex-col justify-between">
+                        <div class="flex items-center justify-between">
                             <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-gray-200 text-gray-600 text-[11px] font-semibold">
                                 <i class="fas fa-mountain text-[10px]"></i> Plus de Dénivelé
                             </span>
                             <span class="text-xs">⛰️</span>
                         </div>
-                        <div class="text-xs text-gray-400 italic py-2">Dénivelé D+ record</div>
+                        <div class="text-xs text-gray-400 italic">Dénivelé D+ record</div>
                     </div>
 
-                    <div class="bg-gray-50 border border-dashed border-gray-300 rounded-lg p-3 flex flex-col justify-between">
-                        <div class="flex items-center justify-between mb-2">
+                    <div class="bg-gray-50 border border-dashed border-gray-300 rounded-lg p-3 min-h-[90px] flex flex-col justify-between">
+                        <div class="flex items-center justify-between">
                             <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-gray-200 text-gray-600 text-[11px] font-semibold">
                                 <i class="fas fa-route text-[10px]"></i> Course la Plus Longue
                             </span>
                             <span class="text-xs">🏃‍♂️</span>
                         </div>
-                        <div class="text-xs text-gray-400 italic py-2">Distance record en km</div>
+                        <div class="text-xs text-gray-400 italic">Distance record en km</div>
                     </div>
                 </div>
 
-                <div class="absolute inset-0 z-10 flex flex-col items-center justify-center p-4 bg-gray-900/15 backdrop-blur-xs rounded-lg text-center">
-                    <div class="bg-white/95 backdrop-blur-md border border-gray-200/90 rounded-xl p-4 shadow-xl max-w-sm mx-auto flex flex-col items-center">
-                        <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-amber-50 to-amber-100 border border-amber-300 text-amber-600 flex items-center justify-center text-xl mb-2 shadow-xs">
-                            <i class="fas fa-lock"></i>
+                <!-- Cadenas superposé adapté au format large (Horizontal Card) -->
+                <div class="absolute inset-0 z-10 flex items-center justify-center p-2 sm:p-3 bg-gray-900/10 backdrop-blur-xs rounded-xl">
+                    <div class="bg-white/95 backdrop-blur-md border border-gray-200/90 rounded-xl px-4 py-3 shadow-lg w-full max-w-xl flex flex-col sm:flex-row items-center justify-between gap-3 text-left">
+                        <div class="flex items-center gap-3 min-w-0">
+                            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-50 to-amber-100 border border-amber-300 text-amber-600 flex items-center justify-center text-lg shrink-0 shadow-2xs">
+                                <i class="fas fa-lock"></i>
+                            </div>
+                            <div class="min-w-0">
+                                <h5 class="text-xs sm:text-sm font-bold text-gray-900 leading-tight">Cocardes Records Verrouillées</h5>
+                                <p class="text-[11px] text-gray-600 leading-snug mt-0.5">
+                                    Enregistrez au moins <strong>5 courses</strong> pour débloquer ces records.
+                                </p>
+                            </div>
                         </div>
-                        <h5 class="text-xs sm:text-sm font-bold text-gray-900 mb-1">Cocardes Records Verrouillées</h5>
-                        <p class="text-[11px] text-gray-600 max-w-xs mx-auto mb-2 leading-relaxed">
-                            Enregistrez au moins <strong>5 courses</strong> dans votre carnet pour débloquer l'attribution des 3 cocardes records.
-                        </p>
-                        <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 border border-amber-200 text-[11px] text-amber-900 font-semibold shadow-xs">
-                            <i class="fas fa-lock text-amber-600 text-[10px]"></i>
-                            <span>Progression : <strong class="text-green-700">${rec.totalRaces || 0} / 5</strong> courses</span>
+                        <div class="shrink-0 flex items-center">
+                            <div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-50 border border-amber-200 text-xs font-bold text-amber-900 shadow-2xs">
+                                <i class="fas fa-lock text-amber-600 text-[10px]"></i>
+                                <span><strong class="text-green-700">${rec.totalRaces || 0} / 5</strong> courses</span>
+                            </div>
                         </div>
                     </div>
                 </div>
