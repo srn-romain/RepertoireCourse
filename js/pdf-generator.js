@@ -1166,15 +1166,12 @@ async function generateRacePdf(raceId) {
     if (typeof window.isAuthenticated === 'function' && window.isAuthenticated() && window.raceBadges && window.raceBadges[race.id]) {
         const badgeKeys = Object.keys(window.raceBadges[race.id]);
         if (badgeKeys.length > 0) {
-            const badgesInfoMap = {
-                hasRPMile: "RP temps",
-                hasMostExpensive: "Course la plus cher",
-                hasMostElevation: "Course avec le plus de denivelé",
-                hasLongestDistance: "Course la plus longue"
-            };
-
             const badgeNames = badgeKeys.map(key => {
-                return badgesInfoMap[key] || key;
+                if (typeof window.getBadgeInfo === 'function') {
+                    const info = window.getBadgeInfo(key);
+                    if (info) return `${info.levelEmoji || ''} ${info.name}`.trim();
+                }
+                return key;
             });
 
             doc.setFont(undefined, 'bold');

@@ -6131,18 +6131,16 @@
                 const badgeKeys = Object.keys(window.raceBadges[race.id]);
                 if (badgeKeys.length > 0) {
                     hasBadges = true;
-                    // Mapper les clés de badge aux noms lisibles
-                    const badgesInfoMap = {
-                        hasRPMile: "RP temps",
-                        hasMostExpensive: "Course la plus cher",
-                        hasMostElevation: "Plus de dénivelé",
-                        hasLongestDistance: "Plus longue course"
-                    };
-                    // Générer le HTML pour chaque badge (bleu, arrondi, petite icône)
                     badgeHtml = badgeKeys.map(key => {
-                        const label = badgesInfoMap[key] || key;
-                        return `<span class="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs flex items-center gap-1 w-fit border border-blue-200">
-                                    <i class="fas fa-medal text-blue-500"></i> ${label}
+                        const info = (typeof getBadgeInfo === 'function') ? getBadgeInfo(key) : null;
+                        const label = info ? info.name : key;
+                        const icon = info ? info.icon : 'fa-award';
+                        const emoji = info ? (info.levelEmoji || '') : '🏅';
+                        const pillBg = info && info.cocarde ? info.cocarde.pillBg : 'bg-purple-50 text-purple-800 border-purple-200';
+                        return `<span class="px-2 py-1 ${pillBg} rounded-md text-xs flex items-center gap-1.5 w-fit border cursor-pointer hover:opacity-80 transition font-medium shadow-xs" onclick="if(typeof displayRaceBadgesModal === 'function') displayRaceBadgesModal();" title="${info ? info.description : label}">
+                                    <span>${emoji}</span>
+                                    <i class="fas ${icon}"></i>
+                                    <span>${label}</span>
                                 </span>`;
                     }).join('');
                 }
@@ -6496,29 +6494,17 @@
 
                     if (badgeKeys.length > 0) {
                         badgeKeys.forEach(key => {
-                            // Use robust getBadgeInfo if available globally or duplicate logic
-                            let info = null;
-                            if (typeof getBadgeInfo === 'function') {
-                                info = getBadgeInfo(key);
-                            } else {
-                                // Fallback map if function not available in this scope
-                                const badgesInfo = {
-                                    hasRPMile: { name: "RP temps", icon: "fa-tachometer-alt" },
-                                    hasMostExpensive: { name: "Course la plus cher", icon: "fa-sack-dollar" },
-                                    hasMostElevation: { name: "Course avec le plus de denivelé", icon: "fa-mountain" },
-                                    hasLongestDistance: { name: "Course la plus longue", icon: "fa-route" }
-                                };
-                                info = badgesInfo[key];
-                            }
-
+                            let info = (typeof getBadgeInfo === 'function') ? getBadgeInfo(key) : null;
                             if (info) {
-                                // Affichage simple: icône + nom
                                 const badgeEl = document.createElement('div');
-                                badgeEl.className = 'flex items-center gap-1 bg-purple-100 text-purple-800 px-2 py-1 rounded-lg cursor-pointer hover:bg-purple-200 transition-colors detail-badge-item text-xs';
+                                const pillBg = (info.cocarde && info.cocarde.pillBg) ? info.cocarde.pillBg : 'bg-purple-100 text-purple-800 border-purple-200';
+                                badgeEl.className = `flex items-center gap-1.5 ${pillBg} border px-2.5 py-1 rounded-lg cursor-pointer hover:opacity-80 transition-all detail-badge-item text-xs font-medium shadow-xs`;
                                 badgeEl.setAttribute('data-badge-key', key);
+                                badgeEl.setAttribute('title', info.description || info.name);
                                 badgeEl.innerHTML = `
+                                    <span>${info.levelEmoji || ''}</span>
                                     <i class="fas ${info.icon} text-sm"></i>
-                                    <span class="font-medium">${info.name}</span>
+                                    <span>${info.name}</span>
                                 `;
                                 detailsBadgesContainer.appendChild(badgeEl);
                             }
