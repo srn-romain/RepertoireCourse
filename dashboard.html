@@ -4171,6 +4171,9 @@
 
             // Calculer les badges pour toutes les courses (pour s'assurer qu'ils sont à jour)
             window.raceBadges = calculateRaceBadges(races);
+            if (typeof calculateRecordCocardes === 'function' && typeof races !== 'undefined') {
+                window.recordCocardes = calculateRecordCocardes(races);
+            }
 
             // Tri des courses par date (plus récentes en haut)
             const sortedRaces = [...racesToDisplay].sort((a, b) => {
@@ -4214,54 +4217,70 @@
                 const raceDate = new Date(race.date);
                 const year = raceDate.getFullYear();
                 let locationDisplay = race.location || '';
-                // Ajuster la longueur du lieu pour éviter qu'il passe derrière l'image
-                const maxLength = displayedImage ? 15 : 20; // Plus court si une image est présente
+                const maxLength = displayedImage ? 15 : 20;
                 if (locationDisplay && locationDisplay.length > maxLength) {
                     locationDisplay = locationDisplay.substring(0, maxLength - 3) + '...';
                 }
-                // Déterminer le badge selon la date et le temps
                 const today = new Date();
-                today.setHours(0, 0, 0, 0); // On ignore l'heure
+                today.setHours(0, 0, 0, 0);
                 const raceDateOnly = new Date(raceDate);
                 raceDateOnly.setHours(0, 0, 0, 0);
                 const isToday = raceDateOnly.getTime() === today.getTime();
-                const isUpcoming = raceDate >= today;
+                const isUpcoming = raceDateOnly > today;
 
-                // Calculer le nombre de jours depuis la date de la course
                 const daysSinceRace = Math.floor((today.getTime() - raceDateOnly.getTime()) / (1000 * 60 * 60 * 24));
-                const isWithin10Days = daysSinceRace >= 0 && daysSinceRace <= 10;
-                const hasCompletedTime = race.time && race.time !== '00:00:00' && race.time.trim() !== '';
+                const isWithin10Days = daysSinceRace >= 1 && daysSinceRace <= 10;
+                const hasCompletedTime = race.time && race.time !== 'undefined' && race.time !== '00:00:00' && race.time.trim() !== '';
 
                 let badgeAvenir = '';
                 if (isToday) {
-                    // Si c'est aujourd'hui
                     if (hasCompletedTime) {
-                        // Temps complété : afficher "New !"
                         badgeAvenir = `<span class="px-2 py-1 bg-green-200 text-green-800 text-xs rounded-full animate-pulse">New !</span>`;
                     } else {
-                        // Temps non complété : afficher "En cours"
                         badgeAvenir = `<span class="px-2 py-1 bg-yellow-200 text-yellow-800 text-xs rounded-full animate-pulse">En cours</span>`;
                     }
                 } else if (isUpcoming) {
-                    // Course à venir : afficher "À venir"
                     badgeAvenir = `<span class="px-2 py-1 bg-yellow-200 text-yellow-800 text-xs rounded-full animate-pulse">À venir</span>`;
+                } else {
+                    // Course passée (J >= 1)
+                    if (hasCompletedTime) {
+                        if (isWithin10Days) {
+                            badgeAvenir = `<span class="px-2 py-1 bg-green-200 text-green-800 text-xs rounded-full animate-pulse">New !</span>`;
+                        }
+                    } else {
+                        // Pas de chrono : de J+1 à J+10 afficher 'En attente...'
+                        if (isWithin10Days) {
+                            badgeAvenir = `<span class="px-2 py-1 bg-amber-100 text-amber-800 border border-amber-300 text-xs rounded-full animate-pulse">En attente...</span>`;
+                        }
+                    }
+                }
+                
+                // Vérifier si cette course possède l'une des 3 cocardes records
+                const raceCocardesInfo = (window.recordCocardes && window.recordCocardes.byRaceId && window.recordCocardes.byRaceId[race.id]) ? window.recordCocardes.byRaceId[race.id] : null;
+                const hasRecordCocarde = !!raceCocardesInfo;
+                let cocardeRecordTitle = '';
+                let cocardeRecordEmoji = '🏅';
+                if (raceCocardesInfo) {
+                    const titles = [];
+                    if (raceCocardesInfo.hasPace) {
+                        titles.push(`⚡ RP Allure : ${raceCocardesInfo.paceInfo.formattedPace}`);
+                        cocardeRecordEmoji = '⚡';
+                    }
+                    if (raceCocardesInfo.hasElevation) {
+                        titles.push(`⛰️ Record D+ : ${raceCocardesInfo.elevationInfo.formattedElevation}`);
+                        cocardeRecordEmoji = '⛰️';
+                    }
+                    if (raceCocardesInfo.hasDistance) {
+                        titles.push(`🏃‍♂️ Record Distance : ${raceCocardesInfo.distanceInfo.formattedDistance}`);
+                        cocardeRecordEmoji = '🏃‍♂️';
+                    }
+                    cocardeRecordTitle = `Course Record (${titles.join(' • ')})`;
                 }
 
-                if (!isUpcoming && hasCompletedTime && isWithin10Days) {
-                    // Course passée avec temps complété et dans les 10 derniers jours : afficher "New !"
-                    badgeAvenir = `<span class="px-2 py-1 bg-green-200 text-green-800 text-xs rounded-full animate-pulse">New !</span>`;
-                }
                 const isSelected = selectedRaceIds.has(race.id);
                 const raceCard = document.createElement('div');
                 raceCard.className = `bg-white rounded-xl shadow-md card-hover relative z-10 hover:z-40 focus-within:z-40 group cursor-pointer h-full race-card-item ${isSelected ? 'race-card-selected' : ''}`;
                 raceCard.setAttribute('data-race-id', race.id);
-
-                // Vérifier s'il y a des badges pour cette course
-                const hasBadges = window.raceBadges && window.raceBadges[race.id] && Object.keys(window.raceBadges[race.id]).length > 0;
-
-                // Calcul des likes et noms (pour le survol)
-                const likedBy = race.likedBy || [];
-                const likeCount = likedBy.length;
 
                 const raceDateFormatted = raceDate.toLocaleDateString('fr-FR', {
                     day: 'numeric',
@@ -4460,21 +4479,18 @@
                     </div>
                 </div>
                 <div class="absolute bottom-3 right-3 h-28 w-28 group-hover:scale-105 transition-transform duration-300 pointer-events-none">
-                    ${hasBadges ? `
-                    <div class="absolute -top-3 -right-3 z-20 filter drop-shadow-lg transform rotate-12 hover:rotate-0 transition-transform duration-300">
-                         <div class="relative scale-75">
-                            <!-- Rubans -->
-                            <div class="absolute top-0 right-1/2 translate-x-1/2 mt-4">
-                                 <div class="relative">
-                                    <div class="absolute top-0 right-0 h-8 w-3 bg-red-600 transform -rotate-15 origin-top-right rounded-sm shadow-sm"></div>
-                                    <div class="absolute top-0 left-0 h-8 w-3 bg-blue-600 transform rotate-15 origin-top-left rounded-sm shadow-sm"></div>
-                                 </div>
-                            </div>
-                            <!-- Cocarde Cercle -->
-                            <div class="relative bg-white text-blue-900 rounded-full w-8 h-8 flex items-center justify-center border-4 border-red-600 shadow-md z-10" title="Cette course possède des badges">
-                                <div class="bg-blue-800 rounded-full w-3 h-3"></div>
-                            </div>
-                        </div>
+                    ${hasRecordCocarde ? `
+                    <div class="absolute -top-3.5 -right-3.5 z-30 filter drop-shadow-md transform rotate-12 hover:rotate-0 transition-transform duration-200 pointer-events-auto cursor-help" title="${cocardeRecordTitle}">
+                        <svg width="32" height="42" viewBox="0 0 28 38" fill="none" xmlns="http://www.w3.org/2000/svg" class="filter drop-shadow-sm">
+                            <!-- Ruban Gauche Rouge -->
+                            <path d="M7 16 L2 35 L8.5 36 L12 18 Z" fill="#DC2626"/>
+                            <!-- Ruban Droit Bleu -->
+                            <path d="M16 18 L19.5 36 L26 35 L21 16 Z" fill="#2563EB"/>
+                            <!-- Rosette Tricolore : Rouge extérieur, Blanc milieu, Bleu centre -->
+                            <circle cx="14" cy="14" r="13" fill="#DC2626"/>
+                            <circle cx="14" cy="14" r="9" fill="#FFFFFF"/>
+                            <circle cx="14" cy="14" r="5.5" fill="#1D4ED8"/>
+                        </svg>
                     </div>
                     ` : ''}
                     ${displayedImage ?
@@ -5267,24 +5283,35 @@
                 if (timeIcon) timeIcon.className = "fas fa-stopwatch text-green-500";
 
                 let timeDisplay = '';
+                const hasCompletedTime = race.time && race.time !== 'undefined' && race.time !== '00:00:00' && race.time.trim() !== '';
+                const daysSinceRace = Math.floor((todayForTime.getTime() - raceDateOnlyForTime.getTime()) / (1000 * 60 * 60 * 24));
+
                 if (raceDateOnlyForTime > todayForTime) {
                     timeDisplay = 'À venir';
                     timeElement.className = 'font-semibold text-yellow-600';
                 } else if (raceDateOnlyForTime.getTime() === todayForTime.getTime()) {
-                    if (race.time && race.time !== '00:00:00' && race.time.trim() !== '') {
+                    if (hasCompletedTime) {
                         timeDisplay = race.time;
                         timeElement.className = 'font-semibold text-green-800';
                     } else {
                         timeDisplay = 'En cours';
-                        timeElement.className = 'font-semibold text-green-600';
+                        timeElement.className = 'font-semibold text-green-600 animate-pulse';
                     }
                 } else {
-                    if (race.time && race.time !== '00:00:00' && race.time.trim() !== '') {
+                    // Course passée
+                    if (hasCompletedTime) {
                         timeDisplay = race.time;
+                        timeElement.className = 'font-semibold text-green-800';
                     } else {
-                        timeDisplay = '/';
+                        // Pas de chrono : de J+1 à J+10 -> "En attente...", après J+10 -> "/"
+                        if (daysSinceRace >= 1 && daysSinceRace <= 10) {
+                            timeDisplay = 'En attente...';
+                            timeElement.className = 'font-semibold text-amber-600 animate-pulse';
+                        } else {
+                            timeDisplay = '/';
+                            timeElement.className = 'font-semibold text-green-800';
+                        }
                     }
-                    timeElement.className = 'font-semibold text-green-800';
                 }
 
                 if (fieldMatchesSearch(timeDisplay, searchQuery)) {
@@ -6123,26 +6150,118 @@
             const likeCount = likedBy.length;
             const likeText = `${likeCount} like${likeCount > 1 ? 's' : ''}`;
 
-            // Vérification des Badges
+            // Nettoyer les anciennes cocardes inclinées dans la modale de détails
+            document.querySelectorAll('#detailsModal .record-corner-cocarde').forEach(el => el.remove());
+
+            // Recalculer ou récupérer les records globaux
+            if (typeof calculateRecordCocardes === 'function' && typeof races !== 'undefined') {
+                window.recordCocardes = calculateRecordCocardes(races);
+            }
+
+            const raceCocardesInfo = (window.recordCocardes && window.recordCocardes.byRaceId && window.recordCocardes.byRaceId[race.id]) ? window.recordCocardes.byRaceId[race.id] : null;
+
+            const createCornerCocarde = (title) => {
+                const div = document.createElement('div');
+                div.className = 'record-corner-cocarde absolute -top-3 -right-3 z-20 pointer-events-auto cursor-help transform rotate-12 hover:rotate-0 transition-transform duration-200';
+                div.setAttribute('title', `🏆 ${title}`);
+                div.innerHTML = `
+                    <svg width="30" height="40" viewBox="0 0 28 38" fill="none" xmlns="http://www.w3.org/2000/svg" class="filter drop-shadow-md">
+                        <!-- Ruban Gauche Rouge -->
+                        <path d="M7 16 L2 35 L8.5 36 L12 18 Z" fill="#DC2626"/>
+                        <!-- Ruban Droit Bleu -->
+                        <path d="M16 18 L19.5 36 L26 35 L21 16 Z" fill="#2563EB"/>
+                        <!-- Rosette Tricolore : Rouge extérieur, Blanc milieu, Bleu centre -->
+                        <circle cx="14" cy="14" r="13" fill="#DC2626"/>
+                        <circle cx="14" cy="14" r="9" fill="#FFFFFF"/>
+                        <circle cx="14" cy="14" r="5.5" fill="#1D4ED8"/>
+                    </svg>
+                `;
+                return div;
+            };
+
+            if (raceCocardesInfo) {
+                if (raceCocardesInfo.hasPace && timeElement && timeElement.parentElement) {
+                    timeElement.parentElement.classList.add('relative');
+                    timeElement.parentElement.appendChild(createCornerCocarde(`Record : RP Allure au km (${raceCocardesInfo.paceInfo.formattedPace})`));
+                }
+                if (raceCocardesInfo.hasElevation && elevationElement && elevationElement.parentElement) {
+                    elevationElement.parentElement.classList.add('relative');
+                    elevationElement.parentElement.appendChild(createCornerCocarde(`Record : Plus grand dénivelé (${raceCocardesInfo.elevationInfo.formattedElevation})`));
+                }
+                if (raceCocardesInfo.hasDistance && distanceElement && distanceElement.parentElement) {
+                    distanceElement.parentElement.classList.add('relative');
+                    distanceElement.parentElement.appendChild(createCornerCocarde(`Record : Plus longue distance (${raceCocardesInfo.distanceInfo.formattedDistance})`));
+                }
+            }
+
+            // Vérification des Badges : 1 seul visible + '+X autres' avec popover tooltip
             let hasBadges = false;
-            let badgeHtml = '/';
+            let badgeHtml = '<span class="text-xs text-gray-400 font-normal italic">/</span>';
 
             if (window.raceBadges && window.raceBadges[race.id]) {
                 const badgeKeys = Object.keys(window.raceBadges[race.id]);
                 if (badgeKeys.length > 0) {
                     hasBadges = true;
-                    badgeHtml = badgeKeys.map(key => {
-                        const info = (typeof getBadgeInfo === 'function') ? getBadgeInfo(key) : null;
-                        const label = info ? info.name : key;
-                        const icon = info ? info.icon : 'fa-award';
-                        const emoji = info ? (info.levelEmoji || '') : '🏅';
-                        const pillBg = info && info.cocarde ? info.cocarde.pillBg : 'bg-purple-50 text-purple-800 border-purple-200';
-                        return `<span class="px-2 py-1 ${pillBg} rounded-md text-xs flex items-center gap-1.5 w-fit border cursor-pointer hover:opacity-80 transition font-medium shadow-xs" onclick="if(typeof displayRaceBadgesModal === 'function') displayRaceBadgesModal();" title="${info ? info.description : label}">
-                                    <span>${emoji}</span>
-                                    <i class="fas ${icon}"></i>
-                                    <span>${label}</span>
-                                </span>`;
-                    }).join('');
+                    const firstKey = badgeKeys[0];
+                    const firstInfo = (typeof getBadgeInfo === 'function') ? getBadgeInfo(firstKey) : null;
+                    const firstLabel = firstInfo ? firstInfo.name : firstKey;
+                    const firstIcon = firstInfo ? firstInfo.icon : 'fa-award';
+                    const firstEmoji = firstInfo ? (firstInfo.levelEmoji || '') : '🏅';
+                    const firstPillBg = firstInfo && firstInfo.cocarde ? firstInfo.cocarde.pillBg : 'bg-green-50 text-green-800 border-green-200';
+
+                    const firstBadgeHtml = `<span class="px-2 py-1 ${firstPillBg} rounded-md text-xs flex items-center gap-1.5 w-fit border cursor-pointer hover:opacity-80 transition font-medium shadow-xs" onclick="if(typeof displayRaceBadgesModal === 'function') displayRaceBadgesModal();" title="${firstInfo ? firstInfo.description : firstLabel}">
+                                                <span>${firstEmoji}</span>
+                                                <i class="fas ${firstIcon}"></i>
+                                                <span class="truncate max-w-[120px]">${firstLabel}</span>
+                                            </span>`;
+
+                    if (badgeKeys.length === 1) {
+                        badgeHtml = firstBadgeHtml;
+                    } else {
+                        const remainingCount = badgeKeys.length - 1;
+                        const remainingKeys = badgeKeys.slice(1);
+                        const otherBadgesListHtml = remainingKeys.map(key => {
+                            const info = (typeof getBadgeInfo === 'function') ? getBadgeInfo(key) : null;
+                            const label = info ? info.name : key;
+                            const icon = info ? info.icon : 'fa-award';
+                            const emoji = info ? (info.levelEmoji || '') : '🏅';
+                            const desc = info ? info.description : '';
+                            return `
+                                <div class="flex items-start gap-2 p-1.5 rounded-lg hover:bg-green-50 transition cursor-pointer border border-transparent hover:border-green-200" onclick="if(typeof displayRaceBadgesModal === 'function') displayRaceBadgesModal();">
+                                    <span class="text-sm shrink-0">${emoji}</span>
+                                    <div class="flex-grow">
+                                        <div class="font-semibold text-xs text-gray-800 flex items-center gap-1">
+                                            <i class="fas ${icon} text-green-600 text-[10px]"></i>
+                                            <span>${label}</span>
+                                        </div>
+                                        <p class="text-[10px] text-gray-500 leading-tight mt-0.5">${desc}</p>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('');
+
+                        badgeHtml = `
+                            <div class="flex items-center gap-1.5 flex-wrap">
+                                ${firstBadgeHtml}
+                                <div class="relative inline-block group/badge-more">
+                                    <button type="button" class="badge-more-btn px-2 py-1 bg-gray-100 hover:bg-green-100 text-green-800 border border-gray-200 hover:border-green-300 rounded-md text-xs font-semibold flex items-center gap-1 cursor-pointer transition shadow-xs">
+                                        <span>+${remainingCount} autre${remainingCount > 1 ? 's' : ''}</span>
+                                        <i class="fas fa-chevron-down text-[9px]"></i>
+                                    </button>
+                                    <div class="badge-more-popover hidden absolute bottom-full right-0 mb-2 bg-white border border-green-200 shadow-xl rounded-xl p-3 z-[110] w-64">
+                                        <div class="text-[10px] text-gray-400 mb-1.5 border-b border-gray-100 pb-1 font-bold uppercase tracking-wider flex items-center justify-between">
+                                            <span>Autres badges (${remainingCount})</span>
+                                            <span class="text-green-600 hover:underline cursor-pointer" onclick="if(typeof displayRaceBadgesModal === 'function') displayRaceBadgesModal();">Voir tout</span>
+                                        </div>
+                                        <div class="space-y-1 max-h-48 overflow-y-auto custom-scrollbar">
+                                            ${otherBadgesListHtml}
+                                        </div>
+                                        <div class="absolute -bottom-1.5 right-6 w-3 h-3 bg-white border-b border-r border-green-200 transform rotate-45"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }
                 }
             }
 
@@ -6545,6 +6664,22 @@
                     const tooltip = modalLikeTrigger.querySelector('.liker-tooltip');
                     tooltip.classList.add('hidden');
                 });
+            }
+
+            // Gestion du popover des autres badges dans la modale de détails
+            const badgeMoreBtn = detailsModal.querySelector('.badge-more-btn');
+            const badgeMorePopover = detailsModal.querySelector('.badge-more-popover');
+            if (badgeMoreBtn && badgeMorePopover) {
+                badgeMoreBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    badgeMorePopover.classList.toggle('hidden');
+                });
+                const closeBadgePopoverHandler = (e) => {
+                    if (!e.target.closest('.group\\/badge-more')) {
+                        badgeMorePopover.classList.add('hidden');
+                    }
+                };
+                document.addEventListener('click', closeBadgePopoverHandler);
             }
 
             // --- Google Drive Link ---
@@ -7281,19 +7416,18 @@
                 }
             });
 
-            document.getElementById('raceId').value = race.id;
-            document.getElementById('raceName').value = race.name;
-            document.getElementById('raceDate').value = race.date;
-            document.getElementById('raceHour').value = race.hour;
-            document.getElementById('raceDistance').value = race.distance;
-            document.getElementById('raceElevation').value = race.elevation || '';
-            document.getElementById('raceElevationNeg').value = race.elevationNeg || '';
-            document.getElementById('raceTime').value = race.time;
-            document.getElementById('raceRankPos').value = race.rankPos || '';
-            document.getElementById('raceRankTotal').value = race.rankTotal || '';
-            document.getElementById('raceRankGenderPos').value = race.rankGenderPos || '';
-            document.getElementById('raceRankGenderTotal').value = race.rankGenderTotal || '';
-            document.getElementById('raceLocation').value = race.location;
+            document.getElementById('raceId').value = race.id || '';
+            document.getElementById('raceName').value = race.name || '';
+            document.getElementById('raceDate').value = race.date || '';
+            document.getElementById('raceHour').value = race.hour || '';
+            document.getElementById('raceDistance').value = (race.distance !== undefined && race.distance !== null) ? race.distance : '';
+            document.getElementById('raceElevation').value = (race.elevation !== undefined && race.elevation !== null) ? race.elevation : '';
+            document.getElementById('raceElevationNeg').value = (race.elevationNeg !== undefined && race.elevationNeg !== null) ? race.elevationNeg : '';
+            document.getElementById('raceTime').value = (race.time && race.time !== 'undefined' && race.time !== '00:00:00') ? race.time : '';
+            document.getElementById('raceRankPos').value = (race.rankPos !== undefined && race.rankPos !== null) ? race.rankPos : '';
+            document.getElementById('raceRankTotal').value = (race.rankTotal !== undefined && race.rankTotal !== null) ? race.rankTotal : '';
+            document.getElementById('raceRankGenderPos').value = (race.rankGenderPos !== undefined && race.rankGenderPos !== null) ? race.rankGenderPos : '';
+            document.getElementById('raceRankGenderTotal').value = (race.rankGenderTotal !== undefined && race.rankGenderTotal !== null) ? race.rankGenderTotal : '';
             document.getElementById('raceLocation').value = race.location || '';
 
             // Set Terrain First
@@ -7302,15 +7436,15 @@
 
             // Populate Triathlon specific fields
             if (terrain === 'triathlon') {
-                document.getElementById('raceSwimDistance').value = race.swimDistance || '';
-                document.getElementById('raceBikeDistance').value = race.bikeDistance || '';
-                document.getElementById('raceSwimTime').value = race.swimTime || '';
-                document.getElementById('raceBikeTime').value = race.bikeTime || '';
-                document.getElementById('raceRunTime').value = race.runTime || '';
-                document.getElementById('raceBikeElevation').value = race.bikeElevation || '';
-                document.getElementById('raceBikeElevationNeg').value = race.bikeElevationNeg || '';
-                document.getElementById('raceRunElevation').value = race.runElevation || '';
-                document.getElementById('raceRunElevationNeg').value = race.runElevationNeg || '';
+                document.getElementById('raceSwimDistance').value = (race.swimDistance !== undefined && race.swimDistance !== null) ? race.swimDistance : '';
+                document.getElementById('raceBikeDistance').value = (race.bikeDistance !== undefined && race.bikeDistance !== null) ? race.bikeDistance : '';
+                document.getElementById('raceSwimTime').value = (race.swimTime && race.swimTime !== 'undefined' && race.swimTime !== '00:00:00') ? race.swimTime : '';
+                document.getElementById('raceBikeTime').value = (race.bikeTime && race.bikeTime !== 'undefined' && race.bikeTime !== '00:00:00') ? race.bikeTime : '';
+                document.getElementById('raceRunTime').value = (race.runTime && race.runTime !== 'undefined' && race.runTime !== '00:00:00') ? race.runTime : '';
+                document.getElementById('raceBikeElevation').value = (race.bikeElevation !== undefined && race.bikeElevation !== null) ? race.bikeElevation : '';
+                document.getElementById('raceBikeElevationNeg').value = (race.bikeElevationNeg !== undefined && race.bikeElevationNeg !== null) ? race.bikeElevationNeg : '';
+                document.getElementById('raceRunElevation').value = (race.runElevation !== undefined && race.runElevation !== null) ? race.runElevation : '';
+                document.getElementById('raceRunElevationNeg').value = (race.runElevationNeg !== undefined && race.runElevationNeg !== null) ? race.runElevationNeg : '';
 
                 // Handle Relay Config (if Triathlon)
                 const format = race.raceFormat || 'solo';
@@ -7698,7 +7832,7 @@
                 distance: isNaN(distance) ? null : distance,
                 elevation: isNaN(elevation) ? null : elevation,
                 elevationNeg: isNaN(elevationNeg) ? null : elevationNeg,
-                time: time ? time.trim() : null,
+                time: (time && time.trim() !== '' && time !== 'undefined' && time !== '00:00:00') ? time.trim() : null,
                 rankPos: rankPos ? parseInt(rankPos) : null,
                 rankTotal: rankTotal ? parseInt(rankTotal) : null,
                 rankGenderPos: rankGenderPos ? parseInt(rankGenderPos) : null,
@@ -7727,25 +7861,25 @@
                     rawFields.raceRelaySport = relaySportVal;
                     if (relaySportVal === 'swim') {
                         rawFields.swimDistance = isNaN(swimDistance) ? null : swimDistance;
-                        rawFields.swimTime = swimTime ? swimTime.trim() : null;
+                        rawFields.swimTime = (swimTime && swimTime.trim() !== '' && swimTime !== 'undefined' && swimTime !== '00:00:00') ? swimTime.trim() : null;
                     } else if (relaySportVal === 'bike') {
                         rawFields.bikeDistance = isNaN(bikeDistance) ? null : bikeDistance;
-                        rawFields.bikeTime = bikeTime ? bikeTime.trim() : null;
+                        rawFields.bikeTime = (bikeTime && bikeTime.trim() !== '' && bikeTime !== 'undefined' && bikeTime !== '00:00:00') ? bikeTime.trim() : null;
                         rawFields.bikeElevation = isNaN(bikeElevation) ? null : bikeElevation;
                         rawFields.bikeElevationNeg = isNaN(bikeElevationNeg) ? null : bikeElevationNeg;
                     } else if (relaySportVal === 'run') {
-                        rawFields.runTime = runTime ? runTime.trim() : null;
+                        rawFields.runTime = (runTime && runTime.trim() !== '' && runTime !== 'undefined' && runTime !== '00:00:00') ? runTime.trim() : null;
                         rawFields.runElevation = isNaN(runElevation) ? null : runElevation;
                         rawFields.runElevationNeg = isNaN(runElevationNeg) ? null : runElevationNeg;
                     }
                 } else {
                     rawFields.swimDistance = isNaN(swimDistance) ? null : swimDistance;
-                    rawFields.swimTime = swimTime ? swimTime.trim() : null;
+                    rawFields.swimTime = (swimTime && swimTime.trim() !== '' && swimTime !== 'undefined' && swimTime !== '00:00:00') ? swimTime.trim() : null;
                     rawFields.bikeDistance = isNaN(bikeDistance) ? null : bikeDistance;
-                    rawFields.bikeTime = bikeTime ? bikeTime.trim() : null;
+                    rawFields.bikeTime = (bikeTime && bikeTime.trim() !== '' && bikeTime !== 'undefined' && bikeTime !== '00:00:00') ? bikeTime.trim() : null;
                     rawFields.bikeElevation = isNaN(bikeElevation) ? null : bikeElevation;
                     rawFields.bikeElevationNeg = isNaN(bikeElevationNeg) ? null : bikeElevationNeg;
-                    rawFields.runTime = runTime ? runTime.trim() : null;
+                    rawFields.runTime = (runTime && runTime.trim() !== '' && runTime !== 'undefined' && runTime !== '00:00:00') ? runTime.trim() : null;
                     rawFields.runElevation = isNaN(runElevation) ? null : runElevation;
                     rawFields.runElevationNeg = isNaN(runElevationNeg) ? null : runElevationNeg;
                 }

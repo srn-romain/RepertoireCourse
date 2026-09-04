@@ -2,6 +2,7 @@
  * js/badges-modal.js
  * Système de Badges & Progression par Niveaux
  * (Tong, Sandale, Mocassin, Basket, Boots)
+ * + 3 Cocardes Records (RP Temps au km, Plus de dénivelé, Plus longue course)
  */
 
 (function () {
@@ -399,6 +400,104 @@
     }
 
     /**
+     * Calcule les 3 grandes Cocardes Records :
+     * 1. RP Vitesse (Allure au km la plus rapide)
+     * 2. Plus de dénivelé (D+ max)
+     * 3. Plus longue distance (km max)
+     */
+    function calculateRecordCocardes(racesList) {
+        if (!racesList || !Array.isArray(racesList) || racesList.length === 0) {
+            return { pace: null, elevation: null, distance: null, byRaceId: {} };
+        }
+
+        const todayStr = new Date().toISOString().split('T')[0];
+        const eligible = racesList.filter(r => {
+            if (!r || !r.date) return false;
+            const hasTime = parseTimeToSeconds(r.time) !== null;
+            return r.date <= todayStr || hasTime;
+        });
+
+        let fastestPace = null;
+        let minSecondsPerKm = Infinity;
+
+        let maxElevationRace = null;
+        let maxElevation = 0;
+
+        let maxDistanceRace = null;
+        let maxDistance = 0;
+
+        eligible.forEach(race => {
+            const dist = getEffectiveDistance(race);
+            const elev = getEffectiveElevation(race);
+            const seconds = parseTimeToSeconds(race.time);
+
+            // 1. RP Allure au km
+            if (dist > 0 && seconds !== null && seconds > 0) {
+                const secPerKm = seconds / dist;
+                if (secPerKm < minSecondsPerKm) {
+                    minSecondsPerKm = secPerKm;
+                    const min = Math.floor(secPerKm / 60);
+                    const sec = Math.round(secPerKm % 60);
+                    const formattedPace = `${min}:${sec < 10 ? '0' : ''}${sec} / km`;
+                    const speedKmh = ((dist / (seconds / 3600))).toFixed(1) + ' km/h';
+                    fastestPace = {
+                        race,
+                        secondsPerKm: secPerKm,
+                        formattedPace,
+                        speedKmh,
+                        time: race.time,
+                        distance: dist
+                    };
+                }
+            }
+
+            // 2. Plus grand dénivelé
+            if (elev > maxElevation) {
+                maxElevation = elev;
+                maxElevationRace = {
+                    race,
+                    elevation: elev,
+                    formattedElevation: `+${elev} m D+`
+                };
+            }
+
+            // 3. Plus longue distance
+            if (dist > maxDistance) {
+                maxDistance = dist;
+                maxDistanceRace = {
+                    race,
+                    distance: dist,
+                    formattedDistance: `${dist} km`
+                };
+            }
+        });
+
+        const byRaceId = {};
+        if (fastestPace && fastestPace.race) {
+            if (!byRaceId[fastestPace.race.id]) byRaceId[fastestPace.race.id] = {};
+            byRaceId[fastestPace.race.id].hasPace = true;
+            byRaceId[fastestPace.race.id].paceInfo = fastestPace;
+        }
+        if (maxElevationRace && maxElevationRace.race) {
+            if (!byRaceId[maxElevationRace.race.id]) byRaceId[maxElevationRace.race.id] = {};
+            byRaceId[maxElevationRace.race.id].hasElevation = true;
+            byRaceId[maxElevationRace.race.id].elevationInfo = maxElevationRace;
+        }
+        if (maxDistanceRace && maxDistanceRace.race) {
+            if (!byRaceId[maxDistanceRace.race.id]) byRaceId[maxDistanceRace.race.id] = {};
+            byRaceId[maxDistanceRace.race.id].hasDistance = true;
+            byRaceId[maxDistanceRace.race.id].distanceInfo = maxDistanceRace;
+        }
+
+        return {
+            pace: fastestPace,
+            elevation: maxElevationRace,
+            distance: maxDistanceRace,
+            byRaceId
+        };
+    }
+
+    /**
      * Calcule tous les badges et la progression de manière STRICTEMENT SÉQUENTIELLE par niveau :
      * Un niveau verrouillé ne permet de valider AUCUN badge.
      */
@@ -426,7 +525,8 @@
                 badgesByRace: {},
                 unlockedBadges,
                 levelsState: emptyLevelsState,
-                totalPoints: 0
+                totalPoints: 0,
+                recordCocardes: calculateRecordCocardes([])
             };
         }
 
@@ -443,7 +543,6 @@
             return race.date <= todayStr || hasTime;
         });
 
-        // Métriques globales
         let totalKm = 0;
         const uniqueCities = new Set();
         const uniqueTerrains = new Set();
@@ -483,7 +582,6 @@
             return { race, dist, elev, price, seconds, isTeam, isTriathlon, isHyrox, hasCompanions, loc, terrain, season };
         });
 
-        // Helper pour valider un badge
         function markBadgeUnlocked(badgeId, race) {
             unlockedBadges[badgeId].unlocked = true;
             if (race) {
@@ -497,20 +595,14 @@
 
         const levelsState = {};
 
-        // ─── NIVEAU 1 : TONG (Toujours déverrouillé) ──────────────────────────────
+        // NIVEAU 1 : TONG
         const lvl1 = LEVELS_CONFIG[0];
         raceMetrics.forEach(m => {
-            // first_step
             markBadgeUnlocked('first_step', m.race);
-            // five_k
             if (m.dist >= 4.8) markBadgeUnlocked('five_k', m.race);
-            // finish_line
             if (m.seconds !== null && m.seconds > 0) markBadgeUnlocked('finish_line', m.race);
-            // cheap_run
             if (m.dist >= 4.5 && m.price > 0 && (m.price / m.dist) <= 0.80) markBadgeUnlocked('cheap_run', m.race);
-            // companion_run
             if (m.isTeam || m.hasCompanions) markBadgeUnlocked('companion_run', m.race);
-            // hill_discovery
             if (m.elev >= 100) markBadgeUnlocked('hill_discovery', m.race);
         });
 
@@ -524,7 +616,7 @@
             neededFromPrevious: 0
         };
 
-        // ─── NIVEAU 2 : SANDALE ──────────────────────────────────────────────────
+        // NIVEAU 2 : SANDALE
         const lvl2 = LEVELS_CONFIG[1];
         const isLvl2Unlocked = lvl1UnlockedCount >= lvl2.requiredFromPrevious;
         let lvl2UnlockedCount = 0;
@@ -553,7 +645,7 @@
             neededFromPrevious: isLvl2Unlocked ? 0 : Math.max(0, lvl2.requiredFromPrevious - lvl1UnlockedCount)
         };
 
-        // ─── NIVEAU 3 : MOCASSIN ─────────────────────────────────────────────────
+        // NIVEAU 3 : MOCASSIN
         const lvl3 = LEVELS_CONFIG[2];
         const isLvl3Unlocked = isLvl2Unlocked && (lvl2UnlockedCount >= lvl3.requiredFromPrevious);
         let lvl3UnlockedCount = 0;
@@ -582,7 +674,7 @@
             neededFromPrevious: isLvl3Unlocked ? 0 : Math.max(0, lvl3.requiredFromPrevious - lvl2UnlockedCount)
         };
 
-        // ─── NIVEAU 4 : BASKET ───────────────────────────────────────────────────
+        // NIVEAU 4 : BASKET
         const lvl4 = LEVELS_CONFIG[3];
         const isLvl4Unlocked = isLvl3Unlocked && (lvl3UnlockedCount >= lvl4.requiredFromPrevious);
         let lvl4UnlockedCount = 0;
@@ -614,7 +706,7 @@
             neededFromPrevious: isLvl4Unlocked ? 0 : Math.max(0, lvl4.requiredFromPrevious - lvl3UnlockedCount)
         };
 
-        // ─── NIVEAU 5 : BOOTS ────────────────────────────────────────────────────
+        // NIVEAU 5 : BOOTS
         const lvl5 = LEVELS_CONFIG[4];
         const isLvl5Unlocked = isLvl4Unlocked && (lvl4UnlockedCount >= lvl5.requiredFromPrevious);
         let lvl5UnlockedCount = 0;
@@ -649,7 +741,6 @@
             neededFromPrevious: isLvl5Unlocked ? 0 : Math.max(0, lvl5.requiredFromPrevious - lvl4UnlockedCount)
         };
 
-        // Total des points cumulés (uniquement sur les badges réellement débloqués)
         let totalPoints = 0;
         LEVELS_CONFIG.forEach(lvl => {
             lvl.badgeIds.forEach(badgeId => {
@@ -659,11 +750,14 @@
             });
         });
 
+        const recordCocardes = calculateRecordCocardes(racesList);
+
         return {
             badgesByRace,
             unlockedBadges,
             levelsState,
             totalPoints,
+            recordCocardes,
             stats: {
                 totalRaces: eligibleRaces.length,
                 totalKm: Math.round(totalKm * 10) / 10
@@ -711,6 +805,7 @@
         const racesData = window.races || (typeof races !== 'undefined' ? races : []);
         const data = calculateGamifiedBadges(racesData);
         window.raceBadges = data.badgesByRace;
+        window.recordCocardes = data.recordCocardes;
 
         // Déterminer le rang actuel
         let currentRankLevel = LEVELS_CONFIG[0];
@@ -728,7 +823,7 @@
         const totalBadgesCount = Object.keys(BADGES_DEFINITIONS).length;
         const totalUnlockedBadgesCount = Object.values(data.unlockedBadges).filter(b => b.unlocked).length;
 
-        // 1. CARTE RÉCAPITULATIVE SOBRE
+        // 1. CARTE RÉCAPITULATIVE DU SCORE ET DU RANG
         let html = `
         <div class="mb-5 bg-white border border-green-200 rounded-xl p-5 shadow-sm">
             <div class="grid grid-cols-1 md:grid-cols-12 gap-5 items-center">
@@ -778,7 +873,105 @@
         </div>
         `;
 
-        // 2. ONGLETS DE NIVEAUX
+        // 2. SECTION DES 3 GRANDES COCARDES RECORDS (Détaillées avant les niveaux)
+        const rec = data.recordCocardes || calculateRecordCocardes(racesData);
+        html += `
+        <div class="mb-6 bg-white border border-amber-200/80 rounded-xl p-4 shadow-sm">
+            <div class="flex items-center justify-between mb-3 border-b border-gray-100 pb-2.5">
+                <div class="flex items-center gap-2.5">
+                    <svg width="20" height="26" viewBox="0 0 28 38" fill="none" xmlns="http://www.w3.org/2000/svg" class="shrink-0 filter drop-shadow-xs">
+                        <path d="M7 16 L2 35 L8.5 36 L12 18 Z" fill="#DC2626"/>
+                        <path d="M16 18 L19.5 36 L26 35 L21 16 Z" fill="#2563EB"/>
+                        <circle cx="14" cy="14" r="13" fill="#DC2626"/>
+                        <circle cx="14" cy="14" r="9" fill="#FFFFFF"/>
+                        <circle cx="14" cy="14" r="5.5" fill="#1D4ED8"/>
+                    </svg>
+                    <h4 class="font-bold text-gray-800 text-sm sm:text-base">Les 3 Cocardes Records</h4>
+                </div>
+                <span class="text-[11px] text-gray-400">Attribuées sur le dashboard et dans la fiche de course</span>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <!-- 1. RP Allure -->
+                <div class="bg-gradient-to-br from-amber-50/50 to-orange-50/30 border border-amber-200/70 rounded-lg p-3 flex flex-col justify-between transition hover:border-amber-400">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-200 text-[11px] font-bold">
+                            <i class="fas fa-bolt text-amber-600"></i> RP Temps au km
+                        </span>
+                        <span class="text-xs">⚡</span>
+                    </div>
+                    ${rec.pace ? `
+                        <div class="mb-2.5">
+                            <div class="text-xs font-bold text-gray-800 line-clamp-1" title="${rec.pace.race.name}">${rec.pace.race.name}</div>
+                            <div class="text-xs text-amber-800 font-extrabold mt-0.5 flex items-center gap-1.5">
+                                <span>${rec.pace.formattedPace}</span>
+                                <span class="text-[10px] text-gray-500 font-normal">(${rec.pace.speedKmh})</span>
+                            </div>
+                            <div class="text-[10px] text-gray-400 mt-0.5">Temps : ${rec.pace.time} • ${rec.pace.distance} km</div>
+                        </div>
+                        <button class="badge-race-name w-full text-center text-xs py-1 px-2 rounded-md bg-white border border-amber-200 text-amber-900 hover:bg-amber-100 font-medium transition cursor-pointer" 
+                                data-race-id="${rec.pace.race.id}">
+                            Voir la course <i class="fas fa-arrow-right text-[9px] ml-1"></i>
+                        </button>
+                    ` : `
+                        <div class="text-xs text-gray-400 italic py-3 text-center">Aucun chrono enregistré</div>
+                    `}
+                </div>
+
+                <!-- 2. Plus de dénivelé -->
+                <div class="bg-gradient-to-br from-emerald-50/50 to-teal-50/30 border border-emerald-200/70 rounded-lg p-3 flex flex-col justify-between transition hover:border-emerald-400">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-900 border border-emerald-200 text-[11px] font-bold">
+                            <i class="fas fa-mountain text-emerald-600"></i> Plus de Dénivelé
+                        </span>
+                        <span class="text-xs">⛰️</span>
+                    </div>
+                    ${rec.elevation ? `
+                        <div class="mb-2.5">
+                            <div class="text-xs font-bold text-gray-800 line-clamp-1" title="${rec.elevation.race.name}">${rec.elevation.race.name}</div>
+                            <div class="text-xs text-emerald-800 font-extrabold mt-0.5">
+                                ${rec.elevation.formattedElevation}
+                            </div>
+                            <div class="text-[10px] text-gray-400 mt-0.5">${rec.elevation.race.distance || 0} km • ${rec.elevation.race.date ? new Date(rec.elevation.race.date).getFullYear() : ''}</div>
+                        </div>
+                        <button class="badge-race-name w-full text-center text-xs py-1 px-2 rounded-md bg-white border border-emerald-200 text-emerald-900 hover:bg-emerald-100 font-medium transition cursor-pointer" 
+                                data-race-id="${rec.elevation.race.id}">
+                            Voir la course <i class="fas fa-arrow-right text-[9px] ml-1"></i>
+                        </button>
+                    ` : `
+                        <div class="text-xs text-gray-400 italic py-3 text-center">Aucun dénivelé enregistré</div>
+                    `}
+                </div>
+
+                <!-- 3. Plus longue distance -->
+                <div class="bg-gradient-to-br from-blue-50/50 to-indigo-50/30 border border-blue-200/70 rounded-lg p-3 flex flex-col justify-between transition hover:border-blue-400">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-100 text-blue-900 border border-blue-200 text-[11px] font-bold">
+                            <i class="fas fa-route text-blue-600"></i> Course la Plus Longue
+                        </span>
+                        <span class="text-xs">🏃‍♂️</span>
+                    </div>
+                    ${rec.distance ? `
+                        <div class="mb-2.5">
+                            <div class="text-xs font-bold text-gray-800 line-clamp-1" title="${rec.distance.race.name}">${rec.distance.race.name}</div>
+                            <div class="text-xs text-blue-800 font-extrabold mt-0.5">
+                                ${rec.distance.formattedDistance}
+                            </div>
+                            <div class="text-[10px] text-gray-400 mt-0.5">${rec.distance.race.date ? new Date(rec.distance.race.date).getFullYear() : ''} • ${rec.distance.race.time || ''}</div>
+                        </div>
+                        <button class="badge-race-name w-full text-center text-xs py-1 px-2 rounded-md bg-white border border-blue-200 text-blue-900 hover:bg-blue-100 font-medium transition cursor-pointer" 
+                                data-race-id="${rec.distance.race.id}">
+                            Voir la course <i class="fas fa-arrow-right text-[9px] ml-1"></i>
+                        </button>
+                    ` : `
+                        <div class="text-xs text-gray-400 italic py-3 text-center">Aucune distance enregistrée</div>
+                    `}
+                </div>
+            </div>
+        </div>
+        `;
+
+        // 3. ONGLETS DE NIVEAUX
         html += `
         <div class="flex items-center gap-2 overflow-x-auto pb-1 mb-5 custom-scrollbar">
             <button class="level-tab-btn px-3.5 py-1.5 rounded-lg text-xs font-semibold transition shrink-0 flex items-center gap-1.5 cursor-pointer ${activeLevelTab === 'all' ? 'bg-green-700 text-white shadow-sm' : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'}" data-level="all">
@@ -802,7 +995,7 @@
         });
         html += `</div>`;
 
-        // 3. SECTIONS PAR NIVEAU
+        // 4. SECTIONS PAR NIVEAU
         const levelsToRender = activeLevelTab === 'all' 
             ? LEVELS_CONFIG 
             : LEVELS_CONFIG.filter(lvl => lvl.id === activeLevelTab);
@@ -851,7 +1044,7 @@
                 </div>
             `;
 
-            // Si le niveau est verrouillé : gros cadenas et explication très claire
+            // Si le niveau est verrouillé : gros cadenas et explication claire
             if (!st.isUnlocked && prevLvl) {
                 html += `
                 <div class="p-6 bg-gray-50/90 text-center flex flex-col items-center justify-center border-b border-gray-200">
@@ -903,7 +1096,7 @@
                             <div class="w-9 h-9 rounded-lg flex items-center justify-center text-sm shrink-0 ${
                                 isUnlocked 
                                     ? 'bg-green-100 text-green-700' 
-                                    : (st.isUnlocked ? 'bg-gray-200 text-gray-400' : 'bg-gray-200 text-gray-400')
+                                    : 'bg-gray-200 text-gray-400'
                             }">
                                 <i class="fas ${isUnlocked ? badge.icon : 'fa-lock'}"></i>
                             </div>
@@ -1081,6 +1274,7 @@
     window.BADGES_DEFINITIONS = BADGES_DEFINITIONS;
     window.getBadgeInfo = getBadgeInfo;
     window.calculateRaceBadges = calculateRaceBadges;
+    window.calculateRecordCocardes = calculateRecordCocardes;
     window.calculateGamifiedBadges = calculateGamifiedBadges;
     window.displayRaceBadgesModal = displayRaceBadgesModal;
     window.robustDisplayBadges = displayRaceBadgesModal;

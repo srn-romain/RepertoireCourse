@@ -249,8 +249,12 @@ async function loadPublicRaces() {
                 else badgeAvenir = `<span class="px-2 py-1 bg-yellow-200 text-yellow-800 text-xs rounded-full animate-pulse">En cours</span>`;
             } else if (isUpcoming) {
                 badgeAvenir = `<span class="px-2 py-1 bg-yellow-200 text-yellow-800 text-xs rounded-full animate-pulse">À venir</span>`;
-            } else if (!isUpcoming && hasCompletedTime && isWithin10Days) {
-                badgeAvenir = `<span class="px-2 py-1 bg-green-200 text-green-800 text-xs rounded-full animate-pulse">New !</span>`;
+            } else if (!isUpcoming) {
+                if (hasCompletedTime && isWithin10Days) {
+                    badgeAvenir = `<span class="px-2 py-1 bg-green-200 text-green-800 text-xs rounded-full animate-pulse">New !</span>`;
+                } else if (!hasCompletedTime && isWithin10Days) {
+                    badgeAvenir = `<span class="px-2 py-1 bg-amber-100 text-amber-800 border border-amber-300 text-xs rounded-full animate-pulse">En attente...</span>`;
+                }
             }
 
             const raceCard = document.createElement('div');
