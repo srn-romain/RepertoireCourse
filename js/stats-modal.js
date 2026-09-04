@@ -600,21 +600,39 @@
             };
         }
 
+        // Fonction pour ouvrir la fiche de détail d'une course depuis les statistiques
+        function openRaceFromStats(raceId) {
+            if (!raceId) return;
+            const statsModal = document.getElementById('statsModal');
+            if (statsModal) {
+                const content = statsModal.querySelector('.fade-in');
+                if (content) content.classList.remove('active');
+                statsModal.classList.add('hidden');
+            }
+            if (typeof showRaceDetails === 'function') {
+                showRaceDetails(raceId);
+            }
+        }
+
         // Fonction pour formater le nom de la course (gestion des doublons)
         function getUniqueRaceName(race, contextRaces, isChart = false) {
             if (!race) return '';
             const duplicates = contextRaces.filter(r => r.name.trim().toLowerCase() === race.name.trim().toLowerCase());
+            let raceDisplayName = race.name;
             if (duplicates.length > 1 && race.date) {
                 const year = new Date(race.date).getFullYear();
                 if (isChart === 'text') {
-                    return `${race.name} (${year})`;
+                    raceDisplayName = `${race.name} (${year})`;
                 } else if (isChart) {
-                    return `${race.name} <span class="text-xs text-gray-500 font-normal ml-1">(${year})</span>`;
+                    raceDisplayName = `${race.name} <span class="text-xs text-gray-500 font-normal ml-1">(${year})</span>`;
                 } else {
-                    return `${race.name} <span class="text-gray-500 font-normal">(${year})</span>`;
+                    raceDisplayName = `${race.name} <span class="text-gray-500 font-normal">(${year})</span>`;
                 }
             }
-            return race.name;
+            if (race.id && !isChart) {
+                return `<span class="stat-race-link font-semibold text-green-800 hover:text-green-600 hover:underline cursor-pointer transition-colors" data-race-id="${race.id}" title="Cliquer pour voir la fiche de ${race.name}">${raceDisplayName} <i class="fas fa-external-link-alt text-[10px] text-green-600 ml-0.5"></i></span>`;
+            }
+            return raceDisplayName;
         }
 
         // Fonction pour afficher les statistiques
@@ -1142,6 +1160,15 @@
                         updateEvolutionChart(chronologicalRaces, metricSelect.value);
                     }
                 }
+
+                // Attacher les écouteurs sur tous les liens de courses dans les stats
+                statsContent.querySelectorAll('.stat-race-link').forEach(link => {
+                    link.addEventListener('click', function (e) {
+                        e.stopPropagation();
+                        const raceId = this.getAttribute('data-race-id');
+                        if (raceId) openRaceFromStats(raceId);
+                    });
+                });
             } catch (e) {
                 console.error('[stats-modal] Erreur affichage stats:', e);
             }
@@ -1268,7 +1295,7 @@
             // Afficher le nombre de courses
             const chartRacesCount = document.getElementById('chartRacesCount');
             if (chartRacesCount) {
-                chartRacesCount.textContent = `${itemsToShow} course${itemsToShow > 1 ? 's' : ''} affichée${itemsToShow > 1 ? 's' : ''}`;
+                chartRacesCount.textContent = `${itemsToShow} course${itemsToShow > 1 ? 's' : ''} affichée${itemsToShow > 1 ? 's' : ''} (cliquez pour ouvrir)`;
             }
 
             // Calculer la valeur maximale pour l'échelle
@@ -1305,15 +1332,18 @@
                 if (rank === 3) rankColor = 'text-orange-800 bg-orange-100 border border-orange-300';
 
                 const div = document.createElement('div');
-                div.className = 'flex items-center gap-3 p-2 hover:bg-gray-50 rounded transition-colors';
+                div.className = 'flex items-center gap-3 p-2 bg-white/70 hover:bg-white rounded-lg transition-all cursor-pointer group border border-transparent hover:border-green-300 hover:shadow-xs';
+                div.setAttribute('data-race-id', item.race.id);
+                div.setAttribute('title', `Cliquer pour voir la fiche de ${item.race.name}`);
                 div.innerHTML = `
-                    <div class="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full font-bold text-sm ${rankColor}">
+                    <div class="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full font-bold text-sm ${rankColor} group-hover:scale-105 transition-transform">
                         ${rank}
                     </div>
                     <div class="flex-1 min-w-0">
                         <div class="flex justify-between items-center mb-1">
-                            <span class="font-medium text-sm truncate mr-2" title="${item.race.name} (${new Date(item.race.date).getFullYear()})">
+                            <span class="font-medium text-sm truncate mr-2 group-hover:text-green-800 transition-colors" title="${item.race.name} (${new Date(item.race.date).getFullYear()})">
                                 ${getUniqueRaceName(item.race, fullSortedRaces.map(r => r.race), true)}
+                                <i class="fas fa-arrow-up-right-from-square text-[10px] text-green-600 opacity-0 group-hover:opacity-100 transition-opacity ml-1"></i>
                             </span>
                             <span class="text-sm font-bold text-gray-700">${formatValue(item.value)} ${unit}</span>
                         </div>
@@ -1322,6 +1352,11 @@
                         </div>
                     </div>
                 `;
+                div.addEventListener('click', function () {
+                    if (item.race && item.race.id) {
+                        openRaceFromStats(item.race.id);
+                    }
+                });
                 chartContainer.appendChild(div);
             });
         }
@@ -1433,6 +1468,29 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    onClick: (event, elements, chart) => {
+                        let targetRace = null;
+                        if (elements && elements.length > 0) {
+                            const index = elements[0].index;
+                            targetRace = races[index];
+                        } else if (chart && typeof chart.getElementsAtEventForMode === 'function') {
+                            const nativeEvent = event.native || event;
+                            const points = chart.getElementsAtEventForMode(nativeEvent, 'nearest', { intersect: false }, true);
+                            if (points && points.length > 0) {
+                                const index = points[0].index;
+                                targetRace = races[index];
+                            }
+                        }
+                        if (targetRace && targetRace.id) {
+                            openRaceFromStats(targetRace.id);
+                        }
+                    },
+                    onHover: (event, chartElement) => {
+                        const target = (event.native ? event.native.target : event.target);
+                        if (target) {
+                            target.style.cursor = chartElement && chartElement.length > 0 ? 'pointer' : 'default';
+                        }
+                    },
                     interaction: {
                         mode: 'index',
                         intersect: false
@@ -1462,6 +1520,9 @@
                                         `Date : ${date}`,
                                         `Distance : ${race.distance} km`
                                     ];
+                                },
+                                afterBody: () => {
+                                    return ['', '👉 Cliquer pour ouvrir la fiche de course'];
                                 }
                             }
                         }

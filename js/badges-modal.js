@@ -812,6 +812,7 @@
     // 5. RENDU PRINCIPAL DE L'INTERFACE
     // ─────────────────────────────────────────────────────────────────────────────
     let activeLevelTab = 'all';
+    const userLevelExpandedState = {};
 
     function displayRaceBadgesModal() {
         const modal = document.getElementById('badgesModal');
@@ -889,7 +890,7 @@
         </div>
         `;
 
-        // 2. SECTION DES 3 GRANDES COCARDES RECORDS (Détaillées avant les niveaux)
+        // 2. SECTION DES 3 GRANDES COCARDES RECORDS
         const rec = data.recordCocardes || calculateRecordCocardes(racesData);
         const isRecUnlocked = rec && rec.isUnlocked;
 
@@ -919,7 +920,6 @@
         if (!isRecUnlocked) {
             html += `
             <div class="relative rounded-lg overflow-hidden">
-                <!-- 3 cartes records en arrière-plan floutées -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-3 filter blur-[1.5px] opacity-40 select-none pointer-events-none p-1">
                     <div class="bg-gray-50 border border-dashed border-gray-300 rounded-lg p-3 flex flex-col justify-between">
                         <div class="flex items-center justify-between mb-2">
@@ -952,7 +952,6 @@
                     </div>
                 </div>
 
-                <!-- Cadenas superposé par-dessus la section -->
                 <div class="absolute inset-0 z-10 flex flex-col items-center justify-center p-4 bg-gray-900/15 backdrop-blur-xs rounded-lg text-center">
                     <div class="bg-white/95 backdrop-blur-md border border-gray-200/90 rounded-xl p-4 shadow-xl max-w-sm mx-auto flex flex-col items-center">
                         <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-amber-50 to-amber-100 border border-amber-300 text-amber-600 flex items-center justify-center text-xl mb-2 shadow-xs">
@@ -974,7 +973,6 @@
         } else {
             html += `
             <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                <!-- 1. RP Allure -->
                 <div class="bg-gradient-to-br from-amber-50/50 to-orange-50/30 border border-amber-200/70 rounded-lg p-3 flex flex-col justify-between transition hover:border-amber-400">
                     <div class="flex items-center justify-between mb-2">
                         <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-200 text-[11px] font-bold">
@@ -1000,7 +998,6 @@
                     `}
                 </div>
 
-                <!-- 2. Plus de dénivelé -->
                 <div class="bg-gradient-to-br from-emerald-50/50 to-teal-50/30 border border-emerald-200/70 rounded-lg p-3 flex flex-col justify-between transition hover:border-emerald-400">
                     <div class="flex items-center justify-between mb-2">
                         <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-900 border border-emerald-200 text-[11px] font-bold">
@@ -1025,7 +1022,6 @@
                     `}
                 </div>
 
-                <!-- 3. Plus longue distance -->
                 <div class="bg-gradient-to-br from-blue-50/50 to-indigo-50/30 border border-blue-200/70 rounded-lg p-3 flex flex-col justify-between transition hover:border-blue-400">
                     <div class="flex items-center justify-between mb-2">
                         <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-100 text-blue-900 border border-blue-200 text-[11px] font-bold">
@@ -1088,11 +1084,16 @@
             const prevLvl = idx > 0 ? LEVELS_CONFIG[idx - 1] : null;
             const prevUnlockedCount = prevLvl ? data.levelsState[prevLvl.id].unlockedCount : 0;
             
+            let isExpanded = userLevelExpandedState[lvl.id];
+            if (isExpanded === undefined) {
+                isExpanded = activeLevelTab !== 'all' ? true : st.isUnlocked;
+            }
+            
             html += `
-            <div class="level-section mb-6 bg-white rounded-xl border ${st.isUnlocked ? 'border-gray-200 shadow-sm' : 'border-gray-300'} overflow-hidden">
+            <div class="level-section mb-5 bg-white rounded-xl border ${st.isUnlocked ? 'border-gray-200 shadow-sm' : 'border-gray-300'} overflow-hidden transition-all duration-200">
                 
-                <!-- Header de niveau -->
-                <div class="p-4 border-b border-gray-100 ${st.isUnlocked ? 'bg-gray-50/70' : 'bg-gray-100/80'} flex flex-wrap items-center justify-between gap-3">
+                <!-- Header de niveau interactif et repliable -->
+                <div class="level-header-toggle p-4 border-b border-gray-100 ${st.isUnlocked ? 'bg-gray-50/70 hover:bg-gray-100/80' : 'bg-gray-100/80 hover:bg-gray-200/70'} flex flex-wrap items-center justify-between gap-3 cursor-pointer transition select-none" data-level-id="${lvl.id}" title="Cliquer pour ${isExpanded ? 'replier' : 'déplier'} ce niveau">
                     <div class="flex items-center gap-2.5">
                         <span class="inline-flex items-center justify-center w-8 h-8 rounded-full ${st.isUnlocked ? `${lvl.cocarde.bg} ${lvl.cocarde.text} border ${lvl.cocarde.border}` : 'bg-gray-200 text-gray-500 border border-gray-300'} text-base font-bold shadow-xs">
                             ${st.isUnlocked ? lvl.emoji : '<i class="fas fa-lock text-sm"></i>'}
@@ -1110,11 +1111,11 @@
                         </div>
                     </div>
 
-                    <!-- Statut du niveau -->
-                    <div class="flex items-center gap-2">
+                    <!-- Statut du niveau + Bouton chevron -->
+                    <div class="flex items-center gap-3">
                         ${st.isUnlocked ? `
                             <span class="text-xs font-semibold text-gray-600">${st.unlockedCount} / ${st.totalCount} acquis</span>
-                            <div class="w-20 bg-gray-200 rounded-full h-2 overflow-hidden">
+                            <div class="w-20 bg-gray-200 rounded-full h-2 overflow-hidden hidden sm:block">
                                 <div class="bg-green-600 h-full rounded-full" style="width: ${st.percent}%"></div>
                             </div>
                         ` : `
@@ -1123,19 +1124,19 @@
                                 <span>Niveau Verrouillé</span>
                             </span>
                         `}
+                        <div class="w-7 h-7 rounded-full bg-white/90 border border-gray-200 flex items-center justify-center text-gray-500 hover:text-gray-800 shadow-2xs shrink-0">
+                            <i class="fas fa-chevron-down text-xs transition-transform duration-200 level-chevron ${isExpanded ? 'rotate-180' : ''}"></i>
+                        </div>
                     </div>
                 </div>
-            `;
 
-            // Grille des badges
-            html += `
-                <div class="relative overflow-hidden">
+                <!-- Grille des badges repliable -->
+                <div class="level-body ${isExpanded ? '' : 'hidden'} relative overflow-hidden" id="level-body-${lvl.id}">
                     <div class="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 ${st.isUnlocked ? 'bg-white' : 'bg-gray-100/40 filter blur-[1.5px] opacity-35 select-none pointer-events-none'}">
             `;
 
             lvl.badgeIds.forEach((badgeId, badgeIndex) => {
                 if (!st.isUnlocked) {
-                    // Carte mystère floutée en arrière-plan
                     html += `
                     <div class="badge-card rounded-lg p-3.5 border border-dashed border-gray-300 bg-gray-50/80 flex flex-col justify-between">
                         <div>
@@ -1147,7 +1148,6 @@
                                     +${lvl.pointsPerBadge} pts
                                 </span>
                             </div>
-
                             <div class="flex items-start gap-2.5 mb-2">
                                 <div class="w-9 h-9 rounded-lg flex items-center justify-center text-sm shrink-0 bg-gray-200 text-gray-400">
                                     <i class="fas fa-lock"></i>
@@ -1160,7 +1160,6 @@
                                 </div>
                             </div>
                         </div>
-
                         <div class="mt-3 pt-2.5 border-t border-gray-200/60">
                             <div class="text-[11px] text-gray-400 flex items-center gap-1">
                                 <i class="fas fa-lock text-[10px]"></i> Défi masqué
@@ -1182,7 +1181,6 @@
                         ? 'bg-white border-green-200 hover:border-green-300 shadow-xs' 
                         : 'bg-gray-50/80 border-gray-200 opacity-75'
                 }">
-                    <!-- Haut de la carte -->
                     <div>
                         <div class="flex items-center justify-between mb-2.5">
                             <span class="text-[11px] font-semibold px-2 py-0.5 rounded ${lvl.cocarde.pillBg} border">
@@ -1192,7 +1190,6 @@
                                 +${lvl.pointsPerBadge} pts
                             </span>
                         </div>
-
                         <div class="flex items-start gap-2.5 mb-2">
                             <div class="w-9 h-9 rounded-lg flex items-center justify-center text-sm shrink-0 ${
                                 isUnlocked 
@@ -1210,8 +1207,6 @@
                             </div>
                         </div>
                     </div>
-
-                    <!-- Bas de la carte (courses associées) -->
                     <div class="mt-3 pt-2.5 border-t border-gray-100">
                 `;
 
@@ -1235,7 +1230,6 @@
                     if (sortedRaces.length > 2) {
                         html += `<span class="text-[10px] text-gray-500 self-center">+${sortedRaces.length - 2} autre(s)</span>`;
                     }
-
                     html += `</div>`;
                 } else if (isUnlocked) {
                     html += `<div class="text-[11px] font-semibold text-green-700 flex items-center gap-1"><i class="fas fa-check"></i> Défi accompli</div>`;
@@ -1251,7 +1245,6 @@
 
             html += `</div>`; // fin grid
 
-            // Si le niveau est verrouillé : gros cadenas superposé directement par-dessus les missions
             if (!st.isUnlocked && prevLvl) {
                 html += `
                 <div class="absolute inset-0 z-10 flex flex-col items-center justify-center p-6 bg-gray-900/15 backdrop-blur-xs text-center">
@@ -1286,7 +1279,31 @@
         content.querySelectorAll('.level-tab-btn').forEach(btn => {
             btn.addEventListener('click', function () {
                 activeLevelTab = this.getAttribute('data-level');
+                if (activeLevelTab !== 'all') {
+                    userLevelExpandedState[activeLevelTab] = true;
+                }
                 displayRaceBadgesModal();
+            });
+        });
+
+        // Replier / Déplier les sections de niveaux
+        content.querySelectorAll('.level-header-toggle').forEach(header => {
+            header.addEventListener('click', function () {
+                const levelId = this.getAttribute('data-level-id');
+                const body = document.getElementById(`level-body-${levelId}`);
+                const chevron = this.querySelector('.level-chevron');
+                if (!body) return;
+
+                const isCurrentlyHidden = body.classList.contains('hidden');
+                if (isCurrentlyHidden) {
+                    body.classList.remove('hidden');
+                    if (chevron) chevron.classList.add('rotate-180');
+                    userLevelExpandedState[levelId] = true;
+                } else {
+                    body.classList.add('hidden');
+                    if (chevron) chevron.classList.remove('rotate-180');
+                    userLevelExpandedState[levelId] = false;
+                }
             });
         });
 
