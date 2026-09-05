@@ -1227,24 +1227,31 @@
 
     function getEffectiveDistance(race) {
         if (!race) return 0;
-        let dist = 0;
-        if (race.distance !== undefined && race.distance !== null && race.distance !== '') {
-            dist = parseFloat(race.distance) || 0;
-        } else if (race.dist !== undefined && race.dist !== null) {
-            dist = parseFloat(race.dist) || 0;
+        const raw = (race.distance !== undefined && race.distance !== null && race.distance !== '') 
+            ? race.distance 
+            : (race.dist !== undefined && race.dist !== null ? race.dist : 0);
+        if (typeof raw === 'number') return raw;
+        if (typeof raw === 'string') {
+            const cleaned = raw.replace(/\s+/g, '').replace(',', '.').replace(/[^0-9.-]/g, '');
+            return parseFloat(cleaned) || 0;
         }
-        return dist;
+        return 0;
     }
 
     function getEffectiveElevation(race) {
         if (!race) return 0;
-        let elev = 0;
-        if (race.elevation !== undefined && race.elevation !== null && race.elevation !== '') {
-            elev = parseFloat(race.elevation) || 0;
-        } else if (race.elev !== undefined && race.elev !== null) {
-            elev = parseFloat(race.elev) || 0;
+        const raw = (race.elevation !== undefined && race.elevation !== null && race.elevation !== '') ? race.elevation
+            : (race.elev !== undefined && race.elev !== null && race.elev !== '' ? race.elev
+            : (race.dPlus !== undefined && race.dPlus !== null && race.dPlus !== '' ? race.dPlus
+            : (race.dplus !== undefined && race.dplus !== null && race.dplus !== '' ? race.dplus
+            : (race.denivele !== undefined && race.denivele !== null && race.denivele !== '' ? race.denivele
+            : (race.totalElevation !== undefined && race.totalElevation !== null && race.totalElevation !== '' ? race.totalElevation : 0)))));
+        if (typeof raw === 'number') return raw;
+        if (typeof raw === 'string') {
+            const cleaned = raw.replace(/\s+/g, '').replace(',', '.').replace(/[^0-9.-]/g, '');
+            return parseFloat(cleaned) || 0;
         }
-        return elev;
+        return 0;
     }
 
     function getSeason(dateStr) {
@@ -1569,18 +1576,135 @@
         const hasViewedStats = localStorage.getItem('statsModalViewed') === 'true' || window.statsModalViewed === true;
         const hasUsedSearch = localStorage.getItem('searchUsed') === 'true' || window.searchUsed === true;
         const hasRelayPdf = localStorage.getItem('relayPdfExported') === 'true' || window.relayPdfExported === true;
+        function hasRaceGpx(r) {
+            if (!r) return false;
+            return !!(
+                (r.gpxUrl && typeof r.gpxUrl === 'string' && r.gpxUrl.trim() !== '') ||
+                (r.gpx && r.gpx.length > 0) ||
+                (r.gpxData && typeof r.gpxData === 'string' && r.gpxData.trim() !== '') ||
+                (r.gpxFile && typeof r.gpxFile === 'string' && r.gpxFile.trim() !== '') ||
+                (r.gpxPath && typeof r.gpxPath === 'string' && r.gpxPath.trim() !== '') ||
+                (r.traceGpx && typeof r.traceGpx === 'string' && r.traceGpx.trim() !== '')
+            );
+        }
+
+        function hasRaceDrive(r) {
+            if (!r) return false;
+            return !!(
+                (r.driveId && typeof r.driveId === 'string' && r.driveId.trim() !== '') ||
+                (r.driveLink && typeof r.driveLink === 'string' && r.driveLink.trim() !== '') ||
+                (r.driveUrl && typeof r.driveUrl === 'string' && r.driveUrl.trim() !== '') ||
+                (r.googleDrive && typeof r.googleDrive === 'string' && r.googleDrive.trim() !== '') ||
+                (typeof r.photosUrl === 'string' && r.photosUrl.includes('drive.google.com')) ||
+                (typeof r.link === 'string' && r.link.includes('drive.google.com'))
+            );
+        }
+
+        function hasRacePhoto(r) {
+            if (!r) return false;
+            return !!(
+                (r.photos && Array.isArray(r.photos) && r.photos.length > 0) ||
+                (typeof r.photos === 'string' && r.photos.trim() !== '') ||
+                (r.photo && typeof r.photo === 'string' && r.photo.trim() !== '') ||
+                (r.photoUrl && typeof r.photoUrl === 'string' && r.photoUrl.trim() !== '') ||
+                (r.photosUrl && typeof r.photosUrl === 'string' && r.photosUrl.trim() !== '') ||
+                (r.image && typeof r.image === 'string' && r.image.trim() !== '') ||
+                (r.imageUrl && typeof r.imageUrl === 'string' && r.imageUrl.trim() !== '') ||
+                (r.parcours && typeof r.parcours === 'string' && r.parcours.trim() !== '') ||
+                (r.parcoursUrl && typeof r.parcoursUrl === 'string' && r.parcoursUrl.trim() !== '') ||
+                (r.cover && typeof r.cover === 'string' && r.cover.trim() !== '') ||
+                (r.picture && typeof r.picture === 'string' && r.picture.trim() !== '')
+            );
+        }
+
+        function hasRaceNote(r) {
+            if (!r) return false;
+            return !!(
+                (typeof r.notes === 'string' && r.notes.trim().length > 0) ||
+                (typeof r.note === 'string' && r.note.trim().length > 0) ||
+                (typeof r.note === 'number' && !isNaN(r.note)) ||
+                (typeof r.rating === 'number' && !isNaN(r.rating)) ||
+                (typeof r.comment === 'string' && r.comment.trim().length > 0) ||
+                (typeof r.comments === 'string' && r.comments.trim().length > 0) ||
+                (typeof r.avis === 'string' && r.avis.trim().length > 0) ||
+                (typeof r.description === 'string' && r.description.trim().length > 0) ||
+                (typeof r.remarque === 'string' && r.remarque.trim().length > 0) ||
+                (typeof r.rapport === 'string' && r.rapport.trim().length > 0)
+            );
+        }
+
+        function hasAnyRaceRanking(r) {
+            if (!r) return false;
+            return (r.rankPos !== undefined && r.rankPos !== null && r.rankPos !== '') ||
+                   (r.ranking !== undefined && r.ranking !== null && r.ranking !== '') ||
+                   (r.generalRank !== undefined && r.generalRank !== null && r.generalRank !== '') ||
+                   (r.rank !== undefined && r.rank !== null && r.rank !== '') ||
+                   (r.rankGenderPos !== undefined && r.rankGenderPos !== null && r.rankGenderPos !== '') ||
+                   (r.catRanking !== undefined && r.catRanking !== null && r.catRanking !== '') ||
+                   (r.categoryRank !== undefined && r.categoryRank !== null && r.categoryRank !== '') ||
+                   (r.categoryRanking !== undefined && r.categoryRanking !== null && r.categoryRanking !== '') ||
+                   (r.catRank !== undefined && r.catRank !== null && r.catRank !== '') ||
+                   (r.classement !== undefined && r.classement !== null && r.classement !== '') ||
+                   (r.classementCategorie !== undefined && r.classementCategorie !== null && r.classementCategorie !== '');
+        }
+
+        function isPerfectRace(r) {
+            return hasRacePhoto(r) && hasRaceGpx(r) && hasRaceNote(r) && hasAnyRaceRanking(r);
+        }
+
+        function hasRaceRankings(r) {
+            if (!r) return false;
+            const hasGeneral = (r.rankPos !== undefined && r.rankPos !== null && r.rankPos !== '') || (r.ranking && r.ranking !== '') || (r.generalRank && r.generalRank !== '') || (r.rank && r.rank !== '');
+            const hasCategory = (r.rankGenderPos !== undefined && r.rankGenderPos !== null && r.rankGenderPos !== '') || (r.catRanking && r.catRanking !== '') || (r.categoryRank && r.categoryRank !== '') || (r.categoryRanking && r.categoryRanking !== '') || (r.catRank && r.catRank !== '') || (r.classementCategorie && r.classementCategorie !== '');
+            return hasGeneral && hasCategory;
+        }
+
+        function isTopThirdRank(r) {
+            if (!r) return false;
+            const pos = parseInt(r.rankPos || r.ranking || r.generalRank || r.rank, 10);
+            const total = parseInt(r.rankTotal || r.participants || r.totalParticipants || r.nbParticipants, 10);
+            if (!isNaN(pos) && !isNaN(total) && total > 0 && pos > 0) {
+                return (pos / total) <= 0.33;
+            }
+            const catPos = parseInt(r.rankGenderPos || r.categoryRank || r.catRank, 10);
+            const catTotal = parseInt(r.rankGenderTotal || r.catTotal, 10);
+            if (!isNaN(catPos) && !isNaN(catTotal) && catTotal > 0 && catPos > 0) {
+                return (catPos / catTotal) <= 0.33;
+            }
+            return false;
+        }
+
+        function hasRaceBib(r) {
+            if (!r) return false;
+            return (r.bibNumber !== undefined && r.bibNumber !== null && r.bibNumber !== '') ||
+                   (r.bib !== undefined && r.bib !== null && r.bib !== '') ||
+                   (r.dossard !== undefined && r.dossard !== null && r.dossard !== '');
+        }
+
+        function hasRaceWebsite(r) {
+            if (!r) return false;
+            return !!(
+                (r.website && typeof r.website === 'string' && r.website.trim() !== '') ||
+                (r.link && typeof r.link === 'string' && r.link.trim() !== '') ||
+                (r.siteUrl && typeof r.siteUrl === 'string' && r.siteUrl.trim() !== '') ||
+                (r.resultUrl && typeof r.resultUrl === 'string' && r.resultUrl.trim() !== '') ||
+                (r.resultsUrl && typeof r.resultsUrl === 'string' && r.resultsUrl.trim() !== '') ||
+                (r.site && typeof r.site === 'string' && r.site.trim() !== '')
+            );
+        }
+
         const maxRacesInSingleMonth = Object.values(monthGroups).length > 0 ? Math.max(...Object.values(monthGroups)) : 0;
         const maxRacesInSingleYear = Object.values(yearGroups).length > 0 ? Math.max(...Object.values(yearGroups)) : 0;
-        const gpxRacesCount = racesList.filter(r => (r.gpx && r.gpx.length > 0) || r.gpxData || r.gpxFile).length;
+        const gpxRacesCount = racesList.filter(hasRaceGpx).length;
         const trailRacesCount = racesList.filter(r => (r.terrain || '').toLowerCase().includes('trail')).length;
         const routeRacesCount = racesList.filter(r => (r.terrain || 'route').toLowerCase().includes('route')).length;
         const relayRacesCount = racesList.filter(r => r.terrain === 'relai' || r.raceFormat === 'team' || (r.relaySegments && r.relaySegments.length > 0)).length;
         const triathlonRacesCount = racesList.filter(r => (r.terrain || '').toLowerCase().includes('triathlon')).length;
         const racesWithCompanionsCount = raceMetrics.filter(m => m.hasCompanions).length;
-        const racesWithDriveCount = racesList.filter(r => r.driveLink || r.googleDrive || r.driveUrl).length;
-        const perfectRacesCount = racesList.filter(r => ((r.photos && r.photos.length > 0) || r.photo || r.image) && ((r.gpx && r.gpx.length > 0) || r.gpxData || r.gpxFile) && (r.notes && r.notes.trim().length > 0) && (r.ranking || r.generalRank)).length;
-        const gpxAndNoteCount = racesList.filter(r => ((r.gpx && r.gpx.length > 0) || r.gpxData || r.gpxFile) && (r.notes && r.notes.trim().length > 0)).length;
-        const favGpxAndNoteCount = racesList.filter(r => (r.favorite || r.isFavorite || r.starred) && ((r.gpx && r.gpx.length > 0) || r.gpxData || r.gpxFile) && (r.notes && r.notes.trim().length > 0)).length;
+        const racesWithDriveCount = racesList.filter(hasRaceDrive).length;
+        const perfectRacesCount = racesList.filter(isPerfectRace).length;
+        const gpxAndNoteCount = racesList.filter(r => hasRaceGpx(r) && hasRaceNote(r)).length;
+        const favGpxAndNoteCount = racesList.filter(r => (r.favorite || r.isFavorite || r.starred) && hasRaceGpx(r) && hasRaceNote(r)).length;
         const hasInternationalRace = racesList.some(r => r.country && !['france', 'fr', 'métropole'].includes(r.country.trim().toLowerCase()));
         const marathonRacesCount = raceMetrics.filter(m => m.dist >= 41.8).length;
         const thirtyKmRacesCount = raceMetrics.filter(m => m.dist >= 29.8).length;
@@ -1608,9 +1732,9 @@
                             markBadgeUnlocked('projet_en_tete', matchedFutureRace);
                         }
                         raceMetrics.forEach(m => {
-                            if (m.race.website || m.race.link || m.race.siteUrl || m.race.resultsUrl) markBadgeUnlocked('lien_direct', m.race);
-                            if (m.race.bibNumber || m.race.bib || m.race.dossard) markBadgeUnlocked('dossard_fetiche', m.race);
-                            if ((m.race.gpx && m.race.gpx.length > 0) || (m.race.photos && m.race.photos.length > 0) || m.race.photo || m.race.image) markBadgeUnlocked('trace_du_jour', m.race);
+                            if (hasRaceWebsite(m.race)) markBadgeUnlocked('lien_direct', m.race);
+                            if (hasRaceBib(m.race)) markBadgeUnlocked('dossard_fetiche', m.race);
+                            if (hasRaceGpx(m.race) || hasRacePhoto(m.race)) markBadgeUnlocked('trace_du_jour', m.race);
                             if (m.seconds !== null && m.seconds > 0) markBadgeUnlocked('chrono_note', m.race);
                             if (m.elev >= 50) markBadgeUnlocked('faux_plat_montant', m.race);
                             if (m.dist >= 4.8) markBadgeUnlocked('cinq_majeur', m.race);
@@ -1632,7 +1756,7 @@
                         raceMetrics.forEach(m => {
                             if (m.hasCompanions || m.isTeam) markBadgeUnlocked('copains_dechappee', m.race);
                             if (m.dist >= 4.5 && m.price > 0 && (m.price / m.dist) <= 0.80) markBadgeUnlocked('radin_malin', m.race);
-                            if ((m.race.photos && m.race.photos.length > 0) || m.race.photo || m.race.image) markBadgeUnlocked('visuel_personnalise', m.race);
+                            if (hasRacePhoto(m.race)) markBadgeUnlocked('visuel_personnalise', m.race);
                             if (m.elev >= 200) markBadgeUnlocked('chasseur_de_cotes', m.race);
                             if (m.dist >= 9.8) markBadgeUnlocked('le_cap_des_10', m.race);
                             if (m.dist >= 9.8 && m.seconds !== null && (m.seconds / m.dist) <= 360) markBadgeUnlocked('aventurier_express', m.race);
@@ -1664,7 +1788,7 @@
                         }
                         if (gpxRacesCount >= 3) {
                             unlockedBadges.galerie_gpx.unlocked = true;
-                            unlockedBadges.galerie_gpx.races = racesList.filter(r => r.gpx || r.gpxData);
+                            unlockedBadges.galerie_gpx.races = racesList.filter(hasRaceGpx);
                         }
                         if (maxRacesInSingleMonth >= 2) {
                             unlockedBadges.dossard_double.unlocked = true;
@@ -1694,8 +1818,8 @@
                         if (hasUsedBulkActions || true) markBadgeUnlocked('action_groupee');
                         if (hasCardConfig) markBadgeUnlocked('bouton_express');
                         raceMetrics.forEach(m => {
-                            if ((m.race.ranking || m.race.generalRank) && (m.race.catRanking || m.race.categoryRank || m.race.category)) markBadgeUnlocked('bilan_officiel', m.race);
-                            if (m.race.driveLink || m.race.googleDrive || m.race.driveUrl) markBadgeUnlocked('dossier_drive', m.race);
+                            if (hasRaceRankings(m.race)) markBadgeUnlocked('bilan_officiel', m.race);
+                            if (hasRaceDrive(m.race)) markBadgeUnlocked('dossier_drive', m.race);
                             if (m.elev >= 700) markBadgeUnlocked('chamois_des_collines', m.race);
                             if (m.dist >= 9.8 && m.seconds !== null && (m.seconds / m.dist) <= 300) markBadgeUnlocked('fleche_des_10k', m.race);
                             if (m.dist >= 20.8) markBadgeUnlocked('demi_dieu', m.race);
@@ -1779,7 +1903,7 @@
                         }
                         raceMetrics.forEach(m => {
                             if (m.dist >= 34.8) markBadgeUnlocked('le_cap_des_35', m.race);
-                            if (m.elev >= 1500) markBadgeUnlocked('grosse_montee', m.race);
+                            if (m.elev >= 1490) markBadgeUnlocked('grosse_montee', m.race);
                             if (m.dist >= 9.8 && m.seconds !== null && (m.seconds / m.dist) <= 270) markBadgeUnlocked('vitesse_45', m.race);
                             if (m.dist >= 20.8 && m.seconds !== null && m.seconds <= 6300) markBadgeUnlocked('semi_express', m.race);
                         });
@@ -1793,7 +1917,7 @@
                         }
                         if (perfectRacesCount >= 5) {
                             unlockedBadges.fiche_parfaite.unlocked = true;
-                            unlockedBadges.fiche_parfaite.races = racesList.filter(r => ((r.photos && r.photos.length > 0) || r.photo || r.image) && ((r.gpx && r.gpx.length > 0) || r.gpxData || r.gpxFile) && (r.notes && r.notes.trim().length > 0) && (r.ranking || r.generalRank));
+                            unlockedBadges.fiche_parfaite.races = racesList.filter(isPerfectRace);
                         }
                         if (uniqueCities.size >= 5) {
                             unlockedBadges.grand_voyageur.unlocked = true;
@@ -1837,7 +1961,7 @@
                         }
                         if (gpxRacesCount >= 15) {
                             unlockedBadges.traceur_regulier.unlocked = true;
-                            unlockedBadges.traceur_regulier.races = racesList.filter(r => (r.gpx && r.gpx.length > 0) || r.gpxData || r.gpxFile);
+                            unlockedBadges.traceur_regulier.races = racesList.filter(hasRaceGpx);
                         }
                         if (relayRacesCount >= 4) {
                             unlockedBadges.pilier_dequipe.unlocked = true;
@@ -1855,9 +1979,9 @@
                             unlockedBadges.le_cap_des_400.unlocked = true;
                             unlockedBadges.le_cap_des_400.races = [...eligibleRaces];
                         }
-                        if (raceMetrics.some(m => m.race.ranking && m.race.participants && (parseInt(m.race.ranking, 10) / parseInt(m.race.participants, 10) <= 0.33))) {
+                        if (raceMetrics.some(m => isTopThirdRank(m.race))) {
                             unlockedBadges.tete_de_peloton.unlocked = true;
-                            unlockedBadges.tete_de_peloton.races = raceMetrics.filter(m => m.race.ranking && m.race.participants && (parseInt(m.race.ranking, 10) / parseInt(m.race.participants, 10) <= 0.33)).map(m => m.race);
+                            unlockedBadges.tete_de_peloton.races = raceMetrics.filter(m => isTopThirdRank(m.race)).map(m => m.race);
                         }
                         raceMetrics.forEach(m => {
                             if (m.dist >= 49.8) markBadgeUnlocked('entree_dans_lultra', m.race);
@@ -1870,7 +1994,7 @@
                     case 'level_9': // Rangers (1 540 XP)
                         if (racesWithDriveCount >= 5) {
                             unlockedBadges.dossier_centralise.unlocked = true;
-                            unlockedBadges.dossier_centralise.races = racesList.filter(r => r.driveLink || r.googleDrive || r.driveUrl);
+                            unlockedBadges.dossier_centralise.races = racesList.filter(hasRaceDrive);
                         }
                         if (triathlonRacesCount >= 2) {
                             unlockedBadges.triple_effort_confirme.unlocked = true;
@@ -1911,7 +2035,7 @@
                     case 'level_10': // Crampons (1 450 XP)
                         if (favGpxAndNoteCount >= 10) {
                             unlockedBadges.collection_de_favoris.unlocked = true;
-                            unlockedBadges.collection_de_favoris.races = racesList.filter(r => (r.favorite || r.isFavorite || r.starred) && ((r.gpx && r.gpx.length > 0) || r.gpxData || r.gpxFile) && (r.notes && r.notes.trim().length > 0));
+                            unlockedBadges.collection_de_favoris.races = racesList.filter(r => (r.favorite || r.isFavorite || r.starred) && hasRaceGpx(r) && ((r.notes && r.notes.trim().length > 0) || (r.comment && r.comment.trim().length > 0)));
                         }
                         if (hasInternationalRace) {
                             unlockedBadges.hors_frontieres.unlocked = true;
@@ -1919,7 +2043,7 @@
                         }
                         if (gpxAndNoteCount >= 25) {
                             unlockedBadges.bibliotheque_vivante.unlocked = true;
-                            unlockedBadges.bibliotheque_vivante.races = racesList.filter(r => ((r.gpx && r.gpx.length > 0) || r.gpxData || r.gpxFile) && (r.notes && r.notes.trim().length > 0));
+                            unlockedBadges.bibliotheque_vivante.races = racesList.filter(r => hasRaceGpx(r) && ((r.notes && r.notes.trim().length > 0) || (r.comment && r.comment.trim().length > 0)));
                         }
                         if (marathonRacesCount >= 5) {
                             unlockedBadges.marathonien_de_volume.unlocked = true;
