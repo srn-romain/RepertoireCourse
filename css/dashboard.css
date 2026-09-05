@@ -247,6 +247,12 @@ input[type="search"]::-webkit-search-results-decoration {
     background-color: #15803d !important;
 }
 
+.w-fit {
+    width: -webkit-fit-content !important;
+    width: -moz-fit-content !important;
+    width: fit-content !important;
+}
+
 /* Drive Explorer Specific Styles */
 #driveExplorerModal .modal-container {
     max-width: 1000px;

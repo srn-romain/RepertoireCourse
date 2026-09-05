@@ -1098,7 +1098,7 @@
                         </svg>
                     </button>
                     <h3 id="detailsTitle" class="text-2xl font-bold text-green-800 mb-2"></h3>
-                    <p id="detailsDate" class="text-green-600 mb-2"></p>
+                    <div id="detailsDate" class="text-green-600 mb-2 flex flex-wrap items-center gap-2"></div>
                     <div id="detailsBibContainer" class="mb-4 hidden">
                         <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200" title="Numéro de dossard">
                             <i class="fas fa-id-badge text-slate-400"></i>
@@ -4968,17 +4968,17 @@
             let badgeAvenir = '';
             if (isToday) {
                 // Si c'est aujourd'hui : afficher "Jour J"
-                badgeAvenir = '<span class="block w-fit md:inline-block mt-2 md:mt-0 md:ml-2 px-2 py-1 bg-yellow-200 text-yellow-800 text-xs rounded-full animate-pulse">Jour J</span>';
+                badgeAvenir = '<span class="inline-flex items-center px-2 py-0.5 bg-yellow-200 text-yellow-800 text-xs font-medium rounded-full animate-pulse">Jour J</span>';
             } else if (isUpcoming) {
                 // Si c'est dans le futur : calculer le nombre de jours
                 const diffTime = raceDateOnly.getTime() - today.getTime();
                 const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                badgeAvenir = `<span class="block w-fit md:inline-block mt-2 md:mt-0 md:ml-2 px-2 py-1 bg-yellow-200 text-yellow-800 text-xs rounded-full animate-pulse">À venir J-${diffDays}</span>`;
+                badgeAvenir = `<span class="inline-flex items-center px-2 py-0.5 bg-yellow-200 text-yellow-800 text-xs font-medium rounded-full animate-pulse">À venir J-${diffDays}</span>`;
             } else if (isPast) {
                 // Si c'est dans le passé : calculer le nombre de jours depuis la course
                 const diffTime = today.getTime() - raceDateOnly.getTime();
                 const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-                badgeAvenir = `<span class="block w-fit md:inline-block mt-2 md:mt-0 md:ml-2 px-2 py-1 bg-yellow-200 text-yellow-800 text-xs rounded-full">J+${diffDays}</span>`;
+                badgeAvenir = `<span class="inline-flex items-center px-2 py-0.5 bg-yellow-200 text-yellow-800 text-xs font-medium rounded-full">J+${diffDays}</span>`;
             }
 
             // Vérifier quels champs correspondent à la recherche pour les surligner
@@ -5014,7 +5014,7 @@
                 const hourDisplay = fieldMatchesSearch(race.hour, searchQuery)
                     ? highlightSearchMatch(race.hour, searchQuery)
                     : race.hour;
-                heureHtml = `<span class="ml-2 px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">${hourDisplay}</span>`;
+                heureHtml = `<span class="inline-flex items-center px-2 py-0.5 bg-green-100 text-green-800 text-xs font-medium rounded-full">${hourDisplay}</span>`;
             }
 
             // Date avec surlignage si correspond
@@ -5031,7 +5031,7 @@
                 ? highlightSearchMatch(dateStr, searchQuery)
                 : dateStr;
 
-            document.getElementById('detailsDate').innerHTML = dateDisplay + heureHtml + badgeAvenir;
+            document.getElementById('detailsDate').innerHTML = `<span class="font-medium">${dateDisplay}</span>${heureHtml}${badgeAvenir}`;
 
             // Gestion des champs Triathlon
             const swimContainer = document.getElementById('detailsSwimContainer');
