@@ -1333,6 +1333,57 @@
     // ─────────────────────────────────────────────────────────────────────────────
     // 6. API PUBLIQUE & COMPATIBILITÉ
     // ─────────────────────────────────────────────────────────────────────────────
+    const BADGE_PRESTIGE_SCORES = {
+        // Niveau 5 : BOOTS (75 pts)
+        ultra_runner: 590,
+        skyrunner: 585,
+        speed_flash: 580,
+        titan_300km: 570,
+        collector_20: 560,
+        four_seasons: 550,
+
+        // Niveau 4 : BASKET (50 pts)
+        marathon_finisher: 490,
+        iron_triathlon: 485,
+        climber_2000: 480,
+        sub_40_10k: 475,
+        centurion_km: 460,
+        polyvalent_runner: 450,
+
+        // Niveau 3 : MOCASSIN (35 pts)
+        half_marathon: 390,
+        climber_1000: 385,
+        hyrox_racer: 380,
+        sub_50_10k: 375,
+        relay_specialist: 370,
+        explorer_cities: 350,
+
+        // Niveau 2 : SANDALE (20 pts)
+        climber_500: 285,
+        sub_60_10k: 280,
+        tri_or_relay: 275,
+        high_roller: 270,
+        ten_k: 265,
+        regular_runner: 240,
+
+        // Niveau 1 : TONG (10 pts)
+        hill_discovery: 185,
+        companion_run: 180,
+        cheap_run: 175,
+        five_k: 165,
+        finish_line: 140,
+        first_step: 100
+    };
+
+    function sortBadgesByPrestige(badgeKeys) {
+        if (!badgeKeys || !Array.isArray(badgeKeys)) return [];
+        return [...badgeKeys].sort((a, b) => {
+            const scoreA = BADGE_PRESTIGE_SCORES[a] || 0;
+            const scoreB = BADGE_PRESTIGE_SCORES[b] || 0;
+            return scoreB - scoreA;
+        });
+    }
+
     function getBadgeInfo(badgeKey) {
         const legacyMap = {
             hasRPMile: 'sub_60_10k',
@@ -1357,7 +1408,8 @@
             levelEmoji: level.emoji,
             points: level.pointsPerBadge,
             cocarde: level.cocarde,
-            colorClass: `${level.cocarde.bg} ${level.cocarde.text} ${level.cocarde.border}`
+            colorClass: `${level.cocarde.bg} ${level.cocarde.text} ${level.cocarde.border}`,
+            prestigeScore: BADGE_PRESTIGE_SCORES[badge.id] || 0
         };
     }
 
@@ -1421,6 +1473,8 @@
     // Exports globaux
     window.LEVELS_CONFIG = LEVELS_CONFIG;
     window.BADGES_DEFINITIONS = BADGES_DEFINITIONS;
+    window.BADGE_PRESTIGE_SCORES = BADGE_PRESTIGE_SCORES;
+    window.sortBadgesByPrestige = sortBadgesByPrestige;
     window.getBadgeInfo = getBadgeInfo;
     window.calculateRaceBadges = calculateRaceBadges;
     window.calculateRecordCocardes = calculateRecordCocardes;

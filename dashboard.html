@@ -6205,7 +6205,12 @@
             let badgeHtml = '<span class="text-xs text-gray-400 font-normal italic">/</span>';
 
             if (window.raceBadges && window.raceBadges[race.id]) {
-                const badgeKeys = Object.keys(window.raceBadges[race.id]);
+                let badgeKeys = Object.keys(window.raceBadges[race.id]);
+                if (typeof sortBadgesByPrestige === 'function') {
+                    badgeKeys = sortBadgesByPrestige(badgeKeys);
+                } else if (typeof window.sortBadgesByPrestige === 'function') {
+                    badgeKeys = window.sortBadgesByPrestige(badgeKeys);
+                }
                 if (badgeKeys.length > 0) {
                     hasBadges = true;
                     const firstKey = badgeKeys[0];
@@ -6615,7 +6620,12 @@
 
                 if (window.raceBadges && window.raceBadges[id]) {
                     const raceBadges = window.raceBadges[id];
-                    const badgeKeys = Object.keys(raceBadges);
+                    let badgeKeys = Object.keys(raceBadges);
+                    if (typeof sortBadgesByPrestige === 'function') {
+                        badgeKeys = sortBadgesByPrestige(badgeKeys);
+                    } else if (typeof window.sortBadgesByPrestige === 'function') {
+                        badgeKeys = window.sortBadgesByPrestige(badgeKeys);
+                    }
 
                     if (badgeKeys.length > 0) {
                         badgeKeys.forEach(key => {
