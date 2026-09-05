@@ -171,7 +171,8 @@ input[type="search"]::-webkit-search-results-decoration {
 
 /* Stats Dashboard Responsive < 770px */
 @media (max-width: 770px) {
-    #statsText {
+    #statsText.stats-loaded,
+    #statsText:has(.stat-item) {
         display: grid !important;
         grid-template-columns: repeat(2, 1fr);
         gap: 12px 8px;
@@ -182,6 +183,15 @@ input[type="search"]::-webkit-search-results-decoration {
         border-radius: 12px;
         margin-top: 0.5rem;
         box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.02);
+    }
+
+    #statsText:not(.stats-loaded):not(:has(.stat-item)) {
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        text-align: center;
+        margin-top: 0.25rem;
     }
 
     .stat-year,

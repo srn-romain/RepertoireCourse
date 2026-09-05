@@ -144,7 +144,10 @@
                 <a href="index.html" class="inline-block hover:opacity-80 transition">
                     <h1 class="text-3xl md:text-4xl font-bold text-green-800">📊 Carnet de courses</h1>
                 </a>
-                <p id="statsText" class="text-green-600">Chargement des statistiques...</p>
+                <div id="statsText" class="text-green-600 text-sm flex items-center justify-center lg:justify-start gap-2 py-1">
+                    <i class="fas fa-spinner fa-spin text-green-600"></i>
+                    <span>Chargement des statistiques...</span>
+                </div>
             </div>
             <div class="mt-0 lg:mt-0 w-full lg:w-auto">
                 <div class="flex flex-col lg:flex-row space-y-2 lg:space-y-0 lg:space-x-3 w-full lg:w-auto">
@@ -3344,7 +3347,7 @@
             `;
 
             statsElement.innerHTML = statsHtml;
-            statsElement.className = "text-green-600 text-sm md:text-base flex flex-wrap items-center justify-center md:justify-start gap-x-3 gap-y-1";
+            statsElement.className = "stats-loaded text-green-600 text-sm md:text-base flex flex-wrap items-center justify-center md:justify-start gap-x-3 gap-y-1";
             // Ajout du hover JS si besoin (pour compatibilité)
             const priceStat = document.getElementById('totalPriceStat');
             if (priceStat) {
