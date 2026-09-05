@@ -9,7 +9,7 @@
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZD07VSG72D"></script>
     <script>
         window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
+        function gtag() { dataLayer.push(arguments); }
         gtag('js', new Date());
 
         gtag('config', 'G-ZD07VSG72D');
@@ -144,7 +144,8 @@
                 <a href="index.html" class="inline-block hover:opacity-80 transition">
                     <h1 class="text-3xl md:text-4xl font-bold text-green-800">📊 Carnet de courses</h1>
                 </a>
-                <div id="statsText" class="text-green-600 text-sm flex items-center justify-center lg:justify-start gap-2 py-1">
+                <div id="statsText"
+                    class="text-green-600 text-sm flex items-center justify-center lg:justify-start gap-2 py-1">
                     <i class="fas fa-spinner fa-spin text-green-600"></i>
                     <span>Chargement des statistiques...</span>
                 </div>
@@ -188,7 +189,8 @@
         <div class="mb-8">
             <div class="relative mb-4">
                 <input type="search" id="searchInput" name="search_race_query_rnd123"
-                    placeholder="Rechercher une course... (nom, lieu, date, distance, dénivelé, temps, notes, prix, etc.)" autocomplete="off" spellcheck="false"
+                    placeholder="Rechercher une course... (nom, lieu, date, distance, dénivelé, temps, notes, prix, etc.)"
+                    autocomplete="off" spellcheck="false"
                     class="w-full px-4 py-2 pr-20 rounded-full border border-green-300 focus:outline-none focus:ring-2 focus:ring-green-500">
                 <button id="clearSearchBtn"
                     class="absolute right-12 top-2.5 text-green-400 hover:text-green-600 transition hidden"
@@ -379,49 +381,66 @@
                         <g class="runner-trees-layer">
                             <g class="runner-tree runner-tree-1">
                                 <rect x="-1.5" y="74" width="3" height="20" fill="#047857" opacity="0.4" rx="1" />
-                                <path d="M 0 36 L 9 52 L 6 52 L 12 66 L 8 66 L 14 78 L -14 78 L -8 66 L -12 66 L -6 52 L -9 52 Z" fill="#10b981" opacity="0.35" />
+                                <path
+                                    d="M 0 36 L 9 52 L 6 52 L 12 66 L 8 66 L 14 78 L -14 78 L -8 66 L -12 66 L -6 52 L -9 52 Z"
+                                    fill="#10b981" opacity="0.35" />
                             </g>
                             <g class="runner-tree runner-tree-2">
                                 <rect x="-1" y="78" width="2.5" height="16" fill="#047857" opacity="0.3" rx="1" />
-                                <path d="M 0 46 L 8 60 L 5 60 L 10 72 L -10 72 L -5 60 L -8 60 Z" fill="#059669" opacity="0.3" />
+                                <path d="M 0 46 L 8 60 L 5 60 L 10 72 L -10 72 L -5 60 L -8 60 Z" fill="#059669"
+                                    opacity="0.3" />
                             </g>
                             <g class="runner-tree runner-tree-3">
                                 <rect x="-1" y="82" width="2" height="12" fill="#047857" opacity="0.25" rx="0.5" />
-                                <path d="M 0 58 L 6 70 L 4 70 L 8 80 L -8 80 L -4 70 L -6 70 Z" fill="#34d399" opacity="0.25" />
+                                <path d="M 0 58 L 6 70 L 4 70 L 8 80 L -8 80 L -4 70 L -6 70 Z" fill="#34d399"
+                                    opacity="0.25" />
                             </g>
                         </g>
 
-                        <ellipse class="runner-shadow-anim" cx="70" cy="94" rx="20" ry="3.5" fill="rgba(16, 185, 129, 0.25)" />
+                        <ellipse class="runner-shadow-anim" cx="70" cy="94" rx="20" ry="3.5"
+                            fill="rgba(16, 185, 129, 0.25)" />
                         <g class="runner-body-anim">
                             <g class="runner-arm-back">
-                                <path d="M 80 38 L 68 48" stroke="url(#runnerGradDarkDash)" stroke-width="4.5" stroke-linecap="round" fill="none" />
+                                <path d="M 80 38 L 68 48" stroke="url(#runnerGradDarkDash)" stroke-width="4.5"
+                                    stroke-linecap="round" fill="none" />
                                 <g class="runner-forearm-back">
-                                    <path d="M 68 48 L 60 56" stroke="url(#runnerGradDarkDash)" stroke-width="4" stroke-linecap="round" fill="none" />
+                                    <path d="M 68 48 L 60 56" stroke="url(#runnerGradDarkDash)" stroke-width="4"
+                                        stroke-linecap="round" fill="none" />
                                 </g>
                             </g>
                             <g class="runner-thigh-back">
-                                <path d="M 70 60 L 56 74" stroke="url(#runnerGradDarkDash)" stroke-width="5" stroke-linecap="round" fill="none" />
+                                <path d="M 70 60 L 56 74" stroke="url(#runnerGradDarkDash)" stroke-width="5"
+                                    stroke-linecap="round" fill="none" />
                                 <g class="runner-shin-back">
-                                    <path d="M 56 74 L 46 94 L 52 94" stroke="url(#runnerGradDarkDash)" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+                                    <path d="M 56 74 L 46 94 L 52 94" stroke="url(#runnerGradDarkDash)"
+                                        stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" fill="none" />
                                 </g>
                             </g>
-                            <path d="M 80 38 L 70 60" stroke="url(#runnerGradDash)" stroke-width="6" stroke-linecap="round" filter="url(#runnerGlowDash)" />
+                            <path d="M 80 38 L 70 60" stroke="url(#runnerGradDash)" stroke-width="6"
+                                stroke-linecap="round" filter="url(#runnerGlowDash)" />
                             <circle cx="88" cy="22" r="7.5" fill="url(#runnerGradDash)" filter="url(#runnerGlowDash)" />
-                            <path d="M 92 21 L 95 22 L 92 24" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" fill="none" opacity="0.9" />
+                            <path d="M 92 21 L 95 22 L 92 24" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round"
+                                fill="none" opacity="0.9" />
                             <g class="runner-thigh-front">
-                                <path d="M 70 60 L 84 74" stroke="url(#runnerGradDash)" stroke-width="5.5" stroke-linecap="round" fill="none" filter="url(#runnerGlowDash)" />
+                                <path d="M 70 60 L 84 74" stroke="url(#runnerGradDash)" stroke-width="5.5"
+                                    stroke-linecap="round" fill="none" filter="url(#runnerGlowDash)" />
                                 <g class="runner-shin-front">
-                                    <path d="M 84 74 L 78 94 L 86 94" stroke="url(#runnerGradDash)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none" filter="url(#runnerGlowDash)" />
+                                    <path d="M 84 74 L 78 94 L 86 94" stroke="url(#runnerGradDash)" stroke-width="5"
+                                        stroke-linecap="round" stroke-linejoin="round" fill="none"
+                                        filter="url(#runnerGlowDash)" />
                                 </g>
                             </g>
                             <g class="runner-arm-front">
-                                <path d="M 80 38 L 92 48" stroke="url(#runnerGradDash)" stroke-width="5" stroke-linecap="round" fill="none" filter="url(#runnerGlowDash)" />
+                                <path d="M 80 38 L 92 48" stroke="url(#runnerGradDash)" stroke-width="5"
+                                    stroke-linecap="round" fill="none" filter="url(#runnerGlowDash)" />
                                 <g class="runner-forearm-front">
-                                    <path d="M 92 48 L 100 38" stroke="url(#runnerGradDash)" stroke-width="4.5" stroke-linecap="round" fill="none" filter="url(#runnerGlowDash)" />
+                                    <path d="M 92 48 L 100 38" stroke="url(#runnerGradDash)" stroke-width="4.5"
+                                        stroke-linecap="round" fill="none" filter="url(#runnerGlowDash)" />
                                 </g>
                             </g>
                         </g>
-                        <line class="runner-track-line" x1="10" y1="94" x2="150" y2="94" stroke="#10b981" stroke-width="2" stroke-dasharray="8 6" stroke-linecap="round" opacity="0.75" />
+                        <line class="runner-track-line" x1="10" y1="94" x2="150" y2="94" stroke="#10b981"
+                            stroke-width="2" stroke-dasharray="8 6" stroke-linecap="round" opacity="0.75" />
                     </svg>
                 </div>
             </div>
@@ -795,20 +814,23 @@
                         </div>
                     </div>
                     <!-- Section Liens (Repliable) -->
-                    <div class="mb-4 bg-green-50/60 rounded-lg border border-green-100 overflow-hidden" id="raceLinksSection">
+                    <div class="mb-4 bg-green-50/60 rounded-lg border border-green-100 overflow-hidden"
+                        id="raceLinksSection">
                         <button type="button"
                             onclick="const content = document.getElementById('raceLinksContent'); const chevron = document.getElementById('raceLinksChevron'); content.classList.toggle('hidden'); chevron.classList.toggle('rotate-180');"
                             class="w-full text-left px-3.5 py-2.5 flex items-center justify-between text-green-800 font-semibold hover:bg-green-100/50 transition-colors select-none">
                             <span class="flex items-center gap-2">
                                 <i class="fas fa-link text-green-600"></i> Liens
                             </span>
-                            <i id="raceLinksChevron" class="fas fa-chevron-down text-xs text-green-600 transition-transform duration-200"></i>
+                            <i id="raceLinksChevron"
+                                class="fas fa-chevron-down text-xs text-green-600 transition-transform duration-200"></i>
                         </button>
                         <div id="raceLinksContent" class="p-3.5 pt-1 space-y-4 border-t border-green-100/80">
                             <!-- ID Google Drive -->
                             <div>
                                 <div class="flex items-center justify-between mb-1">
-                                    <label for="raceDriveId" class="block text-green-700 text-sm font-medium">ID Google Drive</label>
+                                    <label for="raceDriveId" class="block text-green-700 text-sm font-medium">ID Google
+                                        Drive</label>
                                     <span
                                         class="text-xs text-gray-400 underline hover:text-green-600 cursor-pointer transition select-none"
                                         onclick="document.getElementById('driveHelpBox').classList.toggle('hidden')">
@@ -823,7 +845,8 @@
                                     <div
                                         class="absolute -top-1.5 right-12 w-3 h-3 bg-white border-t border-l border-green-200 transform rotate-45">
                                     </div>
-                                    Ouvrez votre dossier Drive sur un navigateur, l'ID est la suite de lettres et chiffres à la
+                                    Ouvrez votre dossier Drive sur un navigateur, l'ID est la suite de lettres et
+                                    chiffres à la
                                     fin de l'adresse URL du navigateur (après /folders/).
                                 </div>
 
@@ -834,7 +857,8 @@
 
                             <!-- Lien site de la course -->
                             <div>
-                                <label for="raceWebsite" class="block text-green-700 text-sm font-medium mb-1">Lien site de la course</label>
+                                <label for="raceWebsite" class="block text-green-700 text-sm font-medium mb-1">Lien site
+                                    de la course</label>
                                 <input type="url" id="raceWebsite" name="raceWebsite"
                                     class="w-full px-3 py-2 border border-green-300 bg-white rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-sm"
                                     placeholder="https://exemple.com">
@@ -842,7 +866,8 @@
 
                             <!-- Lien résultats de la course -->
                             <div>
-                                <label for="raceResultUrl" class="block text-green-700 text-sm font-medium mb-1">Lien résultats de la course</label>
+                                <label for="raceResultUrl" class="block text-green-700 text-sm font-medium mb-1">Lien
+                                    résultats de la course</label>
                                 <input type="url" id="raceResultUrl" name="raceResultUrl"
                                     class="w-full px-3 py-2 border border-green-300 bg-white rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-sm"
                                     placeholder="https://exemple.com/resultats">
@@ -851,7 +876,8 @@
                             <!-- Lien GPX -->
                             <div id="raceGpxContainer">
                                 <div class="flex items-end justify-between mb-1">
-                                    <label for="raceGpxUrl" class="block text-green-700 text-sm font-medium">Lien GPX</label>
+                                    <label for="raceGpxUrl" class="block text-green-700 text-sm font-medium">Lien
+                                        GPX</label>
                                     <span
                                         class="text-xs text-gray-400 underline hover:text-green-600 cursor-pointer transition select-none"
                                         onclick="document.getElementById('gpxHelpBox').classList.toggle('hidden')">
@@ -870,12 +896,14 @@
                                     <p class="text-xs text-green-800">
                                         <strong>Pour afficher une carte interactive :</strong><br>
                                         1. Téléchargez votre GPX (Strava, OpenRunner...) puis allez sur
-                                        <a href="https://www.google.fr/maps/d/" target="_blank" class="underline">Google My
+                                        <a href="https://www.google.fr/maps/d/" target="_blank" class="underline">Google
+                                            My
                                             Maps</a>.<br>
                                         2. Cliquez sur "Créer une nouvelle carte", importez votre fichier et cliquez sur
                                         "Partager" pour rendre le lien public.<br>
                                         3. Copiez l'URL de cette carte et collez-la ici.<br>
-                                        <span class="opacity-75 italic">Note : Cela permet de visualiser le tracé directement au
+                                        <span class="opacity-75 italic">Note : Cela permet de visualiser le tracé
+                                            directement au
                                             clic plutôt que de simplement télécharger un fichier.</span>
                                     </p>
                                 </div>
@@ -908,7 +936,8 @@
                                 title="Surligner en Jaune">
                                 <span class="relative">
                                     <i class="fas fa-highlighter text-xs"></i>
-                                    <span class="absolute -bottom-1.5 left-0 right-0 h-1 bg-[#fef08a] rounded-sm"></span>
+                                    <span
+                                        class="absolute -bottom-1.5 left-0 right-0 h-1 bg-[#fef08a] rounded-sm"></span>
                                 </span>
                             </button>
                             <button type="button" id="btnHighlightRed" onpointerdown="event.preventDefault();"
@@ -917,7 +946,8 @@
                                 title="Surligner en Rouge">
                                 <span class="relative">
                                     <i class="fas fa-highlighter text-xs"></i>
-                                    <span class="absolute -bottom-1.5 left-0 right-0 h-1 bg-[#fecaca] rounded-sm"></span>
+                                    <span
+                                        class="absolute -bottom-1.5 left-0 right-0 h-1 bg-[#fecaca] rounded-sm"></span>
                                 </span>
                             </button>
                             <button type="button" id="btnHighlightGreen" onpointerdown="event.preventDefault();"
@@ -926,7 +956,8 @@
                                 title="Surligner en Vert">
                                 <span class="relative">
                                     <i class="fas fa-highlighter text-xs"></i>
-                                    <span class="absolute -bottom-1.5 left-0 right-0 h-1 bg-[#bbf7d0] rounded-sm"></span>
+                                    <span
+                                        class="absolute -bottom-1.5 left-0 right-0 h-1 bg-[#bbf7d0] rounded-sm"></span>
                                 </span>
                             </button>
                         </div>
@@ -1100,7 +1131,9 @@
                     <h3 id="detailsTitle" class="text-2xl font-bold text-green-800 mb-2"></h3>
                     <div id="detailsDate" class="text-green-600 mb-2 flex flex-wrap items-center gap-2"></div>
                     <div id="detailsBibContainer" class="mb-4 hidden">
-                        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200" title="Numéro de dossard">
+                        <span
+                            class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200"
+                            title="Numéro de dossard">
                             <i class="fas fa-id-badge text-slate-400"></i>
                             <span id="detailsBibText"></span>
                         </span>
@@ -1265,7 +1298,8 @@
                             <span class="font-bold text-gray-700">Dossier Google Drive</span>
                         </button>
                     </div>
-                    <div id="detailsActionsContainer" class="flex flex-wrap sm:flex-nowrap gap-2 sm:gap-3 mt-6 pt-4 border-t border-gray-200">
+                    <div id="detailsActionsContainer"
+                        class="flex flex-wrap sm:flex-nowrap gap-2 sm:gap-3 mt-6 pt-4 border-t border-gray-200">
                         <button id="editFromDetailsBtn"
                             class="flex-1 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors flex items-center justify-center gap-2">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20"
@@ -1303,7 +1337,7 @@
         <div class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm"></div>
         <div class="flex items-center justify-center min-h-screen p-4 pointer-events-none">
             <div
-            class="relative bg-white rounded-2xl shadow-2xl w-[90%] mx-auto md:w-full max-w-[882px] z-[10006] overflow-hidden pointer-events-auto flex flex-col h-[85vh] md:h-[80vh]">
+                class="relative bg-white rounded-2xl shadow-2xl w-[90%] mx-auto md:w-full max-w-[882px] z-[10006] overflow-hidden pointer-events-auto flex flex-col h-[85vh] md:h-[80vh]">
                 <!-- Header -->
                 <div
                     class="p-3 sm:p-4 border-b border-gray-100 flex items-center justify-between bg-green-50/50 backdrop-blur-md">
@@ -1405,8 +1439,10 @@
     </div>
 
     <!-- Modal Nombre de J'aime -->
-    <div id="likesModal" class="fixed inset-0 flex items-center justify-center z-50 hidden backdrop-blur-sm bg-black/30 transition-opacity duration-300">
-        <div class="bg-white rounded-2xl shadow-2xl p-6 flex flex-col items-center justify-center w-72 max-h-[80vh] transform scale-95 transition-transform duration-300">
+    <div id="likesModal"
+        class="fixed inset-0 flex items-center justify-center z-50 hidden backdrop-blur-sm bg-black/30 transition-opacity duration-300">
+        <div
+            class="bg-white rounded-2xl shadow-2xl p-6 flex flex-col items-center justify-center w-72 max-h-[80vh] transform scale-95 transition-transform duration-300">
             <div class="w-16 h-16 rounded-full bg-rose-100 flex items-center justify-center mb-4 shrink-0">
                 <i class="fas fa-heart text-3xl text-rose-500 animate-pulse"></i>
             </div>
@@ -1419,7 +1455,8 @@
                 </ul>
             </div>
 
-            <button onclick="document.getElementById('likesModal').classList.add('hidden')" class="w-full py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl transition-colors shrink-0">
+            <button onclick="document.getElementById('likesModal').classList.add('hidden')"
+                class="w-full py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl transition-colors shrink-0">
                 Fermer
             </button>
         </div>
@@ -1525,8 +1562,10 @@
     </div>
 
     <!-- Barre flottante d'actions en masse -->
-    <div id="bulkActionsBar" class="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 transition-all duration-300 translate-y-32 opacity-0 pointer-events-none max-w-[95vw] w-auto">
-        <div class="bg-white/95 backdrop-blur-xl text-slate-800 rounded-2xl p-2.5 md:p-3 shadow-2xl shadow-emerald-950/15 border border-emerald-200/90 flex items-center justify-between gap-3 overflow-x-auto whitespace-nowrap">
+    <div id="bulkActionsBar"
+        class="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 transition-all duration-300 translate-y-32 opacity-0 pointer-events-none max-w-[95vw] w-auto">
+        <div
+            class="bg-white/95 backdrop-blur-xl text-slate-800 rounded-2xl p-2.5 md:p-3 shadow-2xl shadow-emerald-950/15 border border-emerald-200/90 flex items-center justify-between gap-3 overflow-x-auto whitespace-nowrap">
             <div class="flex items-center gap-2 shrink-0 px-2">
                 <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shrink-0"></span>
                 <span class="text-xs md:text-sm font-bold text-slate-800" id="selectedCountText">
@@ -1535,28 +1574,35 @@
             </div>
 
             <div class="flex items-center gap-1.5 shrink-0">
-                <button id="bulkSelectAllBtn" class="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 rounded-xl text-xs font-bold transition flex items-center gap-1.5 border border-emerald-200/80 shrink-0">
+                <button id="bulkSelectAllBtn"
+                    class="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 rounded-xl text-xs font-bold transition flex items-center gap-1.5 border border-emerald-200/80 shrink-0">
                     <i class="far fa-check-square text-emerald-600"></i>
                     <span id="bulkSelectAllText">Tout sélec.</span>
                 </button>
-                <button id="bulkExportBtn" class="px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-sm shrink-0">
+                <button id="bulkExportBtn"
+                    class="px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-sm shrink-0">
                     <i class="fas fa-file-export"></i>
                     <span>Exporter</span>
                 </button>
-                <button id="bulkAddNoteBtn" class="px-3 py-1.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-sm shrink-0">
+                <button id="bulkAddNoteBtn"
+                    class="px-3 py-1.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-sm shrink-0">
                     <i class="fas fa-sticky-note"></i>
                     <span>Note commune</span>
                 </button>
-                <button id="bulkToggleFavBtn" class="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-sm shrink-0">
+                <button id="bulkToggleFavBtn"
+                    class="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-sm shrink-0">
                     <i class="fas fa-star text-amber-200"></i>
                     <span>Favoris</span>
                 </button>
-                <button id="bulkDeleteBtn" class="px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-sm shrink-0">
+                <button id="bulkDeleteBtn"
+                    class="px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-sm shrink-0">
                     <i class="fas fa-trash-alt"></i>
                     <span>Supprimer</span>
                 </button>
                 <div class="h-5 w-px bg-emerald-200 mx-0.5 shrink-0"></div>
-                <button id="closeSelectionModeBtn" class="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-900 rounded-xl text-xs font-semibold transition shrink-0 border border-slate-200" title="Quitter la sélection">
+                <button id="closeSelectionModeBtn"
+                    class="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-900 rounded-xl text-xs font-semibold transition shrink-0 border border-slate-200"
+                    title="Quitter la sélection">
                     <i class="fas fa-times text-sm"></i>
                 </button>
             </div>
@@ -1566,7 +1612,8 @@
     <!-- Modal d'ajout de note commune en masse -->
     <div id="bulkNoteModal" class="fixed inset-0 flex items-center justify-center z-50 hidden modal">
         <div class="absolute inset-0 bg-black bg-opacity-50 blur-bg" id="bulkNoteModalOverlay"></div>
-        <div class="bg-white rounded-2xl p-6 shadow-2xl z-10 max-w-lg w-full mx-4 transform transition-all relative border border-teal-100">
+        <div
+            class="bg-white rounded-2xl p-6 shadow-2xl z-10 max-w-lg w-full mx-4 transform transition-all relative border border-teal-100">
             <div class="flex items-center justify-between mb-4 pb-3 border-b border-gray-100">
                 <h3 class="text-lg font-bold text-gray-900 flex items-center gap-2">
                     <i class="fas fa-sticky-note text-teal-600"></i>
@@ -1578,19 +1625,25 @@
             </div>
 
             <p class="text-xs text-gray-600 mb-4 bg-teal-50 p-3 rounded-xl border border-teal-100 leading-relaxed">
-                Cette note sera ajoutée à la fin des notes existantes pour les <strong id="bulkNoteCountText" class="text-teal-800 font-bold">0 course(s)</strong> sélectionnée(s). Un retour à la ligne sera automatiquement inséré si une note existait déjà.
+                Cette note sera ajoutée à la fin des notes existantes pour les <strong id="bulkNoteCountText"
+                    class="text-teal-800 font-bold">0 course(s)</strong> sélectionnée(s). Un retour à la ligne sera
+                automatiquement inséré si une note existait déjà.
             </p>
 
             <div class="mb-4">
-                <label for="bulkNoteInput" class="block text-xs font-semibold text-gray-700 mb-1.5">Note à ajouter :</label>
-                <textarea id="bulkNoteInput" rows="4" placeholder="Ex: Course effectuée entre amis, superbe météo !" class="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"></textarea>
+                <label for="bulkNoteInput" class="block text-xs font-semibold text-gray-700 mb-1.5">Note à ajouter
+                    :</label>
+                <textarea id="bulkNoteInput" rows="4" placeholder="Ex: Course effectuée entre amis, superbe météo !"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"></textarea>
             </div>
 
             <div class="flex justify-end gap-3 pt-2">
-                <button id="cancelBulkNoteBtn" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-semibold transition">
+                <button id="cancelBulkNoteBtn"
+                    class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-semibold transition">
                     Annuler
                 </button>
-                <button id="confirmBulkNoteBtn" class="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-2 shadow-md shadow-teal-600/20">
+                <button id="confirmBulkNoteBtn"
+                    class="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-2 shadow-md shadow-teal-600/20">
                     <i class="fas fa-check"></i>
                     <span>Ajouter aux courses</span>
                 </button>
@@ -1601,8 +1654,9 @@
     <!-- Modal de suppression en masse (double validation) -->
     <div id="bulkDeleteModal" class="fixed inset-0 flex items-center justify-center z-50 hidden modal">
         <div class="absolute inset-0 bg-black bg-opacity-60 blur-bg" id="bulkDeleteModalOverlay"></div>
-        <div class="bg-white rounded-2xl p-6 shadow-2xl z-10 max-w-lg w-full mx-4 transform transition-all relative border border-red-100">
-            
+        <div
+            class="bg-white rounded-2xl p-6 shadow-2xl z-10 max-w-lg w-full mx-4 transform transition-all relative border border-red-100">
+
             <!-- ÉTAPE 1 : Confirmation initiale & Liste des courses -->
             <div id="bulkDeleteStep1">
                 <div class="flex items-center gap-3 text-red-600 mb-3">
@@ -1616,18 +1670,22 @@
                 </div>
 
                 <p class="text-xs text-gray-600 mb-2">
-                    Vous êtes sur le point de supprimer les <strong id="bulkDeleteCountText" class="text-red-700 font-bold">0</strong> course(s) suivante(s) :
+                    Vous êtes sur le point de supprimer les <strong id="bulkDeleteCountText"
+                        class="text-red-700 font-bold">0</strong> course(s) suivante(s) :
                 </p>
 
-                <div id="bulkDeleteRaceList" class="max-h-36 overflow-y-auto bg-gray-50 border border-gray-200 rounded-xl p-3 mb-4 text-xs text-gray-700 flex flex-col gap-1.5">
+                <div id="bulkDeleteRaceList"
+                    class="max-h-36 overflow-y-auto bg-gray-50 border border-gray-200 rounded-xl p-3 mb-4 text-xs text-gray-700 flex flex-col gap-1.5">
                     <!-- Rempli en JS -->
                 </div>
 
                 <div class="flex justify-end gap-3 pt-2">
-                    <button id="cancelBulkDeleteStep1Btn" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-semibold transition">
+                    <button id="cancelBulkDeleteStep1Btn"
+                        class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-semibold transition">
                         Annuler
                     </button>
-                    <button id="proceedBulkDeleteStep2Btn" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-2 shadow-md shadow-red-600/20">
+                    <button id="proceedBulkDeleteStep2Btn"
+                        class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-2 shadow-md shadow-red-600/20">
                         <span>Continuer vers la confirmation</span>
                         <i class="fas fa-arrow-right"></i>
                     </button>
@@ -1637,7 +1695,8 @@
             <!-- ÉTAPE 2 : Double validation finale -->
             <div id="bulkDeleteStep2" class="hidden">
                 <div class="flex items-center gap-3 text-red-600 mb-3">
-                    <div class="w-10 h-10 rounded-full bg-red-600 text-white flex items-center justify-center shrink-0 animate-pulse">
+                    <div
+                        class="w-10 h-10 rounded-full bg-red-600 text-white flex items-center justify-center shrink-0 animate-pulse">
                         <i class="fas fa-skull-crossbones text-lg"></i>
                     </div>
                     <div>
@@ -1648,16 +1707,20 @@
 
                 <div class="bg-red-50 border border-red-200 rounded-xl p-3.5 mb-4 text-xs text-red-800 leading-relaxed">
                     <p class="font-bold mb-1"><i class="fas fa-exclamation-circle mr-1"></i> Attention !</p>
-                    Cette action supprimera définitivement ces courses de votre base de données sans possibilité de récupération.
+                    Cette action supprimera définitivement ces courses de votre base de données sans possibilité de
+                    récupération.
                 </div>
 
-                <p class="text-xs font-semibold text-gray-700 mb-2">Veuillez cliquer sur le bouton ci-dessous pour valider définitivement la suppression :</p>
+                <p class="text-xs font-semibold text-gray-700 mb-2">Veuillez cliquer sur le bouton ci-dessous pour
+                    valider définitivement la suppression :</p>
 
                 <div class="flex justify-end gap-3 pt-2">
-                    <button id="backBulkDeleteStep1Btn" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-semibold transition">
+                    <button id="backBulkDeleteStep1Btn"
+                        class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-semibold transition">
                         Retour
                     </button>
-                    <button id="finalConfirmBulkDeleteBtn" class="px-4 py-2 bg-red-700 hover:bg-red-800 text-white rounded-xl text-xs font-bold transition flex items-center gap-2 shadow-lg shadow-red-500/30">
+                    <button id="finalConfirmBulkDeleteBtn"
+                        class="px-4 py-2 bg-red-700 hover:bg-red-800 text-white rounded-xl text-xs font-bold transition flex items-center gap-2 shadow-lg shadow-red-500/30">
                         <i class="fas fa-trash-alt"></i>
                         <span>OUI, SUPPRIMER DÉFINITIVEMENT</span>
                     </button>
@@ -1693,24 +1756,34 @@
                 </div>
 
                 <!-- Bulle d'information si moins de 10 éléments -->
-                <div id="wishlistSearchInfoBubble" class="hidden mb-3 p-2.5 bg-green-50/80 border border-green-200 rounded-lg flex items-center gap-2 text-xs text-green-800 shadow-xs transition-all">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <div id="wishlistSearchInfoBubble"
+                    class="hidden mb-3 p-2.5 bg-green-50/80 border border-green-200 rounded-lg flex items-center gap-2 text-xs text-green-800 shadow-xs transition-all">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-600 flex-shrink-0" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
-                    <span id="wishlistSearchInfoText">La recherche est disponible à partir de 10 courses dans votre wishlist.</span>
+                    <span id="wishlistSearchInfoText">La recherche est disponible à partir de 10 courses dans votre
+                        wishlist.</span>
                 </div>
 
                 <!-- Champ de recherche si 10 éléments ou plus -->
                 <div id="wishlistSearchContainer" class="hidden mb-3 relative">
                     <div class="relative flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute left-3 text-gray-400 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        <svg xmlns="http://www.w3.org/2000/svg"
+                            class="h-4 w-4 absolute left-3 text-gray-400 pointer-events-none" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                         </svg>
                         <input type="text" id="wishlistSearchInput" placeholder="Rechercher une course..."
                             class="w-full pl-9 pr-8 py-2 text-xs sm:text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent bg-gray-50/50 focus:bg-white transition-all">
-                        <button id="clearWishlistSearchBtn" type="button" class="hidden absolute right-2.5 text-gray-400 hover:text-gray-600 text-xs p-1 focus:outline-none">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        <button id="clearWishlistSearchBtn" type="button"
+                            class="hidden absolute right-2.5 text-gray-400 hover:text-gray-600 text-xs p-1 focus:outline-none">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M6 18L18 6M6 6l12 12" />
                             </svg>
                         </button>
                     </div>
@@ -1718,33 +1791,45 @@
 
                 <div id="wishlistDisplay" class="mb-4">
                     <!-- Bloc d'information : Prochaine(s) course(s) à venir (s'affiche si au moins 10 courses dans la wishlist) -->
-                    <div id="nextWishlistRaceContainer" class="hidden mb-3 p-3 bg-green-50/70 border border-green-200/80 rounded-xl text-xs">
-                        <div id="nextWishlistRaceTitle" class="font-bold text-green-800 text-xs mb-1.5 uppercase tracking-wider">
+                    <div id="nextWishlistRaceContainer"
+                        class="hidden mb-3 p-3 bg-green-50/70 border border-green-200/80 rounded-xl text-xs">
+                        <div id="nextWishlistRaceTitle"
+                            class="font-bold text-green-800 text-xs mb-1.5 uppercase tracking-wider">
                             La prochaine course est :
                         </div>
                         <div id="nextWishlistRaceList" class="space-y-1.5"></div>
 
                         <!-- Accordéon dépliant pour les 2-3 courses suivantes dans les 5 mois -->
                         <div id="nextWishlistMoreContainer" class="hidden mt-2 pt-2 border-t border-green-200/60">
-                            <button id="toggleNextWishlistMoreBtn" type="button" class="flex items-center justify-between w-full text-[11px] font-semibold text-green-700 hover:text-green-900 transition-colors focus:outline-none select-none">
+                            <button id="toggleNextWishlistMoreBtn" type="button"
+                                class="flex items-center justify-between w-full text-[11px] font-semibold text-green-700 hover:text-green-900 transition-colors focus:outline-none select-none">
                                 <span id="toggleNextWishlistMoreText">Courses suivantes</span>
-                                <svg id="toggleNextWishlistMoreChevron" xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                <svg id="toggleNextWishlistMoreChevron" xmlns="http://www.w3.org/2000/svg"
+                                    class="h-3.5 w-3.5 transition-transform duration-200" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M19 9l-7 7-7-7" />
                                 </svg>
                             </button>
-                            <div id="nextWishlistMoreList" class="hidden mt-2 space-y-1.5 pl-1.5 border-l-2 border-green-300/80"></div>
+                            <div id="nextWishlistMoreList"
+                                class="hidden mt-2 space-y-1.5 pl-1.5 border-l-2 border-green-300/80"></div>
                         </div>
                     </div>
 
                     <!-- Bulle d'avertissement/suggestion si au moins une course a une date passée -->
-                    <div id="pastWishlistDatesInfoBubble" class="hidden mb-3 p-2.5 bg-amber-50/90 border border-amber-200 rounded-xl flex flex-wrap sm:flex-nowrap items-center justify-between gap-2 text-xs text-amber-900 shadow-2xs">
+                    <div id="pastWishlistDatesInfoBubble"
+                        class="hidden mb-3 p-2.5 bg-amber-50/90 border border-amber-200 rounded-xl flex flex-wrap sm:flex-nowrap items-center justify-between gap-2 text-xs text-amber-900 shadow-2xs">
                         <div class="flex items-center gap-2 min-w-0 flex-1">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-amber-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-amber-600 flex-shrink-0"
+                                fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
-                            <span id="pastWishlistDatesText" class="font-medium">Certaines courses ont une date passée.</span>
+                            <span id="pastWishlistDatesText" class="font-medium">Certaines courses ont une date
+                                passée.</span>
                         </div>
-                        <button id="updateAllPastWishlistDatesBtn" type="button" class="px-2.5 py-1 bg-amber-600 hover:bg-amber-700 text-white font-semibold rounded-lg text-[11px] transition-colors whitespace-nowrap">
+                        <button id="updateAllPastWishlistDatesBtn" type="button"
+                            class="px-2.5 py-1 bg-amber-600 hover:bg-amber-700 text-white font-semibold rounded-lg text-[11px] transition-colors whitespace-nowrap">
                             Passer en N+1 (+1 an)
                         </button>
                     </div>
@@ -1752,7 +1837,8 @@
                     <ul id="wishlistItems" class="list-disc pl-5 space-y-0.1 text-gray-700">
                         <!-- Les éléments de la liste seront ajoutés ici -->
                     </ul>
-                    <p id="emptyWishlistSearch" class="text-center text-gray-500 italic py-4 hidden text-xs sm:text-sm">Aucune course ne correspond à votre recherche</p>
+                    <p id="emptyWishlistSearch" class="text-center text-gray-500 italic py-4 hidden text-xs sm:text-sm">
+                        Aucune course ne correspond à votre recherche</p>
                     <p id="emptyWishlist" class="text-center text-gray-500 italic py-4 hidden">Aucune course dans
                         votre
                         wishlist</p>
@@ -1761,29 +1847,41 @@
                 <div id="wishlistEditForm" class="hidden">
                     <div class="mb-4">
                         <ul id="wishlistEditList" class="space-y-3"></ul>
-                        <p id="emptyWishlistEditSearch" class="text-center text-gray-500 italic py-4 hidden text-xs sm:text-sm">Aucune course ne correspond à votre recherche</p>
+                        <p id="emptyWishlistEditSearch"
+                            class="text-center text-gray-500 italic py-4 hidden text-xs sm:text-sm">Aucune course ne
+                            correspond à votre recherche</p>
                         <div class="mt-4 p-3 bg-green-50/60 rounded-xl border border-green-200 space-y-3">
                             <div class="flex items-center justify-between">
-                                <h4 class="text-xs font-bold text-green-800 uppercase tracking-wider">Ajouter une course à la wishlist</h4>
-                                <span id="newWishlistItemFavoriteBtn" class="cursor-pointer flex-shrink-0 select-none" title="Mettre cette course en favori (max 3 favoris)">
-                                    <svg id="newWishlistItemStarIcon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-300 transition-colors" fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.966a1 1 0 00.95.69h4.175c.969 0 1.371 1.24.588 1.81l-3.38 2.455a1 1 0 00-.364 1.118l1.287 3.966c.3.921-.755 1.688-1.54 1.118l-3.38-2.455a1 1 0 00-1.175 0l-3.38 2.455c-.784.57-1.838-.197-1.539-1.118l1.287-3.966a1 1 0 00-.364-1.118L2.049 9.393c-.783-.57-.38-1.81.588-1.81h4.175a1 1 0 00.95-.69l1.286-3.966z"/>
+                                <h4 class="text-xs font-bold text-green-800 uppercase tracking-wider">Ajouter une course
+                                    à la wishlist</h4>
+                                <span id="newWishlistItemFavoriteBtn" class="cursor-pointer flex-shrink-0 select-none"
+                                    title="Mettre cette course en favori (max 3 favoris)">
+                                    <svg id="newWishlistItemStarIcon" xmlns="http://www.w3.org/2000/svg"
+                                        class="h-5 w-5 text-gray-300 transition-colors" fill="currentColor"
+                                        viewBox="0 0 20 20">
+                                        <path
+                                            d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.966a1 1 0 00.95.69h4.175c.969 0 1.371 1.24.588 1.81l-3.38 2.455a1 1 0 00-.364 1.118l1.287 3.966c.3.921-.755 1.688-1.54 1.118l-3.38-2.455a1 1 0 00-1.175 0l-3.38 2.455c-.784.57-1.838-.197-1.539-1.118l1.287-3.966a1 1 0 00-.364-1.118L2.049 9.393c-.783-.57-.38-1.81.588-1.81h4.175a1 1 0 00.95-.69l1.286-3.966z" />
                                     </svg>
                                 </span>
                             </div>
                             <div>
-                                <label for="newWishlistItemInput" class="block text-xs font-medium text-green-800 mb-1">Nom de la course <span class="text-red-500">*</span></label>
+                                <label for="newWishlistItemInput"
+                                    class="block text-xs font-medium text-green-800 mb-1">Nom de la course <span
+                                        class="text-red-500">*</span></label>
                                 <input id="newWishlistItemInput" type="text" placeholder="Ex: Marathon de Paris..."
                                     class="w-full px-3 py-2 border border-green-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500 bg-white">
                             </div>
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                 <div>
-                                    <label for="newWishlistItemDate" class="block text-xs font-medium text-gray-700 mb-1">Date de la course</label>
+                                    <label for="newWishlistItemDate"
+                                        class="block text-xs font-medium text-gray-700 mb-1">Date de la course</label>
                                     <input id="newWishlistItemDate" type="date"
                                         class="w-full px-3 py-1.5 border border-green-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-green-500 bg-white">
                                 </div>
                                 <div>
-                                    <label for="newWishlistItemLink" class="block text-xs font-medium text-gray-700 mb-1">Lien du site de la course</label>
+                                    <label for="newWishlistItemLink"
+                                        class="block text-xs font-medium text-gray-700 mb-1">Lien du site de la
+                                        course</label>
                                     <input id="newWishlistItemLink" type="url" placeholder="https://..."
                                         class="w-full px-3 py-1.5 border border-green-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-green-500 bg-white">
                                 </div>
@@ -1792,7 +1890,8 @@
                                 <!-- Les boutons radio seront insérés ici -->
                             </div>
                             <button id="addWishlistItemBtn"
-                                class="w-full py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-medium text-sm">Ajouter à la wishlist</button>
+                                class="w-full py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-medium text-sm">Ajouter
+                                à la wishlist</button>
                         </div>
                     </div>
                     <p class="text-sm text-gray-500 mb-4">Cliquez sur l'étoile pour mettre en favori. <br> La date
@@ -1943,93 +2042,114 @@
     </div>
 
     <!-- Modal Configuration de la Carte de Course -->
-    <div id="cardConfigModal" class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center p-4 hidden z-[10010] modal">
-        <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl transform transition-all duration-300 scale-100 opacity-100 border border-gray-100 flex flex-col max-h-[90vh] sm:max-h-[85vh]">
+    <div id="cardConfigModal"
+        class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center p-4 hidden z-[10010] modal">
+        <div
+            class="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl transform transition-all duration-300 scale-100 opacity-100 border border-gray-100 flex flex-col max-h-[90vh] sm:max-h-[85vh]">
             <!-- Header -->
             <div class="p-5 border-b border-gray-100 flex justify-between items-center bg-green-50 rounded-t-2xl">
                 <div class="flex items-center gap-2">
                     <span class="text-xl sm:text-2xl">⚙️</span>
                     <h2 class="text-lg sm:text-xl font-bold text-green-800">Configuration de la Carte de Course</h2>
                 </div>
-                <button type="button" id="closeCardConfigModalBtn" class="text-gray-400 hover:text-gray-600 transition-colors text-2xl font-bold leading-none">&times;</button>
+                <button type="button" id="closeCardConfigModalBtn"
+                    class="text-gray-400 hover:text-gray-600 transition-colors text-2xl font-bold leading-none">&times;</button>
             </div>
-            
+
             <!-- Content -->
             <div class="p-4 sm:p-6 overflow-y-auto space-y-4 sm:space-y-6 flex-1 modal-content">
                 <p class="text-xs sm:text-sm text-gray-600 leading-relaxed">
-                    Personnalisez les boutons d'actions rapides affichés en bas à gauche de vos cartes de course. 
+                    Personnalisez les boutons d'actions rapides affichés en bas à gauche de vos cartes de course.
                     Vous pouvez en sélectionner <strong>jusqu'à 3 au maximum</strong>.
                 </p>
                 <div class="flex flex-col gap-2">
-                    <span class="text-xs text-green-700 font-semibold bg-green-50 border border-green-200 px-2.5 py-1.5 rounded-lg hidden md:flex items-center gap-2">
+                    <span
+                        class="text-xs text-green-700 font-semibold bg-green-50 border border-green-200 px-2.5 py-1.5 rounded-lg hidden md:flex items-center gap-2">
                         <span>💡</span>
-                        <span><strong>Drag & Drop :</strong> Glissez un bouton du bas et déposez-le sur un des 3 emplacements de la carte exemple.</span>
+                        <span><strong>Drag & Drop :</strong> Glissez un bouton du bas et déposez-le sur un des 3
+                            emplacements de la carte exemple.</span>
                     </span>
-                    <span class="text-xs text-blue-700 font-semibold bg-blue-50 border border-blue-200 px-2.5 py-1.5 rounded-lg flex md:hidden items-center gap-2">
+                    <span
+                        class="text-xs text-blue-700 font-semibold bg-blue-50 border border-blue-200 px-2.5 py-1.5 rounded-lg flex md:hidden items-center gap-2">
                         <span>📱</span>
-                        <span><strong>Mobile / Tactile :</strong> Cliquez sur un bouton du bas puis sur l'un des 3 emplacements de la carte.</span>
+                        <span><strong>Mobile / Tactile :</strong> Cliquez sur un bouton du bas puis sur l'un des 3
+                            emplacements de la carte.</span>
                     </span>
                 </div>
-                
+
                 <!-- Section Carte Exemple -->
-                <div class="bg-slate-50 border border-slate-100 p-4 sm:p-5 rounded-xl flex flex-col items-center shadow-inner">
-                    <span class="text-[10px] font-bold text-gray-400 mb-3 uppercase tracking-wider">Aperçu en temps réel</span>
-                    
-                    <div class="border border-green-200 rounded-xl overflow-hidden shadow-md bg-white p-5 w-full max-w-sm relative group">
+                <div
+                    class="bg-slate-50 border border-slate-100 p-4 sm:p-5 rounded-xl flex flex-col items-center shadow-inner">
+                    <span class="text-[10px] font-bold text-gray-400 mb-3 uppercase tracking-wider">Aperçu en temps
+                        réel</span>
+
+                    <div
+                        class="border border-green-200 rounded-xl overflow-hidden shadow-md bg-white p-5 w-full max-w-sm relative group">
                         <div class="flex justify-between items-start">
                             <div>
                                 <h3 class="text-lg font-bold text-green-800 mb-1 flex items-center gap-2">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-500" viewBox="0 0 20 20" fill="currentColor">
-                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-500"
+                                        viewBox="0 0 20 20" fill="currentColor">
+                                        <path
+                                            d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                                     </svg>
                                     Course Exemple
                                 </h3>
                                 <p class="text-xs text-green-600 font-medium">20 Mai 2026</p>
                             </div>
-                            <span class="px-2 py-0.5 bg-green-100 text-green-800 text-xs rounded-full font-bold">2026</span>
+                            <span
+                                class="px-2 py-0.5 bg-green-100 text-green-800 text-xs rounded-full font-bold">2026</span>
                         </div>
                         <div class="mt-4 flex flex-col gap-2 pr-16">
                             <div class="flex items-center gap-2 flex-wrap" id="configCardPreviewTags">
-                                <span class="flex items-center gap-1 px-2 py-0.5 bg-green-50 text-green-800 text-[10px] rounded-full font-medium">
+                                <span
+                                    class="flex items-center gap-1 px-2 py-0.5 bg-green-50 text-green-800 text-[10px] rounded-full font-medium">
                                     <i class="fas fa-ruler-horizontal text-green-500"></i> 10.00 km
                                 </span>
-                                <span class="flex items-center gap-1 px-2 py-0.5 bg-orange-50 text-orange-800 text-[10px] rounded-full font-medium">
+                                <span
+                                    class="flex items-center gap-1 px-2 py-0.5 bg-orange-50 text-orange-800 text-[10px] rounded-full font-medium">
                                     <i class="fas fa-mountain text-orange-500"></i> +150 m
                                 </span>
-                                <span class="flex items-center gap-1 px-2 py-0.5 bg-teal-50 text-teal-800 text-[10px] rounded-full font-medium">
+                                <span
+                                    class="flex items-center gap-1 px-2 py-0.5 bg-teal-50 text-teal-800 text-[10px] rounded-full font-medium">
                                     <i class="fas fa-map-marker-alt text-teal-500"></i> Paris, FR
                                 </span>
-                                <span class="flex items-center gap-1 px-2 py-0.5 bg-indigo-50 text-indigo-800 text-[10px] rounded-full font-medium">
+                                <span
+                                    class="flex items-center gap-1 px-2 py-0.5 bg-indigo-50 text-indigo-800 text-[10px] rounded-full font-medium">
                                     <i class="fas fa-road text-indigo-500"></i> Route
                                 </span>
                             </div>
                         </div>
-                        
+
                         <div class="mt-6 flex flex-wrap justify-between items-center gap-2 pr-16">
                             <!-- slots container -->
                             <div class="flex space-x-2 items-center" id="configCardSlots">
-                                <div class="config-slot" data-slot="0" title="Bouton 1 - Glissez-déposez ou cliquez ici">
+                                <div class="config-slot" data-slot="0"
+                                    title="Bouton 1 - Glissez-déposez ou cliquez ici">
                                     <span class="text-xs text-slate-300 font-extrabold">1</span>
                                 </div>
-                                <div class="config-slot" data-slot="1" title="Bouton 2 - Glissez-déposez ou cliquez ici">
+                                <div class="config-slot" data-slot="1"
+                                    title="Bouton 2 - Glissez-déposez ou cliquez ici">
                                     <span class="text-xs text-slate-300 font-extrabold">2</span>
                                 </div>
-                                <div class="config-slot" data-slot="2" title="Bouton 3 - Glissez-déposez ou cliquez ici">
+                                <div class="config-slot" data-slot="2"
+                                    title="Bouton 3 - Glissez-déposez ou cliquez ici">
                                     <span class="text-xs text-slate-300 font-extrabold">3</span>
                                 </div>
                             </div>
                         </div>
-                        
+
                         <!-- image thumbnail placeholder -->
                         <div class="absolute bottom-3 right-3 h-16 w-16 pointer-events-none">
-                            <div class="h-full w-full flex flex-col items-center justify-center bg-gray-50 rounded-lg border border-gray-200">
+                            <div
+                                class="h-full w-full flex flex-col items-center justify-center bg-gray-50 rounded-lg border border-gray-200">
                                 <i class="fas fa-image text-gray-300 text-lg"></i>
                                 <p class="text-[8px] text-gray-400 mt-0.5">Exemple</p>
                             </div>
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Section Boutons Disponibles -->
                 <div class="space-y-2.5" id="availableBtnsSection">
                     <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1.5">
@@ -2049,24 +2169,31 @@
                     </h3>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <!-- Option Image de Course -->
-                        <label class="relative flex items-center gap-3 p-3 bg-white border border-gray-200 rounded-xl cursor-pointer hover:bg-green-50/50 hover:border-green-300 transition-all shadow-sm group">
-                            <input type="radio" name="defaultCardImage" value="photo" class="w-4 h-4 text-green-600 focus:ring-green-500 border-gray-300 rounded-full" checked>
+                        <label
+                            class="relative flex items-center gap-3 p-3 bg-white border border-gray-200 rounded-xl cursor-pointer hover:bg-green-50/50 hover:border-green-300 transition-all shadow-sm group">
+                            <input type="radio" name="defaultCardImage" value="photo"
+                                class="w-4 h-4 text-green-600 focus:ring-green-500 border-gray-300 rounded-full"
+                                checked>
                             <div class="flex flex-col">
                                 <span class="text-xs sm:text-sm font-semibold text-gray-800 flex items-center gap-1.5">
                                     <i class="fas fa-camera text-green-600 text-sm"></i> Image de course (par défaut)
                                 </span>
-                                <span class="text-[10px] text-gray-500 mt-0.5">Affiche la photo principale de la course.</span>
+                                <span class="text-[10px] text-gray-500 mt-0.5">Affiche la photo principale de la
+                                    course.</span>
                             </div>
                         </label>
-                        
+
                         <!-- Option Image du Parcours -->
-                        <label class="relative flex items-center gap-3 p-3 bg-white border border-gray-200 rounded-xl cursor-pointer hover:bg-green-50/50 hover:border-green-300 transition-all shadow-sm group">
-                            <input type="radio" name="defaultCardImage" value="parcours" class="w-4 h-4 text-green-600 focus:ring-green-500 border-gray-300 rounded-full">
+                        <label
+                            class="relative flex items-center gap-3 p-3 bg-white border border-gray-200 rounded-xl cursor-pointer hover:bg-green-50/50 hover:border-green-300 transition-all shadow-sm group">
+                            <input type="radio" name="defaultCardImage" value="parcours"
+                                class="w-4 h-4 text-green-600 focus:ring-green-500 border-gray-300 rounded-full">
                             <div class="flex flex-col">
                                 <span class="text-xs sm:text-sm font-semibold text-gray-800 flex items-center gap-1.5">
                                     <i class="fas fa-map text-green-600 text-sm"></i> Image du parcours
                                 </span>
-                                <span class="text-[10px] text-gray-500 mt-0.5">Affiche la carte/tracé du parcours.</span>
+                                <span class="text-[10px] text-gray-500 mt-0.5">Affiche la carte/tracé du
+                                    parcours.</span>
                             </div>
                         </label>
                     </div>
@@ -2080,64 +2207,80 @@
                     </h3>
                     <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
                         <!-- Option Distance -->
-                        <label class="relative flex items-center gap-2.5 p-2.5 bg-white border border-gray-200 rounded-xl cursor-pointer hover:bg-green-50/50 hover:border-green-300 transition-all shadow-sm group">
-                            <input type="checkbox" name="cardTagOption" value="distance" class="w-4 h-4 text-green-600 focus:ring-green-500 border-gray-300 rounded" checked>
+                        <label
+                            class="relative flex items-center gap-2.5 p-2.5 bg-white border border-gray-200 rounded-xl cursor-pointer hover:bg-green-50/50 hover:border-green-300 transition-all shadow-sm group">
+                            <input type="checkbox" name="cardTagOption" value="distance"
+                                class="w-4 h-4 text-green-600 focus:ring-green-500 border-gray-300 rounded" checked>
                             <span class="text-xs font-semibold text-gray-800 flex items-center gap-1">
                                 <i class="fas fa-ruler-horizontal text-green-600"></i> Distance
                             </span>
                         </label>
-                        
+
                         <!-- Option Dénivelé -->
-                        <label class="relative flex items-center gap-2.5 p-2.5 bg-white border border-gray-200 rounded-xl cursor-pointer hover:bg-orange-50/50 hover:border-orange-300 transition-all shadow-sm group">
-                            <input type="checkbox" name="cardTagOption" value="elevation" class="w-4 h-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded" checked>
+                        <label
+                            class="relative flex items-center gap-2.5 p-2.5 bg-white border border-gray-200 rounded-xl cursor-pointer hover:bg-orange-50/50 hover:border-orange-300 transition-all shadow-sm group">
+                            <input type="checkbox" name="cardTagOption" value="elevation"
+                                class="w-4 h-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded" checked>
                             <span class="text-xs font-semibold text-gray-800 flex items-center gap-1">
                                 <i class="fas fa-mountain text-orange-600"></i> Dénivelé
                             </span>
                         </label>
 
                         <!-- Option Lieu -->
-                        <label class="relative flex items-center gap-2.5 p-2.5 bg-white border border-gray-200 rounded-xl cursor-pointer hover:bg-teal-50/50 hover:border-teal-300 transition-all shadow-sm group">
-                            <input type="checkbox" name="cardTagOption" value="location" class="w-4 h-4 text-teal-600 focus:ring-teal-500 border-gray-300 rounded" checked>
+                        <label
+                            class="relative flex items-center gap-2.5 p-2.5 bg-white border border-gray-200 rounded-xl cursor-pointer hover:bg-teal-50/50 hover:border-teal-300 transition-all shadow-sm group">
+                            <input type="checkbox" name="cardTagOption" value="location"
+                                class="w-4 h-4 text-teal-600 focus:ring-teal-500 border-gray-300 rounded" checked>
                             <span class="text-xs font-semibold text-gray-800 flex items-center gap-1">
                                 <i class="fas fa-map-marker-alt text-teal-600"></i> Lieu
                             </span>
                         </label>
 
                         <!-- Option Type -->
-                        <label class="relative flex items-center gap-2.5 p-2.5 bg-white border border-gray-200 rounded-xl cursor-pointer hover:bg-indigo-50/50 hover:border-indigo-300 transition-all shadow-sm group">
-                            <input type="checkbox" name="cardTagOption" value="terrain" class="w-4 h-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded" checked>
+                        <label
+                            class="relative flex items-center gap-2.5 p-2.5 bg-white border border-gray-200 rounded-xl cursor-pointer hover:bg-indigo-50/50 hover:border-indigo-300 transition-all shadow-sm group">
+                            <input type="checkbox" name="cardTagOption" value="terrain"
+                                class="w-4 h-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded" checked>
                             <span class="text-xs font-semibold text-gray-800 flex items-center gap-1">
                                 <i class="fas fa-road text-indigo-600"></i> Type
                             </span>
                         </label>
 
                         <!-- Option Chrono -->
-                        <label class="relative flex items-center gap-2.5 p-2.5 bg-white border border-gray-200 rounded-xl cursor-pointer hover:bg-cyan-50/50 hover:border-cyan-300 transition-all shadow-sm group">
-                            <input type="checkbox" name="cardTagOption" value="time" class="w-4 h-4 text-cyan-600 focus:ring-cyan-500 border-gray-300 rounded" checked>
+                        <label
+                            class="relative flex items-center gap-2.5 p-2.5 bg-white border border-gray-200 rounded-xl cursor-pointer hover:bg-cyan-50/50 hover:border-cyan-300 transition-all shadow-sm group">
+                            <input type="checkbox" name="cardTagOption" value="time"
+                                class="w-4 h-4 text-cyan-600 focus:ring-cyan-500 border-gray-300 rounded" checked>
                             <span class="text-xs font-semibold text-gray-800 flex items-center gap-1">
                                 <i class="fas fa-stopwatch text-cyan-600"></i> Chrono
                             </span>
                         </label>
 
                         <!-- Option Allure -->
-                        <label class="relative flex items-center gap-2.5 p-2.5 bg-white border border-gray-200 rounded-xl cursor-pointer hover:bg-violet-50/50 hover:border-violet-300 transition-all shadow-sm group">
-                            <input type="checkbox" name="cardTagOption" value="pace" class="w-4 h-4 text-violet-600 focus:ring-violet-500 border-gray-300 rounded" checked>
+                        <label
+                            class="relative flex items-center gap-2.5 p-2.5 bg-white border border-gray-200 rounded-xl cursor-pointer hover:bg-violet-50/50 hover:border-violet-300 transition-all shadow-sm group">
+                            <input type="checkbox" name="cardTagOption" value="pace"
+                                class="w-4 h-4 text-violet-600 focus:ring-violet-500 border-gray-300 rounded" checked>
                             <span class="text-xs font-semibold text-gray-800 flex items-center gap-1">
                                 <i class="fas fa-tachometer-alt text-violet-600"></i> Allure
                             </span>
                         </label>
 
                         <!-- Option Prix -->
-                        <label class="relative flex items-center gap-2.5 p-2.5 bg-white border border-gray-200 rounded-xl cursor-pointer hover:bg-red-50/50 hover:border-red-300 transition-all shadow-sm group">
-                            <input type="checkbox" name="cardTagOption" value="price" class="w-4 h-4 text-red-600 focus:ring-red-500 border-gray-300 rounded" checked>
+                        <label
+                            class="relative flex items-center gap-2.5 p-2.5 bg-white border border-gray-200 rounded-xl cursor-pointer hover:bg-red-50/50 hover:border-red-300 transition-all shadow-sm group">
+                            <input type="checkbox" name="cardTagOption" value="price"
+                                class="w-4 h-4 text-red-600 focus:ring-red-500 border-gray-300 rounded" checked>
                             <span class="text-xs font-semibold text-gray-800 flex items-center gap-1">
                                 <i class="fas fa-euro-sign text-red-600"></i> Prix
                             </span>
                         </label>
 
                         <!-- Option Classement -->
-                        <label class="relative flex items-center gap-2.5 p-2.5 bg-white border border-gray-200 rounded-xl cursor-pointer hover:bg-yellow-50/50 hover:border-yellow-300 transition-all shadow-sm group">
-                            <input type="checkbox" name="cardTagOption" value="rank" class="w-4 h-4 text-yellow-600 focus:ring-yellow-500 border-gray-300 rounded" checked>
+                        <label
+                            class="relative flex items-center gap-2.5 p-2.5 bg-white border border-gray-200 rounded-xl cursor-pointer hover:bg-yellow-50/50 hover:border-yellow-300 transition-all shadow-sm group">
+                            <input type="checkbox" name="cardTagOption" value="rank"
+                                class="w-4 h-4 text-yellow-600 focus:ring-yellow-500 border-gray-300 rounded" checked>
                             <span class="text-xs font-semibold text-gray-800 flex items-center gap-1">
                                 <i class="fas fa-medal text-yellow-600"></i> Classement
                             </span>
@@ -2145,17 +2288,21 @@
                     </div>
                 </div>
             </div>
-            
+
             <!-- Footer -->
-            <div class="p-4 sm:p-5 border-t border-gray-100 flex flex-col sm:flex-row gap-3 sm:gap-0 justify-between items-center bg-slate-50 rounded-b-2xl">
-                <button type="button" id="resetCardConfigBtn" class="w-full sm:w-auto px-4 py-2 text-xs font-bold text-red-600 hover:bg-red-50 hover:text-red-800 rounded-xl transition border border-transparent hover:border-red-200 text-center">
+            <div
+                class="p-4 sm:p-5 border-t border-gray-100 flex flex-col sm:flex-row gap-3 sm:gap-0 justify-between items-center bg-slate-50 rounded-b-2xl">
+                <button type="button" id="resetCardConfigBtn"
+                    class="w-full sm:w-auto px-4 py-2 text-xs font-bold text-red-600 hover:bg-red-50 hover:text-red-800 rounded-xl transition border border-transparent hover:border-red-200 text-center">
                     Réinitialiser par défaut
                 </button>
                 <div class="flex gap-2 w-full sm:w-auto justify-end">
-                    <button type="button" id="cancelCardConfigBtn" class="flex-1 sm:flex-none px-4 py-2 bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 rounded-xl text-xs font-semibold transition text-center shadow-sm">
+                    <button type="button" id="cancelCardConfigBtn"
+                        class="flex-1 sm:flex-none px-4 py-2 bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 rounded-xl text-xs font-semibold transition text-center shadow-sm">
                         Annuler
                     </button>
-                    <button type="button" id="saveCardConfigBtn" class="flex-1 sm:flex-none px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-xl text-xs font-semibold transition text-center shadow-sm">
+                    <button type="button" id="saveCardConfigBtn"
+                        class="flex-1 sm:flex-none px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-xl text-xs font-semibold transition text-center shadow-sm">
                         Enregistrer
                     </button>
                 </div>
@@ -2874,7 +3021,7 @@
                                 window.currentUserPseudo = userPseudo;
                                 localStorage.setItem('userPseudo', userPseudo);
                                 userPhotoURL = uDoc.data().photoURL;
-                                
+
                                 if (uDoc.data().cardButtons && Array.isArray(uDoc.data().cardButtons)) {
                                     window.customCardButtons = uDoc.data().cardButtons;
                                 } else {
@@ -4293,7 +4440,7 @@
                         }
                     }
                 }
-                
+
                 // Vérifier si cette course possède l'une des 3 cocardes records
                 const raceCocardesInfo = (window.recordCocardes && window.recordCocardes.byRaceId && window.recordCocardes.byRaceId[race.id]) ? window.recordCocardes.byRaceId[race.id] : null;
                 const hasRecordCocarde = !!raceCocardesInfo;
@@ -4751,24 +4898,24 @@
                 likesBtns.forEach(btn => {
                     btn.addEventListener('click', async (e) => {
                         e.stopPropagation();
-                        
+
                         const likedBy = race.likedBy || [];
                         const count = likedBy.length;
 
                         const likesModalCount = document.getElementById('likesModalCount');
                         const likesModal = document.getElementById('likesModal');
                         const likesModalList = document.getElementById('likesModalList');
-                        
+
                         if (likesModalCount && likesModal) {
                             likesModalCount.textContent = count;
-                            
+
                             if (likesModalList) {
                                 likesModalList.innerHTML = '<li class="text-center text-gray-400 py-2"><i class="fas fa-spinner fa-spin"></i> Chargement...</li>';
                             }
-                            
+
                             console.log("Tentative de suppression de la classe 'hidden' sur likesModal");
                             likesModal.classList.remove('hidden');
-                            
+
                             if (likesModalList) {
                                 if (count > 0) {
                                     try {
@@ -4899,17 +5046,17 @@
 
             const data = {
                 timestamp: new Date().toISOString(),
-                races: [ { id, ...raceData } ],
+                races: [{ id, ...raceData }],
                 wishlist: []
             };
 
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data, null, 2));
             const downloadAnchorNode = document.createElement('a');
             downloadAnchorNode.setAttribute("href", dataStr);
-            
+
             const safeRaceName = race.name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
             downloadAnchorNode.setAttribute("download", `export_course_${safeRaceName}_${new Date().toISOString().slice(0, 10)}.json`);
-            
+
             document.body.appendChild(downloadAnchorNode);
             downloadAnchorNode.click();
             downloadAnchorNode.remove();
@@ -5492,13 +5639,12 @@
                             </div>
                             <div>
                                 <p class="text-[10px] text-blue-600 uppercase">Dénivelé</p>
-                                <p class="font-bold text-blue-800 text-[9px] sm:text-[11px] whitespace-nowrap">${
-                                    (() => {
-                                        const dp = userRelayElev > 0 ? `\u2191${userRelayElev}m` : '';
-                                        const dn = userRelayElevNeg > 0 ? `\u2193${userRelayElevNeg}m` : '';
-                                        return [dp, dn].filter(Boolean).join(' ') || '0m';
-                                    })()
-                                }</p>
+                                <p class="font-bold text-blue-800 text-[9px] sm:text-[11px] whitespace-nowrap">${(() => {
+                        const dp = userRelayElev > 0 ? `\u2191${userRelayElev}m` : '';
+                        const dn = userRelayElevNeg > 0 ? `\u2193${userRelayElevNeg}m` : '';
+                        return [dp, dn].filter(Boolean).join(' ') || '0m';
+                    })()
+                    }</p>
                             </div>
                             <div>
                                 <p class="text-[10px] text-blue-600 uppercase">Temps</p>
@@ -5626,12 +5772,12 @@
                 const teamColors = [
                     { bg: 'bg-orange-50', border: 'border-orange-200', headerBorder: 'border-orange-300', title: 'text-orange-800', sub: 'text-orange-600', badge: 'bg-orange-100 text-orange-800', foot: 'border-orange-200', icon: 'text-orange-500' },
                     { bg: 'bg-violet-50', border: 'border-violet-200', headerBorder: 'border-violet-300', title: 'text-violet-800', sub: 'text-violet-600', badge: 'bg-violet-100 text-violet-800', foot: 'border-violet-200', icon: 'text-violet-500' },
-                    { bg: 'bg-rose-50',   border: 'border-rose-200',   headerBorder: 'border-rose-300',   title: 'text-rose-800',   sub: 'text-rose-600',   badge: 'bg-rose-100 text-rose-800',   foot: 'border-rose-200',   icon: 'text-rose-500' },
-                    { bg: 'bg-teal-50',   border: 'border-teal-200',   headerBorder: 'border-teal-300',   title: 'text-teal-800',   sub: 'text-teal-600',   badge: 'bg-teal-100 text-teal-800',   foot: 'border-teal-200',   icon: 'text-teal-500' },
-                    { bg: 'bg-amber-50',  border: 'border-amber-200',  headerBorder: 'border-amber-300',  title: 'text-amber-800',  sub: 'text-amber-600',  badge: 'bg-amber-100 text-amber-800',  foot: 'border-amber-200',  icon: 'text-amber-500' },
-                    { bg: 'bg-cyan-50',   border: 'border-cyan-200',   headerBorder: 'border-cyan-300',   title: 'text-cyan-800',   sub: 'text-cyan-600',   badge: 'bg-cyan-100 text-cyan-800',   foot: 'border-cyan-200',   icon: 'text-cyan-500' },
-                    { bg: 'bg-fuchsia-50',border: 'border-fuchsia-200',headerBorder: 'border-fuchsia-300',title: 'text-fuchsia-800',sub: 'text-fuchsia-600',badge: 'bg-fuchsia-100 text-fuchsia-800',foot: 'border-fuchsia-200',icon: 'text-fuchsia-500' },
-                    { bg: 'bg-lime-50',   border: 'border-lime-200',   headerBorder: 'border-lime-300',   title: 'text-lime-800',   sub: 'text-lime-600',   badge: 'bg-lime-100 text-lime-800',   foot: 'border-lime-200',   icon: 'text-lime-500' },
+                    { bg: 'bg-rose-50', border: 'border-rose-200', headerBorder: 'border-rose-300', title: 'text-rose-800', sub: 'text-rose-600', badge: 'bg-rose-100 text-rose-800', foot: 'border-rose-200', icon: 'text-rose-500' },
+                    { bg: 'bg-teal-50', border: 'border-teal-200', headerBorder: 'border-teal-300', title: 'text-teal-800', sub: 'text-teal-600', badge: 'bg-teal-100 text-teal-800', foot: 'border-teal-200', icon: 'text-teal-500' },
+                    { bg: 'bg-amber-50', border: 'border-amber-200', headerBorder: 'border-amber-300', title: 'text-amber-800', sub: 'text-amber-600', badge: 'bg-amber-100 text-amber-800', foot: 'border-amber-200', icon: 'text-amber-500' },
+                    { bg: 'bg-cyan-50', border: 'border-cyan-200', headerBorder: 'border-cyan-300', title: 'text-cyan-800', sub: 'text-cyan-600', badge: 'bg-cyan-100 text-cyan-800', foot: 'border-cyan-200', icon: 'text-cyan-500' },
+                    { bg: 'bg-fuchsia-50', border: 'border-fuchsia-200', headerBorder: 'border-fuchsia-300', title: 'text-fuchsia-800', sub: 'text-fuchsia-600', badge: 'bg-fuchsia-100 text-fuchsia-800', foot: 'border-fuchsia-200', icon: 'text-fuchsia-500' },
+                    { bg: 'bg-lime-50', border: 'border-lime-200', headerBorder: 'border-lime-300', title: 'text-lime-800', sub: 'text-lime-600', badge: 'bg-lime-100 text-lime-800', foot: 'border-lime-200', icon: 'text-lime-500' },
                 ];
 
                 // Collecter les coureurs uniques (hors Moi / vide / Personne)
@@ -10388,7 +10534,7 @@
                         const rDate = getLocalDateOnly(c.race.date);
                         return rDate < todayLocal && c.diffDays === 0;
                     });
-                    
+
                     const hasActualRaceToday = candidates.some(c => {
                         const rDate = getLocalDateOnly(c.race.date);
                         return rDate.getTime() === todayLocal.getTime();
@@ -10742,7 +10888,7 @@
             const currentColor = document.queryCommandValue('hiliteColor') || document.queryCommandValue('backColor');
             const normalizedCurrent = String(currentColor).replace(/\s+/g, '').toLowerCase();
             const targetRgb = hexToRgb(color).replace(/\s+/g, '').toLowerCase();
-            
+
             if (normalizedCurrent === targetRgb) {
                 document.execCommand('hiliteColor', false, 'transparent');
             } else {
@@ -11001,10 +11147,10 @@
                     if (label) {
                         const isChecked = tempConfigTags.includes(checkbox.value);
                         checkbox.checked = isChecked;
-                        
+
                         let activeBorder = 'border-green-500';
                         let activeBg = 'bg-green-50/30';
-                        
+
                         if (checkbox.value === 'elevation') {
                             activeBorder = 'border-green-500';
                             activeBg = 'bg-orange-50/30';
@@ -11012,7 +11158,7 @@
                             activeBorder = 'border-green-500';
                             activeBg = 'bg-blue-50/30';
                         }
-                        
+
                         if (isChecked) {
                             label.classList.add(activeBorder, activeBg);
                             label.classList.remove('border-gray-200', 'bg-white');
@@ -11106,7 +11252,7 @@
                 selectedAvailableButtonId = null;
                 renderModalState();
                 cardConfigModal.classList.remove('hidden');
-                
+
                 // Block scroll underneath if scroll-lock script is present
                 if (window.ScrollLock && typeof window.ScrollLock.lock === 'function') {
                     window.ScrollLock.lock();
@@ -11154,7 +11300,7 @@
                 saveCardConfigBtn.addEventListener('click', async (e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    
+
                     // Filter empty slots if any
                     const cleanButtons = tempConfigButtons.filter(b => b !== null && b !== undefined && b !== '');
                     if (cleanButtons.length === 0) {
@@ -11178,12 +11324,12 @@
                                 defaultCardImage: tempDefaultCardImage,
                                 cardTags: tempConfigTags
                             }, { merge: true });
-                            
+
                             window.customCardButtons = cleanButtons;
                             window.defaultCardImage = tempDefaultCardImage;
                             window.customCardTags = tempConfigTags;
                             console.log("✅ Configuration de la carte enregistrée dans Firestore:", cleanButtons, tempDefaultCardImage, tempConfigTags);
-                            
+
                             // Reload dashboard races to reflect custom buttons
                             if (typeof loadRaces === 'function') {
                                 loadRaces();
@@ -11202,7 +11348,7 @@
 
             function renderModalState() {
                 const isDesktop = window.matchMedia('(min-width: 768px)').matches;
-                
+
                 // Update radio buttons checked state and styles
                 updateRadioStyles();
                 updatePreviewImage();
@@ -11278,10 +11424,10 @@
                 Object.values(AVAILABLE_CARD_BUTTONS).forEach(btnDef => {
                     const isAssigned = tempConfigButtons.includes(btnDef.id);
                     const btnItem = document.createElement('div');
-                    
+
                     // Style base classes
                     btnItem.className = 'available-btn-item border border-gray-200 bg-white rounded-xl p-3 flex flex-col items-center justify-center gap-1.5 transition-all shadow-sm select-none min-h-[4.5rem]';
-                    
+
                     if (isAssigned) {
                         btnItem.className += ' opacity-40 cursor-not-allowed';
                         btnItem.setAttribute('draggable', 'false');
@@ -11291,7 +11437,7 @@
                         btnItem.setAttribute('draggable', isDesktop ? 'true' : 'false');
                         btnItem.className += isDesktop ? ' cursor-grab hover:bg-slate-50 hover:border-slate-300 hover:scale-105' : ' cursor-pointer hover:bg-slate-50 hover:border-slate-300';
                         btnItem.title = 'Glissez-déposez ou cliquez ici';
-                        
+
                         if (selectedAvailableButtonId === btnDef.id) {
                             btnItem.className += ' selected animate-pulse-subtle';
                         }
