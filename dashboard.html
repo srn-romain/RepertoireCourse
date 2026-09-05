@@ -49,6 +49,7 @@
     <link rel="stylesheet" href="css/dashboard.css">
     <link rel="stylesheet" href="css/runner-loader.css">
     <script src="js/runner-loader.js"></script>
+    <script src="js/badges-modal.js"></script>
 </head>
 
 <body class="min-h-screen bg-green-50 bg-opacity-90">
@@ -2809,6 +2810,19 @@
                     racesCollection = db.collection('users').doc(user.uid).collection('races');
                     wishlistCollection = db.collection('users').doc(user.uid).collection('wishlist');
 
+                    if (wishlistCollection) {
+                        wishlistCollection.get().then((snap) => {
+                            let items = [];
+                            snap.forEach(doc => {
+                                let d = doc.data();
+                                if (d.category === 'course') d.category = 'route';
+                                items.push({ id: doc.id, ...d });
+                            });
+                            window.wishlistEditItems = items;
+                            window.userWishlistItems = items;
+                            localStorage.setItem('wishlistCount', items.length.toString());
+                        }).catch(e => console.warn('Wishlist background prefetch:', e));
+                    }
 
                     // Initialiser le tutoriel pour les nouveaux utilisateurs
                     if (typeof window.initTutorial === 'function') {
@@ -4170,7 +4184,11 @@
             }
 
             // Calculer les badges pour toutes les courses (pour s'assurer qu'ils sont à jour)
-            window.raceBadges = calculateRaceBadges(races);
+            if (typeof calculateRaceBadges === 'function' && typeof races !== 'undefined') {
+                window.raceBadges = calculateRaceBadges(races);
+            } else {
+                window.raceBadges = window.raceBadges || {};
+            }
             if (typeof calculateRecordCocardes === 'function' && typeof races !== 'undefined') {
                 window.recordCocardes = calculateRecordCocardes(races);
             }
@@ -8785,6 +8803,9 @@
                         totalSpan.textContent = `(${items.length})`;
                     }
                     wishlistEditItems = items;
+                    window.wishlistEditItems = items;
+                    window.userWishlistItems = items;
+                    localStorage.setItem('wishlistCount', items.length.toString());
                     updateWishlistSearchState(items.length);
                     renderWishlistItems(items);
                     if (items.length > 0) {
@@ -11350,7 +11371,6 @@
 
     <script src="js/isAdmin.js"></script>
     <script src="js/isInvite.js"></script>
-    <script src="js/badges-modal.js"></script>
     <script src="js/stats-modal.js?v=4"></script>
     <script src="js/advanced-filters.js"></script>
     <script src="js/user-settings.js"></script>
