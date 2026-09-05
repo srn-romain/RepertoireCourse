@@ -2366,35 +2366,37 @@
 
         // 1. CARTE RÉCAPITULATIVE DU SCORE ET DU RANG
         let html = `
-        <div class="mb-5 bg-white border border-green-200 rounded-xl p-5 shadow-sm">
-            <div class="grid grid-cols-1 md:grid-cols-12 gap-5 items-center">
+        <div class="mb-5 bg-white border border-green-200 rounded-xl p-4 sm:p-5 shadow-sm">
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-4 sm:gap-5 items-center">
                 
                 <!-- Score Total XP -->
-                <div class="md:col-span-4 border-b md:border-b-0 md:border-r border-gray-100 pb-4 md:pb-0 md:pr-4">
-                    <div class="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1">Score Total</div>
-                    <div class="flex items-baseline gap-1.5">
-                        <span class="text-3xl font-extrabold text-green-800">${data.totalPoints}</span>
-                        <span class="text-sm font-bold text-green-600">/ 10 000 XP</span>
+                <div class="md:col-span-4 border-b md:border-b-0 md:border-r border-gray-100 pb-3 md:pb-0 md:pr-4 flex md:block items-center justify-between">
+                    <div>
+                        <div class="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-gray-400 mb-0.5 sm:mb-1">Score Total</div>
+                        <div class="flex items-baseline gap-1.5">
+                            <span class="text-2xl sm:text-3xl font-extrabold text-green-800">${data.totalPoints.toLocaleString('fr-FR')}</span>
+                            <span class="text-xs sm:text-sm font-bold text-green-600">/ 10 000 XP</span>
+                        </div>
                     </div>
-                    <div class="text-xs text-gray-500 mt-1">
-                        <strong>${totalUnlockedBadgesCount}</strong> / ${totalBadgesCount} missions accomplies
+                    <div class="text-xs text-gray-500 md:mt-1 text-right md:text-left">
+                        <strong class="text-gray-800">${totalUnlockedBadgesCount}</strong> / ${totalBadgesCount} missions
                     </div>
                 </div>
 
                 <!-- Rang Actuel & Progression XP -->
                 <div class="md:col-span-8">
-                    <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5 sm:gap-2 mb-2">
                         <div class="flex items-center gap-2">
-                            <span class="text-xs text-gray-500">Rang actuel :</span>
-                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold ${currentRankLevel.cocarde.bg} ${currentRankLevel.cocarde.text} border ${currentRankLevel.cocarde.border}">
+                            <span class="text-xs text-gray-500">Rang :</span>
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-xs font-bold ${currentRankLevel.cocarde.bg} ${currentRankLevel.cocarde.text} border ${currentRankLevel.cocarde.border}">
                                 <span>${currentRankLevel.emoji}</span>
-                                <span>Niveau ${currentRankLevel.levelNumber} - ${currentRankLevel.name}</span>
+                                <span>Niv. ${currentRankLevel.levelNumber} - ${currentRankLevel.name}</span>
                             </span>
                         </div>
-                        <div class="text-xs text-gray-500">
+                        <div class="text-xs text-gray-500 leading-tight">
                             ${nextLevel ? (neededXPForNext === 0 
-                                ? `<span class="text-green-700 font-semibold"><i class="fas fa-check"></i> Niveau ${nextLevel.name} débloqué</span>`
-                                : `<span>Encore <strong class="text-green-700 font-bold">${neededXPForNext} XP</strong> pour débloquer <strong>${nextLevel.emoji} ${nextLevel.name}</strong> (${data.totalPoints} / ${nextLevel.requiredXP} XP)</span>`
+                                ? `<span class="text-green-700 font-semibold"><i class="fas fa-check"></i> Palier ${nextLevel.name} débloqué !</span>`
+                                : `<span>Encore <strong class="text-green-700 font-bold">${neededXPForNext.toLocaleString('fr-FR')} XP</strong> pour <strong class="text-gray-800">${nextLevel.emoji} ${nextLevel.name}</strong></span>`
                             ) : `<span class="text-green-700 font-semibold"><i class="fas fa-crown text-amber-500"></i> Sommet atteint — Niveau 10 Crampons !</span>`}
                         </div>
                     </div>
@@ -2404,10 +2406,25 @@
                         <div class="bg-green-600 h-full rounded-full transition-all duration-300" 
                              style="width: ${nextLevel ? Math.min(100, Math.max(3, Math.round((data.totalPoints / nextLevel.requiredXP) * 100))) : 100}%"></div>
                     </div>
-                    <div class="flex justify-between items-center mt-1 text-[11px] text-gray-400">
-                        <span>🩴 Tong (0 XP)</span>
-                        <span>${nextLevel ? `${data.totalPoints} / ${nextLevel.requiredXP} XP pour ${nextLevel.name}` : `Total : ${data.totalPoints} XP`}</span>
-                        <span>🧗 Crampons (6 500+ XP)</span>
+
+                    <!-- Fil d'Ariane & repères de niveau responsive -->
+                    <div class="flex items-center justify-between mt-1.5 text-[10px] sm:text-[11px] text-gray-400">
+                        <span class="shrink-0 flex items-center gap-1 font-medium">
+                            <span>🩴</span>
+                            <span class="hidden sm:inline">Tong</span>
+                            <span>(0 XP)</span>
+                        </span>
+                        
+                        <span class="px-2 text-center truncate font-medium text-gray-600">
+                            <strong class="text-green-800 font-bold">${data.totalPoints.toLocaleString('fr-FR')}</strong> / ${nextLevel ? `${nextLevel.requiredXP.toLocaleString('fr-FR')} XP` : '10 000 XP'}
+                            ${nextLevel ? `<span class="hidden md:inline text-gray-400"> pour ${nextLevel.name}</span>` : ''}
+                        </span>
+
+                        <span class="shrink-0 flex items-center gap-1 font-medium">
+                            <span>🧗</span>
+                            <span class="hidden sm:inline">Crampons</span>
+                            <span>(6 500+ XP)</span>
+                        </span>
                     </div>
                 </div>
             </div>
@@ -2624,7 +2641,7 @@
 
         // 4. ONGLETS DE NIVEAUX (10 Onglets)
         html += `
-        <div class="flex items-center gap-2 overflow-x-auto pb-1 mb-5 custom-scrollbar">
+        <div id="level-tabs-container" class="level-tabs-container flex items-center gap-2 overflow-x-auto pb-1 mb-5 custom-scrollbar" style="scroll-behavior: smooth; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain;">
             <button class="level-tab-btn px-3.5 py-1.5 rounded-lg text-xs font-semibold transition shrink-0 flex items-center gap-1.5 cursor-pointer ${activeLevelTab === 'all' ? 'bg-green-700 text-white shadow-sm' : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'}" data-level="all">
                 <i class="fas fa-th-large text-[11px]"></i> Tous les niveaux
             </button>
@@ -2639,228 +2656,330 @@
             <button class="level-tab-btn px-3.5 py-1.5 rounded-lg text-xs font-semibold transition shrink-0 flex items-center gap-1.5 cursor-pointer ${isTabActive ? 'bg-green-700 text-white shadow-sm' : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'}" data-level="${lvl.id}">
                 <span>${lvl.emoji}</span>
                 <span>Niv. ${lvl.levelNumber} - ${lvl.name}</span>
-                <span class="text-[10px] px-1.5 py-0.2 rounded-full ${isTabActive ? 'bg-green-800 text-white' : 'bg-gray-100 text-gray-500'}">${st.unlockedCount}/${st.totalCount}</span>
+                <span class="badge-count-pill text-[10px] px-1.5 py-0.2 rounded-full ${isTabActive ? 'bg-green-800 text-white' : 'bg-gray-100 text-gray-500'}">${st.unlockedCount}/${st.totalCount}</span>
                 ${lockIcon}
             </button>
             `;
         });
         html += `</div>`;
 
-        // 5. SECTIONS PAR NIVEAU
-        const levelsToRender = activeLevelTab === 'all' 
-            ? LEVELS_CONFIG 
-            : LEVELS_CONFIG.filter(lvl => lvl.id === activeLevelTab);
+        // 5. CONTENEUR DYNAMIQUE DES SECTIONS DE NIVEAU
+        function renderLevelSections(currentTab) {
+            let sectionsHtml = '';
+            const levelsToRender = currentTab === 'all' 
+                ? LEVELS_CONFIG 
+                : LEVELS_CONFIG.filter(lvl => lvl.id === currentTab);
 
-        levelsToRender.forEach((lvl, idx) => {
-            const st = data.levelsState[lvl.id];
-            const prevLvl = idx > 0 ? LEVELS_CONFIG[idx - 1] : null;
-            
-            let isExpanded = userLevelExpandedState[lvl.id];
-            if (isExpanded === undefined) {
-                isExpanded = activeLevelTab !== 'all' ? true : st.isUnlocked;
-            }
-            
-            html += `
-            <div class="level-section mb-5 bg-white rounded-xl border ${st.isUnlocked ? 'border-gray-200 shadow-sm' : 'border-gray-300'} overflow-hidden transition-all duration-200">
+            levelsToRender.forEach((lvl, idx) => {
+                const st = data.levelsState[lvl.id];
+                const prevLvl = idx > 0 ? LEVELS_CONFIG[idx - 1] : null;
                 
-                <!-- Header de niveau interactif et repliable -->
-                <div class="level-header-toggle p-4 border-b border-gray-100 ${st.isUnlocked ? 'bg-gray-50/70 hover:bg-gray-100/80' : 'bg-gray-100/80 hover:bg-gray-200/70'} flex flex-wrap items-center justify-between gap-3 cursor-pointer transition select-none" data-level-id="${lvl.id}" title="Cliquer pour ${isExpanded ? 'replier' : 'déplier'} ce niveau">
-                    <div class="flex items-center gap-2.5">
-                        <span class="inline-flex items-center justify-center w-8 h-8 rounded-full ${st.isUnlocked ? `${lvl.cocarde.bg} ${lvl.cocarde.text} border ${lvl.cocarde.border}` : 'bg-gray-200 text-gray-500 border border-gray-300'} text-base font-bold shadow-xs">
-                            ${st.isUnlocked ? lvl.emoji : '<i class="fas fa-lock text-sm"></i>'}
-                        </span>
-                        <div>
-                            <div class="flex items-center gap-2">
-                                <h4 class="font-bold text-gray-800 text-base ${!st.isUnlocked ? 'text-gray-600' : ''}">Niveau ${lvl.levelNumber} : ${lvl.name}</h4>
-                                <span class="text-xs px-2 py-0.5 rounded-md ${st.isUnlocked ? lvl.cocarde.pillBg : 'bg-gray-200 text-gray-600 border border-gray-300'} border font-medium">
-                                    ${lvl.subtitle}
-                                </span>
-                            </div>
-                            <p class="text-xs text-gray-500 mt-0.5">
-                                ${lvl.levelTotalXP} XP à débloquer (12 missions) • ${lvl.requiredXP > 0 ? `Déblocage à ${lvl.requiredXP} XP cumulés` : 'Débloqué dès le départ'}
-                            </p>
-                        </div>
-                    </div>
-
-                    <!-- Statut du niveau + Bouton chevron -->
-                    <div class="flex items-center gap-3">
-                        ${st.isUnlocked ? `
-                            <span class="text-xs font-semibold text-gray-600">${st.unlockedCount} / ${st.totalCount} missions (${st.earnedXP} XP)</span>
-                            <div class="w-20 bg-gray-200 rounded-full h-2 overflow-hidden hidden sm:block">
-                                <div class="bg-green-600 h-full rounded-full" style="width: ${st.percent}%"></div>
-                            </div>
-                        ` : `
-                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-amber-50 text-amber-800 border border-amber-300 text-xs font-semibold">
-                                <i class="fas fa-lock text-amber-600 text-[11px]"></i>
-                                <span>${data.totalPoints} / ${lvl.requiredXP} XP</span>
+                let isExpanded = userLevelExpandedState[lvl.id];
+                if (isExpanded === undefined) {
+                    isExpanded = currentTab !== 'all' ? true : st.isUnlocked;
+                }
+                
+                sectionsHtml += `
+                <div class="level-section mb-5 bg-white rounded-xl border ${st.isUnlocked ? 'border-gray-200 shadow-sm' : 'border-gray-300'} overflow-hidden transition-all duration-200">
+                    
+                    <!-- Header de niveau interactif et repliable -->
+                    <div class="level-header-toggle p-4 border-b border-gray-100 ${st.isUnlocked ? 'bg-gray-50/70 hover:bg-gray-100/80' : 'bg-gray-100/80 hover:bg-gray-200/70'} flex flex-wrap items-center justify-between gap-3 cursor-pointer transition select-none" data-level-id="${lvl.id}" title="Cliquer pour ${isExpanded ? 'replier' : 'déplier'} ce niveau">
+                        <div class="flex items-center gap-2.5">
+                            <span class="inline-flex items-center justify-center w-8 h-8 rounded-full ${st.isUnlocked ? `${lvl.cocarde.bg} ${lvl.cocarde.text} border ${lvl.cocarde.border}` : 'bg-gray-200 text-gray-500 border border-gray-300'} text-base font-bold shadow-xs">
+                                ${st.isUnlocked ? lvl.emoji : '<i class="fas fa-lock text-sm"></i>'}
                             </span>
-                        `}
-                        <div class="w-7 h-7 rounded-full bg-white/90 border border-gray-200 flex items-center justify-center text-gray-500 hover:text-gray-800 shadow-2xs shrink-0">
-                            <i class="fas fa-chevron-down text-xs transition-transform duration-200 level-chevron ${isExpanded ? 'rotate-180' : ''}"></i>
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <h4 class="font-bold text-gray-800 text-base ${!st.isUnlocked ? 'text-gray-600' : ''}">Niveau ${lvl.levelNumber} : ${lvl.name}</h4>
+                                    <span class="text-xs px-2 py-0.5 rounded-md ${st.isUnlocked ? lvl.cocarde.pillBg : 'bg-gray-200 text-gray-600 border border-gray-300'} border font-medium">
+                                        ${lvl.subtitle}
+                                    </span>
+                                </div>
+                                <p class="text-xs text-gray-500 mt-0.5">
+                                    ${lvl.levelTotalXP} XP à débloquer (12 missions) • ${lvl.requiredXP > 0 ? `Déblocage à ${lvl.requiredXP} XP cumulés` : 'Débloqué dès le départ'}
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Statut du niveau + Bouton chevron -->
+                        <div class="flex items-center gap-3">
+                            ${st.isUnlocked ? `
+                                <span class="text-xs font-semibold text-gray-600">${st.unlockedCount} / ${st.totalCount} missions (${st.earnedXP} XP)</span>
+                                <div class="w-20 bg-gray-200 rounded-full h-2 overflow-hidden hidden sm:block">
+                                    <div class="bg-green-600 h-full rounded-full" style="width: ${st.percent}%"></div>
+                                </div>
+                            ` : `
+                                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-amber-50 text-amber-800 border border-amber-300 text-xs font-semibold">
+                                    <i class="fas fa-lock text-amber-600 text-[11px]"></i>
+                                    <span>${data.totalPoints} / ${lvl.requiredXP} XP</span>
+                                </span>
+                            `}
+                            <div class="w-7 h-7 rounded-full bg-white/90 border border-gray-200 flex items-center justify-center text-gray-500 hover:text-gray-800 shadow-2xs shrink-0">
+                                <i class="fas fa-chevron-down text-xs transition-transform duration-200 level-chevron ${isExpanded ? 'rotate-180' : ''}"></i>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- Grille des badges repliable -->
-                <div class="level-body ${isExpanded ? '' : 'hidden'} relative overflow-hidden" id="level-body-${lvl.id}">
-                    <div class="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 ${st.isUnlocked ? 'bg-white' : 'bg-gray-100/40 filter blur-[1.5px] opacity-35 select-none pointer-events-none'}">
-            `;
+                    <!-- Grille des badges repliable -->
+                    <div class="level-body ${isExpanded ? '' : 'hidden'} relative overflow-hidden" id="level-body-${lvl.id}">
+                        <div class="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 ${st.isUnlocked ? 'bg-white' : 'bg-gray-100/40 filter blur-[1.5px] opacity-35 select-none pointer-events-none'}">
+                `;
 
-            lvl.badgeIds.forEach((badgeId, badgeIndex) => {
-                const badge = BADGES_DEFINITIONS[badgeId];
-                const badgeXp = badge ? badge.xp : 50;
+                lvl.badgeIds.forEach((badgeId, badgeIndex) => {
+                    const badge = BADGES_DEFINITIONS[badgeId];
+                    const badgeXp = badge ? badge.xp : 50;
 
-                if (!st.isUnlocked) {
-                    html += `
-                    <div class="badge-card rounded-lg p-3.5 border border-dashed border-gray-300 bg-gray-50/80 flex flex-col justify-between">
+                    if (!st.isUnlocked) {
+                        sectionsHtml += `
+                        <div class="badge-card rounded-lg p-3.5 border border-dashed border-gray-300 bg-gray-50/80 flex flex-col justify-between">
+                            <div>
+                                <div class="flex items-center justify-between mb-2.5">
+                                    <span class="text-[11px] font-semibold px-2 py-0.5 rounded bg-gray-200 text-gray-600 border border-gray-300">
+                                        🔒 ${lvl.name} • Mission #${badgeIndex + 1}
+                                    </span>
+                                    <span class="text-xs font-bold text-gray-400">
+                                        +${badgeXp} XP
+                                    </span>
+                                </div>
+                                <div class="flex items-start gap-2.5 mb-2">
+                                    <div class="w-9 h-9 rounded-lg flex items-center justify-center text-sm shrink-0 bg-gray-200 text-gray-400">
+                                        <i class="fas fa-lock"></i>
+                                    </div>
+                                    <div class="flex-grow">
+                                        <h5 class="font-semibold text-sm text-gray-500 flex items-center gap-1.5">
+                                            <span>Défi Mystère</span>
+                                        </h5>
+                                        <p class="text-xs text-gray-400 mt-0.5 italic">Atteignez ${lvl.requiredXP} XP au total pour révéler ce défi...</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-3 pt-2.5 border-t border-gray-200/60">
+                                <div class="text-[11px] text-gray-400 flex items-center gap-1">
+                                    <i class="fas fa-lock text-[10px]"></i> Verrouillé (${lvl.requiredXP} XP requis)
+                                </div>
+                            </div>
+                        </div>
+                        `;
+                        return;
+                    }
+
+                    const badgeState = data.unlockedBadges[badgeId] || { unlocked: false, races: [] };
+                    const isUnlocked = badgeState.unlocked && st.isUnlocked;
+                    const racesForBadge = badgeState.races || [];
+
+                    sectionsHtml += `
+                    <div class="badge-card rounded-lg p-3.5 border transition flex flex-col justify-between ${
+                        isUnlocked 
+                            ? 'bg-white border-green-200 hover:border-green-300 shadow-xs' 
+                            : 'bg-gray-50/80 border-gray-200 opacity-75'
+                    }">
                         <div>
                             <div class="flex items-center justify-between mb-2.5">
-                                <span class="text-[11px] font-semibold px-2 py-0.5 rounded bg-gray-200 text-gray-600 border border-gray-300">
-                                    🔒 ${lvl.name} • Mission #${badgeIndex + 1}
+                                <span class="text-[11px] font-semibold px-2 py-0.5 rounded ${lvl.cocarde.pillBg} border">
+                                    ${lvl.emoji} ${lvl.name}
                                 </span>
-                                <span class="text-xs font-bold text-gray-400">
+                                <span class="text-xs font-bold ${isUnlocked ? 'text-green-700' : 'text-gray-400'}">
                                     +${badgeXp} XP
                                 </span>
                             </div>
                             <div class="flex items-start gap-2.5 mb-2">
-                                <div class="w-9 h-9 rounded-lg flex items-center justify-center text-sm shrink-0 bg-gray-200 text-gray-400">
-                                    <i class="fas fa-lock"></i>
+                                <div class="w-9 h-9 rounded-lg flex items-center justify-center text-sm shrink-0 ${
+                                    isUnlocked 
+                                        ? 'bg-green-100 text-green-700' 
+                                        : 'bg-gray-200 text-gray-400'
+                                }">
+                                    <i class="fas ${isUnlocked ? (badge ? badge.icon : 'fa-award') : 'fa-lock'}"></i>
                                 </div>
                                 <div class="flex-grow">
-                                    <h5 class="font-semibold text-sm text-gray-500 flex items-center gap-1.5">
-                                        <span>Défi Mystère</span>
+                                    <h5 class="font-semibold text-sm text-gray-800 flex items-center gap-1.5">
+                                        <span>${badge ? badge.name : badgeId}</span>
+                                        ${isUnlocked ? `<i class="fas fa-check text-green-600 text-xs" title="Mission accomplie"></i>` : ''}
                                     </h5>
-                                    <p class="text-xs text-gray-400 mt-0.5 italic">Atteignez ${lvl.requiredXP} XP au total pour révéler ce défi...</p>
+                                    <p class="text-xs text-gray-600 mt-0.5 leading-relaxed">${badge ? badge.description : ''}</p>
                                 </div>
                             </div>
                         </div>
-                        <div class="mt-3 pt-2.5 border-t border-gray-200/60">
-                            <div class="text-[11px] text-gray-400 flex items-center gap-1">
-                                <i class="fas fa-lock text-[10px]"></i> Verrouillé (${lvl.requiredXP} XP requis)
-                            </div>
-                        </div>
-                    </div>
+                        <div class="mt-3 pt-2.5 border-t border-gray-100">
                     `;
-                    return;
-                }
 
-                const badgeState = data.unlockedBadges[badgeId] || { unlocked: false, races: [] };
-                const isUnlocked = badgeState.unlocked && st.isUnlocked;
-                const racesForBadge = badgeState.races || [];
-
-                html += `
-                <div class="badge-card rounded-lg p-3.5 border transition flex flex-col justify-between ${
-                    isUnlocked 
-                        ? 'bg-white border-green-200 hover:border-green-300 shadow-xs' 
-                        : 'bg-gray-50/80 border-gray-200 opacity-75'
-                }">
-                    <div>
-                        <div class="flex items-center justify-between mb-2.5">
-                            <span class="text-[11px] font-semibold px-2 py-0.5 rounded ${lvl.cocarde.pillBg} border">
-                                ${lvl.emoji} ${lvl.name}
-                            </span>
-                            <span class="text-xs font-bold ${isUnlocked ? 'text-green-700' : 'text-gray-400'}">
-                                +${badgeXp} XP
-                            </span>
-                        </div>
-                        <div class="flex items-start gap-2.5 mb-2">
-                            <div class="w-9 h-9 rounded-lg flex items-center justify-center text-sm shrink-0 ${
-                                isUnlocked 
-                                    ? 'bg-green-100 text-green-700' 
-                                    : 'bg-gray-200 text-gray-400'
-                            }">
-                                <i class="fas ${isUnlocked ? (badge ? badge.icon : 'fa-award') : 'fa-lock'}"></i>
-                            </div>
-                            <div class="flex-grow">
-                                <h5 class="font-semibold text-sm text-gray-800 flex items-center gap-1.5">
-                                    <span>${badge ? badge.name : badgeId}</span>
-                                    ${isUnlocked ? `<i class="fas fa-check text-green-600 text-xs" title="Mission accomplie"></i>` : ''}
-                                </h5>
-                                <p class="text-xs text-gray-600 mt-0.5 leading-relaxed">${badge ? badge.description : ''}</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="mt-3 pt-2.5 border-t border-gray-100">
-                `;
-
-                if (isUnlocked && racesForBadge.length > 0) {
-                    html += `
-                        <div class="text-[11px] text-gray-400 font-medium mb-1">Validé sur :</div>
-                        <div class="flex flex-wrap gap-1 max-h-20 overflow-y-auto custom-scrollbar">
-                    `;
-                    const sortedRaces = [...racesForBadge].sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
-                    sortedRaces.slice(0, 2).forEach(r => {
-                        const year = r.date ? new Date(r.date).getFullYear() : '';
-                        html += `
-                            <button class="badge-race-name text-left text-[11px] px-2 py-0.5 rounded bg-gray-100 hover:bg-green-100 hover:text-green-800 text-gray-700 transition truncate max-w-full cursor-pointer" 
-                                    data-race-id="${r.id}" title="${r.name}">
-                                <span class="truncate">${r.name}</span>
-                                <span class="text-gray-400 text-[10px]">(${year})</span>
-                            </button>
+                    if (isUnlocked && racesForBadge.length > 0) {
+                        sectionsHtml += `
+                            <div class="text-[11px] text-gray-400 font-medium mb-1">Validé sur :</div>
+                            <div class="flex flex-wrap gap-1 max-h-20 overflow-y-auto custom-scrollbar">
                         `;
-                    });
+                        const sortedRaces = [...racesForBadge].sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
+                        sortedRaces.slice(0, 2).forEach(r => {
+                            const year = r.date ? new Date(r.date).getFullYear() : '';
+                            sectionsHtml += `
+                                <button class="badge-race-name text-left text-[11px] px-2 py-0.5 rounded bg-gray-100 hover:bg-green-100 hover:text-green-800 text-gray-700 transition truncate max-w-full cursor-pointer" 
+                                        data-race-id="${r.id}" title="${r.name}">
+                                    <span class="truncate">${r.name}</span>
+                                    <span class="text-gray-400 text-[10px]">(${year})</span>
+                                </button>
+                            `;
+                        });
 
-                    if (sortedRaces.length > 2) {
-                        html += `<span class="text-[10px] text-gray-500 self-center">+${sortedRaces.length - 2} autre(s)</span>`;
+                        if (sortedRaces.length > 2) {
+                            sectionsHtml += `<span class="text-[10px] text-gray-500 self-center">+${sortedRaces.length - 2} autre(s)</span>`;
+                        }
+                        sectionsHtml += `</div>`;
+                    } else if (isUnlocked) {
+                        sectionsHtml += `<div class="text-[11px] font-semibold text-green-700 flex items-center gap-1"><i class="fas fa-check"></i> Mission accomplie</div>`;
+                    } else {
+                        sectionsHtml += `<div class="text-[11px] text-gray-400 flex items-center gap-1"><i class="fas fa-hourglass-start text-[10px]"></i> En attente</div>`;
                     }
-                    html += `</div>`;
-                } else if (isUnlocked) {
-                    html += `<div class="text-[11px] font-semibold text-green-700 flex items-center gap-1"><i class="fas fa-check"></i> Mission accomplie</div>`;
-                } else {
-                    html += `<div class="text-[11px] text-gray-400 flex items-center gap-1"><i class="fas fa-hourglass-start text-[10px]"></i> En attente</div>`;
+
+                    sectionsHtml += `
+                        </div>
+                    </div>
+                    `;
+                });
+
+                sectionsHtml += `</div>`; // fin grid
+
+                if (!st.isUnlocked && prevLvl) {
+                    const percentToUnlock = Math.min(100, Math.round((data.totalPoints / lvl.requiredXP) * 100));
+                    const remainingXP = Math.max(0, lvl.requiredXP - data.totalPoints);
+                    sectionsHtml += `
+                    <div class="absolute inset-0 z-10 flex flex-col items-center justify-center p-6 bg-gray-900/15 backdrop-blur-xs text-center">
+                        <div class="bg-white/95 backdrop-blur-md border border-gray-200/90 rounded-2xl p-6 shadow-2xl max-w-md mx-auto flex flex-col items-center">
+                            <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-50 to-amber-100 border border-amber-300 text-amber-600 flex items-center justify-center text-3xl mb-3 shadow-md transform hover:scale-105 transition">
+                                <i class="fas fa-lock"></i>
+                            </div>
+                            <h5 class="text-base font-extrabold text-gray-900 mb-1 flex items-center gap-2">
+                                <span>Niveau ${lvl.levelNumber} : ${lvl.name} verrouillé</span>
+                            </h5>
+                            <p class="text-xs text-gray-600 max-w-sm mx-auto mb-3 leading-relaxed">
+                                Vous devez accumuler au moins <strong class="text-amber-800 font-bold">${lvl.requiredXP} XP</strong> au total pour ouvrir ce niveau et révéler ses défis secrets.
+                            </p>
+                            <div class="w-full max-w-xs bg-gray-100 rounded-full h-2.5 overflow-hidden mb-3 border border-gray-200">
+                                <div class="bg-amber-500 h-full rounded-full transition-all duration-300" style="width: ${percentToUnlock}%"></div>
+                            </div>
+                            <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-50 border border-amber-200 text-xs text-amber-900 font-semibold shadow-xs">
+                                <i class="fas fa-lock text-amber-600 text-[11px]"></i>
+                                <span>Progression : <strong class="text-amber-800">${data.totalPoints} / ${lvl.requiredXP} XP</strong> (encore <strong class="text-green-700">${remainingXP} XP</strong>)</span>
+                            </div>
+                        </div>
+                    </div>
+                    `;
                 }
 
-                html += `
+                sectionsHtml += `
                     </div>
                 </div>
                 `;
             });
+            return sectionsHtml;
+        }
 
-            html += `</div>`; // fin grid
-
-            if (!st.isUnlocked && prevLvl) {
-                const percentToUnlock = Math.min(100, Math.round((data.totalPoints / lvl.requiredXP) * 100));
-                const remainingXP = Math.max(0, lvl.requiredXP - data.totalPoints);
-                html += `
-                <div class="absolute inset-0 z-10 flex flex-col items-center justify-center p-6 bg-gray-900/15 backdrop-blur-xs text-center">
-                    <div class="bg-white/95 backdrop-blur-md border border-gray-200/90 rounded-2xl p-6 shadow-2xl max-w-md mx-auto flex flex-col items-center">
-                        <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-50 to-amber-100 border border-amber-300 text-amber-600 flex items-center justify-center text-3xl mb-3 shadow-md transform hover:scale-105 transition">
-                            <i class="fas fa-lock"></i>
-                        </div>
-                        <h5 class="text-base font-extrabold text-gray-900 mb-1 flex items-center gap-2">
-                            <span>Niveau ${lvl.levelNumber} : ${lvl.name} verrouillé</span>
-                        </h5>
-                        <p class="text-xs text-gray-600 max-w-sm mx-auto mb-3 leading-relaxed">
-                            Vous devez accumuler au moins <strong class="text-amber-800 font-bold">${lvl.requiredXP} XP</strong> au total pour ouvrir ce niveau et révéler ses défis secrets.
-                        </p>
-                        <div class="w-full max-w-xs bg-gray-100 rounded-full h-2.5 overflow-hidden mb-3 border border-gray-200">
-                            <div class="bg-amber-500 h-full rounded-full transition-all duration-300" style="width: ${percentToUnlock}%"></div>
-                        </div>
-                        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-50 border border-amber-200 text-xs text-amber-900 font-semibold shadow-xs">
-                            <i class="fas fa-lock text-amber-600 text-[11px]"></i>
-                            <span>Progression : <strong class="text-amber-800">${data.totalPoints} / ${lvl.requiredXP} XP</strong> (encore <strong class="text-green-700">${remainingXP} XP</strong>)</span>
-                        </div>
-                    </div>
-                </div>
-                `;
-            }
-
-            html += `
-                </div>
-            </div>
-            `;
-        });
+        html += `<div id="levels-sections-container">${renderLevelSections(activeLevelTab)}</div>`;
 
         content.innerHTML = html;
 
-        // Onglets
+        // Attacher les écouteurs sur les sections de niveau
+        function attachLevelSectionsListeners(container) {
+            if (!container) return;
+
+            // Replier / Déplier les sections de niveaux
+            container.querySelectorAll('.level-header-toggle').forEach(header => {
+                header.addEventListener('click', function () {
+                    const levelId = this.getAttribute('data-level-id');
+                    const body = document.getElementById(`level-body-${levelId}`);
+                    const chevron = this.querySelector('.level-chevron');
+                    if (!body) return;
+
+                    const isCurrentlyHidden = body.classList.contains('hidden');
+                    if (isCurrentlyHidden) {
+                        body.classList.remove('hidden');
+                        if (chevron) chevron.classList.add('rotate-180');
+                        userLevelExpandedState[levelId] = true;
+                    } else {
+                        body.classList.add('hidden');
+                        if (chevron) chevron.classList.remove('rotate-180');
+                        userLevelExpandedState[levelId] = false;
+                    }
+                });
+            });
+
+            // Clic sur course pour ouvrir ses détails
+            container.querySelectorAll('.badge-race-name').forEach(el => {
+                el.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    const raceId = this.getAttribute('data-race-id');
+                    modal.classList.add('hidden');
+                    if (typeof showRaceDetails === 'function') {
+                        showRaceDetails(raceId);
+                    }
+                });
+            });
+        }
+
+        attachLevelSectionsListeners(document.getElementById('levels-sections-container'));
+
+        // Centrer automatiquement et élégamment l'onglet actif dans la barre horizontale sans reset
+        function scrollActiveLevelTabToCenter(isInstant = false) {
+            const tabsContainer = document.getElementById('level-tabs-container');
+            if (!tabsContainer) return;
+            const activeBtn = tabsContainer.querySelector(`.level-tab-btn[data-level="${activeLevelTab}"]`);
+            if (activeBtn) {
+                const containerWidth = tabsContainer.clientWidth;
+                const btnOffsetLeft = activeBtn.offsetLeft;
+                const btnWidth = activeBtn.offsetWidth;
+                const targetScrollLeft = btnOffsetLeft - (containerWidth / 2) + (btnWidth / 2);
+                
+                if (isInstant) {
+                    tabsContainer.scrollLeft = Math.max(0, targetScrollLeft);
+                } else {
+                    tabsContainer.scrollTo({
+                        left: Math.max(0, targetScrollLeft),
+                        behavior: 'smooth'
+                    });
+                }
+            }
+        }
+
+        // Bascule d'onglet fluide sans destruction du DOM parent ni reset de scroll
+        function switchLevelTab(newLevelId) {
+            activeLevelTab = newLevelId;
+            if (activeLevelTab !== 'all') {
+                userLevelExpandedState[activeLevelTab] = true;
+            }
+
+            const tabsContainer = document.getElementById('level-tabs-container');
+            if (tabsContainer) {
+                tabsContainer.querySelectorAll('.level-tab-btn').forEach(btn => {
+                    const btnLevel = btn.getAttribute('data-level');
+                    const isTabActive = btnLevel === activeLevelTab;
+                    const countPill = btn.querySelector('.badge-count-pill');
+                    if (isTabActive) {
+                        btn.className = 'level-tab-btn px-3.5 py-1.5 rounded-lg text-xs font-semibold transition shrink-0 flex items-center gap-1.5 cursor-pointer bg-green-700 text-white shadow-sm';
+                        if (countPill) {
+                            countPill.className = 'badge-count-pill text-[10px] px-1.5 py-0.2 rounded-full bg-green-800 text-white';
+                        }
+                    } else {
+                        btn.className = 'level-tab-btn px-3.5 py-1.5 rounded-lg text-xs font-semibold transition shrink-0 flex items-center gap-1.5 cursor-pointer bg-white text-gray-600 hover:bg-gray-100 border border-gray-200';
+                        if (countPill) {
+                            countPill.className = 'badge-count-pill text-[10px] px-1.5 py-0.2 rounded-full bg-gray-100 text-gray-500';
+                        }
+                    }
+                });
+            }
+
+            const sectionsContainer = document.getElementById('levels-sections-container');
+            if (sectionsContainer) {
+                sectionsContainer.innerHTML = renderLevelSections(activeLevelTab);
+                attachLevelSectionsListeners(sectionsContainer);
+            }
+
+            // Translation fluide directement depuis la position actuelle vers le nouvel onglet
+            scrollActiveLevelTabToCenter(false);
+        }
+
+        // Gestion des clics sur onglets
         content.querySelectorAll('.level-tab-btn').forEach(btn => {
             btn.addEventListener('click', function () {
-                activeLevelTab = this.getAttribute('data-level');
-                if (activeLevelTab !== 'all') {
-                    userLevelExpandedState[activeLevelTab] = true;
-                }
-                displayRaceBadgesModal();
+                const targetLevel = this.getAttribute('data-level');
+                switchLevelTab(targetLevel);
             });
         });
 
@@ -2904,38 +3023,9 @@
             });
         });
 
-        // Replier / Déplier les sections de niveaux
-        content.querySelectorAll('.level-header-toggle').forEach(header => {
-            header.addEventListener('click', function () {
-                const levelId = this.getAttribute('data-level-id');
-                const body = document.getElementById(`level-body-${levelId}`);
-                const chevron = this.querySelector('.level-chevron');
-                if (!body) return;
-
-                const isCurrentlyHidden = body.classList.contains('hidden');
-                if (isCurrentlyHidden) {
-                    body.classList.remove('hidden');
-                    if (chevron) chevron.classList.add('rotate-180');
-                    userLevelExpandedState[levelId] = true;
-                } else {
-                    body.classList.add('hidden');
-                    if (chevron) chevron.classList.remove('rotate-180');
-                    userLevelExpandedState[levelId] = false;
-                }
-            });
-        });
-
-        // Clic sur course pour ouvrir ses détails
-        content.querySelectorAll('.badge-race-name').forEach(el => {
-            el.addEventListener('click', function (e) {
-                e.stopPropagation();
-                const raceId = this.getAttribute('data-race-id');
-                modal.classList.add('hidden');
-                if (typeof showRaceDetails === 'function') {
-                    showRaceDetails(raceId);
-                }
-            });
-        });
+        // Centrage instantané à l'ouverture initiale de la modale (aucun effet de rebond depuis le début)
+        scrollActiveLevelTabToCenter(true);
+        requestAnimationFrame(() => scrollActiveLevelTabToCenter(true));
 
         modal.classList.remove('hidden');
     }
