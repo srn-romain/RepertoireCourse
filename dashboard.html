@@ -32,9 +32,8 @@
 
         // Fonction utilitaire pour mettre à jour les courses globalement
         window.updateGlobalRaces = function (newRaces) {
-            window.races = newRaces;
+            window.displayedRaces = newRaces;
             window.racesLoaded = true;
-            // console.log("Global races updated:", window.races.length);
         };
     </script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -3179,9 +3178,10 @@
                 // Calculer et afficher les statistiques
                 updateStats(races);
 
-                // Exposer races globalement pour advanced-filters.js
+                // Exposer races globalement pour advanced-filters.js, stats et badges
                 window.races = races;
                 window.originalRaces = [...races]; // Sauvegarde pour les filtres avancés
+                window.allUserRaces = [...races]; // Sauvegarde permanente pour stats et badges
 
                 // Remplir le filtre de lieux si la fonction existe
                 if (typeof window.populateLocationFilter === 'function') {

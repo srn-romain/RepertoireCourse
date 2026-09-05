@@ -25,9 +25,26 @@
         // Restaurer depuis localStorage ou utiliser false par défaut
         window.statsIncludeFuture = localStorage.getItem('statsIncludeFuture') === 'true';
 
+        // Fonction pour récupérer l'ensemble de toutes les courses enregistrées (indépendamment des filtres actifs)
+        function getAllUserRaces() {
+            if (window.allUserRaces && Array.isArray(window.allUserRaces) && window.allUserRaces.length > 0) {
+                return window.allUserRaces;
+            }
+            if (window.originalRaces && Array.isArray(window.originalRaces) && window.originalRaces.length > 0) {
+                return window.originalRaces;
+            }
+            if (typeof races !== 'undefined' && Array.isArray(races) && races.length > 0) {
+                return races;
+            }
+            if (window.races && Array.isArray(window.races)) {
+                return window.races;
+            }
+            return [];
+        }
+
         // Fonction pour détecter les courses futures
         function getFutureRacesInfo() {
-            const racesData = window.races || (typeof races !== 'undefined' ? races : []);
+            const racesData = getAllUserRaces();
             if (!racesData || racesData.length === 0) return { totalFutureRaces: 0, futureRaces: [] };
 
             const today = new Date();
@@ -81,7 +98,7 @@
 
         // Fonction pour calculer les statistiques des courses
         function calculateRaceStats(includeFuture = false) {
-            const racesData = window.races || (typeof races !== 'undefined' ? races : []);
+            const racesData = getAllUserRaces();
             // console.log('[stats-modal] calculateRaceStats - races count:', racesData ? racesData.length : 0);
 
             if (!racesData || racesData.length === 0) return null;

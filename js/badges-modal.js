@@ -2315,7 +2315,23 @@
         const content = document.getElementById('badgesContent');
         if (!modal || !content) return;
 
-        const racesData = window.races || (typeof races !== 'undefined' ? races : []);
+        function getAllUserRaces() {
+            if (window.allUserRaces && Array.isArray(window.allUserRaces) && window.allUserRaces.length > 0) {
+                return window.allUserRaces;
+            }
+            if (window.originalRaces && Array.isArray(window.originalRaces) && window.originalRaces.length > 0) {
+                return window.originalRaces;
+            }
+            if (typeof races !== 'undefined' && Array.isArray(races) && races.length > 0) {
+                return races;
+            }
+            if (window.races && Array.isArray(window.races)) {
+                return window.races;
+            }
+            return [];
+        }
+
+        const racesData = getAllUserRaces();
         const data = calculateGamifiedBadges(racesData);
         window.raceBadges = data.badgesByRace;
         window.recordCocardes = data.recordCocardes;
@@ -2992,6 +3008,18 @@
     function calculateRaceBadges(racesList) {
         const data = calculateGamifiedBadges(racesList);
         window.recordCocardes = data.recordCocardes;
+
+        // Mise à jour automatique des XP en base de données Firestore dès la connexion / chargement des courses
+        try {
+            const currentUser = (typeof firebase !== 'undefined' && firebase.auth) ? firebase.auth().currentUser : null;
+            if (currentUser && currentUser.uid) {
+                const currentPseudo = currentUser.displayName || localStorage.getItem('userPseudo') || 'Coureur';
+                syncCommunityLeaderboard(data.totalPoints, currentPseudo, currentUser.uid);
+            }
+        } catch (e) {
+            console.warn('Auto-sync XP on load error:', e);
+        }
+
         return data.badgesByRace;
     }
 
@@ -3044,60 +3072,6 @@
         }
     });
 
-    // Fonction utilitaire Admin : Calculer et enregistrer les XP de tous les utilisateurs en base
-    async function syncAllUsersGamificationXP() {
-        if (typeof firebase === 'undefined' || !firebase.firestore || typeof db === 'undefined') {
-            console.error("Firebase Firestore n'est pas disponible.");
-            return;
-        }
-        console.log("🚀 [Admin] Démarrage du calcul des XP pour tous les utilisateurs en base...");
-        try {
-            const usersSnap = await db.collection('users').get();
-            console.log(`📋 [Admin] ${usersSnap.size} utilisateur(s) trouvé(s).`);
-            let count = 0;
-
-            for (const userDoc of usersSnap.docs) {
-                const uid = userDoc.id;
-                const userData = userDoc.data() || {};
-                const pseudo = userData.pseudo || userData.name || "Coureur";
-
-                try {
-                    // Récupérer les courses
-                    const racesSnap = await db.collection('users').doc(uid).collection('races').get();
-                    const races = [];
-                    racesSnap.forEach(d => races.push({ id: d.id, ...d.data() }));
-
-                    // Récupérer la wishlist
-                    const wishlistSnap = await db.collection('users').doc(uid).collection('wishlist').get();
-                    wishlistSnap.forEach(d => races.push({ id: d.id, ...d.data(), status: 'future' }));
-
-                    // Calculer le total XP
-                    const result = calculateGamifiedBadges(races);
-                    const totalXP = result.totalPoints || 0;
-
-                    // Sauvegarder dans Firestore
-                    await db.collection('users').doc(uid).set({
-                        gamificationXP: totalXP,
-                        pseudo: pseudo
-                    }, { merge: true });
-
-                    console.log(`✅ ${pseudo} (${uid}) : ${totalXP} XP (${races.length} courses traitées)`);
-                    count++;
-                } catch (err) {
-                    console.error(`❌ Erreur pour ${pseudo} (${uid}) :`, err);
-                }
-            }
-
-            console.log(`🎉 [Admin] Terminé ! ${count} utilisateur(s) mis à jour en base avec succès.`);
-            if (typeof displayRaceBadgesModal === 'function' && !document.getElementById('badgesModal')?.classList.contains('hidden')) {
-                displayRaceBadgesModal();
-            }
-            return count;
-        } catch (e) {
-            console.error("❌ Erreur globale lors de la synchronisation :", e);
-        }
-    }
-
     // Exports globaux
     window.LEVELS_CONFIG = LEVELS_CONFIG;
     window.BADGES_DEFINITIONS = BADGES_DEFINITIONS;
@@ -3109,6 +3083,5 @@
     window.calculateRaceBadges = calculateRaceBadges;
     window.calculateRecordCocardes = calculateRecordCocardes;
     window.updateBadgesButtonVisibility = updateBadgesButtonVisibility;
-    window.syncAllUsersGamificationXP = syncAllUsersGamificationXP;
 
 })();
