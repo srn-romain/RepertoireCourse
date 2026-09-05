@@ -85,6 +85,10 @@ const userSettingsModalHTML = `
                         <input type="checkbox" id="prefHideLikeCount" class="w-4 h-4 text-green-600 rounded focus:ring-green-500">
                         <span class="ml-2 text-sm text-gray-700">Masquer le nombre de J'aime (pour les visiteurs)</span>
                     </label>
+                    <label class="flex items-center cursor-pointer">
+                        <input type="checkbox" id="prefShowPseudoInLeaderboard" class="w-4 h-4 text-green-600 rounded focus:ring-green-500 shrink-0" checked>
+                        <span class="ml-2 text-xs text-gray-700">Faire apparaître mon pseudo dans le classement des missions</span>
+                    </label>
                     <div class="pt-2 border-t border-gray-200 mt-2">
                         <p class="text-xs text-green-600 font-medium"><i class="fas fa-check-circle mr-1"></i>Les modifications sont automatiquement enregistrées.</p>
                     </div>
@@ -318,6 +322,7 @@ async function initSettingsLogic() {
     const prefShowFavorite = document.getElementById('prefShowFavorite');
     const prefShowDay = document.getElementById('prefShowDay');
     const prefHideLikeCount = document.getElementById('prefHideLikeCount');
+    const prefShowPseudoInLeaderboard = document.getElementById('prefShowPseudoInLeaderboard');
 
     // Checkboxes UI preferences
     const prefShowStatsBtn = document.getElementById('prefShowStatsBtn');
@@ -349,7 +354,7 @@ async function initSettingsLogic() {
         }
 
         // Désactiver toutes les checkboxes de confidentialité
-        [prefShowPseudo, prefShowCity, prefShowFavorite, prefShowDay, prefHideLikeCount].forEach(cb => {
+        [prefShowPseudo, prefShowCity, prefShowFavorite, prefShowDay, prefHideLikeCount, prefShowPseudoInLeaderboard].forEach(cb => {
             if (cb) {
                 cb.disabled = true;
                 cb.classList.add('opacity-50', 'cursor-not-allowed');
@@ -448,7 +453,6 @@ async function initSettingsLogic() {
             } finally {
                 profilePicLoading.classList.add('hidden');
                 btnEditProfilePic.disabled = false;
-                inputProfilePic.value = ''; // Reset input
             }
         });
     }
@@ -458,7 +462,9 @@ async function initSettingsLogic() {
             const user = firebase.auth().currentUser;
             if (!user) return;
 
-            // Suppression directe sans confirmation demandée
+            if (!confirm("Voulez-vous vraiment supprimer votre photo de profil ?")) {
+                return;
+            }
 
             try {
                 profilePicLoading.classList.remove('hidden');
@@ -491,12 +497,18 @@ async function initSettingsLogic() {
         if (!user) return;
 
         const privacy = {
-            showPseudo: prefShowPseudo.checked,
-            showCity: prefShowCity.checked,
-            showFavorite: prefShowFavorite.checked,
-            showDay: prefShowDay.checked,
-            hideLikeCount: prefHideLikeCount.checked
+            showPseudo: prefShowPseudo ? prefShowPseudo.checked : true,
+            showCity: prefShowCity ? prefShowCity.checked : true,
+            showFavorite: prefShowFavorite ? prefShowFavorite.checked : false,
+            showDay: prefShowDay ? prefShowDay.checked : true,
+            hideLikeCount: prefHideLikeCount ? prefHideLikeCount.checked : false,
+            showPseudoInLeaderboard: prefShowPseudoInLeaderboard ? prefShowPseudoInLeaderboard.checked : true
         };
+
+        if (prefShowPseudoInLeaderboard) {
+            localStorage.setItem('prefShowPseudoInLeaderboard', prefShowPseudoInLeaderboard.checked ? 'true' : 'false');
+            window.prefShowPseudoInLeaderboard = prefShowPseudoInLeaderboard.checked;
+        }
 
         try {
             await db.collection('users').doc(user.uid).set({ privacy }, { merge: true });
@@ -529,7 +541,7 @@ async function initSettingsLogic() {
 
     // Ne pas attacher les listeners si l'utilisateur est invité
     if (!isInvite) {
-        [prefShowPseudo, prefShowCity, prefShowFavorite, prefShowDay, prefHideLikeCount].forEach(cb => {
+        [prefShowPseudo, prefShowCity, prefShowFavorite, prefShowDay, prefHideLikeCount, prefShowPseudoInLeaderboard].forEach(cb => {
             if (cb) cb.addEventListener('change', savePrivacySettings);
         });
 
@@ -635,6 +647,12 @@ async function initSettingsLogic() {
                     if (prefShowFavorite) prefShowFavorite.checked = data.privacy.showFavorite === true;
                     if (prefShowDay) prefShowDay.checked = data.privacy.showDay !== false;
                     if (prefHideLikeCount) prefHideLikeCount.checked = data.privacy.hideLikeCount === true;
+                    if (prefShowPseudoInLeaderboard) {
+                        const isChecked = data.privacy.showPseudoInLeaderboard === true;
+                        prefShowPseudoInLeaderboard.checked = isChecked;
+                        localStorage.setItem('prefShowPseudoInLeaderboard', isChecked ? 'true' : 'false');
+                        window.prefShowPseudoInLeaderboard = isChecked;
+                    }
                 }
 
                 // UI preferences (Default to true if undefined, as buttons were previously visible)
@@ -912,10 +930,15 @@ async function initSettingsLogic() {
 
 // Fonction globale pour ouvrir les paramètres
 window.openUserSettings = async function () {
+    const modal = document.getElementById('userSettingsModal');
+    if (modal) {
+        modal.classList.remove('hidden');
+        document.body.classList.add('overflow-hidden'); // Freeze background
+    }
+
     const user = firebase.auth().currentUser;
     if (!user) return;
 
-    const modal = document.getElementById('userSettingsModal');
     const emailDisplay = document.getElementById('settingsUserEmail');
     const pseudoInput = document.getElementById('settingsNewPseudo');
     const inviteNotice = document.getElementById('inviteNotice');
@@ -926,6 +949,7 @@ window.openUserSettings = async function () {
     const prefShowFavorite = document.getElementById('prefShowFavorite');
     const prefShowDay = document.getElementById('prefShowDay');
     const prefHideLikeCount = document.getElementById('prefHideLikeCount');
+    const prefShowPseudoInLeaderboard = document.getElementById('prefShowPseudoInLeaderboard');
 
     if (emailDisplay) emailDisplay.textContent = user.email;
 
@@ -947,7 +971,7 @@ window.openUserSettings = async function () {
     }
 
     // Pré-remplir le pseudo actuel
-    if (pseudoInput) pseudoInput.value = "Chargement...";
+    if (pseudoInput && !pseudoInput.value) pseudoInput.value = "Chargement...";
 
     try {
         const doc = await db.collection('users').doc(user.uid).get();
@@ -975,6 +999,7 @@ window.openUserSettings = async function () {
             if (prefShowFavorite) prefShowFavorite.checked = (p.showFavorite !== undefined) ? p.showFavorite : false;
             if (prefShowDay) prefShowDay.checked = (p.showDay !== undefined) ? p.showDay : true;
             if (prefHideLikeCount) prefHideLikeCount.checked = (p.hideLikeCount !== undefined) ? p.hideLikeCount : false;
+            if (prefShowPseudoInLeaderboard) prefShowPseudoInLeaderboard.checked = (p.showPseudoInLeaderboard !== undefined) ? p.showPseudoInLeaderboard : true;
 
             // Charger les préférences UI
             const ui = data.uiPreferences || {};
@@ -994,13 +1019,45 @@ window.openUserSettings = async function () {
         if (pseudoInput) pseudoInput.value = "";
     }
 
-    if (modal) {
-        modal.classList.remove('hidden');
-        document.body.classList.add('overflow-hidden'); // Freeze background
+    // Injecter le formulaire d'avis si disponible
+    if (!isInvite && typeof window.injectReviewForm === 'function') {
+        setTimeout(() => window.injectReviewForm(), 100);
+    }
+};
 
-        // Injecter le formulaire d'avis si disponible
-        if (!isInvite && typeof window.injectReviewForm === 'function') {
-            setTimeout(() => window.injectReviewForm(), 100);
+window.openSettingsModal = window.openUserSettings;
+
+// Ouvre les paramètres et surligne précisément la case du classement
+window.openUserSettingsForLeaderboard = function () {
+    const badgesModal = document.getElementById('badgesModal');
+    if (badgesModal) badgesModal.classList.add('hidden');
+
+    if (typeof window.openUserSettings === 'function') {
+        window.openUserSettings();
+    } else {
+        const modal = document.getElementById('userSettingsModal');
+        if (modal) {
+            modal.classList.remove('hidden');
+            document.body.classList.add('overflow-hidden');
         }
     }
-}
+
+    const highlightTarget = () => {
+        const cb = document.getElementById('prefShowPseudoInLeaderboard');
+        if (cb) {
+            const label = cb.closest('label');
+            if (label) {
+                label.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                const highlightClasses = ['ring-2', 'ring-emerald-500', 'bg-emerald-100/80', 'p-1.5', '-m-1.5', 'rounded-lg', 'transition-all', 'duration-300'];
+                label.classList.add(...highlightClasses);
+                setTimeout(() => {
+                    label.classList.remove(...highlightClasses);
+                }, 3000);
+            }
+            cb.focus();
+        }
+    };
+
+    setTimeout(highlightTarget, 100);
+    setTimeout(highlightTarget, 350);
+};

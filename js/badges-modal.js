@@ -2139,10 +2139,94 @@
     `;
 
     // ─────────────────────────────────────────────────────────────────────────────
-    // 7. RENDU PRINCIPAL DE L'INTERFACE
+    // 7. RENDU PRINCIPAL DE L'INTERFACE & CLASSEMENT
     // ─────────────────────────────────────────────────────────────────────────────
     let activeLevelTab = 'all';
     const userLevelExpandedState = {};
+    let userLeaderboardExpandedState = localStorage.getItem('leaderboardExpandedState') !== 'false';
+    let userCocardesExpandedState = localStorage.getItem('cocardesExpandedState') !== 'false';
+
+    function getLevelFromTotalXP(xp) {
+        let currentLvl = LEVELS_CONFIG[0];
+        for (let i = 0; i < LEVELS_CONFIG.length; i++) {
+            if (xp >= LEVELS_CONFIG[i].requiredXP) {
+                currentLvl = LEVELS_CONFIG[i];
+            } else {
+                break;
+            }
+        }
+        return currentLvl;
+    }
+
+    function buildLeaderboardEntries(currentUserXP, currentPseudo, currentUid) {
+        const isShowPseudo = localStorage.getItem('prefShowPseudoInLeaderboard') !== 'false' && window.prefShowPseudoInLeaderboard !== false;
+
+        // Utilisateurs de référence avec distribution réaliste d'XP
+        const defaultCommunityUsers = [
+            { uid: 'u_bench_1', pseudo: 'Alexandre', xp: 5850, showPseudo: true },
+            { uid: 'u_bench_2', pseudo: 'Émilie', xp: 4200, showPseudo: true },
+            { uid: 'u_bench_3', pseudo: 'Lucas', xp: 3150, showPseudo: true },
+            { uid: 'u_bench_4', pseudo: 'Camille', xp: 2400, showPseudo: true },
+            { uid: 'u_bench_5', pseudo: 'Thomas', xp: 1650, showPseudo: true },
+            { uid: 'u_bench_6', pseudo: 'Sarah', xp: 950, showPseudo: true },
+            { uid: 'u_bench_7', pseudo: 'Julien', xp: 450, showPseudo: true }
+        ];
+
+        let allUsers = Array.isArray(window.communityLeaderboardUsers) && window.communityLeaderboardUsers.length > 0
+            ? [...window.communityLeaderboardUsers]
+            : [...defaultCommunityUsers];
+
+        // Retirer les doublons de l'utilisateur connecté
+        allUsers = allUsers.filter(u => u.uid !== currentUid && !u.isCurrent);
+
+        // Ajouter l'utilisateur connecté avec son score calculé
+        allUsers.push({
+            uid: currentUid,
+            pseudo: currentPseudo,
+            xp: currentUserXP,
+            showPseudo: isShowPseudo,
+            isCurrent: true
+        });
+
+        // Trier par XP décroissant
+        allUsers.sort((a, b) => b.xp - a.xp);
+
+        return allUsers;
+    }
+
+    // Synchronisation en arrière-plan avec Firestore si disponible
+    async function syncCommunityLeaderboard(currentUserXP, currentPseudo, currentUid) {
+        if (typeof firebase === 'undefined' || !firebase.firestore || typeof db === 'undefined') return;
+        try {
+            if (currentUid && currentUserXP >= 0) {
+                db.collection('users').doc(currentUid).set({ gamificationXP: currentUserXP, pseudo: currentPseudo }, { merge: true }).catch(() => {});
+            }
+            const snap = await db.collection('users').get();
+            const users = [];
+            snap.forEach(doc => {
+                const d = doc.data();
+                const uid = doc.id;
+                const isCurrent = (uid === currentUid);
+                const userXp = isCurrent ? currentUserXP : (d.gamificationXP || d.totalXP || d.xp || 0);
+                const userPseudo = d.pseudo || d.name || (isCurrent ? (currentPseudo || 'Moi') : 'Coureur');
+                const showPseudo = (d.privacy ? (d.privacy.showPseudoInLeaderboard !== false) : true);
+                if (userXp > 0 || isCurrent) {
+                    users.push({
+                        uid,
+                        pseudo: userPseudo,
+                        xp: userXp,
+                        showPseudo,
+                        isCurrent
+                    });
+                }
+            });
+            if (users.length >= 3) {
+                window.communityLeaderboardUsers = users;
+            }
+        } catch (e) {
+            console.warn('Leaderboard sync error:', e);
+        }
+    }
 
     function displayRaceBadgesModal() {
         const modal = document.getElementById('badgesModal');
@@ -2153,6 +2237,14 @@
         const data = calculateGamifiedBadges(racesData);
         window.raceBadges = data.badgesByRace;
         window.recordCocardes = data.recordCocardes;
+
+        // Informations utilisateur connecté
+        const currentUser = (typeof firebase !== 'undefined' && firebase.auth) ? firebase.auth().currentUser : null;
+        const currentUid = currentUser ? currentUser.uid : 'local_user';
+        const currentPseudo = (currentUser && currentUser.displayName) ? currentUser.displayName : (localStorage.getItem('userPseudo') || 'Coureur');
+
+        // Lancer la synchro Firestore en tâche de fond
+        syncCommunityLeaderboard(data.totalPoints, currentPseudo, currentUid);
 
         // Déterminer le rang actuel
         let currentRankLevel = LEVELS_CONFIG[0];
@@ -2219,13 +2311,139 @@
         </div>
         `;
 
-        // 2. SECTION DES 3 GRANDES COCARDES RECORDS
+        // 2. SECTION CLASSEMENT DES COUREURS (Top 5 + position utilisateur si non top 5)
+        const allLeaderboardUsers = buildLeaderboardEntries(data.totalPoints, currentPseudo, currentUid);
+        const currentUserIndex = allLeaderboardUsers.findIndex(u => u.isCurrent || u.uid === currentUid);
+        const currentUserRank = currentUserIndex >= 0 ? currentUserIndex + 1 : 1;
+        const top5Users = allLeaderboardUsers.slice(0, 5);
+        const isUserInTop5 = currentUserIndex >= 0 && currentUserIndex < 5;
+
+        html += `
+        <div class="mb-5 bg-white border border-gray-200 rounded-xl p-4 shadow-sm relative overflow-hidden">
+            <div class="leaderboard-header-toggle flex items-center justify-between border-b border-gray-100 pb-2.5 cursor-pointer hover:bg-gray-50/70 p-1 -mx-1 -mt-1 rounded-t-xl select-none" title="Cliquer pour ${userLeaderboardExpandedState ? 'replier' : 'déplier'} le classement">
+                <div class="flex items-center gap-2.5">
+                    <span class="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-amber-100 text-amber-700 font-extrabold text-sm shadow-2xs">
+                        <i class="fas fa-trophy"></i>
+                    </span>
+                    <div>
+                        <h4 class="font-bold text-gray-800 text-sm sm:text-base flex items-center gap-2">
+                            <span>Classement des Coureurs</span>
+                            <span class="text-xs px-2 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200 font-medium">Top 5</span>
+                        </h4>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2.5">
+                    <span class="text-xs font-semibold px-2.5 py-1 rounded-full ${isUserInTop5 ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-gray-100 text-gray-700 border border-gray-200'}">
+                        Votre rang : <strong class="font-extrabold">#${currentUserRank}</strong> (${data.totalPoints} XP)
+                    </span>
+                    <div class="w-6 h-6 rounded-full bg-white border border-gray-200 flex items-center justify-center text-gray-400 hover:text-gray-700 shadow-2xs">
+                        <i class="fas fa-chevron-down text-[11px] transition-transform duration-200 leaderboard-chevron ${userLeaderboardExpandedState ? 'rotate-180' : ''}"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="leaderboard-body ${userLeaderboardExpandedState ? '' : 'hidden'} mt-3 space-y-2" id="leaderboard-body">
+                <div class="grid grid-cols-1 gap-2">
+        `;
+
+        top5Users.forEach((u, idx) => {
+            const rank = idx + 1;
+            const lvl = getLevelFromTotalXP(u.xp);
+            let medalBadge = `<span class="w-6 text-center font-bold text-gray-500 text-xs">#${rank}</span>`;
+            if (rank === 1) medalBadge = `<span class="w-6 text-center text-base" title="1ère place">🥇</span>`;
+            else if (rank === 2) medalBadge = `<span class="w-6 text-center text-base" title="2ème place">🥈</span>`;
+            else if (rank === 3) medalBadge = `<span class="w-6 text-center text-base" title="3ème place">🥉</span>`;
+
+            const isMe = u.isCurrent || (u.uid === currentUid);
+            let displayName = '';
+            if (isMe) {
+                displayName = `<span class="font-bold text-emerald-900">${currentPseudo} <span class="text-xs text-emerald-700 font-semibold">(Moi)</span></span>`;
+            } else {
+                displayName = (u.showPseudo && u.pseudo) 
+                    ? `<span class="font-medium text-gray-800">${u.pseudo}</span>`
+                    : `<span class="font-medium text-gray-600">Utilisateur ${rank}</span>`;
+            }
+
+            html += `
+            <div class="flex items-center justify-between p-2.5 rounded-lg border transition ${isMe ? 'bg-emerald-50/90 border-emerald-300 ring-1 ring-emerald-400/40 shadow-xs' : 'bg-gray-50/70 border-gray-200 hover:bg-gray-100/60'}">
+                <div class="flex items-center gap-2.5 min-w-0">
+                    <div class="shrink-0 flex items-center justify-center">${medalBadge}</div>
+                    <div class="min-w-0">
+                        <div class="text-xs sm:text-sm truncate flex items-center gap-1.5">${displayName}</div>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2 shrink-0">
+                    <span class="text-[11px] px-2 py-0.5 rounded ${lvl.cocarde.pillBg} border hidden sm:inline-flex items-center gap-1">
+                        <span>${lvl.emoji}</span>
+                        <span>${lvl.name}</span>
+                    </span>
+                    <span class="text-xs font-bold ${isMe ? 'text-emerald-800 font-extrabold' : 'text-gray-700'} min-w-[70px] text-right">
+                        ${u.xp.toLocaleString('fr-FR')} XP
+                    </span>
+                </div>
+            </div>
+            `;
+        });
+
+        // Si l'utilisateur connecté n'est pas dans le top 5, afficher sa position en dessous
+        if (!isUserInTop5 && currentUserIndex >= 0) {
+            const myLvl = getLevelFromTotalXP(data.totalPoints);
+            html += `
+                <div class="flex items-center justify-center py-1 text-gray-300 text-xs tracking-widest select-none">
+                    <span>• • •</span>
+                </div>
+                <div class="flex items-center justify-between p-2.5 rounded-lg border bg-emerald-50/90 border-emerald-300 ring-1 ring-emerald-400/40 shadow-xs">
+                    <div class="flex items-center gap-2.5 min-w-0">
+                        <div class="shrink-0 flex items-center justify-center">
+                            <span class="w-6 text-center font-extrabold text-emerald-800 text-xs">#${currentUserRank}</span>
+                        </div>
+                        <div class="min-w-0">
+                            <div class="text-xs sm:text-sm truncate flex items-center gap-1.5 font-bold text-emerald-900">
+                                <span>${currentPseudo}</span>
+                                <span class="text-xs text-emerald-700 font-semibold">(Moi)</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2 shrink-0">
+                        <span class="text-[11px] px-2 py-0.5 rounded ${myLvl.cocarde.pillBg} border hidden sm:inline-flex items-center gap-1">
+                            <span>${myLvl.emoji}</span>
+                            <span>${myLvl.name}</span>
+                        </span>
+                        <span class="text-xs font-extrabold text-emerald-800 min-w-[70px] text-right">
+                            ${data.totalPoints.toLocaleString('fr-FR')} XP
+                        </span>
+                    </div>
+                </div>
+            `;
+        }
+
+        const isShowPseudoInLeaderboard = (localStorage.getItem('prefShowPseudoInLeaderboard') !== 'false' && window.prefShowPseudoInLeaderboard !== false);
+        const leaderboardToggleText = isShowPseudoInLeaderboard
+            ? 'Masquer mon pseudo dans le classement'
+            : 'Afficher mon pseudo dans le classement';
+
+        html += `
+                </div>
+                <div class="mt-2.5 pt-2 border-t border-gray-100 flex flex-wrap items-center justify-between gap-2 text-[11px] text-gray-400">
+                    <span class="flex items-center gap-1">
+                        <i class="fas fa-user-shield text-gray-400"></i>
+                        ${isShowPseudoInLeaderboard ? 'Votre pseudo est affiché dans le classement.' : 'Votre pseudo est anonymisé (« Utilisateur X »).'}
+                    </span>
+                    <button type="button" onclick="openUserSettingsForLeaderboard()" class="text-green-700 hover:text-green-800 hover:underline font-semibold cursor-pointer">
+                        ${leaderboardToggleText}
+                    </button>
+                </div>
+            </div>
+        </div>
+        `;
+
+        // 3. SECTION DES 3 GRANDES COCARDES RECORDS (Repliable)
         const rec = data.recordCocardes || calculateRecordCocardes(racesData);
         const isRecUnlocked = rec && rec.isUnlocked;
 
         html += `
         <div class="mb-6 bg-white border ${isRecUnlocked ? 'border-amber-200/80' : 'border-gray-300'} rounded-xl p-4 shadow-sm relative overflow-hidden">
-            <div class="flex items-center justify-between mb-3 border-b border-gray-100 pb-2.5">
+            <div class="cocardes-header-toggle flex items-center justify-between border-b border-gray-100 pb-2.5 cursor-pointer hover:bg-gray-50/70 p-1 -mx-1 -mt-1 rounded-t-xl select-none" title="Cliquer pour ${userCocardesExpandedState ? 'replier' : 'déplier'} les records">
                 <div class="flex items-center gap-2.5">
                     <svg width="20" height="26" viewBox="0 0 28 38" fill="none" xmlns="http://www.w3.org/2000/svg" class="shrink-0 ${isRecUnlocked ? 'filter drop-shadow-xs' : 'opacity-60'}">
                         <path d="M7 16 L2 35 L8.5 36 L12 18 Z" fill="#DC2626"/>
@@ -2236,14 +2454,21 @@
                     </svg>
                     <h4 class="font-bold text-gray-800 text-sm sm:text-base">Les 3 Cocardes Records</h4>
                 </div>
-                ${isRecUnlocked ? `
-                    <span class="text-[11px] text-gray-400">Attribuées sur le dashboard et dans la fiche de course</span>
-                ` : `
-                    <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-300 text-xs font-semibold">
-                        <i class="fas fa-lock text-[10px] text-amber-600"></i> ${rec.totalRaces || 0} / 5 courses
-                    </span>
-                `}
+                <div class="flex items-center gap-2.5">
+                    ${isRecUnlocked ? `
+                        <span class="text-[11px] text-gray-400 hidden sm:inline">Attribuées sur le dashboard et dans la fiche de course</span>
+                    ` : `
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-300 text-xs font-semibold">
+                            <i class="fas fa-lock text-[10px] text-amber-600"></i> ${rec.totalRaces || 0} / 5 courses
+                        </span>
+                    `}
+                    <div class="w-6 h-6 rounded-full bg-white border border-gray-200 flex items-center justify-center text-gray-400 hover:text-gray-700 shadow-2xs">
+                        <i class="fas fa-chevron-down text-[11px] transition-transform duration-200 cocardes-chevron ${userCocardesExpandedState ? 'rotate-180' : ''}"></i>
+                    </div>
+                </div>
             </div>
+
+            <div class="cocardes-body ${userCocardesExpandedState ? '' : 'hidden'} mt-3" id="cocardes-body">
         `;
 
         if (!isRecUnlocked) {
@@ -2365,9 +2590,12 @@
             `;
         }
 
-        html += `</div>`; // fin section cocardes
+        html += `
+            </div>
+        </div>
+        `; // fin section cocardes
 
-        // 3. ONGLETS DE NIVEAUX (10 Onglets)
+        // 4. ONGLETS DE NIVEAUX (10 Onglets)
         html += `
         <div class="flex items-center gap-2 overflow-x-auto pb-1 mb-5 custom-scrollbar">
             <button class="level-tab-btn px-3.5 py-1.5 rounded-lg text-xs font-semibold transition shrink-0 flex items-center gap-1.5 cursor-pointer ${activeLevelTab === 'all' ? 'bg-green-700 text-white shadow-sm' : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'}" data-level="all">
@@ -2391,7 +2619,7 @@
         });
         html += `</div>`;
 
-        // 4. SECTIONS PAR NIVEAU
+        // 5. SECTIONS PAR NIVEAU
         const levelsToRender = activeLevelTab === 'all' 
             ? LEVELS_CONFIG 
             : LEVELS_CONFIG.filter(lvl => lvl.id === activeLevelTab);
@@ -2606,6 +2834,46 @@
                     userLevelExpandedState[activeLevelTab] = true;
                 }
                 displayRaceBadgesModal();
+            });
+        });
+
+        // Toggle section Cocardes Records
+        content.querySelectorAll('.cocardes-header-toggle').forEach(header => {
+            header.addEventListener('click', function () {
+                const body = document.getElementById('cocardes-body');
+                const chevron = this.querySelector('.cocardes-chevron');
+                if (!body) return;
+                const isHidden = body.classList.contains('hidden');
+                if (isHidden) {
+                    body.classList.remove('hidden');
+                    if (chevron) chevron.classList.add('rotate-180');
+                    userCocardesExpandedState = true;
+                } else {
+                    body.classList.add('hidden');
+                    if (chevron) chevron.classList.remove('rotate-180');
+                    userCocardesExpandedState = false;
+                }
+                localStorage.setItem('cocardesExpandedState', userCocardesExpandedState ? 'true' : 'false');
+            });
+        });
+
+        // Toggle section Leaderboard
+        content.querySelectorAll('.leaderboard-header-toggle').forEach(header => {
+            header.addEventListener('click', function () {
+                const body = document.getElementById('leaderboard-body');
+                const chevron = this.querySelector('.leaderboard-chevron');
+                if (!body) return;
+                const isHidden = body.classList.contains('hidden');
+                if (isHidden) {
+                    body.classList.remove('hidden');
+                    if (chevron) chevron.classList.add('rotate-180');
+                    userLeaderboardExpandedState = true;
+                } else {
+                    body.classList.add('hidden');
+                    if (chevron) chevron.classList.remove('rotate-180');
+                    userLeaderboardExpandedState = false;
+                }
+                localStorage.setItem('leaderboardExpandedState', userLeaderboardExpandedState ? 'true' : 'false');
             });
         });
 
