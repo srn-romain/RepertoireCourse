@@ -217,6 +217,36 @@ input[type="search"]::-webkit-search-results-decoration {
     }
 }
 
+/* Boutons de liens dans la modal de détails */
+.btn-race-website,
+.bg-blue-600.btn-race-website {
+    background-color: #2563eb !important;
+}
+.btn-race-website:hover,
+.hover\:bg-blue-700.btn-race-website:hover {
+    background-color: #1d4ed8 !important;
+}
+
+.btn-race-results,
+.bg-orange-500.btn-race-results,
+.bg-orange-500 {
+    background-color: #f97316 !important;
+}
+.btn-race-results:hover,
+.hover\:bg-orange-600.btn-race-results:hover,
+.hover\:bg-orange-600:hover {
+    background-color: #ea580c !important;
+}
+
+.btn-race-gpx,
+.bg-green-600.btn-race-gpx {
+    background-color: #16a34a !important;
+}
+.btn-race-gpx:hover,
+.hover\:bg-green-700.btn-race-gpx:hover {
+    background-color: #15803d !important;
+}
+
 /* Drive Explorer Specific Styles */
 #driveExplorerModal .modal-container {
     max-width: 1000px;

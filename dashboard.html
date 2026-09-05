@@ -1193,6 +1193,7 @@
                     </div>
 
                     <div id="averageSpeedInfo" class="mb-2 text-green-700 font-semibold"></div>
+                    <div id="detailsLinksContainer" class="mt-4 mb-4 grid grid-cols-1 gap-3 w-full hidden"></div>
                     <div class="mb-4">
                         <p id="detailsNotesLabel" class="text-sm text-green-600 mb-1">Notes</p>
                         <p id="detailsNotes" class="text-gray-700"></p>
@@ -6530,7 +6531,7 @@
                     webBtn.href = race.website;
                     webBtn.target = '_blank';
                     webBtn.rel = 'noopener';
-                    webBtn.className = `block w-full text-center py-2.5 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all font-semibold no-underline shadow-sm text-sm ${colSpanClass}`;
+                    webBtn.className = `block w-full text-center py-2.5 px-4 bg-blue-600 btn-race-website text-white rounded-lg hover:bg-blue-700 transition-all font-semibold no-underline shadow-sm text-sm ${colSpanClass}`;
                     webBtn.innerHTML = `<i class="fas fa-external-link-alt mr-2 text-xs"></i>${websiteLinkText}`;
                     linksContainer.appendChild(webBtn);
                 }
@@ -6546,7 +6547,7 @@
                     resultBtn.href = race.resultUrl;
                     resultBtn.target = '_blank';
                     resultBtn.rel = 'noopener';
-                    resultBtn.className = `block w-full text-center py-2.5 px-4 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-all font-semibold no-underline shadow-sm text-sm ${colSpanClass}`;
+                    resultBtn.className = `block w-full text-center py-2.5 px-4 bg-orange-500 btn-race-results text-white rounded-lg hover:bg-orange-600 transition-all font-semibold no-underline shadow-sm text-sm ${colSpanClass}`;
                     resultBtn.innerHTML = `<i class="fas fa-trophy mr-2 text-xs"></i>${resultLinkText}`;
                     linksContainer.appendChild(resultBtn);
                 }
@@ -6562,7 +6563,7 @@
                     gpxBtn.href = race.gpxUrl;
                     gpxBtn.target = '_blank';
                     gpxBtn.rel = 'noopener';
-                    gpxBtn.className = `block w-full text-center py-2.5 px-4 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all font-semibold no-underline shadow-sm text-sm ${colSpanClass}`;
+                    gpxBtn.className = `block w-full text-center py-2.5 px-4 bg-green-600 btn-race-gpx text-white rounded-lg hover:bg-green-700 transition-all font-semibold no-underline shadow-sm text-sm ${colSpanClass}`;
                     gpxBtn.innerHTML = `<i class="fas fa-route mr-2 text-xs"></i>${gpxLinkText}`;
                     linksContainer.appendChild(gpxBtn);
                 }
