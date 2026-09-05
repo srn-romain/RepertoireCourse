@@ -9,7 +9,7 @@
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZD07VSG72D"></script>
     <script>
         window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
+        function gtag() { dataLayer.push(arguments); }
         gtag('js', new Date());
 
         gtag('config', 'G-ZD07VSG72D');
@@ -137,8 +137,6 @@
     <!-- Changelog Section -->
     <div class="container mx-auto px-4 sm:px-6 lg:px-8 mt-8 relative z-20 max-w-3xl">
 
-
-
         <!-- Version courante — toujours visible -->
         <div class="bg-green-50 border border-green-200 rounded-xl shadow-md overflow-hidden">
             <div class="flex items-center gap-3 px-5 py-3 bg-green-100 border-b border-green-200">
@@ -146,18 +144,16 @@
                     <i class="fas fa-star text-white text-xs"></i>
                 </span>
                 <div class="flex-1">
-                    <span class="font-bold text-green-800 text-sm">Dernière version : <i>Septembre 2026</i></span>
+                    <span class="font-bold text-green-800 text-sm">Dernière version : <i>Octobre 2026</i></span>
                     <span class="ml-2 text-xs bg-green-600 text-white px-2 py-0.5 rounded-full animate-bounce">Nouveau
                     </span>
                 </div>
             </div>
             <div class="px-5 py-4">
-                <ul class="space-y-1.5 text-sm text-green-800">
-                    <li class="flex items-start gap-2"><span class="text-green-500 mt-0.5">▸</span><span><strong>🏃‍♂️ Nouveau chargement dynamique </strong> - Remplacement du spinner classique par un coureur animé en plein sprint lors du chargement des courses.</span></li>
-                    <li class="flex items-start gap-2"><span class="text-green-500 mt-0.5">▸</span><span><strong>❤️ Wishlist enrichie </strong> - Saisie de la date de course et du lien du site officiel. Clic sur le nom pour ouvrir le site et affichage discret de la date d'ajout (tooltip & clic prolongé mobile).</span></li>
-                    <li class="flex items-start gap-2"><span class="text-green-500 mt-0.5">▸</span><span><strong>🔄 Transfert automatique </strong> - Reprise automatique du nom, de la catégorie, de la date de la course et du lien web lors de l'ajout d'une course depuis la wishlist.</span></li>
-                    <li class="flex items-start gap-2"><span class="text-green-500 mt-0.5">▸</span><span><strong>🔍 Recherche & Items pliables </strong> - Recherche en direct dans la wishlist et présentation sous forme d'éléments pliables/dépliables pour une édition plus claire.</span></li>
-                    <li class="flex items-start gap-2"><span class="text-green-500 mt-0.5">▸</span><span><strong>⭐ Étoiles dans la liste déroulante </strong> - Affichage d'une étoile (★) à côté des courses favorites dans la liste déroulante lors de l'ajout d'une course depuis la wishlist.</span></li>
+                <ul class="space-y-2 text-sm text-green-800">
+                    <li class="flex items-start gap-2"><span class="text-green-500 mt-0.5">▸</span><span><strong>🎮
+                            Missions & XP </strong> — Parcours gamifié sur 10 niveaux (de Tong à
+                            Crampons) avec des défis pour booster votre motivation (avec classement live !).</span></li>
                 </ul>
             </div>
             <!-- Bouton ouvrir/fermer l'historique -->
@@ -172,20 +168,68 @@
         <div id="clHistory" class="hidden">
             <div class="ml-4 border-l-2 border-dashed border-green-200 pl-4 mt-2 space-y-3 pb-2">
 
-                <!-- idx=0 : Août 2026 -->
+                <!-- idx=0 : Septembre 2026 -->
                 <div class="cl-card cl-hidden" data-cl-idx="0">
-                    <div class="bg-white border border-green-100 rounded-xl shadow-sm overflow-hidden mb-3">
-                        <div class="flex items-center gap-3 px-5 py-3 bg-green-50 border-b border-green-100">
-                            <span class="flex items-center justify-center w-7 h-7 bg-green-500 rounded-full shrink-0">
+                    <div class="bg-white border border-purple-200 rounded-xl shadow-sm overflow-hidden mb-3">
+                        <div class="flex items-center gap-3 px-5 py-3 bg-purple-50 border-b border-purple-100">
+                            <span class="flex items-center justify-center w-7 h-7 bg-purple-600 rounded-full shrink-0">
                                 <i class="fas fa-history text-white text-xs"></i>
                             </span>
-                            <span class="font-bold text-green-800 text-sm">Août 2026</span>
+                            <span class="font-bold text-purple-900 text-sm">Septembre 2026</span>
                         </div>
                         <div class="px-5 py-3">
-                            <ul class="space-y-1 text-sm text-green-800">
-                                <li class="flex items-start gap-2"><span class="text-green-500 mt-0.5">▸</span><span><strong>☑️ Sélection multiple & Clic prolongé </strong> - Maintenez le clic (~500ms) ou utilisez le bouton dédié pour sélectionner vos courses avec mise en relief émeraude.</span></li>
-                                <li class="flex items-start gap-2"><span class="text-green-500 mt-0.5">▸</span><span><strong>⚡ Actions en masse </strong> - Exporter la sélection en JSON, ajouter une note commune, gérer les favoris et supprimer en lot avec double validation.</span></li>
-                                <li class="flex items-start gap-2"><span class="text-green-500 mt-0.5">▸</span><span><strong>🎽 Numéro de dossard </strong> - Enregistrez votre numéro de dossard pour chaque course. Il s'intègre à la recherche et à l'export PDF.</span></li>
+                            <ul class="space-y-1 text-sm text-purple-900">
+                                <li class="flex items-start gap-2"><span
+                                        class="text-purple-500 mt-0.5">▸</span><span><strong>🏃‍♂️ Nouveau chargement
+                                            dynamique </strong> - Remplacement du spinner classique par un coureur animé
+                                        en plein sprint lors du chargement des courses.</span></li>
+                                <li class="flex items-start gap-2"><span
+                                        class="text-purple-500 mt-0.5">▸</span><span><strong>❤️ Wishlist enrichie
+                                        </strong> - Saisie de la date de course et du lien du site officiel. Clic sur le
+                                        nom pour ouvrir le site et affichage discret de la date d'ajout (tooltip & clic
+                                        prolongé mobile).</span></li>
+                                <li class="flex items-start gap-2"><span
+                                        class="text-purple-500 mt-0.5">▸</span><span><strong>🔄 Transfert automatique
+                                        </strong> - Reprise automatique du nom, de la catégorie, de la date de la course
+                                        et du lien web lors de l'ajout d'une course depuis la wishlist.</span></li>
+                                <li class="flex items-start gap-2"><span
+                                        class="text-purple-500 mt-0.5">▸</span><span><strong>🔍 Recherche & Items
+                                            pliables </strong> - Recherche en direct dans la wishlist et présentation
+                                        sous forme d'éléments pliables/dépliables pour une édition plus claire.</span>
+                                </li>
+                                <li class="flex items-start gap-2"><span
+                                        class="text-purple-500 mt-0.5">▸</span><span><strong>⭐ Étoiles dans la liste
+                                            déroulante </strong> - Affichage d'une étoile (★) à côté des courses
+                                        favorites dans la liste déroulante lors de l'ajout d'une course depuis la
+                                        wishlist.</span></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- idx=0 : Août 2026 -->
+                <div class="cl-card cl-hidden" data-cl-idx="0">
+                    <div class="bg-white border border-amber-200 rounded-xl shadow-sm overflow-hidden mb-3">
+                        <div class="flex items-center gap-3 px-5 py-3 bg-amber-50 border-b border-amber-100">
+                            <span class="flex items-center justify-center w-7 h-7 bg-amber-500 rounded-full shrink-0">
+                                <i class="fas fa-history text-white text-xs"></i>
+                            </span>
+                            <span class="font-bold text-amber-900 text-sm">Août 2026</span>
+                        </div>
+                        <div class="px-5 py-3">
+                            <ul class="space-y-1 text-sm text-amber-900">
+                                <li class="flex items-start gap-2"><span
+                                        class="text-amber-500 mt-0.5">▸</span><span><strong>☑️ Sélection multiple & Clic
+                                            prolongé </strong> - Maintenez le clic (~500ms) ou utilisez le bouton dédié
+                                        pour sélectionner vos courses avec mise en relief émeraude.</span></li>
+                                <li class="flex items-start gap-2"><span
+                                        class="text-amber-500 mt-0.5">▸</span><span><strong>⚡ Actions en masse </strong>
+                                        - Exporter la sélection en JSON, ajouter une note commune, gérer les favoris et
+                                        supprimer en lot avec double validation.</span></li>
+                                <li class="flex items-start gap-2"><span
+                                        class="text-amber-500 mt-0.5">▸</span><span><strong>🎽 Numéro de dossard
+                                        </strong> - Enregistrez votre numéro de dossard pour chaque course. Il s'intègre
+                                        à la recherche et à l'export PDF.</span></li>
                             </ul>
                         </div>
                     </div>
@@ -202,10 +246,23 @@
                         </div>
                         <div class="px-5 py-3">
                             <ul class="space-y-1 text-sm text-teal-800">
-                                <li class="flex items-start gap-2"><span class="text-teal-500 mt-0.5">▸</span><span><strong>📄 Génération PDF de relais </strong> - Exportez uniquement le tableau détaillé des relais en un clic avec une mise en page propre.</span></li>
-                                <li class="flex items-start gap-2"><span class="text-teal-500 mt-0.5">▸</span><span><strong>💬 Commentaires de relais </strong> - Saisissez et consultez des commentaires individuels pour chaque segment, maintenant parfaitement centrés dans le PDF.</span></li>
-                                <li class="flex items-start gap-2"><span class="text-teal-500 mt-0.5">▸</span><span><strong>🎨 Design des PDF modernisé </strong> - Revue globale de la mise en page des détails et statistiques de course sous forme de tableaux bordés et centrés.</span></li>
-                                <li class="flex items-start gap-2"><span class="text-teal-500 mt-0.5">▸</span><span><strong>🏷️ Tags des cartes configurables </strong> - Choisissez quels tags (Distance, Dénivelé, Lieu, Terrain, Temps, Allure, Prix, Classement) afficher sur vos cartes de course depuis le panneau de configuration.</span></li>
+                                <li class="flex items-start gap-2"><span
+                                        class="text-teal-500 mt-0.5">▸</span><span><strong>📄 Génération PDF de relais
+                                        </strong> - Exportez uniquement le tableau détaillé des relais en un clic avec
+                                        une mise en page propre.</span></li>
+                                <li class="flex items-start gap-2"><span
+                                        class="text-teal-500 mt-0.5">▸</span><span><strong>💬 Commentaires de relais
+                                        </strong> - Saisissez et consultez des commentaires individuels pour chaque
+                                        segment, maintenant parfaitement centrés dans le PDF.</span></li>
+                                <li class="flex items-start gap-2"><span
+                                        class="text-teal-500 mt-0.5">▸</span><span><strong>🎨 Design des PDF modernisé
+                                        </strong> - Revue globale de la mise en page des détails et statistiques de
+                                        course sous forme de tableaux bordés et centrés.</span></li>
+                                <li class="flex items-start gap-2"><span
+                                        class="text-teal-500 mt-0.5">▸</span><span><strong>🏷️ Tags des cartes
+                                            configurables </strong> - Choisissez quels tags (Distance, Dénivelé, Lieu,
+                                        Terrain, Temps, Allure, Prix, Classement) afficher sur vos cartes de course
+                                        depuis le panneau de configuration.</span></li>
                             </ul>
                         </div>
                     </div>
@@ -222,10 +279,23 @@
                         </div>
                         <div class="px-5 py-3">
                             <ul class="space-y-1 text-sm text-blue-800">
-                                <li class="flex items-start gap-2"><span class="text-blue-400 mt-0.5">▸</span><span><strong>🛠️ Configuration des cartes </strong> - Personnalisez les boutons d'actions rapides affichés en bas à gauche de vos cartes de course.</span></li>
-                                <li class="flex items-start gap-2"><span class="text-blue-400 mt-0.5">▸</span><span><strong>🖼️ Image de carte par défaut</strong> - Choisissez d'afficher par défaut la photo de la course ou le tracé du parcours sur vos cartes avec un repli intelligent.</span></li>
-                                <li class="flex items-start gap-2"><span class="text-blue-400 mt-0.5">▸</span><span><strong>📝 Surlignage couleur des notes</strong> - Surlignez facilement votre texte sélectionné en Jaune, Rouge ou Vert grâce à 3 nouveaux boutons dédiés dans l'éditeur de notes.</span></li>
-                                <li class="flex items-start gap-2"><span class="text-blue-400 mt-0.5">▸</span><span><strong>👥 Relais ergonomiques & dépliables</strong> - Cliquez sur les lignes du tableau des relais pour faire apparaître les horaires associés.</span></li>
+                                <li class="flex items-start gap-2"><span
+                                        class="text-blue-400 mt-0.5">▸</span><span><strong>🛠️ Configuration des cartes
+                                        </strong> - Personnalisez les boutons d'actions rapides affichés en bas à gauche
+                                        de vos cartes de course.</span></li>
+                                <li class="flex items-start gap-2"><span
+                                        class="text-blue-400 mt-0.5">▸</span><span><strong>🖼️ Image de carte par
+                                            défaut</strong> - Choisissez d'afficher par défaut la photo de la course ou
+                                        le tracé du parcours sur vos cartes avec un repli intelligent.</span></li>
+                                <li class="flex items-start gap-2"><span
+                                        class="text-blue-400 mt-0.5">▸</span><span><strong>📝 Surlignage couleur des
+                                            notes</strong> - Surlignez facilement votre texte sélectionné en Jaune,
+                                        Rouge ou Vert grâce à 3 nouveaux boutons dédiés dans l'éditeur de notes.</span>
+                                </li>
+                                <li class="flex items-start gap-2"><span
+                                        class="text-blue-400 mt-0.5">▸</span><span><strong>👥 Relais ergonomiques &
+                                            dépliables</strong> - Cliquez sur les lignes du tableau des relais pour
+                                        faire apparaître les horaires associés.</span></li>
                             </ul>
                         </div>
                     </div>
@@ -242,11 +312,26 @@
                         </div>
                         <div class="px-5 py-3">
                             <ul class="space-y-1 text-sm text-emerald-800">
-                                <li class="flex items-start gap-2"><span class="text-emerald-400 mt-0.5">▸</span><span><strong>📂 Explorateur Google Drive </strong> - connectez vos dossiers Drive pour visionner vos documents directement dans l'application.</span></li>
-                                <li class="flex items-start gap-2"><span class="text-emerald-400 mt-0.5">▸</span><span><strong>👥 Relais personnalisés </strong> - identifiez chaque relayeur par son nom sur chaque segment de votre course.</span></li>
-                                <li class="flex items-start gap-2"><span class="text-emerald-400 mt-0.5">▸</span><span><strong>📝 Enrichissement de l'éditeur </strong> - mise en forme (Gras, Italique, Souligné) et adaptation de la taille dans les notes de courses.</span></li>
-                                <li class="flex items-start gap-2"><span class="text-emerald-400 mt-0.5">▸</span><span><strong>⚙️ Personnalisation du tableau de bord </strong> - Choisissez quels boutons afficher ou masquer.</span></li>
-                                <li class="flex items-start gap-2"><span class="text-emerald-400 mt-0.5">▸</span><span><strong>📤 Import & Export centralisés </strong> - Les boutons Importer et Exporter sont désormais regroupés.</span></li>
+                                <li class="flex items-start gap-2"><span
+                                        class="text-emerald-400 mt-0.5">▸</span><span><strong>📂 Explorateur Google
+                                            Drive </strong> - connectez vos dossiers Drive pour visionner vos documents
+                                        directement dans l'application.</span></li>
+                                <li class="flex items-start gap-2"><span
+                                        class="text-emerald-400 mt-0.5">▸</span><span><strong>👥 Relais personnalisés
+                                        </strong> - identifiez chaque relayeur par son nom sur chaque segment de votre
+                                        course.</span></li>
+                                <li class="flex items-start gap-2"><span
+                                        class="text-emerald-400 mt-0.5">▸</span><span><strong>📝 Enrichissement de
+                                            l'éditeur </strong> - mise en forme (Gras, Italique, Souligné) et adaptation
+                                        de la taille dans les notes de courses.</span></li>
+                                <li class="flex items-start gap-2"><span
+                                        class="text-emerald-400 mt-0.5">▸</span><span><strong>⚙️ Personnalisation du
+                                            tableau de bord </strong> - Choisissez quels boutons afficher ou
+                                        masquer.</span></li>
+                                <li class="flex items-start gap-2"><span
+                                        class="text-emerald-400 mt-0.5">▸</span><span><strong>📤 Import & Export
+                                            centralisés </strong> - Les boutons Importer et Exporter sont désormais
+                                        regroupés.</span></li>
                             </ul>
                         </div>
                     </div>
@@ -331,7 +416,8 @@
                                         class="text-indigo-400 mt-0.5">▸</span><span><strong>🏋️ Gestion Hyrox</strong>
                                         — suivi des 8 exercices</span></li>
                                 <li class="flex items-start gap-2"><span
-                                        class="text-indigo-400 mt-0.5">▸</span><span><strong>🖼️️ Photo de profil</strong>
+                                        class="text-indigo-400 mt-0.5">▸</span><span><strong>🖼️️ Photo de
+                                            profil</strong>
                                         — Humanisez votre compte avec une PP personnalisable</span></li>
                             </ul>
                         </div>
@@ -613,11 +699,11 @@
                     <div class="feature-card p-6 h-full">
                         <div
                             class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mb-4 text-purple-600">
-                            <i class="fas fa-award text-xl"></i>
+                            <i class="fas fa-gamepad text-xl"></i>
                         </div>
-                        <h3 class="text-lg font-bold text-purple-800 mb-2">Badges & Succès</h3>
-                        <p class="text-gray-600 text-sm">Relevez des défis et débloquez des badges exclusifs selon vos
-                            records personnels.</p>
+                        <h3 class="text-lg font-bold text-purple-800 mb-2">120 Missions & 10 000 XP</h3>
+                        <p class="text-gray-600 text-sm">Franchissez 10 niveaux (de Tong à Crampons d'Or) et cumulez 10
+                            000 XP en relevant des défis de course variés.</p>
                     </div>
                 </div>
                 <div class="feature-item">
@@ -660,7 +746,19 @@
                             <i class="fas fa-layer-group text-xl"></i>
                         </div>
                         <h3 class="text-lg font-bold text-rose-800 mb-2">Cartes sur-mesure</h3>
-                        <p class="text-gray-600 text-sm">Personnalisez vos cartes : choisissez vos raccourcis d'actions rapides et les tags (distance, temps, allure…) à afficher.</p>
+                        <p class="text-gray-600 text-sm">Personnalisez vos cartes : choisissez vos raccourcis d'actions
+                            rapides et les tags (distance, temps, allure…) à afficher.</p>
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-card p-6 h-full">
+                        <div
+                            class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mb-4 text-purple-700">
+                            <i class="fas fa-tasks text-xl"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-purple-900 mb-2">Actions en Masse</h3>
+                        <p class="text-gray-600 text-sm">Sélectionnez plusieurs courses (clic long) pour exporter en
+                            JSON, ajouter une note commune ou gérer vos favoris.</p>
                     </div>
                 </div>
                 <!-- Set 2 (Duplicate for seamless loop) -->
@@ -690,11 +788,11 @@
                     <div class="feature-card p-6 h-full">
                         <div
                             class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mb-4 text-purple-600">
-                            <i class="fas fa-award text-xl"></i>
+                            <i class="fas fa-gamepad text-xl"></i>
                         </div>
-                        <h3 class="text-lg font-bold text-purple-800 mb-2">Badges & Succès</h3>
-                        <p class="text-gray-600 text-sm">Relevez des défis et débloquez des badges exclusifs selon vos
-                            records personnels.</p>
+                        <h3 class="text-lg font-bold text-purple-800 mb-2">120 Missions & 10 000 XP</h3>
+                        <p class="text-gray-600 text-sm">Franchissez 10 niveaux (de Tong à Crampons d'Or) et cumulez 10
+                            000 XP en relevant des défis de course variés.</p>
                     </div>
                 </div>
                 <div class="feature-item">
@@ -737,7 +835,19 @@
                             <i class="fas fa-layer-group text-xl"></i>
                         </div>
                         <h3 class="text-lg font-bold text-rose-800 mb-2">Cartes sur-mesure</h3>
-                        <p class="text-gray-600 text-sm">Choisissez vos raccourcis d'actions et configurez les tags affichés sur chaque carte selon vos préférences.</p>
+                        <p class="text-gray-600 text-sm">Choisissez vos raccourcis d'actions et configurez les tags
+                            affichés sur chaque carte selon vos préférences.</p>
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-card p-6 h-full">
+                        <div
+                            class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mb-4 text-purple-700">
+                            <i class="fas fa-tasks text-xl"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-purple-900 mb-2">Actions en Masse</h3>
+                        <p class="text-gray-600 text-sm">Sélectionnez plusieurs courses (clic long) pour exporter en
+                            JSON, ajouter une note commune ou gérer vos favoris.</p>
                     </div>
                 </div>
             </div>
@@ -813,6 +923,28 @@
                             détaillées et personnalisées.</p>
                     </div>
                 </div>
+                <div class="feature-item">
+                    <div class="feature-card p-6 h-full">
+                        <div
+                            class="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center mb-4 text-amber-600">
+                            <i class="fas fa-calendar-check text-xl"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-amber-800 mb-2">Flashback & Souvenirs</h3>
+                        <p class="text-gray-600 text-sm">Revivez vos exploits avec des rappels d'anniversaires de course
+                            « C'était il y a un an » sur votre carnet.</p>
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-card p-6 h-full">
+                        <div
+                            class="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center mb-4 text-yellow-600">
+                            <i class="fas fa-trophy text-xl"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-yellow-800 mb-2">Classement Live</h3>
+                        <p class="text-gray-600 text-sm">Mesurez-vous en direct au Top Coureurs réels avec suivi de
+                            votre rang et gestion en 1 clic de votre anonymat.</p>
+                    </div>
+                </div>
                 <!-- Set 2 (Duplicate) -->
                 <div class="feature-item">
                     <div class="feature-card p-6 h-full">
@@ -880,6 +1012,28 @@
                             détaillées et personnalisées.</p>
                     </div>
                 </div>
+                <div class="feature-item">
+                    <div class="feature-card p-6 h-full">
+                        <div
+                            class="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center mb-4 text-amber-600">
+                            <i class="fas fa-calendar-check text-xl"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-amber-800 mb-2">Flashback & Souvenirs</h3>
+                        <p class="text-gray-600 text-sm">Revivez vos exploits avec des rappels d'anniversaires de course
+                            « C'était il y a un an » sur votre carnet.</p>
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-card p-6 h-full">
+                        <div
+                            class="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center mb-4 text-yellow-600">
+                            <i class="fas fa-trophy text-xl"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-yellow-800 mb-2">Classement Live</h3>
+                        <p class="text-gray-600 text-sm">Mesurez-vous en direct au Top Coureurs réels avec suivi de
+                            votre rang et gestion en 1 clic de votre anonymat.</p>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -893,7 +1047,7 @@
             <div class="text-center mb-8">
                 <span
                     class="bg-yellow-100 text-yellow-800 text-sm px-3 py-1 rounded-full uppercase tracking-wider">Avis</span>
-                
+
                 <h2 class="text-3xl text-green-800 mt-2 mb-4">Ce qu'ils en pensent</h2>
                 <p class="text-gray-600 max-w-2xl mx-auto">Des vraies personnes, des vrais retours.</p>
 
@@ -905,7 +1059,9 @@
                         </div>
                         <span class="text-base sm:text-lg font-bold text-gray-800" id="averageRatingText">0.0 / 5</span>
                         <span class="w-1.5 h-1.5 rounded-full bg-gray-400"></span>
-                        <span class="text-xs sm:text-sm font-semibold text-gray-500 hover:text-green-700 transition-colors cursor-pointer hover:underline" id="totalReviewsText">0 avis</span>
+                        <span
+                            class="text-xs sm:text-sm font-semibold text-gray-500 hover:text-green-700 transition-colors cursor-pointer hover:underline"
+                            id="totalReviewsText">0 avis</span>
                     </div>
                 </div>
             </div>
@@ -1020,37 +1176,52 @@
                                     <feComposite in="SourceGraphic" in2="blur" operator="over" />
                                 </filter>
                             </defs>
-                            <ellipse class="runner-shadow-anim" cx="70" cy="94" rx="20" ry="3.5" fill="rgba(16, 185, 129, 0.25)" />
+                            <ellipse class="runner-shadow-anim" cx="70" cy="94" rx="20" ry="3.5"
+                                fill="rgba(16, 185, 129, 0.25)" />
                             <g class="runner-body-anim">
                                 <g class="runner-arm-back">
-                                    <path d="M 80 38 L 68 48" stroke="url(#runnerGradDarkIndex)" stroke-width="4.5" stroke-linecap="round" fill="none" />
+                                    <path d="M 80 38 L 68 48" stroke="url(#runnerGradDarkIndex)" stroke-width="4.5"
+                                        stroke-linecap="round" fill="none" />
                                     <g class="runner-forearm-back">
-                                        <path d="M 68 48 L 60 56" stroke="url(#runnerGradDarkIndex)" stroke-width="4" stroke-linecap="round" fill="none" />
+                                        <path d="M 68 48 L 60 56" stroke="url(#runnerGradDarkIndex)" stroke-width="4"
+                                            stroke-linecap="round" fill="none" />
                                     </g>
                                 </g>
                                 <g class="runner-thigh-back">
-                                    <path d="M 70 60 L 56 74" stroke="url(#runnerGradDarkIndex)" stroke-width="5" stroke-linecap="round" fill="none" />
+                                    <path d="M 70 60 L 56 74" stroke="url(#runnerGradDarkIndex)" stroke-width="5"
+                                        stroke-linecap="round" fill="none" />
                                     <g class="runner-shin-back">
-                                        <path d="M 56 74 L 46 94 L 52 94" stroke="url(#runnerGradDarkIndex)" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+                                        <path d="M 56 74 L 46 94 L 52 94" stroke="url(#runnerGradDarkIndex)"
+                                            stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"
+                                            fill="none" />
                                     </g>
                                 </g>
-                                <path d="M 80 38 L 70 60" stroke="url(#runnerGradIndex)" stroke-width="6" stroke-linecap="round" filter="url(#runnerGlowIndex)" />
-                                <circle cx="88" cy="22" r="7.5" fill="url(#runnerGradIndex)" filter="url(#runnerGlowIndex)" />
-                                <path d="M 92 21 L 95 22 L 92 24" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" fill="none" opacity="0.9" />
+                                <path d="M 80 38 L 70 60" stroke="url(#runnerGradIndex)" stroke-width="6"
+                                    stroke-linecap="round" filter="url(#runnerGlowIndex)" />
+                                <circle cx="88" cy="22" r="7.5" fill="url(#runnerGradIndex)"
+                                    filter="url(#runnerGlowIndex)" />
+                                <path d="M 92 21 L 95 22 L 92 24" stroke="#ffffff" stroke-width="1.5"
+                                    stroke-linecap="round" fill="none" opacity="0.9" />
                                 <g class="runner-thigh-front">
-                                    <path d="M 70 60 L 84 74" stroke="url(#runnerGradIndex)" stroke-width="5.5" stroke-linecap="round" fill="none" filter="url(#runnerGlowIndex)" />
+                                    <path d="M 70 60 L 84 74" stroke="url(#runnerGradIndex)" stroke-width="5.5"
+                                        stroke-linecap="round" fill="none" filter="url(#runnerGlowIndex)" />
                                     <g class="runner-shin-front">
-                                        <path d="M 84 74 L 78 94 L 86 94" stroke="url(#runnerGradIndex)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none" filter="url(#runnerGlowIndex)" />
+                                        <path d="M 84 74 L 78 94 L 86 94" stroke="url(#runnerGradIndex)"
+                                            stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none"
+                                            filter="url(#runnerGlowIndex)" />
                                     </g>
                                 </g>
                                 <g class="runner-arm-front">
-                                    <path d="M 80 38 L 92 48" stroke="url(#runnerGradIndex)" stroke-width="5" stroke-linecap="round" fill="none" filter="url(#runnerGlowIndex)" />
+                                    <path d="M 80 38 L 92 48" stroke="url(#runnerGradIndex)" stroke-width="5"
+                                        stroke-linecap="round" fill="none" filter="url(#runnerGlowIndex)" />
                                     <g class="runner-forearm-front">
-                                        <path d="M 92 48 L 100 38" stroke="url(#runnerGradIndex)" stroke-width="4.5" stroke-linecap="round" fill="none" filter="url(#runnerGlowIndex)" />
+                                        <path d="M 92 48 L 100 38" stroke="url(#runnerGradIndex)" stroke-width="4.5"
+                                            stroke-linecap="round" fill="none" filter="url(#runnerGlowIndex)" />
                                     </g>
                                 </g>
                             </g>
-                            <line class="runner-track-line" x1="10" y1="94" x2="150" y2="94" stroke="#10b981" stroke-width="2" stroke-dasharray="8 6" stroke-linecap="round" opacity="0.75" />
+                            <line class="runner-track-line" x1="10" y1="94" x2="150" y2="94" stroke="#10b981"
+                                stroke-width="2" stroke-dasharray="8 6" stroke-linecap="round" opacity="0.75" />
                         </svg>
                     </div>
                 </div>

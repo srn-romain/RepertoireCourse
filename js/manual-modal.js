@@ -371,27 +371,54 @@ const manualModalHTML = `
                     </div>
                 </section>
 
-                <!-- Badges -->
+                <!-- Badges, Missions & Gamification -->
                 <section class="mb-8">
                     <h4 class="text-xl font-bold text-green-700 mb-3 flex items-center gap-2">
-                        <i class="fas fa-award text-green-600"></i> Badges & Succès
+                        <i class="fas fa-trophy text-yellow-500"></i> Gamification, Missions & Records
                     </h4>
-                    <div class="bg-white border border-purple-100 rounded-lg p-4 shadow-sm">
-                        <p class="text-sm text-gray-600 mb-2">Débloquez des badges spéciaux pour célébrer vos
-                            exploits
-                            (Record Vitesse, Max Dénivelé, etc.).</p>
-                        <div class="grid grid-cols-2 gap-2 text-xs text-purple-800 mb-3">
-                            <div class="bg-purple-50 p-2 rounded flex items-center gap-2"><i class="fas fa-bolt"></i>
-                                Record Vitesse</div>
-                            <div class="bg-purple-50 p-2 rounded flex items-center gap-2"><i
-                                    class="fas fa-mountain"></i> Max Dénivelé</div>
-                            <div class="bg-purple-50 p-2 rounded flex items-center gap-2"><i
-                                    class="fas fa-euro-sign"></i> Course la + chère</div>
-                            <div class="bg-purple-50 p-2 rounded flex items-center gap-2"><i class="fas fa-route"></i>
-                                Plus Longue Distance</div>
+                    <div class="bg-white border border-yellow-200 rounded-lg p-5 shadow-sm space-y-4">
+                        <p class="text-sm text-gray-700 leading-relaxed">
+                            Progressez au fil de vos courses, débloquez des points d'expérience (XP) et mesurez-vous à la communauté grâce à notre univers gamifié complet.
+                        </p>
+
+                        <div class="grid md:grid-cols-3 gap-3">
+                            <div class="bg-amber-50/70 border border-amber-200 rounded-xl p-3.5">
+                                <h5 class="font-bold text-amber-900 text-sm mb-1.5 flex items-center gap-2">
+                                    <i class="fas fa-gamepad text-amber-600"></i> 120 Missions & 10 Niveaux
+                                </h5>
+                                <ul class="text-xs text-gray-600 space-y-1">
+                                    <li>• <strong>10 Paliers :</strong> De Tong jusqu'à Crampons d'Or.</li>
+                                    <li>• <strong>12 Missions par niveau :</strong> 10 000 XP à accumuler au total.</li>
+                                    <li>• <strong>Défis variés :</strong> Distances, régularité, dénivelés, tracés GPX, photos, météo et complétude des fiches.</li>
+                                </ul>
+                            </div>
+
+                            <div class="bg-blue-50/70 border border-blue-200 rounded-xl p-3.5">
+                                <h5 class="font-bold text-blue-900 text-sm mb-1.5 flex items-center gap-2">
+                                    <i class="fas fa-medal text-blue-600"></i> Cocardes Records
+                                </h5>
+                                <ul class="text-xs text-gray-600 space-y-1">
+                                    <li>• <strong>Vos 3 records suprêmes :</strong> Allure record (RP), D+ Max et Plus longue distance.</li>
+                                    <li>• <strong>Section repliable :</strong> Dépliez ou repliez l'écrin de records en un clic pour gagner de l'espace.</li>
+                                </ul>
+                            </div>
+
+                            <div class="bg-emerald-50/70 border border-emerald-200 rounded-xl p-3.5">
+                                <h5 class="font-bold text-emerald-900 text-sm mb-1.5 flex items-center gap-2">
+                                    <i class="fas fa-users text-emerald-600"></i> Classement Live
+                                </h5>
+                                <ul class="text-xs text-gray-600 space-y-1">
+                                    <li>• <strong>Top 5 en direct :</strong> Basé sur les vrais scores XP enregistrés des coureurs.</li>
+                                    <li>• <strong>Votre rang personnel :</strong> Suivez votre position exacte en temps réel.</li>
+                                    <li>• <strong>Confidentialité :</strong> Affichez ou masquez votre pseudo du classement en 1 clic.</li>
+                                </ul>
+                            </div>
                         </div>
-                        <p class="text-xs text-gray-500 italic">Note : Cliquez sur la modale 'Badge' pour voir votre 
-                        collection.</p>
+
+                        <p class="text-[11px] text-emerald-700 italic flex items-center gap-2 bg-emerald-50 p-2.5 rounded-lg border border-emerald-100">
+                            <i class="fas fa-shield-alt text-emerald-600"></i>
+                            <span><strong>Calculs 100% fiables :</strong> Les jauges d'expérience, badges et statistiques prennent toujours en compte la totalité de vos courses enregistrées, même lorsqu'une recherche par filtre est active sur votre tableau de bord.</span>
+                        </p>
                     </div>
                 </section>
 
@@ -549,7 +576,8 @@ const manualModalHTML = `
                                     courses
                                     publiques :</p>
                                 <ul class="text-xs text-gray-600 list-disc ml-4 space-y-0.5">
-                                    <li>Afficher/Masquer votre pseudo</li>
+                                    <li>Afficher/Masquer votre pseudo dans vos courses publiques</li>
+                                    <li>Afficher/Masquer votre pseudo dans le classement des coureurs</li>
                                     <li>Afficher/Masquer la ville de la course</li>
                                     <li>Afficher/Masquer le jour précis (ex: 12 mars)</li>
                                     <li>Afficher/Masquer le label "Favori"</li>
