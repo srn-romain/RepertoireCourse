@@ -19,6 +19,7 @@
             emoji: '🩴',
             subtitle: 'Premières Foulées',
             pointsPerBadge: 10,
+            requiredXP: 0,
             requiredFromPrevious: 0,
             cocarde: {
                 bg: 'bg-amber-100',
@@ -37,6 +38,7 @@
             emoji: '👡',
             subtitle: 'Foulée Aérée',
             pointsPerBadge: 20,
+            requiredXP: 30,
             requiredFromPrevious: 3,
             cocarde: {
                 bg: 'bg-sky-100',
@@ -55,6 +57,7 @@
             emoji: '👞',
             subtitle: 'Rythme & Style',
             pointsPerBadge: 35,
+            requiredXP: 90,
             requiredFromPrevious: 3,
             cocarde: {
                 bg: 'bg-emerald-100',
@@ -73,6 +76,7 @@
             emoji: '👟',
             subtitle: 'Athlète Tout-Terrain',
             pointsPerBadge: 50,
+            requiredXP: 200,
             requiredFromPrevious: 3,
             cocarde: {
                 bg: 'bg-blue-100',
@@ -91,6 +95,7 @@
             emoji: '🥾',
             subtitle: 'Légende des Sentiers',
             pointsPerBadge: 75,
+            requiredXP: 350,
             requiredFromPrevious: 3,
             cocarde: {
                 bg: 'bg-purple-100',
@@ -532,6 +537,9 @@
                 unlockedCount: 0,
                 totalCount: lvl.badgeIds.length,
                 percent: 0,
+                requiredXP: lvl.requiredXP || 0,
+                neededXP: idx === 0 ? 0 : (lvl.requiredXP || 0),
+                earnedXP: 0,
                 neededFromPrevious: idx === 0 ? 0 : lvl.requiredFromPrevious
             };
         });
@@ -609,9 +617,10 @@
             }
         }
 
+        let totalPoints = 0;
         const levelsState = {};
 
-        // NIVEAU 1 : TONG
+        // NIVEAU 1 : TONG (0 XP)
         const lvl1 = LEVELS_CONFIG[0];
         raceMetrics.forEach(m => {
             markBadgeUnlocked('first_step', m.race);
@@ -623,19 +632,26 @@
         });
 
         const lvl1UnlockedCount = lvl1.badgeIds.filter(id => unlockedBadges[id].unlocked).length;
+        const lvl1EarnedXP = lvl1UnlockedCount * lvl1.pointsPerBadge;
+        totalPoints += lvl1EarnedXP;
+
         levelsState[lvl1.id] = {
             level: lvl1,
             isUnlocked: true,
             unlockedCount: lvl1UnlockedCount,
             totalCount: lvl1.badgeIds.length,
             percent: Math.round((lvl1UnlockedCount / lvl1.badgeIds.length) * 100),
+            requiredXP: lvl1.requiredXP || 0,
+            neededXP: 0,
+            earnedXP: lvl1EarnedXP,
             neededFromPrevious: 0
         };
 
-        // NIVEAU 2 : SANDALE
+        // NIVEAU 2 : SANDALE (30 XP requis)
         const lvl2 = LEVELS_CONFIG[1];
-        const isLvl2Unlocked = lvl1UnlockedCount >= lvl2.requiredFromPrevious;
+        const isLvl2Unlocked = totalPoints >= lvl2.requiredXP;
         let lvl2UnlockedCount = 0;
+        let lvl2EarnedXP = 0;
 
         if (isLvl2Unlocked) {
             raceMetrics.forEach(m => {
@@ -650,6 +666,8 @@
                 unlockedBadges.regular_runner.races = [...eligibleRaces];
             }
             lvl2UnlockedCount = lvl2.badgeIds.filter(id => unlockedBadges[id].unlocked).length;
+            lvl2EarnedXP = lvl2UnlockedCount * lvl2.pointsPerBadge;
+            totalPoints += lvl2EarnedXP;
         }
 
         levelsState[lvl2.id] = {
@@ -658,13 +676,17 @@
             unlockedCount: lvl2UnlockedCount,
             totalCount: lvl2.badgeIds.length,
             percent: Math.round((lvl2UnlockedCount / lvl2.badgeIds.length) * 100),
+            requiredXP: lvl2.requiredXP,
+            neededXP: isLvl2Unlocked ? 0 : Math.max(0, lvl2.requiredXP - totalPoints),
+            earnedXP: lvl2EarnedXP,
             neededFromPrevious: isLvl2Unlocked ? 0 : Math.max(0, lvl2.requiredFromPrevious - lvl1UnlockedCount)
         };
 
-        // NIVEAU 3 : MOCASSIN
+        // NIVEAU 3 : MOCASSIN (90 XP requis)
         const lvl3 = LEVELS_CONFIG[2];
-        const isLvl3Unlocked = isLvl2Unlocked && (lvl2UnlockedCount >= lvl3.requiredFromPrevious);
+        const isLvl3Unlocked = isLvl2Unlocked && (totalPoints >= lvl3.requiredXP);
         let lvl3UnlockedCount = 0;
+        let lvl3EarnedXP = 0;
 
         if (isLvl3Unlocked) {
             raceMetrics.forEach(m => {
@@ -679,6 +701,8 @@
                 unlockedBadges.explorer_cities.races = [...eligibleRaces];
             }
             lvl3UnlockedCount = lvl3.badgeIds.filter(id => unlockedBadges[id].unlocked).length;
+            lvl3EarnedXP = lvl3UnlockedCount * lvl3.pointsPerBadge;
+            totalPoints += lvl3EarnedXP;
         }
 
         levelsState[lvl3.id] = {
@@ -687,13 +711,17 @@
             unlockedCount: lvl3UnlockedCount,
             totalCount: lvl3.badgeIds.length,
             percent: Math.round((lvl3UnlockedCount / lvl3.badgeIds.length) * 100),
+            requiredXP: lvl3.requiredXP,
+            neededXP: isLvl3Unlocked ? 0 : Math.max(0, lvl3.requiredXP - totalPoints),
+            earnedXP: lvl3EarnedXP,
             neededFromPrevious: isLvl3Unlocked ? 0 : Math.max(0, lvl3.requiredFromPrevious - lvl2UnlockedCount)
         };
 
-        // NIVEAU 4 : BASKET
+        // NIVEAU 4 : BASKET (200 XP requis)
         const lvl4 = LEVELS_CONFIG[3];
-        const isLvl4Unlocked = isLvl3Unlocked && (lvl3UnlockedCount >= lvl4.requiredFromPrevious);
+        const isLvl4Unlocked = isLvl3Unlocked && (totalPoints >= lvl4.requiredXP);
         let lvl4UnlockedCount = 0;
+        let lvl4EarnedXP = 0;
 
         if (isLvl4Unlocked) {
             raceMetrics.forEach(m => {
@@ -711,6 +739,8 @@
                 unlockedBadges.centurion_km.races = [...eligibleRaces];
             }
             lvl4UnlockedCount = lvl4.badgeIds.filter(id => unlockedBadges[id].unlocked).length;
+            lvl4EarnedXP = lvl4UnlockedCount * lvl4.pointsPerBadge;
+            totalPoints += lvl4EarnedXP;
         }
 
         levelsState[lvl4.id] = {
@@ -719,13 +749,17 @@
             unlockedCount: lvl4UnlockedCount,
             totalCount: lvl4.badgeIds.length,
             percent: Math.round((lvl4UnlockedCount / lvl4.badgeIds.length) * 100),
+            requiredXP: lvl4.requiredXP,
+            neededXP: isLvl4Unlocked ? 0 : Math.max(0, lvl4.requiredXP - totalPoints),
+            earnedXP: lvl4EarnedXP,
             neededFromPrevious: isLvl4Unlocked ? 0 : Math.max(0, lvl4.requiredFromPrevious - lvl3UnlockedCount)
         };
 
-        // NIVEAU 5 : BOOTS
+        // NIVEAU 5 : BOOTS (350 XP requis)
         const lvl5 = LEVELS_CONFIG[4];
-        const isLvl5Unlocked = isLvl4Unlocked && (lvl4UnlockedCount >= lvl5.requiredFromPrevious);
+        const isLvl5Unlocked = isLvl4Unlocked && (totalPoints >= lvl5.requiredXP);
         let lvl5UnlockedCount = 0;
+        let lvl5EarnedXP = 0;
 
         if (isLvl5Unlocked) {
             raceMetrics.forEach(m => {
@@ -746,6 +780,8 @@
                 unlockedBadges.titan_300km.races = [...eligibleRaces];
             }
             lvl5UnlockedCount = lvl5.badgeIds.filter(id => unlockedBadges[id].unlocked).length;
+            lvl5EarnedXP = lvl5UnlockedCount * lvl5.pointsPerBadge;
+            totalPoints += lvl5EarnedXP;
         }
 
         levelsState[lvl5.id] = {
@@ -754,17 +790,11 @@
             unlockedCount: lvl5UnlockedCount,
             totalCount: lvl5.badgeIds.length,
             percent: Math.round((lvl5UnlockedCount / lvl5.badgeIds.length) * 100),
+            requiredXP: lvl5.requiredXP,
+            neededXP: isLvl5Unlocked ? 0 : Math.max(0, lvl5.requiredXP - totalPoints),
+            earnedXP: lvl5EarnedXP,
             neededFromPrevious: isLvl5Unlocked ? 0 : Math.max(0, lvl5.requiredFromPrevious - lvl4UnlockedCount)
         };
-
-        let totalPoints = 0;
-        LEVELS_CONFIG.forEach(lvl => {
-            lvl.badgeIds.forEach(badgeId => {
-                if (unlockedBadges[badgeId] && unlockedBadges[badgeId].unlocked) {
-                    totalPoints += lvl.pointsPerBadge;
-                }
-            });
-        });
 
         const recordCocardes = calculateRecordCocardes(racesList);
 
@@ -834,8 +864,7 @@
 
         const nextLevelIndex = LEVELS_CONFIG.findIndex(l => l.id === currentRankLevel.id) + 1;
         const nextLevel = (nextLevelIndex < LEVELS_CONFIG.length) ? LEVELS_CONFIG[nextLevelIndex] : null;
-        const currentLvlUnlockedCount = data.levelsState[currentRankLevel.id].unlockedCount;
-        const neededForNext = nextLevel ? Math.max(0, nextLevel.requiredFromPrevious - currentLvlUnlockedCount) : 0;
+        const neededXPForNext = nextLevel ? Math.max(0, nextLevel.requiredXP - data.totalPoints) : 0;
 
         const totalBadgesCount = Object.keys(BADGES_DEFINITIONS).length;
         const totalUnlockedBadgesCount = Object.values(data.unlockedBadges).filter(b => b.unlocked).length;
@@ -845,19 +874,19 @@
         <div class="mb-5 bg-white border border-green-200 rounded-xl p-5 shadow-sm">
             <div class="grid grid-cols-1 md:grid-cols-12 gap-5 items-center">
                 
-                <!-- Score Total -->
+                <!-- Score Total XP -->
                 <div class="md:col-span-4 border-b md:border-b-0 md:border-r border-gray-100 pb-4 md:pb-0 md:pr-4">
                     <div class="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1">Score Total</div>
                     <div class="flex items-baseline gap-1.5">
                         <span class="text-3xl font-bold text-green-800">${data.totalPoints}</span>
-                        <span class="text-sm font-semibold text-green-600">points</span>
+                        <span class="text-sm font-bold text-green-600">XP</span>
                     </div>
                     <div class="text-xs text-gray-500 mt-1">
                         <strong>${totalUnlockedBadgesCount}</strong> / ${totalBadgesCount} défis débloqués
                     </div>
                 </div>
 
-                <!-- Rang Actuel & Progression -->
+                <!-- Rang Actuel & Progression XP -->
                 <div class="md:col-span-8">
                     <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
                         <div class="flex items-center gap-2">
@@ -868,22 +897,22 @@
                             </span>
                         </div>
                         <div class="text-xs text-gray-500">
-                            ${nextLevel ? (neededForNext === 0 
+                            ${nextLevel ? (neededXPForNext === 0 
                                 ? `<span class="text-green-700 font-semibold"><i class="fas fa-check"></i> Niveau ${nextLevel.name} débloqué</span>`
-                                : `<span>Encore <strong class="text-green-700">${neededForNext} badge${neededForNext > 1 ? 's' : ''}</strong> pour débloquer <strong>${nextLevel.emoji} ${nextLevel.name}</strong></span>`
-                            ) : '<span class="text-green-700 font-semibold"><i class="fas fa-check-double"></i> Tous les niveaux débloqués</span>'}
+                                : `<span>Encore <strong class="text-green-700">${neededXPForNext} XP</strong> pour débloquer <strong>${nextLevel.emoji} ${nextLevel.name}</strong> (${data.totalPoints} / ${nextLevel.requiredXP} XP)</span>`
+                            ) : `<span class="text-green-700 font-semibold"><i class="fas fa-check-double"></i> Niveau max (${currentRankLevel.name}) débloqué !</span>`}
                         </div>
                     </div>
 
-                    <!-- Barre de progression simple -->
+                    <!-- Barre de progression XP -->
                     <div class="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden">
                         <div class="bg-green-600 h-full rounded-full transition-all duration-300" 
-                             style="width: ${Math.max(3, Math.round((totalUnlockedBadgesCount / totalBadgesCount) * 100))}%"></div>
+                             style="width: ${nextLevel ? Math.min(100, Math.max(5, Math.round((data.totalPoints / nextLevel.requiredXP) * 100))) : 100}%"></div>
                     </div>
                     <div class="flex justify-between items-center mt-1 text-[11px] text-gray-400">
-                        <span>Niv. 1 (Tong)</span>
-                        <span>Progression : ${Math.round((totalUnlockedBadgesCount / totalBadgesCount) * 100)}%</span>
-                        <span>Niv. 5 (Boots)</span>
+                        <span>🩴 Tong (0 XP)</span>
+                        <span>${nextLevel ? `${data.totalPoints} / ${nextLevel.requiredXP} XP pour ${nextLevel.name}` : `Total : ${data.totalPoints} XP`}</span>
+                        <span>🥾 Boots (350 XP)</span>
                     </div>
                 </div>
             </div>
@@ -1090,7 +1119,6 @@
         levelsToRender.forEach((lvl, idx) => {
             const st = data.levelsState[lvl.id];
             const prevLvl = idx > 0 ? LEVELS_CONFIG[idx - 1] : null;
-            const prevUnlockedCount = prevLvl ? data.levelsState[prevLvl.id].unlockedCount : 0;
             
             let isExpanded = userLevelExpandedState[lvl.id];
             if (isExpanded === undefined) {
@@ -1114,7 +1142,7 @@
                                 </span>
                             </div>
                             <p class="text-xs text-gray-500 mt-0.5">
-                                +${lvl.pointsPerBadge} points par badge
+                                +${lvl.pointsPerBadge} XP par défi • ${lvl.requiredXP > 0 ? `Déblocage à ${lvl.requiredXP} XP` : 'Débloqué dès le départ'}
                             </p>
                         </div>
                     </div>
@@ -1122,14 +1150,14 @@
                     <!-- Statut du niveau + Bouton chevron -->
                     <div class="flex items-center gap-3">
                         ${st.isUnlocked ? `
-                            <span class="text-xs font-semibold text-gray-600">${st.unlockedCount} / ${st.totalCount} acquis</span>
+                            <span class="text-xs font-semibold text-gray-600">${st.unlockedCount} / ${st.totalCount} défis (${st.earnedXP} XP)</span>
                             <div class="w-20 bg-gray-200 rounded-full h-2 overflow-hidden hidden sm:block">
                                 <div class="bg-green-600 h-full rounded-full" style="width: ${st.percent}%"></div>
                             </div>
                         ` : `
                             <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-amber-50 text-amber-800 border border-amber-300 text-xs font-semibold">
                                 <i class="fas fa-lock text-amber-600 text-[11px]"></i>
-                                <span>Niveau Verrouillé</span>
+                                <span>${data.totalPoints} / ${lvl.requiredXP} XP</span>
                             </span>
                         `}
                         <div class="w-7 h-7 rounded-full bg-white/90 border border-gray-200 flex items-center justify-center text-gray-500 hover:text-gray-800 shadow-2xs shrink-0">
@@ -1150,10 +1178,10 @@
                         <div>
                             <div class="flex items-center justify-between mb-2.5">
                                 <span class="text-[11px] font-semibold px-2 py-0.5 rounded bg-gray-200 text-gray-600 border border-gray-300">
-                                    🔒 ${lvl.name} • Mission #${badgeIndex + 1}
+                                    🔒 ${lvl.name} • Défi #${badgeIndex + 1}
                                 </span>
                                 <span class="text-xs font-bold text-gray-400">
-                                    +${lvl.pointsPerBadge} pts
+                                    +${lvl.pointsPerBadge} XP
                                 </span>
                             </div>
                             <div class="flex items-start gap-2.5 mb-2">
@@ -1162,15 +1190,15 @@
                                 </div>
                                 <div class="flex-grow">
                                     <h5 class="font-semibold text-sm text-gray-500 flex items-center gap-1.5">
-                                        <span>Mission Secrète</span>
+                                        <span>Défi Mystère</span>
                                     </h5>
-                                    <p class="text-xs text-gray-400 mt-0.5 italic">Débloquez le niveau ${lvl.levelNumber} pour révéler ce défi...</p>
+                                    <p class="text-xs text-gray-400 mt-0.5 italic">Atteignez ${lvl.requiredXP} XP au total pour révéler ce défi...</p>
                                 </div>
                             </div>
                         </div>
                         <div class="mt-3 pt-2.5 border-t border-gray-200/60">
                             <div class="text-[11px] text-gray-400 flex items-center gap-1">
-                                <i class="fas fa-lock text-[10px]"></i> Défi masqué
+                                <i class="fas fa-lock text-[10px]"></i> Verrouillé (${lvl.requiredXP} XP requis)
                             </div>
                         </div>
                     </div>
@@ -1195,7 +1223,7 @@
                                 ${lvl.emoji} ${lvl.name}
                             </span>
                             <span class="text-xs font-bold ${isUnlocked ? 'text-green-700' : 'text-gray-400'}">
-                                +${lvl.pointsPerBadge} pts
+                                +${lvl.pointsPerBadge} XP
                             </span>
                         </div>
                         <div class="flex items-start gap-2.5 mb-2">
@@ -1254,6 +1282,8 @@
             html += `</div>`; // fin grid
 
             if (!st.isUnlocked && prevLvl) {
+                const percentToUnlock = Math.min(100, Math.round((data.totalPoints / lvl.requiredXP) * 100));
+                const remainingXP = Math.max(0, lvl.requiredXP - data.totalPoints);
                 html += `
                 <div class="absolute inset-0 z-10 flex flex-col items-center justify-center p-6 bg-gray-900/15 backdrop-blur-xs text-center">
                     <div class="bg-white/95 backdrop-blur-md border border-gray-200/90 rounded-2xl p-6 shadow-2xl max-w-md mx-auto flex flex-col items-center">
@@ -1264,11 +1294,14 @@
                             <span>Niveau ${lvl.levelNumber} : ${lvl.name} verrouillé</span>
                         </h5>
                         <p class="text-xs text-gray-600 max-w-sm mx-auto mb-3 leading-relaxed">
-                            Vous devez débloquer au moins <strong>${lvl.requiredFromPrevious} badges</strong> du niveau précédent (<strong>${prevLvl.emoji} ${prevLvl.name}</strong>) pour ouvrir ce niveau et révéler ses défis secrets.
+                            Vous devez accumuler au moins <strong class="text-amber-800 font-bold">${lvl.requiredXP} XP</strong> au total pour ouvrir ce niveau et révéler ses défis secrets.
                         </p>
+                        <div class="w-full max-w-xs bg-gray-100 rounded-full h-2.5 overflow-hidden mb-3 border border-gray-200">
+                            <div class="bg-amber-500 h-full rounded-full transition-all duration-300" style="width: ${percentToUnlock}%"></div>
+                        </div>
                         <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-50 border border-amber-200 text-xs text-amber-900 font-semibold shadow-xs">
                             <i class="fas fa-lock text-amber-600 text-[11px]"></i>
-                            <span>Progression requise : <strong class="text-green-700">${prevUnlockedCount} / ${lvl.requiredFromPrevious}</strong> badges sur ${prevLvl.name}</span>
+                            <span>Progression : <strong class="text-amber-800">${data.totalPoints} / ${lvl.requiredXP} XP</strong> (encore <strong class="text-green-700">${remainingXP} XP</strong>)</span>
                         </div>
                     </div>
                 </div>
@@ -1407,6 +1440,8 @@
             levelName: level.name,
             levelEmoji: level.emoji,
             points: level.pointsPerBadge,
+            xp: level.pointsPerBadge,
+            requiredXP: level.requiredXP || 0,
             cocarde: level.cocarde,
             colorClass: `${level.cocarde.bg} ${level.cocarde.text} ${level.cocarde.border}`,
             prestigeScore: BADGE_PRESTIGE_SCORES[badge.id] || 0
