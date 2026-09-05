@@ -2159,24 +2159,13 @@
     }
 
     function buildLeaderboardEntries(currentUserXP, currentPseudo, currentUid) {
-        const isShowPseudo = localStorage.getItem('prefShowPseudoInLeaderboard') !== 'false' && window.prefShowPseudoInLeaderboard !== false;
+        const isShowPseudo = (localStorage.getItem('prefShowPseudoInLeaderboard') !== 'false' && window.prefShowPseudoInLeaderboard !== false);
 
-        // Utilisateurs de référence avec distribution réaliste d'XP
-        const defaultCommunityUsers = [
-            { uid: 'u_bench_1', pseudo: 'Alexandre', xp: 5850, showPseudo: true },
-            { uid: 'u_bench_2', pseudo: 'Émilie', xp: 4200, showPseudo: true },
-            { uid: 'u_bench_3', pseudo: 'Lucas', xp: 3150, showPseudo: true },
-            { uid: 'u_bench_4', pseudo: 'Camille', xp: 2400, showPseudo: true },
-            { uid: 'u_bench_5', pseudo: 'Thomas', xp: 1650, showPseudo: true },
-            { uid: 'u_bench_6', pseudo: 'Sarah', xp: 950, showPseudo: true },
-            { uid: 'u_bench_7', pseudo: 'Julien', xp: 450, showPseudo: true }
-        ];
-
-        let allUsers = Array.isArray(window.communityLeaderboardUsers) && window.communityLeaderboardUsers.length > 0
+        let allUsers = Array.isArray(window.communityLeaderboardUsers)
             ? [...window.communityLeaderboardUsers]
-            : [...defaultCommunityUsers];
+            : [];
 
-        // Retirer les doublons de l'utilisateur connecté
+        // Retirer les doublons de l'utilisateur connecté s'il est déjà présent
         allUsers = allUsers.filter(u => u.uid !== currentUid && !u.isCurrent);
 
         // Ajouter l'utilisateur connecté avec son score calculé
@@ -2194,12 +2183,95 @@
         return allUsers;
     }
 
-    // Synchronisation en arrière-plan avec Firestore si disponible
+    function renderLeaderboardRowsHTML(currentUserXP, currentPseudo, currentUid) {
+        const allUsers = buildLeaderboardEntries(currentUserXP, currentPseudo, currentUid);
+        const top5Users = allUsers.slice(0, 5);
+        const currentUserIndex = allUsers.findIndex(u => u.isCurrent || u.uid === currentUid);
+        const currentUserRank = currentUserIndex >= 0 ? (currentUserIndex + 1) : 1;
+        const isUserInTop5 = currentUserIndex >= 0 && currentUserIndex < 5;
+
+        let rowsHtml = '<div class="grid grid-cols-1 gap-2">';
+        top5Users.forEach((u, idx) => {
+            const rank = idx + 1;
+            const lvl = getLevelFromTotalXP(u.xp);
+            let medalBadge = `<span class="w-6 text-center font-bold text-gray-500 text-xs">#${rank}</span>`;
+            if (rank === 1) medalBadge = `<span class="w-6 text-center text-base" title="1ère place">🥇</span>`;
+            else if (rank === 2) medalBadge = `<span class="w-6 text-center text-base" title="2ème place">🥈</span>`;
+            else if (rank === 3) medalBadge = `<span class="w-6 text-center text-base" title="3ème place">🥉</span>`;
+
+            const isMe = u.isCurrent || (u.uid === currentUid);
+            let displayName = '';
+            if (isMe) {
+                displayName = `<span class="font-bold text-emerald-900">${currentPseudo} <span class="text-xs text-emerald-700 font-semibold">(Moi)</span></span>`;
+            } else {
+                displayName = (u.showPseudo && u.pseudo) 
+                    ? `<span class="font-medium text-gray-800">${u.pseudo}</span>`
+                    : `<span class="font-medium text-gray-600">Utilisateur ${rank}</span>`;
+            }
+
+            rowsHtml += `
+            <div class="flex items-center justify-between p-2.5 rounded-lg border transition ${isMe ? 'bg-emerald-50/90 border-emerald-300 ring-1 ring-emerald-400/40 shadow-xs' : 'bg-gray-50/70 border-gray-200 hover:bg-gray-100/60'}">
+                <div class="flex items-center gap-2.5 min-w-0">
+                    <div class="shrink-0 flex items-center justify-center">${medalBadge}</div>
+                    <div class="min-w-0">
+                        <div class="text-xs sm:text-sm truncate flex items-center gap-1.5">${displayName}</div>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2 shrink-0">
+                    <span class="text-[11px] px-2 py-0.5 rounded ${lvl.cocarde.pillBg} border hidden sm:inline-flex items-center gap-1">
+                        <span>${lvl.emoji}</span>
+                        <span>${lvl.name}</span>
+                    </span>
+                    <span class="text-xs font-bold ${isMe ? 'text-emerald-800 font-extrabold' : 'text-gray-700'} min-w-[70px] text-right">
+                        ${u.xp.toLocaleString('fr-FR')} XP
+                    </span>
+                </div>
+            </div>
+            `;
+        });
+
+        // Si l'utilisateur connecté n'est pas dans le top 5, afficher sa position en dessous
+        if (!isUserInTop5 && currentUserIndex >= 0) {
+            const myLvl = getLevelFromTotalXP(currentUserXP);
+            rowsHtml += `
+                <div class="flex items-center justify-center py-1 text-gray-300 text-xs tracking-widest select-none">
+                    <span>• • •</span>
+                </div>
+                <div class="flex items-center justify-between p-2.5 rounded-lg border bg-emerald-50/90 border-emerald-300 ring-1 ring-emerald-400/40 shadow-xs">
+                    <div class="flex items-center gap-2.5 min-w-0">
+                        <div class="shrink-0 flex items-center justify-center">
+                            <span class="w-6 text-center font-extrabold text-emerald-800 text-xs">#${currentUserRank}</span>
+                        </div>
+                        <div class="min-w-0">
+                            <div class="text-xs sm:text-sm truncate flex items-center gap-1.5 font-bold text-emerald-900">
+                                <span>${currentPseudo}</span>
+                                <span class="text-xs text-emerald-700 font-semibold">(Moi)</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2 shrink-0">
+                        <span class="text-[11px] px-2 py-0.5 rounded ${myLvl.cocarde.pillBg} border hidden sm:inline-flex items-center gap-1">
+                            <span>${myLvl.emoji}</span>
+                            <span>${myLvl.name}</span>
+                        </span>
+                        <span class="text-xs font-extrabold text-emerald-800 min-w-[70px] text-right">
+                            ${currentUserXP.toLocaleString('fr-FR')} XP
+                        </span>
+                    </div>
+                </div>
+            `;
+        }
+        rowsHtml += '</div>';
+
+        return { rowsHtml, currentUserRank, isUserInTop5 };
+    }
+
+    // Synchronisation en arrière-plan avec Firestore (données réelles)
     async function syncCommunityLeaderboard(currentUserXP, currentPseudo, currentUid) {
         if (typeof firebase === 'undefined' || !firebase.firestore || typeof db === 'undefined') return;
         try {
             if (currentUid && currentUserXP >= 0) {
-                db.collection('users').doc(currentUid).set({ gamificationXP: currentUserXP, pseudo: currentPseudo }, { merge: true }).catch(() => {});
+                await db.collection('users').doc(currentUid).set({ gamificationXP: currentUserXP, pseudo: currentPseudo }, { merge: true }).catch(() => {});
             }
             const snap = await db.collection('users').get();
             const users = [];
@@ -2220,8 +2292,18 @@
                     });
                 }
             });
-            if (users.length >= 3) {
-                window.communityLeaderboardUsers = users;
+            window.communityLeaderboardUsers = users;
+
+            // Rafraîchir en direct si la modale est ouverte
+            const rowsContainer = document.getElementById('leaderboard-rows-wrapper');
+            const rankBadge = document.getElementById('leaderboard-rank-badge');
+            if (rowsContainer) {
+                const computed = renderLeaderboardRowsHTML(currentUserXP, currentPseudo, currentUid);
+                rowsContainer.innerHTML = computed.rowsHtml;
+                if (rankBadge) {
+                    rankBadge.innerHTML = `Votre rang : <strong class="font-extrabold">#${computed.currentUserRank}</strong> (${currentUserXP.toLocaleString('fr-FR')} XP)`;
+                    rankBadge.className = `text-xs font-semibold px-2.5 py-1 rounded-full ${computed.isUserInTop5 ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-gray-100 text-gray-700 border border-gray-200'}`;
+                }
             }
         } catch (e) {
             console.warn('Leaderboard sync error:', e);
@@ -2243,7 +2325,7 @@
         const currentUid = currentUser ? currentUser.uid : 'local_user';
         const currentPseudo = (currentUser && currentUser.displayName) ? currentUser.displayName : (localStorage.getItem('userPseudo') || 'Coureur');
 
-        // Lancer la synchro Firestore en tâche de fond
+        // Lancer la synchro Firestore en tâche de fond pour mettre à jour et récupérer les vrais utilisateurs
         syncCommunityLeaderboard(data.totalPoints, currentPseudo, currentUid);
 
         // Déterminer le rang actuel
@@ -2311,12 +2393,14 @@
         </div>
         `;
 
-        // 2. SECTION CLASSEMENT DES COUREURS (Top 5 + position utilisateur si non top 5)
-        const allLeaderboardUsers = buildLeaderboardEntries(data.totalPoints, currentPseudo, currentUid);
-        const currentUserIndex = allLeaderboardUsers.findIndex(u => u.isCurrent || u.uid === currentUid);
-        const currentUserRank = currentUserIndex >= 0 ? currentUserIndex + 1 : 1;
-        const top5Users = allLeaderboardUsers.slice(0, 5);
-        const isUserInTop5 = currentUserIndex >= 0 && currentUserIndex < 5;
+        // 2. SECTION DU CLASSEMENT DES VRAIS UTILISATEURS (Repliable)
+        const userLeaderboardExpandedState = localStorage.getItem('leaderboardExpandedState') !== 'false';
+        const initialLeaderboard = renderLeaderboardRowsHTML(data.totalPoints, currentPseudo, currentUid);
+
+        const isShowPseudoInLeaderboard = (localStorage.getItem('prefShowPseudoInLeaderboard') !== 'false' && window.prefShowPseudoInLeaderboard !== false);
+        const leaderboardToggleText = isShowPseudoInLeaderboard
+            ? 'Masquer mon pseudo dans le classement'
+            : 'Afficher mon pseudo dans le classement';
 
         html += `
         <div class="mb-5 bg-white border border-gray-200 rounded-xl p-4 shadow-sm relative overflow-hidden">
@@ -2333,8 +2417,8 @@
                     </div>
                 </div>
                 <div class="flex items-center gap-2.5">
-                    <span class="text-xs font-semibold px-2.5 py-1 rounded-full ${isUserInTop5 ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-gray-100 text-gray-700 border border-gray-200'}">
-                        Votre rang : <strong class="font-extrabold">#${currentUserRank}</strong> (${data.totalPoints} XP)
+                    <span id="leaderboard-rank-badge" class="text-xs font-semibold px-2.5 py-1 rounded-full ${initialLeaderboard.isUserInTop5 ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-gray-100 text-gray-700 border border-gray-200'}">
+                        Votre rang : <strong class="font-extrabold">#${initialLeaderboard.currentUserRank}</strong> (${data.totalPoints.toLocaleString('fr-FR')} XP)
                     </span>
                     <div class="w-6 h-6 rounded-full bg-white border border-gray-200 flex items-center justify-center text-gray-400 hover:text-gray-700 shadow-2xs">
                         <i class="fas fa-chevron-down text-[11px] transition-transform duration-200 leaderboard-chevron ${userLeaderboardExpandedState ? 'rotate-180' : ''}"></i>
@@ -2343,86 +2427,8 @@
             </div>
 
             <div class="leaderboard-body ${userLeaderboardExpandedState ? '' : 'hidden'} mt-3 space-y-2" id="leaderboard-body">
-                <div class="grid grid-cols-1 gap-2">
-        `;
-
-        top5Users.forEach((u, idx) => {
-            const rank = idx + 1;
-            const lvl = getLevelFromTotalXP(u.xp);
-            let medalBadge = `<span class="w-6 text-center font-bold text-gray-500 text-xs">#${rank}</span>`;
-            if (rank === 1) medalBadge = `<span class="w-6 text-center text-base" title="1ère place">🥇</span>`;
-            else if (rank === 2) medalBadge = `<span class="w-6 text-center text-base" title="2ème place">🥈</span>`;
-            else if (rank === 3) medalBadge = `<span class="w-6 text-center text-base" title="3ème place">🥉</span>`;
-
-            const isMe = u.isCurrent || (u.uid === currentUid);
-            let displayName = '';
-            if (isMe) {
-                displayName = `<span class="font-bold text-emerald-900">${currentPseudo} <span class="text-xs text-emerald-700 font-semibold">(Moi)</span></span>`;
-            } else {
-                displayName = (u.showPseudo && u.pseudo) 
-                    ? `<span class="font-medium text-gray-800">${u.pseudo}</span>`
-                    : `<span class="font-medium text-gray-600">Utilisateur ${rank}</span>`;
-            }
-
-            html += `
-            <div class="flex items-center justify-between p-2.5 rounded-lg border transition ${isMe ? 'bg-emerald-50/90 border-emerald-300 ring-1 ring-emerald-400/40 shadow-xs' : 'bg-gray-50/70 border-gray-200 hover:bg-gray-100/60'}">
-                <div class="flex items-center gap-2.5 min-w-0">
-                    <div class="shrink-0 flex items-center justify-center">${medalBadge}</div>
-                    <div class="min-w-0">
-                        <div class="text-xs sm:text-sm truncate flex items-center gap-1.5">${displayName}</div>
-                    </div>
-                </div>
-                <div class="flex items-center gap-2 shrink-0">
-                    <span class="text-[11px] px-2 py-0.5 rounded ${lvl.cocarde.pillBg} border hidden sm:inline-flex items-center gap-1">
-                        <span>${lvl.emoji}</span>
-                        <span>${lvl.name}</span>
-                    </span>
-                    <span class="text-xs font-bold ${isMe ? 'text-emerald-800 font-extrabold' : 'text-gray-700'} min-w-[70px] text-right">
-                        ${u.xp.toLocaleString('fr-FR')} XP
-                    </span>
-                </div>
-            </div>
-            `;
-        });
-
-        // Si l'utilisateur connecté n'est pas dans le top 5, afficher sa position en dessous
-        if (!isUserInTop5 && currentUserIndex >= 0) {
-            const myLvl = getLevelFromTotalXP(data.totalPoints);
-            html += `
-                <div class="flex items-center justify-center py-1 text-gray-300 text-xs tracking-widest select-none">
-                    <span>• • •</span>
-                </div>
-                <div class="flex items-center justify-between p-2.5 rounded-lg border bg-emerald-50/90 border-emerald-300 ring-1 ring-emerald-400/40 shadow-xs">
-                    <div class="flex items-center gap-2.5 min-w-0">
-                        <div class="shrink-0 flex items-center justify-center">
-                            <span class="w-6 text-center font-extrabold text-emerald-800 text-xs">#${currentUserRank}</span>
-                        </div>
-                        <div class="min-w-0">
-                            <div class="text-xs sm:text-sm truncate flex items-center gap-1.5 font-bold text-emerald-900">
-                                <span>${currentPseudo}</span>
-                                <span class="text-xs text-emerald-700 font-semibold">(Moi)</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="flex items-center gap-2 shrink-0">
-                        <span class="text-[11px] px-2 py-0.5 rounded ${myLvl.cocarde.pillBg} border hidden sm:inline-flex items-center gap-1">
-                            <span>${myLvl.emoji}</span>
-                            <span>${myLvl.name}</span>
-                        </span>
-                        <span class="text-xs font-extrabold text-emerald-800 min-w-[70px] text-right">
-                            ${data.totalPoints.toLocaleString('fr-FR')} XP
-                        </span>
-                    </div>
-                </div>
-            `;
-        }
-
-        const isShowPseudoInLeaderboard = (localStorage.getItem('prefShowPseudoInLeaderboard') !== 'false' && window.prefShowPseudoInLeaderboard !== false);
-        const leaderboardToggleText = isShowPseudoInLeaderboard
-            ? 'Masquer mon pseudo dans le classement'
-            : 'Afficher mon pseudo dans le classement';
-
-        html += `
+                <div id="leaderboard-rows-wrapper">
+                    ${initialLeaderboard.rowsHtml}
                 </div>
                 <div class="mt-2.5 pt-2 border-t border-gray-100 flex flex-wrap items-center justify-between gap-2 text-[11px] text-gray-400">
                     <span class="flex items-center gap-1">
@@ -3038,6 +3044,60 @@
         }
     });
 
+    // Fonction utilitaire Admin : Calculer et enregistrer les XP de tous les utilisateurs en base
+    async function syncAllUsersGamificationXP() {
+        if (typeof firebase === 'undefined' || !firebase.firestore || typeof db === 'undefined') {
+            console.error("Firebase Firestore n'est pas disponible.");
+            return;
+        }
+        console.log("🚀 [Admin] Démarrage du calcul des XP pour tous les utilisateurs en base...");
+        try {
+            const usersSnap = await db.collection('users').get();
+            console.log(`📋 [Admin] ${usersSnap.size} utilisateur(s) trouvé(s).`);
+            let count = 0;
+
+            for (const userDoc of usersSnap.docs) {
+                const uid = userDoc.id;
+                const userData = userDoc.data() || {};
+                const pseudo = userData.pseudo || userData.name || "Coureur";
+
+                try {
+                    // Récupérer les courses
+                    const racesSnap = await db.collection('users').doc(uid).collection('races').get();
+                    const races = [];
+                    racesSnap.forEach(d => races.push({ id: d.id, ...d.data() }));
+
+                    // Récupérer la wishlist
+                    const wishlistSnap = await db.collection('users').doc(uid).collection('wishlist').get();
+                    wishlistSnap.forEach(d => races.push({ id: d.id, ...d.data(), status: 'future' }));
+
+                    // Calculer le total XP
+                    const result = calculateGamifiedBadges(races);
+                    const totalXP = result.totalPoints || 0;
+
+                    // Sauvegarder dans Firestore
+                    await db.collection('users').doc(uid).set({
+                        gamificationXP: totalXP,
+                        pseudo: pseudo
+                    }, { merge: true });
+
+                    console.log(`✅ ${pseudo} (${uid}) : ${totalXP} XP (${races.length} courses traitées)`);
+                    count++;
+                } catch (err) {
+                    console.error(`❌ Erreur pour ${pseudo} (${uid}) :`, err);
+                }
+            }
+
+            console.log(`🎉 [Admin] Terminé ! ${count} utilisateur(s) mis à jour en base avec succès.`);
+            if (typeof displayRaceBadgesModal === 'function' && !document.getElementById('badgesModal')?.classList.contains('hidden')) {
+                displayRaceBadgesModal();
+            }
+            return count;
+        } catch (e) {
+            console.error("❌ Erreur globale lors de la synchronisation :", e);
+        }
+    }
+
     // Exports globaux
     window.LEVELS_CONFIG = LEVELS_CONFIG;
     window.BADGES_DEFINITIONS = BADGES_DEFINITIONS;
@@ -3049,5 +3109,6 @@
     window.calculateRaceBadges = calculateRaceBadges;
     window.calculateRecordCocardes = calculateRecordCocardes;
     window.updateBadgesButtonVisibility = updateBadgesButtonVisibility;
+    window.syncAllUsersGamificationXP = syncAllUsersGamificationXP;
 
 })();
