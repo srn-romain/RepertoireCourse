@@ -40,6 +40,40 @@
     100% { transform: translateX(-140px); opacity: 0; }
 }
 
+/* Furtive Trees Parallax Animation */
+.runner-trees-layer {
+    pointer-events: none;
+}
+
+.runner-tree-1 {
+    animation: runnerTreeFast 0.9s linear infinite;
+}
+
+.runner-tree-2 {
+    animation: runnerTreeFast 1.35s linear infinite 0.45s;
+}
+
+.runner-tree-3 {
+    animation: runnerTreeFast 0.7s linear infinite 0.18s;
+}
+
+@keyframes runnerTreeFast {
+    0% {
+        transform: translateX(190px);
+        opacity: 0;
+    }
+    15% {
+        opacity: 0.9;
+    }
+    85% {
+        opacity: 0.9;
+    }
+    100% {
+        transform: translateX(-40px);
+        opacity: 0;
+    }
+}
+
 /* SVG Character element */
 .runner-svg-character {
     width: 160px;

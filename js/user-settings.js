@@ -734,6 +734,14 @@ async function initSettingsLogic() {
                     pseudo: newPseudo
                 });
 
+                window.currentUserPseudo = newPseudo;
+                localStorage.setItem('userPseudo', newPseudo);
+
+                // Mettre également à jour le profil Firebase Auth pour synchroniser displayName
+                if (user && typeof user.updateProfile === 'function') {
+                    await user.updateProfile({ displayName: newPseudo }).catch(err => console.warn('updateProfile non supporté:', err));
+                }
+
                 // Marquer le changement pour recharger la page à la fermeture
                 settingsHasChanged = true;
 

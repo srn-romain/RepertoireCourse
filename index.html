@@ -154,6 +154,8 @@
                     <li class="flex items-start gap-2"><span class="text-green-500 mt-0.5">▸</span><span><strong>🎮
                             Missions & XP </strong> — Parcours gamifié sur 10 niveaux (de Tong à
                             Crampons) avec des défis pour booster votre motivation (avec classement live !).</span></li>
+                    <li class="flex items-start gap-2"><span class="text-green-500 mt-0.5">▸</span><span><strong>🌲
+                            Décor au chargement </strong> — Arbres furtifs ajoutés en arrière-plan du coureur pendant le chargement des courses.</span></li>
                 </ul>
             </div>
             <!-- Bouton ouvrir/fermer l'historique -->
@@ -1176,6 +1178,22 @@
                                     <feComposite in="SourceGraphic" in2="blur" operator="over" />
                                 </filter>
                             </defs>
+                            <!-- Fast Furtive Trees in the background (Parallax) -->
+                            <g class="runner-trees-layer">
+                                <g class="runner-tree runner-tree-1">
+                                    <rect x="-1.5" y="74" width="3" height="20" fill="#047857" opacity="0.4" rx="1" />
+                                    <path d="M 0 36 L 9 52 L 6 52 L 12 66 L 8 66 L 14 78 L -14 78 L -8 66 L -12 66 L -6 52 L -9 52 Z" fill="#10b981" opacity="0.35" />
+                                </g>
+                                <g class="runner-tree runner-tree-2">
+                                    <rect x="-1" y="78" width="2.5" height="16" fill="#047857" opacity="0.3" rx="1" />
+                                    <path d="M 0 46 L 8 60 L 5 60 L 10 72 L -10 72 L -5 60 L -8 60 Z" fill="#059669" opacity="0.3" />
+                                </g>
+                                <g class="runner-tree runner-tree-3">
+                                    <rect x="-1" y="82" width="2" height="12" fill="#047857" opacity="0.25" rx="0.5" />
+                                    <path d="M 0 58 L 6 70 L 4 70 L 8 80 L -8 80 L -4 70 L -6 70 Z" fill="#34d399" opacity="0.25" />
+                                </g>
+                            </g>
+
                             <ellipse class="runner-shadow-anim" cx="70" cy="94" rx="20" ry="3.5"
                                 fill="rgba(16, 185, 129, 0.25)" />
                             <g class="runner-body-anim">
@@ -1492,7 +1510,11 @@
                         const uDoc = await db.collection('users').doc(user.uid).get();
                         if (uDoc.exists && uDoc.data().pseudo) {
                             userPseudo = uDoc.data().pseudo;
+                        } else if (user.displayName) {
+                            userPseudo = user.displayName;
                         }
+                        window.currentUserPseudo = userPseudo;
+                        localStorage.setItem('userPseudo', userPseudo);
                     } catch (e) { console.error(e); }
 
                     // Affichage Final

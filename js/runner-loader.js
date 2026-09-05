@@ -39,6 +39,25 @@ function getRunnerLoaderHTML(colSpan = 'col-span-full') {
                     </filter>
                 </defs>
 
+                <!-- Fast Furtive Trees in the background (Parallax) -->
+                <g class="runner-trees-layer">
+                    <!-- Tree 1 : Sapin élancé rapide -->
+                    <g class="runner-tree runner-tree-1">
+                        <rect x="-1.5" y="74" width="3" height="20" fill="#047857" opacity="0.4" rx="1" />
+                        <path d="M 0 36 L 9 52 L 6 52 L 12 66 L 8 66 L 14 78 L -14 78 L -8 66 L -12 66 L -6 52 L -9 52 Z" fill="#10b981" opacity="0.35" />
+                    </g>
+                    <!-- Tree 2 : Arbre moyen / conifère -->
+                    <g class="runner-tree runner-tree-2">
+                        <rect x="-1" y="78" width="2.5" height="16" fill="#047857" opacity="0.3" rx="1" />
+                        <path d="M 0 46 L 8 60 L 5 60 L 10 72 L -10 72 L -5 60 L -8 60 Z" fill="#059669" opacity="0.3" />
+                    </g>
+                    <!-- Tree 3 : Petit sapin vif -->
+                    <g class="runner-tree runner-tree-3">
+                        <rect x="-1" y="82" width="2" height="12" fill="#047857" opacity="0.25" rx="0.5" />
+                        <path d="M 0 58 L 6 70 L 4 70 L 8 80 L -8 80 L -4 70 L -6 70 Z" fill="#34d399" opacity="0.25" />
+                    </g>
+                </g>
+
                 <!-- Ground Shadow (pulsing with flight phase) -->
                 <ellipse class="runner-shadow-anim" cx="70" cy="94" rx="20" ry="3.5" fill="rgba(16, 185, 129, 0.25)" />
 

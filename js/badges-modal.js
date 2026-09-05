@@ -2270,8 +2270,11 @@
     async function syncCommunityLeaderboard(currentUserXP, currentPseudo, currentUid) {
         if (typeof firebase === 'undefined' || !firebase.firestore || typeof db === 'undefined') return;
         try {
+            const effectivePseudo = window.currentUserPseudo || currentPseudo || localStorage.getItem('userPseudo');
             if (currentUid && currentUserXP >= 0) {
-                await db.collection('users').doc(currentUid).set({ gamificationXP: currentUserXP, pseudo: currentPseudo }, { merge: true }).catch(() => {});
+                const updatePayload = { gamificationXP: currentUserXP };
+                if (effectivePseudo) updatePayload.pseudo = effectivePseudo;
+                await db.collection('users').doc(currentUid).set(updatePayload, { merge: true }).catch(() => {});
             }
             const snap = await db.collection('users').get();
             const users = [];
@@ -2280,7 +2283,9 @@
                 const uid = doc.id;
                 const isCurrent = (uid === currentUid);
                 const userXp = isCurrent ? currentUserXP : (d.gamificationXP || d.totalXP || d.xp || 0);
-                const userPseudo = d.pseudo || d.name || (isCurrent ? (currentPseudo || 'Moi') : 'Coureur');
+                const userPseudo = isCurrent 
+                    ? (effectivePseudo || d.pseudo || d.name || 'Moi') 
+                    : (d.pseudo || d.name || 'Coureur');
                 const showPseudo = (d.privacy ? (d.privacy.showPseudoInLeaderboard !== false) : true);
                 if (userXp > 0 || isCurrent) {
                     users.push({
@@ -2339,7 +2344,7 @@
         // Informations utilisateur connecté
         const currentUser = (typeof firebase !== 'undefined' && firebase.auth) ? firebase.auth().currentUser : null;
         const currentUid = currentUser ? currentUser.uid : 'local_user';
-        const currentPseudo = (currentUser && currentUser.displayName) ? currentUser.displayName : (localStorage.getItem('userPseudo') || 'Coureur');
+        const currentPseudo = window.currentUserPseudo || localStorage.getItem('userPseudo') || (currentUser ? currentUser.displayName : null) || 'Coureur';
 
         // Lancer la synchro Firestore en tâche de fond pour mettre à jour et récupérer les vrais utilisateurs
         syncCommunityLeaderboard(data.totalPoints, currentPseudo, currentUid);
@@ -3013,7 +3018,7 @@
         try {
             const currentUser = (typeof firebase !== 'undefined' && firebase.auth) ? firebase.auth().currentUser : null;
             if (currentUser && currentUser.uid) {
-                const currentPseudo = currentUser.displayName || localStorage.getItem('userPseudo') || 'Coureur';
+                const currentPseudo = window.currentUserPseudo || localStorage.getItem('userPseudo') || (currentUser ? currentUser.displayName : null) || 'Coureur';
                 syncCommunityLeaderboard(data.totalPoints, currentPseudo, currentUser.uid);
             }
         } catch (e) {

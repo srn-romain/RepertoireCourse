@@ -319,19 +319,31 @@ window.loginWithGoogle = async function () {
         const userDocRef = db.collection('users').doc(user.uid);
         const doc = await userDocRef.get();
         if (!doc.exists) {
+            const initialPseudo = user.displayName || user.email.split('@')[0];
             await userDocRef.set({
                 email: user.email,
-                pseudo: user.displayName || user.email.split('@')[0],
+                pseudo: initialPseudo,
                 photoURL: user.photoURL,
                 createdAt: firebase.firestore.FieldValue.serverTimestamp(),
                 lastLogin: firebase.firestore.FieldValue.serverTimestamp(),
                 role: 'user'
             });
+            window.currentUserPseudo = initialPseudo;
+            localStorage.setItem('userPseudo', initialPseudo);
         } else {
+            // Respecter le pseudo personnalisé existant dans Firestore
+            const existingPseudo = doc.data().pseudo || user.displayName || user.email.split('@')[0];
+            window.currentUserPseudo = existingPseudo;
+            localStorage.setItem('userPseudo', existingPseudo);
+
+            // Synchroniser le profil Auth pour que displayName reflète le pseudo choisi
+            if (user && typeof user.updateProfile === 'function') {
+                await user.updateProfile({ displayName: existingPseudo }).catch(() => {});
+            }
+
             // Update last login
             await userDocRef.update({
                 lastLogin: firebase.firestore.FieldValue.serverTimestamp(),
-                // Optionally update photoURL if not set
                 photoURL: doc.data().photoURL || user.photoURL
             });
         }
