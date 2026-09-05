@@ -1307,7 +1307,8 @@
             requiredRaces: 5,
             speedRecord: null,
             elevationRecord: null,
-            distanceRecord: null
+            distanceRecord: null,
+            byRaceId: {}
         };
 
         if (!racesList || !Array.isArray(racesList)) return result;
@@ -1355,24 +1356,45 @@
         if (bestPaceRace) {
             const minutes = Math.floor(bestPace / 60);
             const remainderSeconds = Math.round(bestPace % 60);
+            const formattedPace = `${minutes}'${remainderSeconds < 10 ? '0' : ''}${remainderSeconds}"/km`;
             result.speedRecord = {
                 race: bestPaceRace,
-                value: `${minutes}'${remainderSeconds < 10 ? '0' : ''}${remainderSeconds}"/km`,
+                value: formattedPace,
                 label: 'RP Allure au km'
+            };
+            if (!result.byRaceId[bestPaceRace.id]) result.byRaceId[bestPaceRace.id] = {};
+            result.byRaceId[bestPaceRace.id].hasPace = true;
+            result.byRaceId[bestPaceRace.id].paceInfo = {
+                formattedPace: formattedPace,
+                race: bestPaceRace
             };
         }
         if (maxElevationRace) {
+            const formattedElevation = `+${Math.round(maxElevation)} m D+`;
             result.elevationRecord = {
                 race: maxElevationRace,
-                value: `+${Math.round(maxElevation)} m D+`,
+                value: formattedElevation,
                 label: 'Plus de Dénivelé'
+            };
+            if (!result.byRaceId[maxElevationRace.id]) result.byRaceId[maxElevationRace.id] = {};
+            result.byRaceId[maxElevationRace.id].hasElevation = true;
+            result.byRaceId[maxElevationRace.id].elevationInfo = {
+                formattedElevation: formattedElevation,
+                race: maxElevationRace
             };
         }
         if (maxDistanceRace) {
+            const formattedDistance = `${Math.round(maxDistance * 10) / 10} km`;
             result.distanceRecord = {
                 race: maxDistanceRace,
-                value: `${Math.round(maxDistance * 10) / 10} km`,
+                value: formattedDistance,
                 label: 'Course la Plus Longue'
+            };
+            if (!result.byRaceId[maxDistanceRace.id]) result.byRaceId[maxDistanceRace.id] = {};
+            result.byRaceId[maxDistanceRace.id].hasDistance = true;
+            result.byRaceId[maxDistanceRace.id].distanceInfo = {
+                formattedDistance: formattedDistance,
+                race: maxDistanceRace
             };
         }
 
@@ -1790,8 +1812,8 @@
                             unlockedBadges.vingtieme_borne.races = [...eligibleRaces];
                         }
                         if (totalElev >= 8000) {
-                            unlockedBadges.cap_des_8000_dplus.unlocked = true;
-                            unlockedBadges.cap_des_8000_dplus.races = [...eligibleRaces];
+                            unlockedBadges.le_cap_des_8000_dplus.unlocked = true;
+                            unlockedBadges.le_cap_des_8000_dplus.races = [...eligibleRaces];
                         }
                         if (totalKm >= 300) {
                             unlockedBadges.les_300_bornes.unlocked = true;
@@ -1916,13 +1938,13 @@
                             unlockedBadges.le_grand_millier.races = [...eligibleRaces];
                         }
                         if (raceMetrics.some(m => (m.isTriathlon && m.dist >= 50) || m.dist >= 60 || (m.seconds && m.seconds >= 43200))) {
-                            unlockedBadges.format_dendurance_extreme.unlocked = true;
-                            unlockedBadges.format_dendurance_extreme.races = raceMetrics.filter(m => (m.isTriathlon && m.dist >= 50) || m.dist >= 60 || (m.seconds && m.seconds >= 43200)).map(m => m.race);
+                            unlockedBadges.format_endurance_extreme.unlocked = true;
+                            unlockedBadges.format_endurance_extreme.races = raceMetrics.filter(m => (m.isTriathlon && m.dist >= 50) || m.dist >= 60 || (m.seconds && m.seconds >= 43200)).map(m => m.race);
                         }
                         raceMetrics.forEach(m => {
-                            if (m.dist >= 99.8) markBadgeUnlocked('le_cap_des_100', m.race);
-                            if (m.elev >= 4500) markBadgeUnlocked('la_reine_des_montees', m.race);
-                            if (m.dist >= 20.8 && m.seconds !== null && m.seconds <= 5100) markBadgeUnlocked('semi_delite_amateur', m.race);
+                            if (m.dist >= 99.8) markBadgeUnlocked('le_cap_des_100_ultra', m.race);
+                            if (m.elev >= 4500) markBadgeUnlocked('reine_des_montees', m.race);
+                            if (m.dist >= 20.8 && m.seconds !== null && m.seconds <= 5100) markBadgeUnlocked('semi_elite_amateur', m.race);
                             if (m.dist >= 41.8 && m.seconds !== null && m.seconds <= 11700) markBadgeUnlocked('marathon_sub_3h15', m.race);
                         });
                         break;
@@ -2571,6 +2593,7 @@
 
     function calculateRaceBadges(racesList) {
         const data = calculateGamifiedBadges(racesList);
+        window.recordCocardes = data.recordCocardes;
         return data.badgesByRace;
     }
 
