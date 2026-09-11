@@ -706,8 +706,9 @@ function initAuthLogic() {
                         hideLikeCount: false
                     },
                     uiPreferences: {
-                        showImportBtn: false,
-                        showStatsBtn: true
+                        showStatsBtn: true,
+                        showBadgesBtn: true,
+                        showWishlistBtn: true
                     }
                 }, { merge: true });
 
