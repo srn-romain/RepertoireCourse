@@ -481,7 +481,11 @@ const manualModalHTML = `
                             </li>
                             <li class="flex items-start gap-2">
                                 <i class="fas fa-check-circle text-green-600 mt-0.5"></i>
-                                <span><strong>Onglets par type & Éléments pliables :</strong> En mode édition, des onglets dédiés (Toutes, Route, Trail, Triathlon, Relai) avec compteurs permettent de naviguer immédiatement entre vos types de course sans défilement excessif. Les courses sont structurées sous forme d’éléments pliables/dépliables pour un confort visuel optimal.</span>
+                                <span><strong>Copie rapide & Liste à puces :</strong> Copiez instantanément le nom de vos courses grâce au bouton discret situé à côté de chaque titre de catégorie, ou copiez toute votre wishlist organisée par type de course via le bouton dédié en bas de la modale.</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i class="fas fa-check-circle text-green-600 mt-0.5"></i>
+                                <span><strong>Onglets par discipline & Thèmes colorés :</strong> En mode édition, des onglets avec compteurs et codes couleur dédiés (Route, Trail, Triathlon, Relai) permettent de filtrer instantanément vos courses. Chaque course se présente sous forme de carte repliable/dépliable aux couleurs de sa discipline.</span>
                             </li>
                             <li class="flex items-start gap-2">
                                 <i class="fas fa-check-circle text-green-600 mt-0.5"></i>
