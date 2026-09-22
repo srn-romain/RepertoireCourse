@@ -1846,10 +1846,16 @@
 
                 <div id="wishlistEditForm" class="hidden">
                     <div class="mb-4">
+                        <!-- Onglets par type de course pour l'édition -->
+                        <div id="wishlistEditTabs" class="relative flex items-center gap-1.5 p-1 bg-gray-100/90 rounded-xl mb-3.5 overflow-x-auto no-scrollbar scroll-smooth">
+                            <!-- Les boutons d'onglets sont générés dynamiquement -->
+                        </div>
                         <ul id="wishlistEditList" class="space-y-3"></ul>
                         <p id="emptyWishlistEditSearch"
                             class="text-center text-gray-500 italic py-4 hidden text-xs sm:text-sm">Aucune course ne
                             correspond à votre recherche</p>
+                        <p id="emptyWishlistEditCategory"
+                            class="text-center text-gray-500 italic py-4 hidden text-xs sm:text-sm">Aucune course dans cette catégorie</p>
                         <div class="mt-4 p-3 bg-green-50/60 rounded-xl border border-green-200 space-y-3">
                             <div class="flex items-center justify-between">
                                 <h4 class="text-xs font-bold text-green-800 uppercase tracking-wider">Ajouter une course
@@ -6953,14 +6959,23 @@
                         .then((querySnapshot) => {
                             let items = [];
                             querySnapshot.forEach((doc) => {
+                                let data = doc.data();
+                                if (data.category === 'course') data.category = 'route';
                                 items.push({ id: doc.id, ...doc.data() });
                             });
                             wishlistEditItems = items;
-                            renderWishlistEditList(wishlistEditItems);
+                            window.wishlistEditItems = items;
+                            updateWishlistSearchState(wishlistEditItems.length);
                             wishlistDisplay.classList.add('hidden');
                             wishlistEditForm.classList.remove('hidden');
                             editWishlistBtn.classList.add('hidden');
                             newWishlistItemInput.value = '';
+                            const newDateInput = document.getElementById('newWishlistItemDate');
+                            if (newDateInput) newDateInput.value = '';
+                            const newLinkInput = document.getElementById('newWishlistItemLink');
+                            if (newLinkInput) newLinkInput.value = '';
+                            updateWishlistEditTabsUI();
+                            handleWishlistSearch();
                         })
                         .catch((error) => {
                             console.error("Erreur lors du chargement de la wishlist:", error);
@@ -8846,6 +8861,122 @@
         const emptyWishlistSearch = document.getElementById('emptyWishlistSearch');
         const emptyWishlistEditSearch = document.getElementById('emptyWishlistEditSearch');
         let wishlistEditItems = [];
+        const WISHLIST_TABS = [
+            { id: 'all', label: 'Toutes', icon: 'fas fa-layer-group' },
+            { id: 'route', label: 'Route', icon: 'fas fa-running' },
+            { id: 'trail', label: 'Trail', icon: 'fas fa-mountain' },
+            { id: 'triathlon', label: 'Triathlon', icon: 'fas fa-swimmer' },
+            { id: 'relai', label: 'Relai', icon: 'fas fa-people-arrows' }
+        ];
+        let activeWishlistEditTab = 'all';
+
+        // Centrer un onglet sélectionné dans le conteneur horizontal
+        function centerWishlistTab(tabBtn) {
+            const container = document.getElementById('wishlistEditTabs');
+            if (!tabBtn || !container) return;
+            const containerWidth = container.clientWidth;
+            const tabLeft = tabBtn.offsetLeft;
+            const tabWidth = tabBtn.offsetWidth;
+            const targetScrollLeft = tabLeft - (containerWidth / 2) + (tabWidth / 2);
+            container.scrollTo({
+                left: Math.max(0, targetScrollLeft),
+                behavior: 'smooth'
+            });
+        }
+
+        // Mettre à jour les onglets de catégories du mode édition avec les compteurs
+        function updateWishlistEditTabsUI() {
+            const tabsContainer = document.getElementById('wishlistEditTabs');
+            if (!tabsContainer) return;
+
+            const counts = {
+                all: wishlistEditItems.length,
+                route: 0,
+                trail: 0,
+                triathlon: 0,
+                relai: 0
+            };
+
+            wishlistEditItems.forEach(item => {
+                let cat = (item.category || 'route').toLowerCase();
+                if (cat === 'course') cat = 'route';
+                if (counts[cat] !== undefined) {
+                    counts[cat]++;
+                }
+            });
+
+            // Si les boutons existent déjà, on met à jour les styles et les compteurs sans détruire le DOM
+            const existingButtons = tabsContainer.querySelectorAll('.wishlist-tab-btn');
+            if (existingButtons.length === WISHLIST_TABS.length) {
+                existingButtons.forEach(btn => {
+                    const tabId = btn.dataset.tab;
+                    const count = counts[tabId] || 0;
+                    const isActive = activeWishlistEditTab === tabId;
+
+                    btn.className = `wishlist-tab-btn px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer select-none whitespace-nowrap flex-shrink-0 ${
+                        isActive
+                            ? 'bg-green-700 text-white shadow-xs font-bold'
+                            : 'bg-white/80 hover:bg-white text-gray-600 hover:text-gray-900 border border-gray-200/80 font-medium'
+                    }`;
+
+                    const icon = btn.querySelector('i');
+                    if (icon) {
+                        const tabData = WISHLIST_TABS.find(t => t.id === tabId);
+                        icon.className = `${tabData?.icon || ''} text-[11px] ${isActive ? 'text-green-200' : 'text-gray-400'}`;
+                    }
+
+                    const badge = btn.querySelector('.wishlist-tab-badge');
+                    if (badge) {
+                        badge.textContent = count;
+                        badge.className = `wishlist-tab-badge text-[10px] px-1.5 py-0.2 rounded-full font-bold ${isActive ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-600 border border-gray-200/60'}`;
+                    }
+                });
+                return;
+            }
+
+            tabsContainer.innerHTML = '';
+            WISHLIST_TABS.forEach(tab => {
+                const count = counts[tab.id] || 0;
+                const isActive = activeWishlistEditTab === tab.id;
+
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = `wishlist-tab-btn px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer select-none whitespace-nowrap flex-shrink-0 ${
+                    isActive
+                        ? 'bg-green-700 text-white shadow-xs font-bold'
+                        : 'bg-white/80 hover:bg-white text-gray-600 hover:text-gray-900 border border-gray-200/80 font-medium'
+                }`;
+                btn.dataset.tab = tab.id;
+
+                const iconHtml = tab.icon ? `<i class="${tab.icon} text-[11px] ${isActive ? 'text-green-200' : 'text-gray-400'}"></i>` : '';
+                const badgeClass = isActive ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-600 border border-gray-200/60';
+
+                btn.innerHTML = `${iconHtml}<span>${tab.label}</span><span class="wishlist-tab-badge text-[10px] px-1.5 py-0.2 rounded-full font-bold ${badgeClass}">${count}</span>`;
+
+                btn.onclick = (e) => {
+                    if (e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                    }
+                    activeWishlistEditTab = tab.id;
+                    updateWishlistEditTabsUI();
+                    handleWishlistSearch();
+
+                    // Centrer immédiatement l'onglet cliqué dans la barre de défilement horizontale
+                    centerWishlistTab(btn);
+
+                    // Pré-sélectionner le bouton radio de catégorie dans le formulaire d'ajout
+                    if (tab.id !== 'all') {
+                        const targetRadio = document.querySelector(`input[name="wishlistCategory"][value="${tab.id}"]`);
+                        if (targetRadio) {
+                            targetRadio.checked = true;
+                        }
+                    }
+                };
+
+                tabsContainer.appendChild(btn);
+            });
+        }
 
         // Mettre à jour l'état de la recherche (barre de recherche ou bulle d'info selon le nombre d'éléments)
         function updateWishlistSearchState(totalItems) {
@@ -8866,7 +8997,7 @@
             }
         }
 
-        // Filtrage en direct dans la wishlist (modes affichage et édition)
+        // Filtrage en direct dans la wishlist (modes affichage et édition avec support des onglets)
         function handleWishlistSearch() {
             if (!wishlistSearchInput) return;
             const query = wishlistSearchInput.value.trim().toLowerCase();
@@ -8881,17 +9012,59 @@
 
             const isEditMode = wishlistEditForm && !wishlistEditForm.classList.contains('hidden');
 
+            if (isEditMode) {
+                const emptyCategoryElem = document.getElementById('emptyWishlistEditCategory');
+
+                // Filtrer selon l'onglet actif si différent de 'all'
+                let tabFiltered = wishlistEditItems;
+                if (activeWishlistEditTab !== 'all') {
+                    tabFiltered = wishlistEditItems.filter(item => {
+                        let cat = (item.category || 'route').toLowerCase();
+                        if (cat === 'course') cat = 'route';
+                        return cat === activeWishlistEditTab;
+                    });
+                }
+
+                if (!query) {
+                    if (emptyWishlistEditSearch) emptyWishlistEditSearch.classList.add('hidden');
+                    renderWishlistEditList(tabFiltered);
+                    if (emptyCategoryElem) {
+                        if (tabFiltered.length === 0) {
+                            const tabObj = WISHLIST_TABS.find(t => t.id === activeWishlistEditTab);
+                            const tabLabel = tabObj ? tabObj.label : activeWishlistEditTab;
+                            emptyCategoryElem.textContent = `Aucune course de type "${tabLabel}" dans votre wishlist`;
+                            emptyCategoryElem.classList.remove('hidden');
+                        } else {
+                            emptyCategoryElem.classList.add('hidden');
+                        }
+                    }
+                } else {
+                    if (emptyCategoryElem) emptyCategoryElem.classList.add('hidden');
+
+                    const filtered = tabFiltered.filter(item => {
+                        const name = (item.name || '').toLowerCase();
+                        const cat = (item.category || '').toLowerCase();
+                        const date = (item.date || item.raceDate || '').toLowerCase();
+                        const link = (item.link || item.website || item.siteUrl || '').toLowerCase();
+                        return name.includes(query) || cat.includes(query) || date.includes(query) || link.includes(query);
+                    });
+
+                    renderWishlistEditList(filtered);
+                    if (filtered.length === 0) {
+                        if (emptyWishlistEditSearch) emptyWishlistEditSearch.classList.remove('hidden');
+                    } else {
+                        if (emptyWishlistEditSearch) emptyWishlistEditSearch.classList.add('hidden');
+                    }
+                }
+                return;
+            }
+
             if (!query) {
                 if (emptyWishlistSearch) emptyWishlistSearch.classList.add('hidden');
-                if (emptyWishlistEditSearch) emptyWishlistEditSearch.classList.add('hidden');
-                if (isEditMode) {
-                    renderWishlistEditList(wishlistEditItems);
-                } else {
-                    renderWishlistItems(wishlistEditItems);
-                    if (emptyWishlist) {
-                        if (wishlistEditItems.length > 0) emptyWishlist.classList.add('hidden');
-                        else emptyWishlist.classList.remove('hidden');
-                    }
+                renderWishlistItems(wishlistEditItems);
+                if (emptyWishlist) {
+                    if (wishlistEditItems.length > 0) emptyWishlist.classList.add('hidden');
+                    else emptyWishlist.classList.remove('hidden');
                 }
                 return;
             }
@@ -8904,20 +9077,11 @@
                 return name.includes(query) || cat.includes(query) || date.includes(query) || link.includes(query);
             });
 
-            if (isEditMode) {
-                renderWishlistEditList(filtered);
-                if (filtered.length === 0) {
-                    if (emptyWishlistEditSearch) emptyWishlistEditSearch.classList.remove('hidden');
-                } else {
-                    if (emptyWishlistEditSearch) emptyWishlistEditSearch.classList.add('hidden');
-                }
+            renderWishlistItems(filtered);
+            if (filtered.length === 0) {
+                if (emptyWishlistSearch) emptyWishlistSearch.classList.remove('hidden');
             } else {
-                renderWishlistItems(filtered);
-                if (filtered.length === 0) {
-                    if (emptyWishlistSearch) emptyWishlistSearch.classList.remove('hidden');
-                } else {
-                    if (emptyWishlistSearch) emptyWishlistSearch.classList.add('hidden');
-                }
+                if (emptyWishlistSearch) emptyWishlistSearch.classList.add('hidden');
             }
         }
 
@@ -9445,9 +9609,12 @@
                 .then((querySnapshot) => {
                     let items = [];
                     querySnapshot.forEach((doc) => {
-                        items.push({ id: doc.id, ...doc.data() });
+                        let data = doc.data();
+                        if (data.category === 'course') data.category = 'route';
+                        items.push({ id: doc.id, ...data });
                     });
                     wishlistEditItems = items;
+                    window.wishlistEditItems = items;
                     updateWishlistSearchState(wishlistEditItems.length);
                     wishlistDisplay.classList.add('hidden');
                     wishlistEditForm.classList.remove('hidden');
@@ -9457,6 +9624,7 @@
                     if (newDateInput) newDateInput.value = '';
                     const newLinkInput = document.getElementById('newWishlistItemLink');
                     if (newLinkInput) newLinkInput.value = '';
+                    updateWishlistEditTabsUI();
                     handleWishlistSearch();
                 })
                 .catch((error) => {
@@ -9591,15 +9759,17 @@
                     e.stopPropagation();
                     if (item.id) {
                         wishlistCollection.doc(item.id).delete().then(() => {
-                            const index = items.findIndex(i => i === item);
-                            if (index !== -1) items.splice(index, 1);
-                            updateWishlistSearchState(items.length);
+                            const index = wishlistEditItems.findIndex(i => i === item || i.id === item.id);
+                            if (index !== -1) wishlistEditItems.splice(index, 1);
+                            updateWishlistSearchState(wishlistEditItems.length);
+                            updateWishlistEditTabsUI();
                             handleWishlistSearch();
                         });
                     } else {
-                        const index = items.findIndex(i => i === item);
-                        if (index !== -1) items.splice(index, 1);
-                        updateWishlistSearchState(items.length);
+                        const index = wishlistEditItems.findIndex(i => i === item);
+                        if (index !== -1) wishlistEditItems.splice(index, 1);
+                        updateWishlistSearchState(wishlistEditItems.length);
+                        updateWishlistEditTabsUI();
                         handleWishlistSearch();
                     }
                 };
@@ -9671,6 +9841,8 @@
                 categorySelect.onchange = function () {
                     item.category = categorySelect.value;
                     catBadge.textContent = categorySelect.value.charAt(0).toUpperCase() + categorySelect.value.slice(1);
+                    updateWishlistEditTabsUI();
+                    handleWishlistSearch();
                 };
                 catCol.appendChild(catLabel);
                 catCol.appendChild(categorySelect);
@@ -9928,6 +10100,10 @@
             const newLinkInput = document.getElementById('newWishlistItemLink');
             if (newLinkInput) newLinkInput.value = '';
             document.querySelectorAll('input[name="wishlistCategory"]').forEach(r => r.checked = false);
+            if (activeWishlistEditTab !== 'all') {
+                const targetRadio = document.querySelector(`input[name="wishlistCategory"][value="${activeWishlistEditTab}"]`);
+                if (targetRadio) targetRadio.checked = true;
+            }
             isNewItemFavorite = false;
             updateNewItemFavoriteBtnState();
             addWishlistItemBtn.disabled = true;
@@ -9938,7 +10114,10 @@
             wishlistCollection.add(item).then((docRef) => {
                 item.id = docRef.id;
                 wishlistEditItems.push(item);
-                renderWishlistEditList(wishlistEditItems);
+                window.wishlistEditItems = wishlistEditItems;
+                updateWishlistSearchState(wishlistEditItems.length);
+                updateWishlistEditTabsUI();
+                handleWishlistSearch();
                 clearWishlistAddFormInputs();
             });
         }
@@ -10027,7 +10206,8 @@
                                         category: item.category
                                     }).catch(err => console.error("Erreur lors de la mise à jour wishlist:", err));
                                 }
-                                renderWishlistEditList(wishlistEditItems);
+                                updateWishlistEditTabsUI();
+                                handleWishlistSearch();
                                 pendingWishlistItemToAdd = null;
                                 document.getElementById('wishlistSimilarityModal').classList.add('hidden');
                                 clearWishlistAddFormInputs();
@@ -10148,9 +10328,13 @@
         });
 
         wishlistModal.addEventListener('click', function (event) {
-            const modalContent = wishlistModal.querySelector('.modal-content');
-            // Check if click (mouseup) AND mousedown were outside
-            if (modalContent && !modalContent.contains(event.target) && wishlistMouseDownTarget && !modalContent.contains(wishlistMouseDownTarget)) {
+            const modalBox = wishlistModal.querySelector('.relative.bg-white') || wishlistModal.querySelector('.modal-content');
+            const path = (typeof event.composedPath === 'function') ? event.composedPath() : [];
+            const isInside = (modalBox && (modalBox.contains(event.target) || path.includes(modalBox))) ||
+                             (wishlistMouseDownTarget && modalBox && (modalBox.contains(wishlistMouseDownTarget) || path.includes(wishlistMouseDownTarget)));
+
+            // Si le clic ou mousedown a eu lieu à l'intérieur du conteneur de la modale, on ne ferme pas
+            if (!isInside) {
                 if (!wishlistEditForm.classList.contains('hidden')) {
                     if (!tryCloseWishlistEditModal(event)) {
                         // Empêche la fermeture if unsaved changes

@@ -481,7 +481,7 @@ const manualModalHTML = `
                             </li>
                             <li class="flex items-start gap-2">
                                 <i class="fas fa-check-circle text-green-600 mt-0.5"></i>
-                                <span><strong>Recherche & Éléments pliables :</strong> Une barre de recherche rapide s'active dès 10 courses enregistrées. En mode édition, les courses sont structurées sous forme d’éléments pliables/dépliables pour un confort visuel et d'édition optimal.</span>
+                                <span><strong>Onglets par type & Éléments pliables :</strong> En mode édition, des onglets dédiés (Toutes, Route, Trail, Triathlon, Relai) avec compteurs permettent de naviguer immédiatement entre vos types de course sans défilement excessif. Les courses sont structurées sous forme d’éléments pliables/dépliables pour un confort visuel optimal.</span>
                             </li>
                             <li class="flex items-start gap-2">
                                 <i class="fas fa-check-circle text-green-600 mt-0.5"></i>

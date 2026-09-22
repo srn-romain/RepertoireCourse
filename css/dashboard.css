@@ -16,6 +16,15 @@ input[type="search"]::-webkit-search-results-decoration {
     -webkit-appearance: none;
 }
 
+/* Utilitaires de défilement horizontal discret pour onglets */
+.no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+
 #raceNotesEditor {
     position: relative;
 }
