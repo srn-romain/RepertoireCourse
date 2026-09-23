@@ -270,6 +270,13 @@ async function generateRacePdf(raceId) {
             const timePerKm = 60 / speed;
             statsData.push(['Vitesse moyenne', `${speed.toFixed(2)} km/h`]);
             statsData.push(['Moyenne au km', `${timePerKm.toFixed(2)} min/km`]);
+            const isSwimRace = (race.terrain === 'triathlon' && race.raceFormat === 'team' && race.raceRelaySport === 'swim') || race.terrain === 'natation' || race.raceRelaySport === 'swim';
+            if (isSwimRace) {
+                const totalSecs100m = Math.round((timePerKm * 60) / 10);
+                const mins100m = Math.floor(totalSecs100m / 60);
+                const secs100m = totalSecs100m % 60;
+                statsData.push(['Moyenne au 100m', `${mins100m}:${String(secs100m).padStart(2, '0')} min/100m`]);
+            }
         }
     }
 
