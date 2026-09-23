@@ -2338,8 +2338,8 @@
 
         const racesData = getAllUserRaces();
         const data = calculateGamifiedBadges(racesData);
-        window.raceBadges = data.badgesByRace;
         window.recordCocardes = data.recordCocardes;
+        window.raceBadges = getCocardesBadgesByRace(data.recordCocardes);
 
         // Informations utilisateur connecté
         const currentUser = (typeof firebase !== 'undefined' && firebase.auth) ? firebase.auth().currentUser : null;
@@ -2900,18 +2900,6 @@
                     }
                 });
             });
-
-            // Clic sur course pour ouvrir ses détails
-            container.querySelectorAll('.badge-race-name').forEach(el => {
-                el.addEventListener('click', function (e) {
-                    e.stopPropagation();
-                    const raceId = this.getAttribute('data-race-id');
-                    modal.classList.add('hidden');
-                    if (typeof showRaceDetails === 'function') {
-                        showRaceDetails(raceId);
-                    }
-                });
-            });
         }
 
         attachLevelSectionsListeners(document.getElementById('levels-sections-container'));
@@ -3023,6 +3011,24 @@
             });
         });
 
+        // Clic sur 'Voir la course' (Cocardes records) ou sur une course liée à un badge pour ouvrir ses détails
+        content.addEventListener('click', function (e) {
+            const btn = e.target.closest('.badge-race-name');
+            if (btn) {
+                e.preventDefault();
+                e.stopPropagation();
+                const raceId = btn.getAttribute('data-race-id');
+                if (raceId) {
+                    modal.classList.add('hidden');
+                    if (typeof showRaceDetails === 'function') {
+                        showRaceDetails(raceId);
+                    } else if (typeof window.showRaceDetails === 'function') {
+                        window.showRaceDetails(raceId);
+                    }
+                }
+            }
+        });
+
         // Centrage instantané à l'ouverture initiale de la modale (aucun effet de rebond depuis le début)
         scrollActiveLevelTabToCenter(true);
         requestAnimationFrame(() => scrollActiveLevelTabToCenter(true));
@@ -3077,6 +3083,40 @@
             hasLongestDistance: 'demi_dieu'
         };
 
+        if (badgeKey === 'record_pace') {
+            return {
+                id: 'record_pace',
+                name: 'RP Allure / Temps',
+                icon: 'fa-bolt',
+                description: 'Record personnel d\'allure / temps',
+                level: 1,
+                levelEmoji: '⚡',
+                cocarde: { pillBg: 'bg-amber-50 text-amber-900 border-amber-300' }
+            };
+        }
+        if (badgeKey === 'record_distance') {
+            return {
+                id: 'record_distance',
+                name: 'Plus Grande Distance',
+                icon: 'fa-running',
+                description: 'Record de distance (course la plus longue)',
+                level: 1,
+                levelEmoji: '🏃‍♂️',
+                cocarde: { pillBg: 'bg-blue-50 text-blue-900 border-blue-300' }
+            };
+        }
+        if (badgeKey === 'record_elevation') {
+            return {
+                id: 'record_elevation',
+                name: 'Plus de Dénivelé',
+                icon: 'fa-mountain',
+                description: 'Record de dénivelé positif (D+)',
+                level: 1,
+                levelEmoji: '⛰️',
+                cocarde: { pillBg: 'bg-emerald-50 text-emerald-900 border-emerald-300' }
+            };
+        }
+
         const resolvedKey = legacyMap[badgeKey] || badgeKey;
         const badge = BADGES_DEFINITIONS[resolvedKey];
         if (!badge) return null;
@@ -3100,9 +3140,57 @@
         };
     }
 
+    function getCocardesBadgesByRace(recordCocardes) {
+        const result = {};
+        if (!recordCocardes || !recordCocardes.byRaceId) return result;
+        Object.keys(recordCocardes.byRaceId).forEach(raceId => {
+            const info = recordCocardes.byRaceId[raceId];
+            const badges = {};
+            if (info.hasPace) {
+                badges['record_pace'] = {
+                    id: 'record_pace',
+                    name: 'RP Allure',
+                    value: info.paceInfo ? info.paceInfo.formattedPace : '',
+                    icon: 'fa-bolt',
+                    emoji: '⚡',
+                    pillBg: 'bg-amber-50 text-amber-900 border-amber-300',
+                    description: `Record personnel d'allure (${info.paceInfo ? info.paceInfo.formattedPace : ''})`
+                };
+            }
+            if (info.hasDistance) {
+                badges['record_distance'] = {
+                    id: 'record_distance',
+                    name: 'Plus Grande Distance',
+                    value: info.distanceInfo ? info.distanceInfo.formattedDistance : '',
+                    icon: 'fa-running',
+                    emoji: '🏃‍♂️',
+                    pillBg: 'bg-blue-50 text-blue-900 border-blue-300',
+                    description: `Course la plus longue (${info.distanceInfo ? info.distanceInfo.formattedDistance : ''})`
+                };
+            }
+            if (info.hasElevation) {
+                badges['record_elevation'] = {
+                    id: 'record_elevation',
+                    name: 'Plus de Dénivelé',
+                    value: info.elevationInfo ? info.elevationInfo.formattedElevation : '',
+                    icon: 'fa-mountain',
+                    emoji: '⛰️',
+                    pillBg: 'bg-emerald-50 text-emerald-900 border-emerald-300',
+                    description: `Plus grand dénivelé positif (${info.elevationInfo ? info.elevationInfo.formattedElevation : ''})`
+                };
+            }
+            if (Object.keys(badges).length > 0) {
+                result[raceId] = badges;
+            }
+        });
+        return result;
+    }
+
     function calculateRaceBadges(racesList) {
         const data = calculateGamifiedBadges(racesList);
         window.recordCocardes = data.recordCocardes;
+        const cocardesBadges = getCocardesBadgesByRace(data.recordCocardes);
+        window.raceBadges = cocardesBadges;
 
         // Mise à jour automatique des XP en base de données Firestore dès la connexion / chargement des courses
         try {
@@ -3115,7 +3203,7 @@
             console.warn('Auto-sync XP on load error:', e);
         }
 
-        return data.badgesByRace;
+        return cocardesBadges;
     }
 
     function setupBadgesListeners() {
