@@ -19,7 +19,13 @@ const adminModalHTML = `
                 </div>
             </div>
             
-            <div class="flex items-center gap-3 md:gap-6">
+            <div class="flex items-center gap-2 md:gap-4">
+                <!-- Roadmap Button -->
+                <button type="button" onclick="window.openUpcomingFeaturesModal()" class="flex items-center gap-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-[10px] md:text-xs font-bold px-3 py-1.5 rounded-full border border-emerald-200 transition shrink-0" title="Gérer la feuille de route / fonctionnalités à venir">
+                    <i class="fas fa-rocket text-emerald-600"></i>
+                    <span class="hidden sm:inline">Nouveautés</span>
+                </button>
+
                 <!-- UI Switch -->
                 <div class="flex items-center gap-2 bg-gray-50 px-2 py-1 md:px-3 md:py-1.5 rounded-full border border-gray-100 shrink-0">
                     <span class="text-[9px] md:text-xs font-bold text-blue-600 uppercase tracking-tight hidden sm:inline" id="toggleLabel">Toutes</span>
