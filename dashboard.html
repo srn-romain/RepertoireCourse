@@ -1241,14 +1241,15 @@
                             alt="Parcours de la course">
                     </div>
                     <div class="grid grid-cols-2 gap-4 mb-4">
-                        <div class="bg-green-50 p-3 rounded-lg flex flex-col h-full" id="ImageButton">
-                            <p id="DetailImageTitle" class="text-sm text-green-600 flex items-center gap-2"></p>
+                        <div class="bg-green-50 p-3 rounded-lg flex flex-col justify-between h-full" id="ImageButton" onclick="event.stopPropagation();">
+                            <p id="DetailImageTitle" class="text-sm text-green-600 flex items-center gap-2 shrink-0 mb-1"></p>
                             <p id="DetailImageButton" class="font-semibold text-green-800 hidden"></p>
                             <!-- Hidden as text is likely not used with the new logic, but ID kept for safety -->
-                            <div class="flex-grow flex items-center w-full">
-                                <button id="voirParcoursBtn"
-                                    class="mt-1 px-2 py-1 bg-green-100 text-green-800 rounded hover:bg-green-200 text-xs w-full">
-                                    Voir le parcours
+                            <div class="flex-grow flex items-center w-full mt-1">
+                                <button id="voirParcoursBtn" type="button" onclick="event.stopPropagation();"
+                                    class="w-full py-1.5 px-3 bg-green-600 hover:bg-green-700 active:bg-green-800 text-white text-xs font-semibold rounded-lg shadow-sm hover:shadow transition-all duration-200 flex items-center justify-center gap-1.5 cursor-pointer">
+                                    <i class="fas fa-route text-xs"></i>
+                                    <span>Voir le parcours</span>
                                 </button>
                             </div>
                         </div>
@@ -6526,37 +6527,57 @@
                 gridContainer.parentNode.insertBefore(likesRow, gridContainer.nextSibling);
 
             } else {
-                // Cas 2 : Pas de badges -> J'aime dans BadgeButton
-                badgeTitleP.innerHTML = `
-                    <i class="fas fa-heart text-green-500"></i>
-                    <span>J'aime</span>
-                `;
+                // Cas 2 : Pas de badges
+                if (hasBib && likeCount === 0) {
+                    // Si 0 like et qu'il y a un dossard : afficher le Dossard dans ce carré à la place des J'aime
+                    badgeTitleP.innerHTML = `
+                        <i class="fas fa-id-badge text-green-500"></i>
+                        <span>Dossard</span>
+                    `;
 
-                if (detailBadgeText) {
-                    const likeHoverHtml = (likeCount > 0) ? `
-                        <div class="like-hover-trigger-modal inline-flex items-center gap-2 cursor-help relative group/likes-modal"
-                             data-liked-by='${JSON.stringify(likedBy)}'>
-                            <span class="font-normal text-green-800 text-sm flex items-center gap-2">${likeText}</span>
-                            ${likesLockIcon}
+                    if (detailBadgeText) {
+                        detailBadgeText.innerHTML = `<span class="font-semibold text-green-800 text-sm">N°${bibDisplay}</span>`;
+                    }
 
-                            <!-- Tooltip -->
-                            <div class="liker-tooltip hidden absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 bg-white border border-red-100 shadow-xl rounded-xl p-3 z-[1000]">
-                                <p class="text-[10px] text-gray-400 mb-2 border-b pb-1 font-bold uppercase tracking-wider">Aimé par :</p>
-                                <ul class="liker-list space-y-2 max-h-40 overflow-y-auto">
-                                    <li class="text-[10px] italic text-gray-400">Chargement...</li>
-                                </ul>
-                                <div class="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-white border-b border-r border-red-100 transform rotate-45"></div>
+                    // Ne PAS afficher le dossard en haut
+                    if (bibContainer) {
+                        bibContainer.classList.add('hidden');
+                    }
+                } else {
+                    // Si likeCount > 0 OU pas de dossard : afficher J'aime dans ce carré
+                    badgeTitleP.innerHTML = `
+                        <i class="fas fa-heart text-green-500"></i>
+                        <span>J'aime</span>
+                    `;
+
+                    if (detailBadgeText) {
+                        const likeHoverHtml = (likeCount > 0) ? `
+                            <div class="like-hover-trigger-modal inline-flex items-center gap-2 cursor-help relative group/likes-modal"
+                                 data-liked-by='${JSON.stringify(likedBy)}'>
+                                <span class="font-normal text-green-800 text-sm flex items-center gap-2">${likeText}</span>
+                                ${likesLockIcon}
+
+                                <!-- Tooltip -->
+                                <div class="liker-tooltip hidden absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 bg-white border border-red-100 shadow-xl rounded-xl p-3 z-[1000]">
+                                    <p class="text-[10px] text-gray-400 mb-2 border-b pb-1 font-bold uppercase tracking-wider">Aimé par :</p>
+                                    <ul class="liker-list space-y-2 max-h-40 overflow-y-auto">
+                                        <li class="text-[10px] italic text-gray-400">Chargement...</li>
+                                    </ul>
+                                    <div class="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-white border-b border-r border-red-100 transform rotate-45"></div>
+                                </div>
                             </div>
-                        </div>
-                    ` : `<span class="font-normal text-green-800 text-sm flex items-center gap-2">${likeText} ${likesLockIcon}</span>`;
+                        ` : `<span class="font-normal text-green-800 text-sm flex items-center gap-2">${likeText} ${likesLockIcon}</span>`;
 
-                    detailBadgeText.innerHTML = likeHoverHtml;
-                }
+                        detailBadgeText.innerHTML = likeHoverHtml;
+                    }
 
-                // Si la course n'a pas de badge mais a un dossard -> afficher le dossard en haut sous la date
-                if (hasBib && bibContainer && bibText) {
-                    bibText.innerHTML = `Dossard n°${bibDisplay}`;
-                    bibContainer.classList.remove('hidden');
+                    // Si likeCount > 0 et qu'il y a un dossard -> afficher le dossard en haut sous la date
+                    if (hasBib && bibContainer && bibText) {
+                        bibText.innerHTML = `Dossard n°${bibDisplay}`;
+                        bibContainer.classList.remove('hidden');
+                    } else if (bibContainer) {
+                        bibContainer.classList.add('hidden');
+                    }
                 }
             }
 
@@ -6593,35 +6614,47 @@
             function updateImageDisplay() {
                 if (showParcours) {
                     // Afficher le parcours
-                    photoContainer.classList.add('hidden');
-                    parcoursContainer.classList.remove('hidden');
-                    parcoursBtn.textContent = 'Image course';
-                    detailImageTitle.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg> Course';
+                    if (photoContainer) photoContainer.classList.add('hidden');
+                    if (parcoursContainer) parcoursContainer.classList.remove('hidden');
+                    if (parcoursBtn) {
+                        parcoursBtn.innerHTML = '<i class="fas fa-camera text-xs"></i> <span>Image course</span>';
+                    }
+                    if (detailImageTitle) {
+                        detailImageTitle.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg> <span>Course</span>';
+                    }
 
                     // Afficher l'image du parcours ou le placeholder
                     if (race.parcours) {
-                        parcoursImg.src = race.parcours;
-                        parcoursImg.classList.remove('hidden');
-                        parcoursPlaceholder.classList.add('hidden');
+                        if (parcoursImg) {
+                            parcoursImg.src = race.parcours;
+                            parcoursImg.classList.remove('hidden');
+                        }
+                        if (parcoursPlaceholder) parcoursPlaceholder.classList.add('hidden');
                     } else {
-                        parcoursImg.classList.add('hidden');
-                        parcoursPlaceholder.classList.remove('hidden');
+                        if (parcoursImg) parcoursImg.classList.add('hidden');
+                        if (parcoursPlaceholder) parcoursPlaceholder.classList.remove('hidden');
                     }
                 } else {
                     // Afficher la photo
-                    photoContainer.classList.remove('hidden');
-                    parcoursContainer.classList.add('hidden');
-                    parcoursBtn.textContent = 'Image parcours';
-                    detailImageTitle.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg> Parcours';
+                    if (photoContainer) photoContainer.classList.remove('hidden');
+                    if (parcoursContainer) parcoursContainer.classList.add('hidden');
+                    if (parcoursBtn) {
+                        parcoursBtn.innerHTML = '<i class="fas fa-map-marked-alt text-xs"></i> <span>Image parcours</span>';
+                    }
+                    if (detailImageTitle) {
+                        detailImageTitle.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg> <span>Parcours</span>';
+                    }
 
                     // Afficher l'image de la photo ou le placeholder
                     if (race.photo) {
-                        photoImg.src = race.photo;
-                        photo.classList.remove('hidden');
-                        photoPlaceholder.classList.add('hidden');
+                        if (photoImg) {
+                            photoImg.src = race.photo;
+                            photoImg.classList.remove('hidden');
+                        }
+                        if (photoPlaceholder) photoPlaceholder.classList.add('hidden');
                     } else {
-                        photo.classList.add('hidden');
-                        photoPlaceholder.classList.remove('hidden');
+                        if (photoImg) photoImg.classList.add('hidden');
+                        if (photoPlaceholder) photoPlaceholder.classList.remove('hidden');
                     }
                 }
             }
@@ -6633,7 +6666,10 @@
             // Gestionnaire de clic sur le bouton toggle
             if (parcoursBtn) {
                 parcoursBtn.onclick = function (e) {
-                    e.preventDefault();
+                    if (e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                    }
                     showParcours = !showParcours;
                     updateImageDisplay();
                 };
