@@ -1252,8 +1252,8 @@
                                 </button>
                             </div>
                         </div>
-                        <div class="bg-green-50 p-3 rounded-lg" id="BadgeButton">
-                            <p class="text-sm text-green-600 flex items-center gap-2">
+                        <div class="bg-green-50 p-3 rounded-lg flex flex-col justify-between h-full" id="BadgeButton">
+                            <p class="text-sm text-green-600 flex items-center gap-2 mb-1 shrink-0">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-500"
                                     viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                                     stroke-linecap="round" stroke-linejoin="round">
@@ -1262,7 +1262,7 @@
                                 </svg>
                                 <span>Badge</span>
                             </p>
-                            <div id="DetailBadgeButton" class="mt-1 font-semibold text-green-800 flex flex-wrap gap-1">/
+                            <div id="DetailBadgeButton" class="font-semibold text-green-800 flex flex-col justify-center flex-grow w-full">/
                             </div>
                         </div>
                     </div>
@@ -6418,36 +6418,50 @@
             if (raceCocardesInfo && (raceCocardesInfo.hasPace || raceCocardesInfo.hasElevation || raceCocardesInfo.hasDistance)) {
                 hasBadges = true;
                 const badgesPills = [];
+                const cocardesCount = (raceCocardesInfo.hasPace ? 1 : 0) + (raceCocardesInfo.hasDistance ? 1 : 0) + (raceCocardesInfo.hasElevation ? 1 : 0);
+
+                const isSingle = cocardesCount === 1;
+                const isDouble = cocardesCount === 2;
+
+                const padClass = isSingle ? 'px-2 py-1.5' : (isDouble ? 'px-1.5 py-1' : 'px-1 py-0.5');
+                const textClass = isSingle ? 'text-[11px]' : (isDouble ? 'text-[10px]' : 'text-[9px]');
+                const valTextClass = isSingle ? 'text-[10.5px]' : (isDouble ? 'text-[9.5px]' : 'text-[8.5px]');
 
                 if (raceCocardesInfo.hasPace) {
                     badgesPills.push(`
-                        <span class="px-2 py-1 bg-amber-50 text-amber-900 border border-amber-300 rounded-md text-xs flex items-center gap-1.5 w-fit font-medium shadow-xs cursor-pointer hover:opacity-85 transition" onclick="if(typeof displayRaceBadgesModal === 'function') displayRaceBadgesModal();" title="Record Personnel Allure / Temps : ${raceCocardesInfo.paceInfo.formattedPace}">
-                            <span>⚡</span>
-                            <i class="fas fa-stopwatch text-amber-600 text-[11px]"></i>
-                            <span>RP Allure : ${raceCocardesInfo.paceInfo.formattedPace}</span>
-                        </span>
+                        <div class="w-full ${padClass} bg-amber-50 hover:bg-amber-100 text-amber-950 border border-amber-300 rounded-md flex items-center justify-between gap-1 ${textClass} font-medium shadow-2xs cursor-pointer transition select-none" onclick="if(typeof displayRaceBadgesModal === 'function') displayRaceBadgesModal();" title="Record Personnel Allure / Temps : ${raceCocardesInfo.paceInfo.formattedPace}">
+                            <div class="flex items-center gap-1 min-w-0 truncate">
+                                <span class="shrink-0">⚡</span>
+                                <span class="font-semibold truncate">RP Allure</span>
+                            </div>
+                            <span class="font-bold text-amber-900 bg-white/90 px-1 py-0.2 rounded border border-amber-200 shrink-0 ${valTextClass}">${raceCocardesInfo.paceInfo.formattedPace}</span>
+                        </div>
                     `);
                 }
                 if (raceCocardesInfo.hasDistance) {
                     badgesPills.push(`
-                        <span class="px-2 py-1 bg-blue-50 text-blue-900 border border-blue-300 rounded-md text-xs flex items-center gap-1.5 w-fit font-medium shadow-xs cursor-pointer hover:opacity-85 transition" onclick="if(typeof displayRaceBadgesModal === 'function') displayRaceBadgesModal();" title="Course la Plus Longue : ${raceCocardesInfo.distanceInfo.formattedDistance}">
-                            <span>🏃‍♂️</span>
-                            <i class="fas fa-route text-blue-600 text-[11px]"></i>
-                            <span>Record Dist. : ${raceCocardesInfo.distanceInfo.formattedDistance}</span>
-                        </span>
+                        <div class="w-full ${padClass} bg-blue-50 hover:bg-blue-100 text-blue-950 border border-blue-300 rounded-md flex items-center justify-between gap-1 ${textClass} font-medium shadow-2xs cursor-pointer transition select-none" onclick="if(typeof displayRaceBadgesModal === 'function') displayRaceBadgesModal();" title="Course la Plus Longue : ${raceCocardesInfo.distanceInfo.formattedDistance}">
+                            <div class="flex items-center gap-1 min-w-0 truncate">
+                                <span class="shrink-0">🏃‍♂️</span>
+                                <span class="font-semibold truncate">Distance</span>
+                            </div>
+                            <span class="font-bold text-blue-900 bg-white/90 px-1 py-0.2 rounded border border-blue-200 shrink-0 ${valTextClass}">${raceCocardesInfo.distanceInfo.formattedDistance}</span>
+                        </div>
                     `);
                 }
                 if (raceCocardesInfo.hasElevation) {
                     badgesPills.push(`
-                        <span class="px-2 py-1 bg-emerald-50 text-emerald-900 border border-emerald-300 rounded-md text-xs flex items-center gap-1.5 w-fit font-medium shadow-xs cursor-pointer hover:opacity-85 transition" onclick="if(typeof displayRaceBadgesModal === 'function') displayRaceBadgesModal();" title="Plus Grand Dénivelé : ${raceCocardesInfo.elevationInfo.formattedElevation}">
-                            <span>⛰️</span>
-                            <i class="fas fa-mountain text-emerald-600 text-[11px]"></i>
-                            <span>Record D+ : ${raceCocardesInfo.elevationInfo.formattedElevation}</span>
-                        </span>
+                        <div class="w-full ${padClass} bg-emerald-50 hover:bg-emerald-100 text-emerald-950 border border-emerald-300 rounded-md flex items-center justify-between gap-1 ${textClass} font-medium shadow-2xs cursor-pointer transition select-none" onclick="if(typeof displayRaceBadgesModal === 'function') displayRaceBadgesModal();" title="Plus Grand Dénivelé : ${raceCocardesInfo.elevationInfo.formattedElevation}">
+                            <div class="flex items-center gap-1 min-w-0 truncate">
+                                <span class="shrink-0">⛰️</span>
+                                <span class="font-semibold truncate">Dénivelé D+</span>
+                            </div>
+                            <span class="font-bold text-emerald-900 bg-white/90 px-1 py-0.2 rounded border border-emerald-200 shrink-0 ${valTextClass}">${raceCocardesInfo.elevationInfo.formattedElevation}</span>
+                        </div>
                     `);
                 }
 
-                badgeHtml = `<div class="flex items-center gap-1.5 flex-wrap">${badgesPills.join('')}</div>`;
+                badgeHtml = `<div class="flex flex-col gap-1 w-full justify-center my-auto">${badgesPills.join('')}</div>`;
             }
 
             // Définir l'icône de cadenas pour les courses privées
