@@ -1738,8 +1738,11 @@
                             if (m.seconds !== null && m.seconds > 0) markBadgeUnlocked('chrono_note', m.race);
                             if (m.elev >= 50) markBadgeUnlocked('faux_plat_montant', m.race);
                             if (m.dist >= 4.8) markBadgeUnlocked('cinq_majeur', m.race);
-                            markBadgeUnlocked('premier_dossard', m.race);
                         });
+                        if (eligibleRaces.length > 0) {
+                            const sortedByDate = [...eligibleRaces].sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0));
+                            markBadgeUnlocked('premier_dossard', sortedByDate[0]);
+                        }
                         if (totalKm >= 10) {
                             unlockedBadges.bapteme_km.unlocked = true;
                             unlockedBadges.bapteme_km.races = [...eligibleRaces];
@@ -2767,8 +2770,18 @@
                     const isUnlocked = badgeState.unlocked && st.isUnlocked;
                     const racesForBadge = badgeState.races || [];
 
+                    const CUMULATIVE_MILESTONE_BADGES = new Set([
+                        'bapteme_km', 'la_vingtaine', 'club_des_50', 'cap_des_100', 'les_300_bornes', 'le_cap_des_400', 'demi_millier', 'le_grand_millier',
+                        'compteur_lance', 'compteur_dplus_lance', 'carnet_soigne', 'fidele_du_bitume', 'habitue_du_carnet', 'compteur_a_dix',
+                        'quinze_au_compteur', 'grand_total_courses', 'vingtieme_borne', 'quart_de_cent', 'trente_dossards', 'le_demi_cent',
+                        'objectif_3000_dplus', 'le_cap_des_8000_dplus', 'grand_volume_dplus', 'sommet_de_denivele', 'mur_du_denivele', 'explorateur_local',
+                        'quotidien_actif', 'dossard_4_saisons', 'grand_voyageur', 'grand_chelem_annuel', 'explorateur_regional', 'mois_intense', 'regularite_de_fer'
+                    ]);
+
+                    const isCumulativeMilestone = CUMULATIVE_MILESTONE_BADGES.has(badgeId);
+
                     sectionsHtml += `
-                    <div class="badge-card rounded-lg p-3.5 border transition flex flex-col justify-between ${
+                    <div class="badge-card relative z-10 hover:z-30 focus-within:z-30 rounded-lg p-3.5 border transition flex flex-col justify-between ${
                         isUnlocked 
                             ? 'bg-white border-green-200 hover:border-green-300 shadow-xs' 
                             : 'bg-gray-50/80 border-gray-200 opacity-75'
@@ -2802,27 +2815,67 @@
                         <div class="mt-3 pt-2.5 border-t border-gray-100">
                     `;
 
-                    if (isUnlocked && racesForBadge.length > 0) {
+                    if (isUnlocked && isCumulativeMilestone) {
                         sectionsHtml += `
-                            <div class="text-[11px] text-gray-400 font-medium mb-1">Validé sur :</div>
-                            <div class="flex flex-wrap gap-1 max-h-20 overflow-y-auto custom-scrollbar">
+                            <div class="text-[11px] font-semibold text-green-700 flex items-center gap-1.5">
+                                <i class="fas fa-check-circle text-green-600"></i>
+                                <span>Validé sur l'ensemble de vos courses</span>
+                            </div>
                         `;
+                    } else if (isUnlocked && racesForBadge.length > 0) {
                         const sortedRaces = [...racesForBadge].sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
-                        sortedRaces.slice(0, 2).forEach(r => {
+                        const visibleRaces = sortedRaces.slice(0, 2);
+                        const remainingRaces = sortedRaces.slice(2);
+
+                        let racesButtonsHtml = visibleRaces.map(r => {
                             const year = r.date ? new Date(r.date).getFullYear() : '';
-                            sectionsHtml += `
-                                <button class="badge-race-name text-left text-[11px] px-2 py-0.5 rounded bg-gray-100 hover:bg-green-100 hover:text-green-800 text-gray-700 transition truncate max-w-full cursor-pointer" 
+                            return `
+                                <button class="badge-race-name text-left text-[11px] px-2 py-0.5 rounded bg-gray-100 hover:bg-green-100 hover:text-green-800 text-gray-700 transition truncate max-w-[130px] cursor-pointer" 
                                         data-race-id="${r.id}" title="${r.name}">
                                     <span class="truncate">${r.name}</span>
                                     <span class="text-gray-400 text-[10px]">(${year})</span>
                                 </button>
                             `;
-                        });
+                        }).join('');
 
-                        if (sortedRaces.length > 2) {
-                            sectionsHtml += `<span class="text-[10px] text-gray-500 self-center">+${sortedRaces.length - 2} autre(s)</span>`;
+                        if (remainingRaces.length > 0) {
+                            const remainingCount = remainingRaces.length;
+                            const remainingListHtml = remainingRaces.map(r => {
+                                const year = r.date ? new Date(r.date).getFullYear() : '';
+                                return `
+                                    <button class="badge-race-name w-full text-left text-[11px] p-1.5 rounded-lg hover:bg-green-50 hover:text-green-900 text-gray-700 transition flex items-center justify-between gap-1 cursor-pointer border border-transparent hover:border-green-200" 
+                                            data-race-id="${r.id}" title="${r.name}">
+                                        <span class="truncate font-medium">${r.name}</span>
+                                        <span class="text-gray-400 text-[10px] shrink-0 font-normal">(${year})</span>
+                                    </button>
+                                `;
+                            }).join('');
+
+                            racesButtonsHtml += `
+                                <div class="relative inline-block group/badge-more">
+                                    <button type="button" class="badge-more-races-btn text-[10px] text-green-800 bg-green-50 hover:bg-green-100 border border-green-200 hover:border-green-300 font-semibold px-2 py-0.5 rounded-md flex items-center gap-1 cursor-pointer transition shadow-2xs">
+                                        <span>+${remainingCount} autre${remainingCount > 1 ? 's' : ''}</span>
+                                        <i class="fas fa-chevron-down text-[8px] transition-transform duration-200"></i>
+                                    </button>
+                                    <div class="badge-more-popover hidden absolute bottom-full left-0 mb-2 bg-white border border-green-200 shadow-xl rounded-xl p-2.5 z-[150] w-64 max-w-[85vw]">
+                                        <div class="text-[10px] text-gray-400 mb-1.5 border-b border-gray-100 pb-1 font-bold uppercase tracking-wider flex items-center justify-between">
+                                            <span>Autres courses validées (${remainingCount})</span>
+                                        </div>
+                                        <div class="space-y-1 max-h-40 overflow-y-auto custom-scrollbar">
+                                            ${remainingListHtml}
+                                        </div>
+                                        <div class="absolute -bottom-1.5 left-4 w-3 h-3 bg-white border-b border-r border-green-200 transform rotate-45"></div>
+                                    </div>
+                                </div>
+                            `;
                         }
-                        sectionsHtml += `</div>`;
+
+                        sectionsHtml += `
+                            <div class="text-[11px] text-gray-400 font-medium mb-1">Validé sur :</div>
+                            <div class="flex flex-wrap items-center gap-1">
+                                ${racesButtonsHtml}
+                            </div>
+                        `;
                     } else if (isUnlocked) {
                         sectionsHtml += `<div class="text-[11px] font-semibold text-green-700 flex items-center gap-1"><i class="fas fa-check"></i> Mission accomplie</div>`;
                     } else {
@@ -3009,6 +3062,43 @@
                 }
                 localStorage.setItem('leaderboardExpandedState', userLeaderboardExpandedState ? 'true' : 'false');
             });
+        });
+
+        // Gestion de l'ouverture/fermeture des popovers "+ X autres" dans les missions
+        content.addEventListener('click', function (e) {
+            const moreBtn = e.target.closest('.badge-more-races-btn');
+            if (moreBtn) {
+                e.preventDefault();
+                e.stopPropagation();
+                const container = moreBtn.closest('.group\\/badge-more');
+                const popover = container ? container.querySelector('.badge-more-popover') : null;
+                const chevron = moreBtn.querySelector('.fa-chevron-down');
+
+                // Fermer tous les autres popovers ouverts
+                content.querySelectorAll('.badge-more-popover').forEach(p => {
+                    if (p !== popover) p.classList.add('hidden');
+                });
+                content.querySelectorAll('.badge-more-races-btn .fa-chevron-down').forEach(ch => {
+                    if (ch !== chevron) ch.classList.remove('rotate-180');
+                });
+
+                if (popover) {
+                    const isHidden = popover.classList.contains('hidden');
+                    if (isHidden) {
+                        popover.classList.remove('hidden');
+                        if (chevron) chevron.classList.add('rotate-180');
+                    } else {
+                        popover.classList.add('hidden');
+                        if (chevron) chevron.classList.remove('rotate-180');
+                    }
+                }
+                return;
+            }
+
+            if (!e.target.closest('.group\\/badge-more')) {
+                content.querySelectorAll('.badge-more-popover').forEach(p => p.classList.add('hidden'));
+                content.querySelectorAll('.badge-more-races-btn .fa-chevron-down').forEach(ch => ch.classList.remove('rotate-180'));
+            }
         });
 
         // Clic sur 'Voir la course' (Cocardes records) ou sur une course liée à un badge pour ouvrir ses détails
