@@ -267,8 +267,8 @@ async function loadPublicRaces() {
 
             // City conditional
             const cityHtml = (showCity && locationDisplay)
-                ? `<span class="flex items-center gap-1 px-2 py-1 bg-teal-50 text-teal-800 text-xs rounded-full" title="${race.location}">
-                     <i class="fas fa-map-marker-alt text-teal-500"></i> ${locationDisplay}
+                ? `<span class="flex items-center gap-1 px-2 py-1 bg-teal-50 text-teal-800 text-xs rounded-full" title="${escapeHtml(race.location || '')}">
+                     <i class="fas fa-map-marker-alt text-teal-500"></i> ${escapeHtml(locationDisplay)}
                    </span>`
                 : '';
 
@@ -323,7 +323,7 @@ async function loadPublicRaces() {
                         <div>
                             <h3 class="text-xl font-bold text-green-800 mb-1 flex items-center gap-1">
                                 ${favIcon}
-                                ${race.name || 'Course'}
+                                ${escapeHtml(race.name || 'Course')}
                             </h3>
                             <p class="text-green-600 capitalize">
                                 ${dateStr}
@@ -418,12 +418,12 @@ async function loadPublicRaces() {
 
                     <!-- Footer -->
                     <div class="mt-4 pt-3 flex items-center justify-between border-t border-green-50 pr-28">
-                        <span class="text-xs text-gray-500 flex items-center gap-2" title="${ownerPseudoDisplay}">
+                        <span class="text-xs text-gray-500 flex items-center gap-2" title="${escapeHtml(ownerPseudoDisplay)}">
                             ${userData.photoURL ?
-                    `<img src="${userData.photoURL}" onclick="event.stopPropagation(); zoomImage('${userData.photoURL}')" class="w-6 h-6 rounded-full object-cover border border-green-200 shadow-sm cursor-zoom-in hover:scale-110 transition-transform">` :
+                    `<img src="${escapeHtml(userData.photoURL)}" onclick="event.stopPropagation(); zoomImage('${escapeHtml(userData.photoURL)}')" class="w-6 h-6 rounded-full object-cover border border-green-200 shadow-sm cursor-zoom-in hover:scale-110 transition-transform">` :
                     `<i class="fas fa-user-circle text-green-600 text-lg"></i>`
                 }
-                            <span class="truncate max-w-[150px] font-semibold">${ownerPseudoDisplay}</span>
+                            <span class="truncate max-w-[150px] font-semibold">${escapeHtml(ownerPseudoDisplay)}</span>
                             ${badgeAvenir}
                         </span>
                     </div>
@@ -586,10 +586,10 @@ window.openLikersModal = async function (racePath) {
                 ${likers.map(l => `
                     <li class="flex items-center gap-2 p-2 rounded-lg bg-green-50 text-green-800">
                         ${l.photoURL ?
-                    `<img src="${l.photoURL}" onclick="zoomImage('${l.photoURL}')" class="w-6 h-6 rounded-full object-cover border border-green-200 shadow-sm cursor-zoom-in hover:scale-110 transition-transform">` :
+                    `<img src="${escapeHtml(l.photoURL)}" onclick="zoomImage('${escapeHtml(l.photoURL)}')" class="w-6 h-6 rounded-full object-cover border border-green-200 shadow-sm cursor-zoom-in hover:scale-110 transition-transform">` :
                     `<i class="fas fa-user-circle text-xl"></i>`
                 }
-                        <span class="font-medium truncate">${l.name}</span>
+                        <span class="font-medium truncate">${escapeHtml(l.name)}</span>
                     </li>
                 `).join('')}
             </ul>`;
@@ -602,3 +602,13 @@ window.openLikersModal = async function (racePath) {
         content.innerHTML = '<p class="text-center text-red-500">Erreur lors du chargement de la liste.</p>';
     }
 };
+
+function escapeHtml(str) {
+    if (!str || typeof str !== 'string') return '';
+    return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}

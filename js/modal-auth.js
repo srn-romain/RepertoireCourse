@@ -502,43 +502,25 @@ function initAuthLogic() {
             setLoading('forgotSubmitBtn', 'forgot-loading', true);
 
             try {
-                // 1. Vérifier si le mail est reconnu dans la collection users
-                // .limit(1) est ajouté pour la sécurité et correspondre aux règles Firestore
-                let userExists = true;
-                try {
-                    const userQuery = await db.collection('users').where('email', '==', email).limit(1).get();
-                    if (userQuery.empty) {
-                        userExists = false;
-                    }
-                } catch (permissionError) {
-                    console.warn("Permission Firestore insuffisante pour vérifier l'email, tentative d'envoi direct via Auth.", permissionError);
-                    // Si on n'a pas la permission de lire la collection (ex: règles pas encore déployées), 
-                    // on laisse Firebase Auth gérer l'envoi. On ne bloque pas l'utilisateur.
-                }
-
-                if (!userExists) {
-                    showError('forgot-error', "Cet email n'est pas reconnu.");
-                    setLoading('forgotSubmitBtn', 'forgot-loading', false);
-                    return;
-                }
-
-                // 2. Envoyer le mail de réinitialisation
+                // 1. Envoyer directement le mail de réinitialisation via Firebase Auth
+                // (Sécurisé : évite l'énumération d'adresses et fonctionne avec les nouvelles règles Firestore sans permission de listage)
                 await auth.sendPasswordResetEmail(email);
 
-                // 3. Succès
+                // 2. Succès
                 if (successEl) {
                     successEl.textContent = "Email envoyé ! Vérifiez vos spams.";
                     successEl.classList.remove('hidden');
                 }
                 setLoading('forgotSubmitBtn', 'forgot-loading', false);
 
-                // On peut aussi vider le champ
+                // On vide le champ
                 document.getElementById('forgot-email').value = '';
 
             } catch (error) {
                 console.error("Forgot password error:", error);
                 let msg = "Erreur lors de l'envoi de l'email.";
                 if (error.code === 'auth/invalid-email') msg = "Email invalide.";
+                else if (error.code === 'auth/user-not-found') msg = "Cet email n'est pas reconnu.";
                 showError('forgot-error', msg);
                 setLoading('forgotSubmitBtn', 'forgot-loading', false);
             }
