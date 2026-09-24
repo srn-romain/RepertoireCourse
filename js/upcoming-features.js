@@ -253,33 +253,29 @@
                         icon = 'fa-lightbulb';
                     }
                     statusBadge = `
-                        <span class="text-[10px] font-normal px-2 py-0.5 rounded-full border ${badgeColor} inline-flex items-center gap-1 whitespace-nowrap">
+                        <span class="text-[10px] font-normal px-2 py-0.5 rounded-full ml-1 border ${badgeColor} inline-flex items-center gap-1 whitespace-nowrap">
                             <i class="fas ${icon} text-[9px]"></i>${escapeHTML(item.status)}
                         </span>
                     `;
                 }
 
                 const dateBadge = item.date ? `
-                    <span class="text-[10px] bg-green-100 text-green-800 border border-green-200/80 font-normal px-2 py-0.5 rounded-full whitespace-nowrap inline-flex items-center gap-1">
+                    <span class="text-[10px] bg-green-100 text-green-800 border border-green-200/80 font-normal px-2 py-0.5 rounded-full ml-1 whitespace-nowrap inline-flex items-center gap-1">
                         <i class="far fa-calendar-alt text-[9px] text-green-700"></i>${escapeHTML(item.date)}
                     </span>
                 ` : '';
 
                 const descText = item.description ? `
-                    <div class="text-green-800/90 text-xs sm:text-sm font-normal mt-1 ml-2.5 sm:ml-3 leading-relaxed">
+                    <div class="text-green-800/90 text-xs sm:text-sm font-normal mt-0.5 sm:mt-1 ml-1.5 sm:ml-3 leading-snug sm:leading-relaxed">
                         ${escapeHTML(item.description)}
                     </div>
                 ` : '';
 
                 itemsHTML += `
                     <li class="flex items-start gap-2">
-                        <span class="text-green-500 mt-0.5 font-bold">▸</span>
+                        <span class="text-green-500 mt-0.5 font-bold shrink-0">▸</span>
                         <div class="flex-1 leading-snug">
-                            <div class="inline-flex flex-wrap items-center gap-1.5">
-                                <span class="font-bold text-green-900">${escapeHTML(item.title)}</span>
-                                ${statusBadge}
-                                ${dateBadge}
-                            </div>
+                            <span class="font-bold text-green-900">${escapeHTML(item.title)}</span>${statusBadge}${dateBadge}
                             ${descText}
                         </div>
                     </li>
