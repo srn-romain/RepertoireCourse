@@ -98,6 +98,9 @@
             return;
         }
 
+        // Charger immédiatement les fonctionnalités publiques pour tous les visiteurs
+        loadUpcomingFeatures();
+
         firebase.auth().onAuthStateChanged(async (user) => {
             if (user && typeof window.isAdminUser === 'function') {
                 isUserAdmin = await window.isAdminUser();
@@ -125,59 +128,21 @@
     }
 
     /**
-     * Charge les fonctionnalités à venir depuis Firestore
+     * Charge les fonctionnalités à venir depuis Firestore (accessible à tous)
      */
     async function loadUpcomingFeatures() {
         upcomingFeaturesData = [];
-        currentAdminDocUid = null;
 
         try {
-            const currentUser = firebase.auth().currentUser;
-
-            if (currentUser && isUserAdmin) {
-                try {
-                    const userDoc = await db.collection('users').doc(currentUser.uid).get();
-                    if (userDoc.exists) {
-                        currentAdminDocUid = currentUser.uid;
-                        const data = userDoc.data();
-                        if (Array.isArray(data.upcomingFeatures)) {
-                            upcomingFeaturesData = data.upcomingFeatures;
-                        }
-                    }
-                } catch (e) {
-                    console.warn("Erreur lecture admin direct:", e);
+            const publicDoc = await db.collection('public_config').doc('upcomingFeatures').get();
+            if (publicDoc.exists) {
+                const data = publicDoc.data();
+                if (Array.isArray(data.upcomingFeatures)) {
+                    upcomingFeaturesData = data.upcomingFeatures;
                 }
             }
-
-            if (!currentAdminDocUid || upcomingFeaturesData.length === 0) {
-                try {
-                    const adminQuery = await db.collection('users').where('role', '==', 'admin').limit(1).get();
-                    if (!adminQuery.empty) {
-                        const adminDoc = adminQuery.docs[0];
-                        currentAdminDocUid = adminDoc.id;
-                        const data = adminDoc.data();
-                        if (Array.isArray(data.upcomingFeatures)) {
-                            upcomingFeaturesData = data.upcomingFeatures;
-                        }
-                    }
-                } catch (e) {}
-            }
-
-            if (upcomingFeaturesData.length === 0) {
-                try {
-                    const snap = await db.collection('users').where('upcomingFeatures', '!=', null).limit(1).get();
-                    if (!snap.empty) {
-                        const doc = snap.docs[0];
-                        if (!currentAdminDocUid) currentAdminDocUid = doc.id;
-                        const data = doc.data();
-                        if (Array.isArray(data.upcomingFeatures)) {
-                            upcomingFeaturesData = data.upcomingFeatures;
-                        }
-                    }
-                } catch (e) {}
-            }
         } catch (error) {
-            console.error("Erreur chargement upcoming features:", error);
+            console.error("Erreur chargement public_config/upcomingFeatures :", error);
         }
 
         renderUpcomingFeaturesTab();
@@ -538,9 +503,12 @@
         }
 
         try {
-            await db.collection('users').doc(currentUser.uid).set({
-                upcomingFeatures: updatedFeatures
-            }, { merge: true });
+            // Sauvegarde dans la collection publique dédiée
+            await db.collection('public_config').doc('upcomingFeatures').set({
+                upcomingFeatures: updatedFeatures,
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                updatedBy: currentUser.uid
+            });
 
             upcomingFeaturesData = updatedFeatures;
             showModalMessage("Nouveautés enregistrées avec succès !", "success");
