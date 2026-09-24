@@ -2119,7 +2119,7 @@
     // ─────────────────────────────────────────────────────────────────────────────
     const badgesModalHTML = `
     <!-- Modale de Badges & Progression (10 Niveaux - 120 Missions - 10 000 XP) -->
-    <div id="badgesModal" class="fixed inset-0 flex items-center justify-center z-50 hidden modal">
+    <div id="badgesModal" class="fixed inset-0 flex items-center justify-center z-[60] hidden modal">
         <div class="absolute inset-0 bg-black bg-opacity-50 blur-bg" id="badgesModalOverlay"></div>
         <div class="relative bg-white rounded-xl shadow-xl w-full max-w-5xl mx-4 z-10 flex flex-col max-h-[90vh]">
             
@@ -2319,6 +2319,7 @@
     }
 
     function displayRaceBadgesModal() {
+        ensureBadgesModalInDom();
         const modal = document.getElementById('badgesModal');
         const content = document.getElementById('badgesContent');
         if (!modal || !content) return;
@@ -3064,61 +3065,6 @@
             });
         });
 
-        // Gestion de l'ouverture/fermeture des popovers "+ X autres" dans les missions
-        content.addEventListener('click', function (e) {
-            const moreBtn = e.target.closest('.badge-more-races-btn');
-            if (moreBtn) {
-                e.preventDefault();
-                e.stopPropagation();
-                const container = moreBtn.closest('.group\\/badge-more');
-                const popover = container ? container.querySelector('.badge-more-popover') : null;
-                const chevron = moreBtn.querySelector('.fa-chevron-down');
-
-                // Fermer tous les autres popovers ouverts
-                content.querySelectorAll('.badge-more-popover').forEach(p => {
-                    if (p !== popover) p.classList.add('hidden');
-                });
-                content.querySelectorAll('.badge-more-races-btn .fa-chevron-down').forEach(ch => {
-                    if (ch !== chevron) ch.classList.remove('rotate-180');
-                });
-
-                if (popover) {
-                    const isHidden = popover.classList.contains('hidden');
-                    if (isHidden) {
-                        popover.classList.remove('hidden');
-                        if (chevron) chevron.classList.add('rotate-180');
-                    } else {
-                        popover.classList.add('hidden');
-                        if (chevron) chevron.classList.remove('rotate-180');
-                    }
-                }
-                return;
-            }
-
-            if (!e.target.closest('.group\\/badge-more')) {
-                content.querySelectorAll('.badge-more-popover').forEach(p => p.classList.add('hidden'));
-                content.querySelectorAll('.badge-more-races-btn .fa-chevron-down').forEach(ch => ch.classList.remove('rotate-180'));
-            }
-        });
-
-        // Clic sur 'Voir la course' (Cocardes records) ou sur une course liée à un badge pour ouvrir ses détails
-        content.addEventListener('click', function (e) {
-            const btn = e.target.closest('.badge-race-name');
-            if (btn) {
-                e.preventDefault();
-                e.stopPropagation();
-                const raceId = btn.getAttribute('data-race-id');
-                if (raceId) {
-                    modal.classList.add('hidden');
-                    if (typeof showRaceDetails === 'function') {
-                        showRaceDetails(raceId);
-                    } else if (typeof window.showRaceDetails === 'function') {
-                        window.showRaceDetails(raceId);
-                    }
-                }
-            }
-        });
-
         // Centrage instantané à l'ouverture initiale de la modale (aucun effet de rebond depuis le début)
         scrollActiveLevelTabToCenter(true);
         requestAnimationFrame(() => scrollActiveLevelTabToCenter(true));
@@ -3301,24 +3247,93 @@
         const modal = document.getElementById('badgesModal');
         const closeBtn = document.getElementById('closeBadgesModal');
 
-        if (badgesBtn) {
+        if (badgesBtn && !badgesBtn.dataset.listenerAttached) {
+            badgesBtn.dataset.listenerAttached = 'true';
             badgesBtn.onclick = (e) => {
                 e.preventDefault();
                 displayRaceBadgesModal();
             };
         }
 
-        if (closeBtn) {
+        if (closeBtn && !closeBtn.dataset.listenerAttached) {
+            closeBtn.dataset.listenerAttached = 'true';
             closeBtn.onclick = () => { if (modal) modal.classList.add('hidden'); };
         }
 
-        if (modal) {
+        if (modal && !modal.dataset.listenersAttached) {
+            modal.dataset.listenersAttached = 'true';
+
+            // Fermeture au clic sur l'arrière-plan
             modal.addEventListener('click', function (e) {
                 if (e.target.id === 'badgesModal' || e.target.id === 'badgesModalOverlay') {
                     modal.classList.add('hidden');
                 }
             });
+
+            // Gestion de l'ouverture/fermeture des popovers "+ X autres" dans les missions (Délégation unique)
+            modal.addEventListener('click', function (e) {
+                const moreBtn = e.target.closest('.badge-more-races-btn');
+                if (moreBtn) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const container = moreBtn.closest('.group\\/badge-more');
+                    const popover = container ? container.querySelector('.badge-more-popover') : null;
+                    const chevron = moreBtn.querySelector('.fa-chevron-down');
+
+                    // Fermer tous les autres popovers ouverts
+                    modal.querySelectorAll('.badge-more-popover').forEach(p => {
+                        if (p !== popover) p.classList.add('hidden');
+                    });
+                    modal.querySelectorAll('.badge-more-races-btn .fa-chevron-down').forEach(ch => {
+                        if (ch !== chevron) ch.classList.remove('rotate-180');
+                    });
+
+                    if (popover) {
+                        const isHidden = popover.classList.contains('hidden');
+                        if (isHidden) {
+                            popover.classList.remove('hidden');
+                            if (chevron) chevron.classList.add('rotate-180');
+                        } else {
+                            popover.classList.add('hidden');
+                            if (chevron) chevron.classList.remove('rotate-180');
+                        }
+                    }
+                    return;
+                }
+
+                if (!e.target.closest('.group\\/badge-more')) {
+                    modal.querySelectorAll('.badge-more-popover').forEach(p => p.classList.add('hidden'));
+                    modal.querySelectorAll('.badge-more-races-btn .fa-chevron-down').forEach(ch => ch.classList.remove('rotate-180'));
+                }
+            });
+
+            // Clic sur 'Voir la course' (Cocardes records) ou sur une course liée à un badge pour ouvrir ses détails (Délégation unique)
+            modal.addEventListener('click', function (e) {
+                const btn = e.target.closest('.badge-race-name');
+                if (btn) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const raceId = btn.getAttribute('data-race-id');
+                    if (raceId) {
+                        modal.classList.add('hidden');
+                        if (typeof showRaceDetails === 'function') {
+                            showRaceDetails(raceId);
+                        } else if (typeof window.showRaceDetails === 'function') {
+                            window.showRaceDetails(raceId);
+                        }
+                    }
+                }
+            });
         }
+    }
+
+    function ensureBadgesModalInDom() {
+        if (!document.getElementById('badgesModal')) {
+            const div = document.createElement('div');
+            div.innerHTML = badgesModalHTML;
+            document.body.appendChild(div);
+        }
+        setupBadgesListeners();
     }
 
     function updateBadgesButtonVisibility() {
@@ -3329,20 +3344,18 @@
 
     // Injection au chargement
     document.addEventListener('DOMContentLoaded', () => {
-        if (!document.getElementById('badgesModal')) {
-            const div = document.createElement('div');
-            div.innerHTML = badgesModalHTML;
-            document.body.appendChild(div);
-            setupBadgesListeners();
+        ensureBadgesModalInDom();
 
-            document.addEventListener('click', function (e) {
-                if (!e.target.closest('.group\\/badge-more')) {
-                    document.querySelectorAll('.badge-more-popover').forEach(pop => {
-                        pop.classList.add('hidden');
-                    });
-                }
-            });
-        }
+        document.addEventListener('click', function (e) {
+            if (!e.target.closest('.group\\/badge-more')) {
+                document.querySelectorAll('.badge-more-popover').forEach(pop => {
+                    pop.classList.add('hidden');
+                });
+                document.querySelectorAll('.badge-more-races-btn .fa-chevron-down').forEach(ch => {
+                    ch.classList.remove('rotate-180');
+                });
+            }
+        });
     });
 
     // Exports globaux

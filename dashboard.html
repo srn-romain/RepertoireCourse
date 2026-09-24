@@ -6876,22 +6876,6 @@
                 });
             }
 
-            // Gestion du popover des autres badges dans la modale de détails
-            const badgeMoreBtn = detailsModal.querySelector('.badge-more-btn');
-            const badgeMorePopover = detailsModal.querySelector('.badge-more-popover');
-            if (badgeMoreBtn && badgeMorePopover) {
-                badgeMoreBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    badgeMorePopover.classList.toggle('hidden');
-                });
-                const closeBadgePopoverHandler = (e) => {
-                    if (!e.target.closest('.group\\/badge-more')) {
-                        badgeMorePopover.classList.add('hidden');
-                    }
-                };
-                document.addEventListener('click', closeBadgePopoverHandler);
-            }
-
             // --- Google Drive Link ---
             const driveContainer = document.getElementById('driveButtonContainer');
             const openDriveBtn = document.getElementById('openDriveBtn');
