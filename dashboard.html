@@ -49,6 +49,7 @@
     <link rel="stylesheet" href="css/runner-loader.css">
     <script src="js/runner-loader.js"></script>
     <script src="js/badges-modal.js"></script>
+    <script src="js/toast.js"></script>
 </head>
 
 <body class="min-h-screen bg-green-50 bg-opacity-90">
@@ -499,7 +500,7 @@
                         <select id="raceTerrain"
                             class="w-full px-3 py-2 border border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
                             <option value="">Sélectionner un type</option>
-                            <option value="route">Sur route</option>
+                            <option value="route">Route</option>
                             <option value="trail">Trail</option>
                             <option value="triathlon">Triathlon</option>
                             <option value="relai">Relai</option>
@@ -3765,10 +3766,17 @@
                     .then(() => {
                         loadRaces();
                         confirmDeleteModal.classList.add('hidden');
+                        if (typeof showToast === 'function') {
+                            showToast('Course supprimée avec succès', 'delete');
+                        }
                     })
                     .catch((error) => {
                         console.error("Erreur lors de la suppression:", error);
-                        alert('Erreur lors de la suppression de la course.');
+                        if (typeof showToast === 'function') {
+                            showToast('Erreur lors de la suppression de la course', 'error');
+                        } else {
+                            alert('Erreur lors de la suppression de la course.');
+                        }
                     })
                     .finally(() => {
                         confirmDelete.disabled = false;
@@ -4199,6 +4207,9 @@
             downloadAnchorNode.remove();
             saveUserFlag('bulkActionUsed');
             saveUserFlag('exportDownloaded');
+            if (typeof showToast === 'function') {
+                showToast(`Export de ${selectedRaceIds.size} course(s) téléchargé`, 'info');
+            }
         }
 
         // Action : Note commune
@@ -4246,9 +4257,16 @@
                 bulkNoteModal.classList.add('hidden');
                 await loadRaces();
                 updateSelectionUI();
+                if (typeof showToast === 'function') {
+                    showToast(`Note ajoutée à ${updatePromises.length} course(s) avec succès`, 'success');
+                }
             } catch (err) {
                 console.error('Erreur ajout note commune:', err);
-                alert('Erreur lors de l\'ajout de la note commune.');
+                if (typeof showToast === 'function') {
+                    showToast('Erreur lors de l\'ajout de la note commune', 'error');
+                } else {
+                    alert('Erreur lors de l\'ajout de la note commune.');
+                }
             } finally {
                 confirmBulkNoteBtn.disabled = false;
                 confirmBulkNoteBtn.innerHTML = '<i class="fas fa-check"></i><span>Ajouter aux courses</span>';
@@ -4293,14 +4311,22 @@
                     deletePromises.push(racesCollection.doc(id).delete());
                 });
 
+                const count = deletePromises.length;
                 await Promise.all(deletePromises);
                 saveUserFlag('bulkActionUsed');
                 bulkDeleteModal.classList.add('hidden');
                 toggleSelectionMode(false);
                 await loadRaces();
+                if (typeof showToast === 'function') {
+                    showToast(`${count} courses supprimées avec succès`, 'delete');
+                }
             } catch (err) {
                 console.error('Erreur lors de la suppression en masse:', err);
-                alert('Erreur lors de la suppression des courses.');
+                if (typeof showToast === 'function') {
+                    showToast('Erreur lors de la suppression des courses', 'error');
+                } else {
+                    alert('Erreur lors de la suppression des courses.');
+                }
             } finally {
                 finalConfirmBulkDeleteBtn.disabled = false;
                 finalConfirmBulkDeleteBtn.innerHTML = '<i class="fas fa-trash-alt"></i><span>OUI, SUPPRIMER DÉFINITIVEMENT</span>';
@@ -4327,12 +4353,20 @@
                 selectedRaceIds.forEach(id => {
                     updatePromises.push(racesCollection.doc(id).update({ favorite: targetState }));
                 });
+                const count = updatePromises.length;
                 await Promise.all(updatePromises);
                 await loadRaces();
                 updateSelectionUI();
+                if (typeof showToast === 'function') {
+                    showToast(`${count} course(s) ${targetState ? 'ajoutée(s) aux' : 'retirée(s) des'} favoris`, 'info');
+                }
             } catch (err) {
                 console.error('Erreur bascule favoris:', err);
-                alert('Erreur lors de la mise à jour des favoris.');
+                if (typeof showToast === 'function') {
+                    showToast('Erreur lors de la mise à jour des favoris', 'error');
+                } else {
+                    alert('Erreur lors de la mise à jour des favoris.');
+                }
             }
         }
 
@@ -8261,10 +8295,16 @@
 
             savePromise
                 .then(() => {
-                    // Actualiser la liste
-                    loadRaces();
-                    raceModal.classList.add('hidden');
+                    // Notification toast
+                    if (typeof showToast === 'function') {
+                        if (id) {
+                            showToast('Course modifiée avec succès', 'success');
+                        } else {
+                            showToast('Course ajoutée avec succès !', 'success');
+                        }
+                    }
 
+                    // Actualiser la liste
                     loadRaces();
                     raceModal.classList.add('hidden');
 
@@ -11272,6 +11312,10 @@
                     successMsg += ' Les courses sont publiques par défaut.';
                     importMessage.innerHTML = successMsg;
                     importMessage.classList.remove('hidden');
+
+                    if (typeof showToast === 'function' && importedRacesCount > 0) {
+                        showToast(`${importedRacesCount} course(s) importée(s) avec succès !`, 'success');
+                    }
 
                     // Recharger les courses après 2 secondes
                     setTimeout(() => {
