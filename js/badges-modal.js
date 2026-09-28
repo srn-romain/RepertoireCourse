@@ -1575,7 +1575,7 @@
         const hasLikedPublicRace = localStorage.getItem('hasLikedPublicRace') === 'true' || window.hasLikedPublicRace === true;
         const hasNotesReport = racesList.some(r => (typeof r.notes === 'string' && r.notes.trim().length > 3) || (typeof r.comment === 'string' && r.comment.trim().length > 3));
         const hasDownloadedPdf = localStorage.getItem('pdfDownloaded') === 'true' || window.pdfDownloaded === true;
-        const hasUserFeedback = localStorage.getItem('userFeedbackSent') === 'true' || window.feedbackSent === true;
+        const hasUserFeedback = localStorage.getItem('userFeedbackSent') === 'true' || window.userFeedbackSent === true || window.feedbackSent === true;
         const hasUsedBulkActions = localStorage.getItem('bulkActionUsed') === 'true' || window.bulkActionUsed === true;
         const hasUsedBulkNotes = localStorage.getItem('bulkNoteUsed') === 'true' || window.bulkNoteUsed === true;
         const hasExportedData = localStorage.getItem('exportDownloaded') === 'true' || window.exportDownloaded === true;
@@ -2151,9 +2151,33 @@
     // 7. RENDU PRINCIPAL DE L'INTERFACE & CLASSEMENT
     // ─────────────────────────────────────────────────────────────────────────────
     let activeLevelTab = 'all';
+    let activeBadgeStatusFilter = 'all'; // 'all', 'unlocked', 'locked'
+    let currentBadgeSearchQuery = '';
     const userLevelExpandedState = {};
     let userLeaderboardExpandedState = localStorage.getItem('leaderboardExpandedState') !== 'false';
     let userCocardesExpandedState = localStorage.getItem('cocardesExpandedState') !== 'false';
+
+    function normalizeBadgeSearchText(text) {
+        if (!text) return '';
+        return text
+            .toString()
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .replace(/œ/g, 'oe')
+            .replace(/æ/g, 'ae')
+            .trim();
+    }
+
+    function escapeBadgeHtml(str) {
+        if (!str) return '';
+        return str
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
 
     function getLevelFromTotalXP(xp) {
         let currentLvl = LEVELS_CONFIG[0];
@@ -2649,12 +2673,58 @@
         </div>
         `; // fin section cocardes
 
-        // 4. ONGLETS DE NIVEAUX (10 Onglets)
+        // 4. BARRE DE RECHERCHE, FILTRES ET ONGLETS (Non fixe lors du scroll)
         html += `
-        <div id="level-tabs-container" class="level-tabs-container flex items-center gap-2 overflow-x-auto pb-1 mb-5 custom-scrollbar" style="scroll-behavior: smooth; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain;">
-            <button class="level-tab-btn px-3.5 py-1.5 rounded-lg text-xs font-semibold transition shrink-0 flex items-center gap-1.5 cursor-pointer ${activeLevelTab === 'all' ? 'bg-green-700 text-white shadow-sm' : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'}" data-level="all">
-                <i class="fas fa-th-large text-[11px]"></i> Tous les niveaux
-            </button>
+        <div class="mb-5">
+            <!-- Barre de recherche & filtres rapides d'état -->
+            <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 mb-2.5">
+                <!-- Champ de recherche avec icône et bouton vider -->
+                <div class="relative flex-grow">
+                    <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-emerald-600">
+                        <i class="fas fa-search text-xs"></i>
+                    </span>
+                    <input type="text" 
+                           id="badgeSearchInput" 
+                           value="${escapeBadgeHtml(currentBadgeSearchQuery)}"
+                           placeholder="Rechercher une mission (ex: marathon, trail, 10k, dénivelé, photo, allure...)" 
+                           autocomplete="off" 
+                           spellcheck="false"
+                           class="w-full pl-9 pr-9 py-2 text-xs sm:text-sm bg-white hover:border-emerald-400 focus:border-emerald-500 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 shadow-2xs transition placeholder-gray-400 text-gray-800">
+                    <button type="button" 
+                            id="clearBadgeSearchBtn" 
+                            class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-emerald-700 ${currentBadgeSearchQuery ? '' : 'hidden'} cursor-pointer transition" 
+                            title="Effacer la recherche">
+                        <i class="fas fa-times-circle text-sm"></i>
+                    </button>
+                </div>
+
+                <!-- Filtres d'état rapides -->
+                <div class="flex items-center gap-1 shrink-0 bg-gray-200/70 p-1 rounded-xl self-start sm:self-auto" id="badgeStatusFilters">
+                    <button type="button" data-status-filter="all" class="badge-status-filter-btn px-2.5 py-1 rounded-lg text-xs font-semibold transition cursor-pointer ${activeBadgeStatusFilter === 'all' ? 'bg-white text-emerald-900 shadow-2xs' : 'text-gray-600 hover:text-emerald-900'}">
+                        Toutes
+                    </button>
+                    <button type="button" data-status-filter="unlocked" class="badge-status-filter-btn px-2.5 py-1 rounded-lg text-xs font-semibold transition cursor-pointer ${activeBadgeStatusFilter === 'unlocked' ? 'bg-white text-emerald-900 shadow-2xs' : 'text-gray-600 hover:text-emerald-900'}">
+                        <i class="fas fa-check-circle text-emerald-600 text-[10px] mr-1"></i>Débloquées
+                    </button>
+                    <button type="button" data-status-filter="locked" class="badge-status-filter-btn px-2.5 py-1 rounded-lg text-xs font-semibold transition cursor-pointer ${activeBadgeStatusFilter === 'locked' ? 'bg-white text-emerald-900 shadow-2xs' : 'text-gray-600 hover:text-emerald-900'}">
+                        <i class="fas fa-hourglass-half text-amber-600 text-[10px] mr-1"></i>À débloquer
+                    </button>
+                </div>
+            </div>
+
+            <!-- Résumé / compteur dynamique de recherche -->
+            <div id="badgeSearchSummary" class="hidden text-xs text-gray-600 flex items-center justify-between mb-2 px-1">
+                <div class="flex items-center gap-1.5" id="badgeSearchSummaryText"></div>
+                <button type="button" id="resetBadgeFiltersBtn" class="text-emerald-700 hover:text-emerald-800 hover:underline font-semibold cursor-pointer text-[11px] flex items-center gap-1">
+                    <i class="fas fa-undo-alt text-[9px]"></i> Réinitialiser
+                </button>
+            </div>
+
+            <!-- Onglets de niveaux (10 Onglets) -->
+            <div id="level-tabs-container" class="level-tabs-container flex items-center gap-2 overflow-x-auto pb-1 custom-scrollbar" style="scroll-behavior: smooth; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain;">
+                <button class="level-tab-btn px-3.5 py-1.5 rounded-lg text-xs font-semibold transition shrink-0 flex items-center gap-1.5 cursor-pointer ${activeLevelTab === 'all' ? 'bg-green-700 text-white shadow-sm' : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'}" data-level="all">
+                    <i class="fas fa-th-large text-[11px]"></i> Tous les niveaux
+                </button>
         `;
 
         LEVELS_CONFIG.forEach(lvl => {
@@ -2671,26 +2741,29 @@
             </button>
             `;
         });
-        html += `</div>`;
+        html += `
+            </div>
+        </div>`;
 
         // 5. CONTENEUR DYNAMIQUE DES SECTIONS DE NIVEAU
-        function renderLevelSections(currentTab) {
+        function renderLevelSections() {
             let sectionsHtml = '';
-            const levelsToRender = currentTab === 'all' 
-                ? LEVELS_CONFIG 
-                : LEVELS_CONFIG.filter(lvl => lvl.id === currentTab);
 
-            levelsToRender.forEach((lvl, idx) => {
+            LEVELS_CONFIG.forEach((lvl, idx) => {
                 const st = data.levelsState[lvl.id];
                 const prevLvl = idx > 0 ? LEVELS_CONFIG[idx - 1] : null;
                 
                 let isExpanded = userLevelExpandedState[lvl.id];
                 if (isExpanded === undefined) {
-                    isExpanded = currentTab !== 'all' ? true : st.isUnlocked;
+                    isExpanded = activeLevelTab !== 'all' ? true : st.isUnlocked;
                 }
                 
                 sectionsHtml += `
-                <div class="level-section mb-5 bg-white rounded-xl border ${st.isUnlocked ? 'border-gray-200 shadow-sm' : 'border-gray-300'} overflow-hidden transition-all duration-200">
+                <div class="level-section mb-5 bg-white rounded-xl border ${st.isUnlocked ? 'border-gray-200 shadow-sm' : 'border-gray-300'} overflow-hidden transition-all duration-200"
+                     data-level-id="${lvl.id}"
+                     data-level-number="${lvl.levelNumber}"
+                     data-level-name="${escapeBadgeHtml(lvl.name)}"
+                     data-level-unlocked="${st.isUnlocked ? 'true' : 'false'}">
                     
                     <!-- Header de niveau interactif et repliable -->
                     <div class="level-header-toggle p-4 border-b border-gray-100 ${st.isUnlocked ? 'bg-gray-50/70 hover:bg-gray-100/80' : 'bg-gray-100/80 hover:bg-gray-200/70'} flex flex-wrap items-center justify-between gap-3 cursor-pointer transition select-none" data-level-id="${lvl.id}" title="Cliquer pour ${isExpanded ? 'replier' : 'déplier'} ce niveau">
@@ -2732,7 +2805,7 @@
 
                     <!-- Grille des badges repliable -->
                     <div class="level-body ${isExpanded ? '' : 'hidden'} relative overflow-hidden" id="level-body-${lvl.id}">
-                        <div class="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 ${st.isUnlocked ? 'bg-white' : 'bg-gray-100/40 filter blur-[1.5px] opacity-35 select-none pointer-events-none'}">
+                        <div class="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 level-cards-grid ${st.isUnlocked ? 'bg-white' : 'bg-gray-100/40 filter blur-[1.5px] opacity-35 select-none pointer-events-none'}">
                 `;
 
                 lvl.badgeIds.forEach((badgeId, badgeIndex) => {
@@ -2741,7 +2814,14 @@
 
                     if (!st.isUnlocked) {
                         sectionsHtml += `
-                        <div class="badge-card rounded-lg p-3.5 border border-dashed border-gray-300 bg-gray-50/80 flex flex-col justify-between">
+                        <div class="badge-card rounded-lg p-3.5 border border-dashed border-gray-300 bg-gray-50/80 flex flex-col justify-between"
+                             data-badge-id="${badgeId}"
+                             data-badge-name="${escapeBadgeHtml(badge ? badge.name : '')}"
+                             data-badge-desc="${escapeBadgeHtml(badge ? badge.description : '')}"
+                             data-badge-status="locked"
+                             data-badge-xp="${badgeXp}"
+                             data-level-id="${lvl.id}"
+                             data-level-name="${escapeBadgeHtml(lvl.name)}">
                             <div>
                                 <div class="flex items-center justify-between mb-2.5">
                                     <span class="text-[11px] font-semibold px-2 py-0.5 rounded bg-gray-200 text-gray-600 border border-gray-300">
@@ -2757,9 +2837,13 @@
                                     </div>
                                     <div class="flex-grow">
                                         <h5 class="font-semibold text-sm text-gray-500 flex items-center gap-1.5">
-                                            <span>Défi Mystère</span>
+                                            <span class="badge-title-normal">Défi Mystère</span>
+                                            <span class="badge-title-revealed hidden text-amber-800 font-bold">${badge ? badge.name : 'Défi Mystère'}</span>
                                         </h5>
-                                        <p class="text-xs text-gray-400 mt-0.5 italic">Atteignez ${lvl.requiredXP} XP au total pour révéler ce défi...</p>
+                                        <p class="text-xs text-gray-400 mt-0.5 italic">
+                                            <span class="badge-desc-normal">Atteignez ${lvl.requiredXP} XP au total pour révéler ce défi...</span>
+                                            <span class="badge-desc-revealed hidden text-gray-600 not-italic">${badge ? badge.description : ''}</span>
+                                        </p>
                                     </div>
                                 </div>
                             </div>
@@ -2792,7 +2876,14 @@
                         isUnlocked 
                             ? 'bg-white border-green-200 hover:border-green-300 shadow-xs' 
                             : 'bg-gray-50/80 border-gray-200 opacity-75'
-                    }">
+                    }"
+                         data-badge-id="${badgeId}"
+                         data-badge-name="${escapeBadgeHtml(badge ? badge.name : badgeId)}"
+                         data-badge-desc="${escapeBadgeHtml(badge ? badge.description : '')}"
+                         data-badge-status="${isUnlocked ? 'unlocked' : 'locked'}"
+                         data-badge-xp="${badgeXp}"
+                         data-level-id="${lvl.id}"
+                         data-level-name="${escapeBadgeHtml(lvl.name)}">
                         <div>
                             <div class="flex items-center justify-between mb-2.5">
                                 <span class="text-[11px] font-semibold px-2 py-0.5 rounded ${lvl.cocarde.pillBg} border">
@@ -2901,7 +2992,7 @@
                     const percentToUnlock = Math.min(100, Math.round((data.totalPoints / lvl.requiredXP) * 100));
                     const remainingXP = Math.max(0, lvl.requiredXP - data.totalPoints);
                     sectionsHtml += `
-                    <div class="absolute inset-0 z-10 flex flex-col items-center justify-center p-6 bg-gray-900/15 backdrop-blur-xs text-center">
+                    <div class="level-lock-overlay absolute inset-0 z-10 flex flex-col items-center justify-center p-6 bg-gray-900/15 backdrop-blur-xs text-center">
                         <div class="bg-white/95 backdrop-blur-md border border-gray-200/90 rounded-2xl p-6 shadow-2xl max-w-md mx-auto flex flex-col items-center">
                             <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-50 to-amber-100 border border-amber-300 text-amber-600 flex items-center justify-center text-3xl mb-3 shadow-md transform hover:scale-105 transition">
                                 <i class="fas fa-lock"></i>
@@ -2932,7 +3023,7 @@
             return sectionsHtml;
         }
 
-        html += `<div id="levels-sections-container">${renderLevelSections(activeLevelTab)}</div>`;
+        html += `<div id="levels-sections-container">${renderLevelSections()}</div>`;
 
         content.innerHTML = html;
 
@@ -2963,6 +3054,222 @@
         }
 
         attachLevelSectionsListeners(document.getElementById('levels-sections-container'));
+
+        // Filtrage en direct des missions et des niveaux
+        function applyBadgeFilters() {
+            const searchInput = document.getElementById('badgeSearchInput');
+            const clearBtn = document.getElementById('clearBadgeSearchBtn');
+            const summaryEl = document.getElementById('badgeSearchSummary');
+            const summaryText = document.getElementById('badgeSearchSummaryText');
+            const sectionsContainer = document.getElementById('levels-sections-container');
+            if (!sectionsContainer) return;
+
+            const rawQuery = searchInput ? searchInput.value : currentBadgeSearchQuery;
+            currentBadgeSearchQuery = rawQuery;
+            const query = normalizeBadgeSearchText(rawQuery);
+            const hasQuery = query.length > 0;
+
+            if (clearBtn) {
+                if (hasQuery) {
+                    clearBtn.classList.remove('hidden');
+                } else {
+                    clearBtn.classList.add('hidden');
+                }
+            }
+
+            const sections = sectionsContainer.querySelectorAll('.level-section');
+            let totalMatches = 0;
+
+            sections.forEach(section => {
+                const levelId = section.getAttribute('data-level-id');
+                const isLevelUnlocked = section.getAttribute('data-level-unlocked') === 'true';
+                const levelBody = document.getElementById(`level-body-${levelId}`);
+                const chevron = section.querySelector('.level-chevron');
+                const lockOverlay = section.querySelector('.level-lock-overlay');
+                const cardsGrid = section.querySelector('.level-cards-grid');
+
+                // Filtre d'onglet : si un onglet spécifique est actif (et pas 'all')
+                const tabMatches = (activeLevelTab === 'all' || activeLevelTab === levelId);
+                if (!tabMatches) {
+                    section.classList.add('hidden');
+                    return;
+                }
+
+                const cards = section.querySelectorAll('.badge-card');
+                let levelMatchesCount = 0;
+
+                cards.forEach(card => {
+                    const cardName = card.getAttribute('data-badge-name') || '';
+                    const cardDesc = card.getAttribute('data-badge-desc') || '';
+                    const cardStatus = card.getAttribute('data-badge-status') || '';
+                    const cardXp = card.getAttribute('data-badge-xp') || '';
+                    const cardLvlName = card.getAttribute('data-level-name') || '';
+
+                    // Filtre d'état
+                    const statusMatches = (activeBadgeStatusFilter === 'all') || (activeBadgeStatusFilter === cardStatus);
+
+                    // Filtre de recherche texte
+                    let queryMatches = true;
+                    if (hasQuery) {
+                        const normName = normalizeBadgeSearchText(cardName);
+                        const normDesc = normalizeBadgeSearchText(cardDesc);
+                        const normLvl = normalizeBadgeSearchText(cardLvlName);
+                        queryMatches = normName.includes(query) || 
+                                       normDesc.includes(query) || 
+                                       cardXp.includes(query) || 
+                                       normLvl.includes(query);
+                    }
+
+                    if (statusMatches && queryMatches) {
+                        card.classList.remove('hidden');
+                        card.style.display = '';
+                        levelMatchesCount++;
+                        totalMatches++;
+
+                        // Si niveau verrouillé et recherche active, révéler les infos de la mission
+                        if (!isLevelUnlocked) {
+                            const normalTitle = card.querySelector('.badge-title-normal');
+                            const revealedTitle = card.querySelector('.badge-title-revealed');
+                            const normalDesc = card.querySelector('.badge-desc-normal');
+                            const revealedDesc = card.querySelector('.badge-desc-revealed');
+                            if (hasQuery) {
+                                if (normalTitle) normalTitle.classList.add('hidden');
+                                if (revealedTitle) revealedTitle.classList.remove('hidden');
+                                if (normalDesc) normalDesc.classList.add('hidden');
+                                if (revealedDesc) revealedDesc.classList.remove('hidden');
+                            } else {
+                                if (normalTitle) normalTitle.classList.remove('hidden');
+                                if (revealedTitle) revealedTitle.classList.add('hidden');
+                                if (normalDesc) normalDesc.classList.remove('hidden');
+                                if (revealedDesc) revealedDesc.classList.add('hidden');
+                            }
+                        }
+                    } else {
+                        card.classList.add('hidden');
+                        card.style.display = 'none';
+                    }
+                });
+
+                if (levelMatchesCount > 0) {
+                    section.classList.remove('hidden');
+
+                    if (hasQuery) {
+                        // Déplier automatiquement pour afficher les résultats
+                        if (levelBody) levelBody.classList.remove('hidden');
+                        if (chevron) chevron.classList.add('rotate-180');
+                        if (!isLevelUnlocked) {
+                            if (lockOverlay) lockOverlay.classList.add('hidden');
+                            if (cardsGrid) {
+                                cardsGrid.classList.remove('filter', 'blur-[1.5px]', 'opacity-35', 'select-none', 'pointer-events-none');
+                            }
+                        }
+                    } else {
+                        // Rétablir l'état normal replié/déplié
+                        let isExpanded = userLevelExpandedState[levelId];
+                        if (isExpanded === undefined) {
+                            isExpanded = (activeLevelTab !== 'all') ? true : isLevelUnlocked;
+                        }
+                        if (levelBody) {
+                            if (isExpanded) {
+                                levelBody.classList.remove('hidden');
+                                if (chevron) chevron.classList.add('rotate-180');
+                            } else {
+                                levelBody.classList.add('hidden');
+                                if (chevron) chevron.classList.remove('rotate-180');
+                            }
+                        }
+                        if (!isLevelUnlocked) {
+                            if (lockOverlay) lockOverlay.classList.remove('hidden');
+                            if (cardsGrid) {
+                                cardsGrid.classList.add('filter', 'blur-[1.5px]', 'opacity-35', 'select-none', 'pointer-events-none');
+                            }
+                        }
+                    }
+                } else {
+                    // Aucune carte correspondante dans ce niveau
+                    if (hasQuery || activeBadgeStatusFilter !== 'all') {
+                        section.classList.add('hidden');
+                    } else {
+                        section.classList.remove('hidden');
+                    }
+                }
+            });
+
+            // Affichage du bandeau de résumé
+            if (summaryEl && summaryText) {
+                if (hasQuery || activeBadgeStatusFilter !== 'all') {
+                    summaryEl.classList.remove('hidden');
+                    let text = `<span><strong class="font-extrabold text-emerald-800">${totalMatches}</strong> mission${totalMatches > 1 ? 's' : ''}`;
+                    if (hasQuery) {
+                        text += ` trouvée${totalMatches > 1 ? 's' : ''} pour « <span class="font-bold text-gray-800">${escapeBadgeHtml(rawQuery)}</span> »`;
+                    }
+                    if (activeBadgeStatusFilter === 'unlocked') {
+                        text += ` <span class="text-emerald-700 font-semibold">(débloquées uniquement)</span>`;
+                    } else if (activeBadgeStatusFilter === 'locked') {
+                        text += ` <span class="text-amber-700 font-semibold">(à débloquer uniquement)</span>`;
+                    }
+                    if (activeLevelTab !== 'all') {
+                        const curLvlCfg = LEVELS_CONFIG.find(l => l.id === activeLevelTab);
+                        if (curLvlCfg) {
+                            text += ` dans <em>Niveau ${curLvlCfg.levelNumber} (${curLvlCfg.name})</em>`;
+                        }
+                    }
+                    text += `</span>`;
+                    summaryText.innerHTML = text;
+                } else {
+                    summaryEl.classList.add('hidden');
+                }
+            }
+
+            // Message aucun résultat
+            let noResultsEl = document.getElementById('badgesSearchNoResults');
+            if (totalMatches === 0 && (hasQuery || activeBadgeStatusFilter !== 'all')) {
+                if (!noResultsEl) {
+                    noResultsEl = document.createElement('div');
+                    noResultsEl.id = 'badgesSearchNoResults';
+                    noResultsEl.className = 'p-8 text-center bg-white border border-dashed border-gray-300 rounded-xl my-4 shadow-2xs';
+                    sectionsContainer.appendChild(noResultsEl);
+                }
+                noResultsEl.innerHTML = `
+                    <div class="w-12 h-12 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl mx-auto mb-3 shadow-2xs">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <h4 class="font-bold text-gray-800 text-base mb-1">Aucune mission correspondante</h4>
+                    <p class="text-xs text-gray-500 max-w-md mx-auto mb-3">
+                        ${hasQuery ? `Aucune mission ne correspond à « <strong class="text-emerald-800">${escapeBadgeHtml(rawQuery)}</strong> ».` : 'Aucune mission ne correspond à ce filtre.'}
+                        Vérifiez l'orthographe ou essayez un mot-clé plus générique (ex : marathon, trail, dénivelé, photo, ami...).
+                    </p>
+                    <button type="button" id="btnResetSearchNoResults" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold transition cursor-pointer shadow-2xs inline-flex items-center gap-1.5">
+                        <i class="fas fa-undo-alt text-[10px]"></i> Réinitialiser la recherche
+                    </button>
+                `;
+                const resetBtnNoRes = document.getElementById('btnResetSearchNoResults');
+                if (resetBtnNoRes) {
+                    resetBtnNoRes.onclick = resetAllBadgeFilters;
+                }
+                noResultsEl.classList.remove('hidden');
+            } else if (noResultsEl) {
+                noResultsEl.classList.add('hidden');
+            }
+        }
+
+        function resetAllBadgeFilters() {
+            const searchInput = document.getElementById('badgeSearchInput');
+            if (searchInput) searchInput.value = '';
+            currentBadgeSearchQuery = '';
+            activeBadgeStatusFilter = 'all';
+
+            content.querySelectorAll('.badge-status-filter-btn').forEach(b => {
+                const f = b.getAttribute('data-status-filter');
+                if (f === 'all') {
+                    b.className = 'badge-status-filter-btn px-2.5 py-1 rounded-lg text-xs font-semibold transition cursor-pointer bg-white text-emerald-900 shadow-2xs';
+                } else {
+                    b.className = 'badge-status-filter-btn px-2.5 py-1 rounded-lg text-xs font-semibold transition cursor-pointer text-gray-600 hover:text-emerald-900';
+                }
+            });
+
+            applyBadgeFilters();
+        }
 
         // Centrer automatiquement et élégamment l'onglet actif dans la barre horizontale sans reset
         function scrollActiveLevelTabToCenter(isInstant = false) {
@@ -3013,13 +3320,7 @@
                 });
             }
 
-            const sectionsContainer = document.getElementById('levels-sections-container');
-            if (sectionsContainer) {
-                sectionsContainer.innerHTML = renderLevelSections(activeLevelTab);
-                attachLevelSectionsListeners(sectionsContainer);
-            }
-
-            // Translation fluide directement depuis la position actuelle vers le nouvel onglet
+            applyBadgeFilters();
             scrollActiveLevelTabToCenter(false);
         }
 
@@ -3030,6 +3331,82 @@
                 switchLevelTab(targetLevel);
             });
         });
+
+        // Écouteurs de la barre de recherche
+        const searchInput = document.getElementById('badgeSearchInput');
+        const clearBtn = document.getElementById('clearBadgeSearchBtn');
+        const resetBtn = document.getElementById('resetBadgeFiltersBtn');
+
+        if (searchInput) {
+            searchInput.addEventListener('input', function () {
+                const val = this.value.trim();
+                // Si l'utilisateur commence à chercher et n'est pas sur "Tous les niveaux", basculer sur "all"
+                if (val && activeLevelTab !== 'all') {
+                    activeLevelTab = 'all';
+                    const tabsContainer = document.getElementById('level-tabs-container');
+                    if (tabsContainer) {
+                        tabsContainer.querySelectorAll('.level-tab-btn').forEach(btn => {
+                            const btnLevel = btn.getAttribute('data-level');
+                            const isTabActive = btnLevel === 'all';
+                            const countPill = btn.querySelector('.badge-count-pill');
+                            if (isTabActive) {
+                                btn.className = 'level-tab-btn px-3.5 py-1.5 rounded-lg text-xs font-semibold transition shrink-0 flex items-center gap-1.5 cursor-pointer bg-green-700 text-white shadow-sm';
+                                if (countPill) countPill.className = 'badge-count-pill text-[10px] px-1.5 py-0.2 rounded-full bg-green-800 text-white';
+                            } else {
+                                btn.className = 'level-tab-btn px-3.5 py-1.5 rounded-lg text-xs font-semibold transition shrink-0 flex items-center gap-1.5 cursor-pointer bg-white text-gray-600 hover:bg-gray-100 border border-gray-200';
+                                if (countPill) countPill.className = 'badge-count-pill text-[10px] px-1.5 py-0.2 rounded-full bg-gray-100 text-gray-500';
+                            }
+                        });
+                    }
+                }
+                applyBadgeFilters();
+            });
+
+            searchInput.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape') {
+                    if (this.value) {
+                        e.stopPropagation();
+                        this.value = '';
+                        applyBadgeFilters();
+                    }
+                }
+            });
+        }
+
+        if (clearBtn) {
+            clearBtn.addEventListener('click', function () {
+                if (searchInput) {
+                    searchInput.value = '';
+                    searchInput.focus();
+                }
+                applyBadgeFilters();
+            });
+        }
+
+        if (resetBtn) {
+            resetBtn.addEventListener('click', function () {
+                resetAllBadgeFilters();
+                if (searchInput) searchInput.focus();
+            });
+        }
+
+        // Écouteurs filtres d'état (Toutes / Débloquées / À débloquer)
+        content.querySelectorAll('.badge-status-filter-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                activeBadgeStatusFilter = this.getAttribute('data-status-filter') || 'all';
+                content.querySelectorAll('.badge-status-filter-btn').forEach(b => {
+                    if (b === btn) {
+                        b.className = 'badge-status-filter-btn px-2.5 py-1 rounded-lg text-xs font-semibold transition cursor-pointer bg-white text-emerald-900 shadow-2xs';
+                    } else {
+                        b.className = 'badge-status-filter-btn px-2.5 py-1 rounded-lg text-xs font-semibold transition cursor-pointer text-gray-600 hover:text-emerald-900';
+                    }
+                });
+                applyBadgeFilters();
+            });
+        });
+
+        // Appliquer immédiatement les filtres (restauration d'état ou initial)
+        applyBadgeFilters();
 
         // Toggle section Cocardes Records
         content.querySelectorAll('.cocardes-header-toggle').forEach(header => {
@@ -3273,6 +3650,24 @@
             modal.addEventListener('click', function (e) {
                 if (e.target.id === 'badgesModal' || e.target.id === 'badgesModalOverlay') {
                     modal.classList.add('hidden');
+                }
+            });
+
+            // Raccourci clavier pour focus la recherche quand la modale est visible (/ ou Ctrl+F / Cmd+F)
+            document.addEventListener('keydown', function (e) {
+                const badgesModal = document.getElementById('badgesModal');
+                if (!badgesModal || badgesModal.classList.contains('hidden')) return;
+
+                const isSlash = (e.key === '/' || e.key === '?') && !['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName);
+                const isFind = (e.ctrlKey || e.metaKey) && (e.key === 'f' || e.key === 'F');
+
+                if (isSlash || isFind) {
+                    const searchInput = document.getElementById('badgeSearchInput');
+                    if (searchInput) {
+                        e.preventDefault();
+                        searchInput.focus();
+                        searchInput.select();
+                    }
                 }
             });
 

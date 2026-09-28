@@ -15,7 +15,7 @@
     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl my-8 flex flex-col">
 
         <!-- En-tête -->
-        <div class="sticky top-0 bg-white rounded-t-2xl border-b border-gray-100 px-6 py-4 flex items-center justify-between z-10">
+        <div class="bg-white rounded-t-2xl border-b border-gray-100 px-6 py-4 flex items-center justify-between">
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
                     <i class="fas fa-shield-alt text-green-600 text-lg"></i>
@@ -316,7 +316,7 @@
                 <div class="text-xs space-y-2 text-gray-600">
                     <p><i class="fas fa-lock text-green-500 mr-1"></i><strong>Chiffrement en transit :</strong> Toutes les communications entre votre navigateur et Firebase utilisent le protocole HTTPS/TLS.</p>
                     <p><i class="fas fa-shield-alt text-green-500 mr-1"></i><strong>Accès cloisonné :</strong> Chaque utilisateur ne peut accéder qu'à ses propres données grâce aux règles de sécurité Firestore basées sur l'authentification (UID Firebase).</p>
-                    <p><i class="fas fa-key text-green-500 mr-1"></i><strong>Mots de passe :</strong> Les mots de passe ne sont jamais stockés en clair — ils sont gérés exclusivement par Firebase Authentication qui les hache selon les standards de l'industrie.</p>
+                    <p><i class="fas fa-key text-green-500 mr-1"></i><strong>Mots de passe :</strong> Les mots de passe ne sont jamais stockés en clair - ils sont gérés exclusivement par Firebase Authentication qui les hache selon les standards de l'industrie.</p>
                     <p><i class="fas fa-user-shield text-green-500 mr-1"></i><strong>Suppression sécurisée :</strong> La suppression du compte nécessite une reconnexion récente (moins de 5 minutes) pour prévenir les suppressions accidentelles ou malveillantes.</p>
                 </div>
             </section>
@@ -354,7 +354,7 @@
         <!-- Pied de modale -->
         <div class="border-t border-gray-100 px-6 py-4 flex items-center justify-between bg-gray-50 rounded-b-2xl">
             <p class="text-xs text-gray-400">
-                <i class="fas fa-calendar-alt mr-1"></i>Version du 5 mars 2026 — RGPD (UE) 2016/679
+                <i class="fas fa-calendar-alt mr-1"></i>Version du 5 mars 2026 - RGPD (UE) 2016/679
             </p>
             <button id="closeRgpdModalBtn"
                     class="px-5 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold rounded-lg transition shadow-sm">

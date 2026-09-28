@@ -23,7 +23,7 @@ window.saveUserFlag = function(flagName, value = true) {
     // 2. window global
     window[flagName] = value;
 
-    // 3. Firestore (asynchrone, en arrière-plan) — seulement si pas déjà sauvegardé
+    // 3. Firestore (asynchrone, en arrière-plan) - seulement si pas déjà sauvegardé
     const alreadySynced = localStorage.getItem(flagName + '_synced') === 'true';
     if (value && !alreadySynced) {
         try {
@@ -73,6 +73,9 @@ window.loadUserFlagsFromFirestore = async function() {
                     localStorage.setItem(flag + '_synced', 'true');
                 }
                 window[flag] = true;
+                if (flag === 'userFeedbackSent') {
+                    window.feedbackSent = true;
+                }
             }
         });
 
