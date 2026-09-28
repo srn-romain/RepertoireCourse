@@ -282,6 +282,9 @@ function updateBodyScroll() {
 let _openModalCount = 0;
 
 window.openModal = function (modalId) {
+    if (window.isSelectionMode && modalId !== 'bulkNoteModal' && modalId !== 'bulkDeleteModal') {
+        return;
+    }
     const modal = document.getElementById(modalId);
     if (modal && modal.classList.contains('hidden')) {
         modal.classList.remove('hidden');

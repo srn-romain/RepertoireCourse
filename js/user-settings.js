@@ -942,6 +942,7 @@ async function initSettingsLogic() {
 
 // Fonction globale pour ouvrir les paramètres
 window.openUserSettings = async function () {
+    if (window.isSelectionMode) return;
     const modal = document.getElementById('userSettingsModal');
     if (modal) {
         modal.classList.remove('hidden');
@@ -1041,6 +1042,7 @@ window.openSettingsModal = window.openUserSettings;
 
 // Ouvre les paramètres et surligne précisément la case du classement
 window.openUserSettingsForLeaderboard = function () {
+    if (window.isSelectionMode) return;
     const badgesModal = document.getElementById('badgesModal');
     if (badgesModal) badgesModal.classList.add('hidden');
 

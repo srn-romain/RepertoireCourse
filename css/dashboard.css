@@ -453,3 +453,42 @@ input[type="search"]::-webkit-search-results-decoration {
     100% { opacity: 1; transform: translateY(0) scale(1); }
 }
 
+/* ==========================================================================
+   MODE SÉLECTION EN MASSE (FREEZE DES ACTIONS ET DES BOUTONS)
+   ========================================================================== */
+
+/* Carte en mode sélection */
+.selection-mode-active .race-card-item {
+    cursor: pointer !important;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+/* Geler tous les boutons et liens d'action sur les cartes */
+.selection-mode-active .race-card-item button,
+.selection-mode-active .race-card-item a,
+.selection-mode-active .race-card-item .like-hover-trigger,
+.selection-mode-active .race-card-item .cocarde-container {
+    pointer-events: none !important;
+    opacity: 0.45 !important;
+    transition: opacity 0.2s ease, filter 0.2s ease;
+    filter: grayscale(30%);
+}
+
+/* La case à cocher reste active et mise en valeur */
+.selection-mode-active .race-card-item .selection-checkbox-container,
+.selection-mode-active .race-card-item .selection-checkbox-container * {
+    pointer-events: auto !important;
+    opacity: 1 !important;
+    filter: none !important;
+}
+
+/* Mise en relief de la carte sélectionnée */
+.race-card-selected {
+    outline: 3px solid #10b981 !important;
+    outline-offset: -1px;
+    background-color: #f0fdf4 !important;
+    box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.2) !important;
+    transform: translateY(-2px);
+}
+

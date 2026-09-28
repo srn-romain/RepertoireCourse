@@ -2994,6 +2994,7 @@
                         if (changeUserBtn) {
                             changeUserBtn.classList.remove('hidden');
                             changeUserBtn.onclick = () => {
+                                if (window.isSelectionMode) return;
                                 inviteModal.classList.remove('hidden');
                             };
                         }
@@ -3712,6 +3713,8 @@
 
         // Gérer l'événement de clic sur le bouton d'ajout
         addRaceBtn.addEventListener('click', async () => {
+            if (isSelectionMode || window.isSelectionMode) return;
+
             if (isInvite()) {
                 showPermissionDeniedModal('ajouter une course');
                 return;
@@ -4057,6 +4060,7 @@
             } else {
                 isSelectionMode = !isSelectionMode;
             }
+            window.isSelectionMode = isSelectionMode;
 
             if (!isSelectionMode) {
                 selectedRaceIds.clear();
@@ -4126,6 +4130,7 @@
 
         // Mettre à jour les éléments d'interface du mode sélection
         function updateSelectionUI() {
+            window.isSelectionMode = isSelectionMode;
             const count = selectedRaceIds.size;
             if (selectedCountBadge) selectedCountBadge.textContent = count;
             if (selectedCountText) selectedCountText.textContent = `${count} course${count > 1 ? 's' : ''} sélectionnée${count > 1 ? 's' : ''}`;
@@ -4145,6 +4150,30 @@
             if (bulkSelectAllText) {
                 bulkSelectAllText.textContent = areAllSelected ? 'Tout désélec.' : 'Tout sélec.';
             }
+
+            // Geler / dégeler les déclencheurs de modales de la page
+            const modalTriggers = [
+                addRaceBtn,
+                document.getElementById('statsBtn'),
+                document.getElementById('badgesBtn'),
+                document.getElementById('wishlistBtn'),
+                document.getElementById('openCardConfigBtn'),
+                document.getElementById('changeUserBtn'),
+                document.getElementById('adminPortalBtn'),
+                document.getElementById('userSettingsBtn')
+            ].filter(Boolean);
+
+            modalTriggers.forEach(btn => {
+                if (isSelectionMode) {
+                    btn.classList.add('opacity-40', 'cursor-not-allowed', 'pointer-events-none');
+                    btn.setAttribute('aria-disabled', 'true');
+                    btn.setAttribute('title', 'Désactivé pendant la sélection en masse');
+                } else {
+                    btn.classList.remove('opacity-40', 'cursor-not-allowed', 'pointer-events-none');
+                    btn.removeAttribute('aria-disabled');
+                    btn.removeAttribute('title');
+                }
+            });
 
             document.querySelectorAll('.race-card-item').forEach(card => {
                 const id = card.dataset.raceId;
@@ -4860,17 +4889,18 @@
                         return;
                     }
 
-                    if (e.target.closest('button') || e.target.closest('a') || e.target.closest('.like-hover-trigger') || e.target.closest('.more-tags-trigger')) {
-                        return;
-                    }
-
                     if (isSelectionMode) {
                         e.preventDefault();
                         e.stopPropagation();
                         toggleRaceSelection(race.id);
-                    } else {
-                        showRaceDetails(race.id);
+                        return;
                     }
+
+                    if (e.target.closest('button') || e.target.closest('a') || e.target.closest('.like-hover-trigger') || e.target.closest('.more-tags-trigger')) {
+                        return;
+                    }
+
+                    showRaceDetails(race.id);
                 });
 
                 // Ajouter un écouteur d'événement pour l'export de la course solo
@@ -4878,6 +4908,7 @@
                 if (exportBtn) {
                     exportBtn.addEventListener('click', (e) => {
                         e.stopPropagation(); // Évite de déclencher l'événement de la carte
+                        if (isSelectionMode || window.isSelectionMode) return;
                         exportSingleRace(race.id);
                     });
                 }
@@ -4889,6 +4920,7 @@
                 if (editBtn) {
                     editBtn.addEventListener('click', async (e) => {
                         e.stopPropagation(); // Empêche le déclenchement du clic sur la carte
+                        if (isSelectionMode || window.isSelectionMode) return;
                         // Autoriser si admin ou user authentifié (pas invité)
                         if (await isInviteAsync()) {
                             showPermissionDeniedModal('modifier une course');
@@ -4904,6 +4936,7 @@
                 if (deleteBtn) {
                     deleteBtn.addEventListener('click', async (e) => {
                         e.stopPropagation(); // Empêche le déclenchement du clic sur la carte
+                        if (isSelectionMode || window.isSelectionMode) return;
                         // Autoriser si admin ou user authentifié (pas invité)
                         if (await isInviteAsync()) {
                             showPermissionDeniedModal('supprimer une course');
@@ -4918,6 +4951,7 @@
                 driveBtns.forEach(btn => {
                     btn.addEventListener('click', (e) => {
                         e.stopPropagation();
+                        if (isSelectionMode || window.isSelectionMode) return;
                         openDriveExplorer(race.driveId);
                     });
                 });
@@ -4926,6 +4960,7 @@
                 resultsBtns.forEach(btn => {
                     btn.addEventListener('click', (e) => {
                         e.stopPropagation();
+                        if (isSelectionMode || window.isSelectionMode) return;
                         window.open(race.resultUrl, '_blank');
                     });
                 });
@@ -4934,6 +4969,7 @@
                 onlineResultsBtns.forEach(btn => {
                     btn.addEventListener('click', (e) => {
                         e.stopPropagation();
+                        if (isSelectionMode || window.isSelectionMode) return;
                         const url = race.website || race.resultUrl;
                         if (url) window.open(url, '_blank');
                     });
@@ -4943,6 +4979,7 @@
                 gpxBtns.forEach(btn => {
                     btn.addEventListener('click', (e) => {
                         e.stopPropagation();
+                        if (isSelectionMode || window.isSelectionMode) return;
                         if (race.gpxUrl) window.open(race.gpxUrl, '_blank');
                     });
                 });
@@ -4951,6 +4988,7 @@
                 pdfBtns.forEach(btn => {
                     btn.addEventListener('click', (e) => {
                         e.stopPropagation();
+                        if (isSelectionMode || window.isSelectionMode) return;
                         generateRacePdf(race.id);
                     });
                 });
@@ -4959,6 +4997,7 @@
                 websiteBtns.forEach(btn => {
                     btn.addEventListener('click', (e) => {
                         e.stopPropagation();
+                        if (isSelectionMode || window.isSelectionMode) return;
                         if (race.website) window.open(race.website, '_blank');
                     });
                 });
@@ -4967,6 +5006,7 @@
                 zoomRaceImageBtns.forEach(btn => {
                     btn.addEventListener('click', (e) => {
                         e.stopPropagation();
+                        if (isSelectionMode || window.isSelectionMode) return;
                         if (race.photo && typeof zoomImage === 'function') {
                             zoomImage(race.photo);
                         }
@@ -4977,6 +5017,7 @@
                 zoomRouteImageBtns.forEach(btn => {
                     btn.addEventListener('click', (e) => {
                         e.stopPropagation();
+                        if (isSelectionMode || window.isSelectionMode) return;
                         if (race.parcours && typeof zoomImage === 'function') {
                             zoomImage(race.parcours);
                         }
@@ -4987,6 +5028,7 @@
                 likesBtns.forEach(btn => {
                     btn.addEventListener('click', async (e) => {
                         e.stopPropagation();
+                        if (isSelectionMode || window.isSelectionMode) return;
 
                         const likedBy = race.likedBy || [];
                         const count = likedBy.length;
@@ -5168,6 +5210,7 @@
 
         // Afficher les détails d'une course
         function showRaceDetails(id) {
+            if (isSelectionMode || window.isSelectionMode) return;
             const race = races.find(r => r.id === id || String(r.id) === String(id));
             if (!race) return;
 
@@ -9214,6 +9257,7 @@
 
         // Ouvrir le modal wishlist au clic sur le bouton
         wishlistBtn.addEventListener('click', () => {
+            if (isSelectionMode || window.isSelectionMode) return;
             wishlistModal.classList.remove('hidden');
             wishlistDisplay.classList.remove('hidden');
             wishlistEditForm.classList.add('hidden');
@@ -11780,6 +11824,7 @@
 
             // Open modal handler
             openCardConfigBtn.addEventListener('click', () => {
+                if (isSelectionMode || window.isSelectionMode) return;
                 // Copy the current configuration
                 tempConfigButtons = [...window.customCardButtons];
                 tempDefaultCardImage = window.defaultCardImage || 'photo';

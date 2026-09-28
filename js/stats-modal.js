@@ -654,6 +654,7 @@
 
         // Fonction pour afficher les statistiques
         window.displayRaceStats = function displayRaceStats() {
+            if (window.isSelectionMode) return;
             try {
                 const stats = calculateRaceStats(window.statsIncludeFuture);
 
@@ -1592,6 +1593,7 @@
         // Ouvrir la modale
         if (statsBtn) {
             statsBtn.addEventListener('click', function () {
+                if (window.isSelectionMode) return;
                 statsModal.classList.remove('hidden');
                 saveUserFlag('statsModalViewed');
                 setTimeout(() => {

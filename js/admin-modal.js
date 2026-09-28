@@ -218,6 +218,7 @@ function initAdminModal() {
 }
 
 window.openAdminModal = async function () {
+    if (window.isSelectionMode) return;
     const modal = document.getElementById('adminModal');
     if (!modal) return;
 

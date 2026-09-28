@@ -2349,6 +2349,7 @@
     }
 
     function displayRaceBadgesModal() {
+        if (window.isSelectionMode) return;
         ensureBadgesModalInDom();
         const modal = document.getElementById('badgesModal');
         const content = document.getElementById('badgesContent');
@@ -3809,6 +3810,7 @@
             badgesBtn.dataset.listenerAttached = 'true';
             badgesBtn.onclick = (e) => {
                 e.preventDefault();
+                if (window.isSelectionMode) return;
                 displayRaceBadgesModal();
             };
         }
