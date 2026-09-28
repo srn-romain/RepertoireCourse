@@ -492,3 +492,42 @@ input[type="search"]::-webkit-search-results-decoration {
     transform: translateY(-2px);
 }
 
+/* ==========================================================================
+   GESTION DU RETOUR À LA LIGNE DES LIENS ET DES NOTES / COMMENTAIRES
+   ========================================================================== */
+
+#detailsNotes,
+#raceNotesEditor,
+#bulkNoteInput,
+.notes-content,
+.race-notes-container,
+.race-note-text {
+    overflow-wrap: anywhere !important;
+    word-break: break-word !important;
+    word-wrap: break-word !important;
+    max-width: 100% !important;
+    hyphens: auto;
+}
+
+#detailsNotes a,
+#raceNotesEditor a,
+.notes-content a,
+.race-notes-container a,
+.race-note-text a {
+    word-break: break-all !important;
+    overflow-wrap: anywhere !important;
+    max-width: 100% !important;
+    color: #059669;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    transition: color 0.15s ease;
+}
+
+#detailsNotes a:hover,
+#raceNotesEditor a:hover,
+.notes-content a:hover,
+.race-notes-container a:hover,
+.race-note-text a:hover {
+    color: #047857;
+}
+
