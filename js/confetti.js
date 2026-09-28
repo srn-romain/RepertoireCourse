@@ -120,12 +120,12 @@
     }
 
     /**
-     * Lance un jet continu de confettis traversant l'écran pendant durationSeconds (10s par défaut, max 20s)
-     * @param {number} [durationSeconds=10]
+     * Lance un jet continu de confettis traversant l'écran pendant durationSeconds (3s par défaut, max 10s)
+     * @param {number} [durationSeconds=3]
      */
-    function launchMissionConfetti(durationSeconds = 10) {
-        // Durée plafonnée à 20 secondes maximum
-        const safeDuration = Math.min(20, Math.max(1, durationSeconds || 10));
+    function launchMissionConfetti(durationSeconds = 3) {
+        // Durée plafonnée à 10 secondes maximum
+        const safeDuration = Math.min(10, Math.max(1, durationSeconds || 3));
 
         // Si canvas-confetti est disponible
         if (typeof window.confetti === 'function') {

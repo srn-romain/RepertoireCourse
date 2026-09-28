@@ -3678,8 +3678,8 @@
 
         if (newBadges.length === 0) return;
 
-        // 1. Jet de confettis qui traverse l'écran (au moins 10s, max 20s au total)
-        const confettiDuration = Math.min(20, Math.max(10, 10 + (newBadges.length - 1) * 3));
+        // 1. Jet de confettis qui traverse l'écran (au moins 3s, max 10s au total)
+        const confettiDuration = Math.min(10, Math.max(3, 3 + (newBadges.length - 1) * 2));
         if (typeof window.launchMissionConfetti === 'function') {
             window.launchMissionConfetti(confettiDuration);
         }
