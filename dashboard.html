@@ -3045,7 +3045,30 @@
                                 userPseudo = uDoc.data().pseudo || user.displayName || user.email.split('@')[0] || "Utilisateur";
                                 window.currentUserPseudo = userPseudo;
                                 localStorage.setItem('userPseudo', userPseudo);
-                                userPhotoURL = uDoc.data().photoURL;
+                                userPhotoURL = uDoc.data().photoURL || null;
+                                window.currentUserPhoto = userPhotoURL;
+                                if (userPhotoURL) {
+                                    localStorage.setItem('userCustomPhoto', userPhotoURL);
+                                } else {
+                                    localStorage.removeItem('userCustomPhoto');
+                                }
+
+                                if (uDoc.data().tutorialCompleted === true) {
+                                    window.tutorialCompleted = true;
+                                    localStorage.setItem('tutorialCompleted', 'true');
+                                } else {
+                                    window.tutorialCompleted = false;
+                                    localStorage.removeItem('tutorialCompleted');
+                                }
+
+                                const hasCustomCards = (uDoc.data().cardButtonsConfigured === true) || !!(uDoc.data().cardButtons || uDoc.data().cardTags);
+                                if (hasCustomCards) {
+                                    window.hasConfiguredCards = true;
+                                    localStorage.setItem('hasConfiguredCards', 'true');
+                                } else {
+                                    window.hasConfiguredCards = false;
+                                    localStorage.removeItem('hasConfiguredCards');
+                                }
 
                                 if (uDoc.data().cardButtons && Array.isArray(uDoc.data().cardButtons)) {
                                     window.customCardButtons = uDoc.data().cardButtons;
@@ -4174,6 +4197,8 @@
             document.body.appendChild(downloadAnchorNode);
             downloadAnchorNode.click();
             downloadAnchorNode.remove();
+            saveUserFlag('bulkActionUsed');
+            saveUserFlag('exportDownloaded');
         }
 
         // Action : Note commune
@@ -4216,6 +4241,8 @@
                 });
 
                 await Promise.all(updatePromises);
+                saveUserFlag('bulkActionUsed');
+                saveUserFlag('bulkNoteUsed');
                 bulkNoteModal.classList.add('hidden');
                 await loadRaces();
                 updateSelectionUI();
@@ -4267,6 +4294,7 @@
                 });
 
                 await Promise.all(deletePromises);
+                saveUserFlag('bulkActionUsed');
                 bulkDeleteModal.classList.add('hidden');
                 toggleSelectionMode(false);
                 await loadRaces();
@@ -8225,6 +8253,9 @@
                 if (parcoursData) {
                     raceData.parcours = parcoursData;
                 }
+                if (raceForm.dataset.wishlistId) {
+                    raceData.fromWishlist = true;
+                }
                 savePromise = racesCollection.add(raceData);
             }
 
@@ -8798,6 +8829,9 @@
         // Afficher/masquer le bouton selon le contenu du champ
         searchInput.addEventListener('input', (e) => {
             updateClearSearchButton();
+            if (e.target.value.trim().length >= 2) {
+                saveUserFlag('searchUsed');
+            }
         });
 
         // Lancer la recherche sur la touche Entrée
@@ -10825,6 +10859,7 @@
                 document.body.appendChild(downloadAnchorNode); // required for firefox
                 downloadAnchorNode.click();
                 downloadAnchorNode.remove();
+                saveUserFlag('exportDownloaded');
 
                 // Succès
                 if (modal) modal.classList.add('hidden');
@@ -11776,9 +11811,11 @@
                             await db.collection('users').doc(user.uid).set({
                                 cardButtons: cleanButtons,
                                 defaultCardImage: tempDefaultCardImage,
-                                cardTags: tempConfigTags
+                                cardTags: tempConfigTags,
+                                cardButtonsConfigured: true
                             }, { merge: true });
 
+                            saveUserFlag('hasConfiguredCards');
                             window.customCardButtons = cleanButtons;
                             window.defaultCardImage = tempDefaultCardImage;
                             window.customCardTags = tempConfigTags;
@@ -11992,6 +12029,7 @@
 
     <script src="js/isAdmin.js"></script>
     <script src="js/isInvite.js"></script>
+    <script src="js/user-flags.js"></script>
     <script src="js/stats-modal.js?v=4"></script>
     <script src="js/advanced-filters.js"></script>
     <script src="js/user-settings.js"></script>
@@ -11999,6 +12037,14 @@
     <script src="js/admin-modal.js"></script>
     <script src="js/scroll-lock.js"></script>
     <script src="js/date-paste-helper.js"></script>
+    <script>
+        // Charger les flags depuis Firestore au démarrage (sync multi-appareils)
+        firebase.auth().onAuthStateChanged(function(user) {
+            if (user && typeof window.loadUserFlagsFromFirestore === 'function') {
+                window.loadUserFlagsFromFirestore();
+            }
+        });
+    </script>
 </body>
 
 

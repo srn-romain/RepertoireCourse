@@ -1578,6 +1578,7 @@
         if (statsBtn) {
             statsBtn.addEventListener('click', function () {
                 statsModal.classList.remove('hidden');
+                saveUserFlag('statsModalViewed');
                 setTimeout(() => {
                     const content = statsModal.querySelector('.fade-in');
                     if (content) {

@@ -149,7 +149,7 @@
         document.body.appendChild(tooltip);
 
         // Event listeners
-        document.getElementById('tutorialClose').addEventListener('click', endTutorial);
+        document.getElementById('tutorialClose').addEventListener('click', () => endTutorial(false));
         document.getElementById('tutorialNext').addEventListener('click', nextStep);
         document.getElementById('tutorialPrev').addEventListener('click', prevStep);
     }
@@ -273,7 +273,7 @@
             currentStep++;
             showStep(currentStep);
         } else {
-            endTutorial();
+            endTutorial(true);
         }
     }
 
@@ -297,8 +297,8 @@
         document.body.style.overflow = 'hidden';
     }
 
-    // Terminer le tutoriel
-    async function endTutorial() {
+    // Terminer le tutoriel (seulement si isCompleted est true)
+    async function endTutorial(isCompleted = false) {
         tutorialActive = false;
 
         // Supprimer les éléments
@@ -313,16 +313,21 @@
         // Restore body
         document.body.style.overflow = '';
 
-        // Marquer le tutoriel comme vu dans Firestore
-        const user = firebase.auth().currentUser;
-        if (user && typeof db !== 'undefined') {
-            try {
-                await db.collection('users').doc(user.uid).set({
-                    tutorialCompleted: true,
-                    tutorialCompletedAt: firebase.firestore.FieldValue.serverTimestamp()
-                }, { merge: true });
-            } catch (error) {
-                console.error('Erreur lors de la sauvegarde du statut du tutoriel:', error);
+        if (isCompleted === true) {
+            window.tutorialCompleted = true;
+            localStorage.setItem('tutorialCompleted', 'true');
+
+            // Marquer le tutoriel comme terminé dans Firestore
+            const user = firebase.auth().currentUser;
+            if (user && typeof db !== 'undefined') {
+                try {
+                    await db.collection('users').doc(user.uid).set({
+                        tutorialCompleted: true,
+                        tutorialCompletedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    }, { merge: true });
+                } catch (error) {
+                    console.error('Erreur lors de la sauvegarde du statut du tutoriel:', error);
+                }
             }
         }
     }

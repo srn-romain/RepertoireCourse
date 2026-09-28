@@ -219,6 +219,10 @@ function initReviewForm() {
                 if (textarea) textarea.value = data.message || '';
                 if (charCount) charCount.textContent = (data.message || '').length;
                 updateUIStatus(data.approved !== false);
+                saveUserFlag('userFeedbackSent');
+            } else {
+                localStorage.removeItem('userFeedbackSent');
+                window.feedbackSent = false;
             }
         }).catch(e => console.warn('Erreur chargement avis:', e));
     }
@@ -272,6 +276,8 @@ function initReviewForm() {
             }
 
             await docRef.set(reviewData, { merge: true });
+
+            saveUserFlag('userFeedbackSent');
 
             showReviewMsg(isApproved ? 'Votre avis a été publié ! Merci 🎉' : 'Brouillon enregistré.', 'success');
             
@@ -333,6 +339,8 @@ function initReviewForm() {
 
         try {
             await db.collection('reviews').doc(user.uid).delete();
+            localStorage.removeItem('userFeedbackSent');
+            window.feedbackSent = false;
             
             // Reset UI
             selectedStars = 0;

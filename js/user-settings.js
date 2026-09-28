@@ -443,6 +443,8 @@ async function initSettingsLogic() {
 
                 // Mettre à jour l'UI
                 profilePicImg.src = base64String;
+                window.currentUserPhoto = base64String;
+                localStorage.setItem('userCustomPhoto', base64String);
                 if (btnDeleteProfilePic) btnDeleteProfilePic.classList.remove('hidden');
                 settingsHasChanged = true;
 
@@ -478,6 +480,8 @@ async function initSettingsLogic() {
                 const userDoc = await db.collection('users').doc(user.uid).get();
                 const currentPseudo = userDoc.exists ? (userDoc.data().pseudo || "User") : "User";
                 profilePicImg.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(currentPseudo)}&background=random`;
+                window.currentUserPhoto = null;
+                localStorage.removeItem('userCustomPhoto');
                 btnDeleteProfilePic.classList.add('hidden');
                 settingsHasChanged = true;
 

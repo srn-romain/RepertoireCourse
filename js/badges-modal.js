@@ -1509,7 +1509,14 @@
 
         // Vérificateurs d'actions utilisateur globales / carnet
         const isTutorialCompleted = localStorage.getItem('tutorialCompleted') === 'true' || window.tutorialCompleted === true;
-        const hasCustomProfile = (window.currentUser && window.currentUser.displayName && window.currentUser.photoURL) || localStorage.getItem('userProfileCustomized') === 'true' || (typeof isInviteUser === 'function');
+        
+        // Profil soigné : doit obligatoirement avoir un pseudo valide ET une vraie photo de profil importée (pas un avatar par défaut)
+        const userPseudoVal = window.currentUserPseudo || localStorage.getItem('userPseudo') || (window.currentUser && (window.currentUser.displayName || window.currentUser.pseudo)) || '';
+        const hasValidPseudo = typeof userPseudoVal === 'string' && userPseudoVal.trim().length > 0 && !['utilisateur', 'user', 'invité', 'invite'].includes(userPseudoVal.trim().toLowerCase());
+        const userPhotoVal = window.currentUserPhoto || (window.currentUser && window.currentUser.photoURL) || localStorage.getItem('userCustomPhoto') || '';
+        const hasCustomPhoto = typeof userPhotoVal === 'string' && userPhotoVal.trim().length > 0 && !userPhotoVal.includes('ui-avatars.com') && !userPhotoVal.includes('default-avatar');
+        const hasCustomProfile = hasValidPseudo && hasCustomPhoto;
+
         // 1. Détection des courses futures dans le carnet principal
         const nowTime = new Date().setHours(0, 0, 0, 0);
 
@@ -1521,10 +1528,8 @@
             const timeStr = (r.time || '').toLowerCase();
             if (timeStr.includes('venir') || timeStr.includes('attente') || timeStr.includes('cours')) return true;
             if (r.date) {
-                const dStr = r.date.split('T')[0];
-                if (dStr >= todayStr) return true;
                 const d = new Date(r.date + (r.date.includes('T') ? '' : 'T00:00:00'));
-                if (!isNaN(d.getTime()) && d.setHours(0, 0, 0, 0) >= nowTime) return true;
+                if (!isNaN(d.getTime()) && d.setHours(0, 0, 0, 0) > nowTime) return true;
             }
             return false;
         });
@@ -1556,22 +1561,23 @@
             || parseInt(localStorage.getItem('wishlistCount') || '0', 10)
             || parseInt(localStorage.getItem('userWishlistCount') || '0', 10);
 
+        // Seuls les vrais éléments wishlist (DOM, mémoire ou flag isWishlist) sont comptabilisés
         const totalWishlistCount = Math.max(
-            futureRacesInCarnet.length,
             wishlistDomCount,
             wishlistMemoryCount,
-            (racesList.some(r => r.isWishlist || r.status === 'wishlist' || r.fromWishlist) ? 1 : 0)
+            (racesList.some(r => r.isWishlist || r.status === 'wishlist') ? 1 : 0)
         );
 
         const hasFavoriteRace = racesList.some(r => r.favorite === true || r.isFavorite === true || r.starred === true);
-        const hasCardConfig = localStorage.getItem('cardActionsConfig') || localStorage.getItem('userCardConfig') || localStorage.getItem('customTags') || true;
+        const hasCardConfig = localStorage.getItem('hasConfiguredCards') === 'true' || window.hasConfiguredCards === true;
         const hasPublicRace = racesList.some(r => r.isPublic === true || r.public === true || r.shared === true);
-        const convertedWishlistCount = racesList.filter(r => r.fromWishlist === true || r.wishlistConverted === true || (r.notes && r.notes.toLowerCase().includes('wishlist'))).length || (totalWishlistCount > 0 && eligibleRaces.length > 0 ? 1 : 0);
-        const hasLikedPublicRace = localStorage.getItem('likedRaces') || window.likedPublicRaces || true;
+        const convertedWishlistCount = racesList.filter(r => r.fromWishlist === true || r.wishlistConverted === true || (r.notes && r.notes.toLowerCase().includes('wishlist'))).length;
+        const hasLikedPublicRace = localStorage.getItem('hasLikedPublicRace') === 'true' || window.hasLikedPublicRace === true;
         const hasNotesReport = racesList.some(r => (typeof r.notes === 'string' && r.notes.trim().length > 3) || (typeof r.comment === 'string' && r.comment.trim().length > 3));
         const hasDownloadedPdf = localStorage.getItem('pdfDownloaded') === 'true' || window.pdfDownloaded === true;
         const hasUserFeedback = localStorage.getItem('userFeedbackSent') === 'true' || window.feedbackSent === true;
         const hasUsedBulkActions = localStorage.getItem('bulkActionUsed') === 'true' || window.bulkActionUsed === true;
+        const hasUsedBulkNotes = localStorage.getItem('bulkNoteUsed') === 'true' || window.bulkNoteUsed === true;
         const hasExportedData = localStorage.getItem('exportDownloaded') === 'true' || window.exportDownloaded === true;
         const hasViewedStats = localStorage.getItem('statsModalViewed') === 'true' || window.statsModalViewed === true;
         const hasUsedSearch = localStorage.getItem('searchUsed') === 'true' || window.searchUsed === true;
@@ -1721,7 +1727,7 @@
             if (isLevelUnlocked) {
                 switch (lvl.id) {
                     case 'level_1': // Tong (480 XP)
-                        if (isTutorialCompleted || true) markBadgeUnlocked('exploration');
+                        if (isTutorialCompleted) markBadgeUnlocked('exploration');
                         if (hasCustomProfile) markBadgeUnlocked('profil_soigne');
                         if (hasFavoriteRace) {
                             const fav = racesList.find(r => r.favorite || r.isFavorite || r.starred);
@@ -1755,7 +1761,7 @@
                             const pub = racesList.find(r => r.isPublic || r.public || r.shared);
                             markBadgeUnlocked('partage_communautaire', pub);
                         }
-                        if (convertedWishlistCount >= 1 || eligibleRaces.length >= 2) markBadgeUnlocked('projet_concretise');
+                        if (convertedWishlistCount >= 1) markBadgeUnlocked('projet_concretise');
                         raceMetrics.forEach(m => {
                             if (m.hasCompanions || m.isTeam) markBadgeUnlocked('copains_dechappee', m.race);
                             if (m.dist >= 4.5 && m.price > 0 && (m.price / m.dist) <= 0.80) markBadgeUnlocked('radin_malin', m.race);
@@ -1784,7 +1790,7 @@
                             const noteRace = racesList.find(r => r.notes || r.comment);
                             markBadgeUnlocked('memoire_de_course', noteRace);
                         }
-                        if (hasDownloadedPdf || true) markBadgeUnlocked('rapport_propre');
+                        if (hasDownloadedPdf) markBadgeUnlocked('rapport_propre');
                         if (eligibleRaces.length >= 3) {
                             unlockedBadges.carnet_soigne.unlocked = true;
                             unlockedBadges.carnet_soigne.races = [...eligibleRaces];
@@ -1817,8 +1823,8 @@
                         break;
 
                     case 'level_4': // Mocassin (780 XP)
-                        if (hasUserFeedback || true) markBadgeUnlocked('voix_du_coureur');
-                        if (hasUsedBulkActions || true) markBadgeUnlocked('action_groupee');
+                        if (hasUserFeedback) markBadgeUnlocked('voix_du_coureur');
+                        if (hasUsedBulkActions) markBadgeUnlocked('action_groupee');
                         if (hasCardConfig) markBadgeUnlocked('bouton_express');
                         raceMetrics.forEach(m => {
                             if (hasRaceRankings(m.race)) markBadgeUnlocked('bilan_officiel', m.race);
@@ -1846,9 +1852,9 @@
                         break;
 
                     case 'level_5': // Sneaker (920 XP)
-                        if (hasExportedData || true) markBadgeUnlocked('sauvegarde_externe');
-                        if (hasViewedStats || true) markBadgeUnlocked('oeil_sur_les_chiffres');
-                        if (hasUsedBulkActions || true) markBadgeUnlocked('note_groupee');
+                        if (hasExportedData) markBadgeUnlocked('sauvegarde_externe');
+                        if (hasViewedStats) markBadgeUnlocked('oeil_sur_les_chiffres');
+                        if (hasUsedBulkNotes) markBadgeUnlocked('note_groupee');
                         if (routeRacesCount >= 3) {
                             unlockedBadges.adepte_de_la_route.unlocked = true;
                             unlockedBadges.adepte_de_la_route.races = racesList.filter(r => (r.terrain || 'route').includes('route'));
@@ -1882,8 +1888,8 @@
 
                     case 'level_6': // Chaussure de route (1 070 XP)
                         if (totalWishlistCount >= 3) markBadgeUnlocked('wishlist_fournie');
-                        if (hasRelayPdf || true) markBadgeUnlocked('rapport_dequipe');
-                        if (convertedWishlistCount >= 3 || eligibleRaces.length >= 6) markBadgeUnlocked('fidele_de_la_wishlist');
+                        if (hasRelayPdf) markBadgeUnlocked('rapport_dequipe');
+                        if (convertedWishlistCount >= 3) markBadgeUnlocked('fidele_de_la_wishlist');
                         if (seasonsFound.has('hiver') && seasonsFound.has('été')) {
                             unlockedBadges.dossard_4_saisons.unlocked = true;
                             unlockedBadges.dossard_4_saisons.races = [...eligibleRaces];
@@ -1913,7 +1919,7 @@
                         break;
 
                     case 'level_7': // Chaussure de trail (1 200 XP)
-                        if (hasUsedSearch || true) markBadgeUnlocked('recherche_ciblee');
+                        if (hasUsedSearch) markBadgeUnlocked('recherche_ciblee');
                         if (racesWithCompanionsCount >= 5) {
                             unlockedBadges.reseau_de_compagnons.unlocked = true;
                             unlockedBadges.reseau_de_compagnons.races = raceMetrics.filter(m => m.hasCompanions).map(m => m.race);

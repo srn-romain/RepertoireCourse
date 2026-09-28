@@ -1374,6 +1374,7 @@ async function generateRacePdf(raceId) {
     // Sauvegarder le PDF directement pour forcer le nom de téléchargement unique
     doc.setProperties({ title: fileName });
     doc.save(fileName);
+    saveUserFlag('pdfDownloaded');
 }
 
 // Exposer la fonction globalement
@@ -1854,6 +1855,7 @@ async function generateRelayTableOnlyPdf(raceId) {
     // Sauvegarder le PDF directement pour forcer le nom de téléchargement unique
     doc.setProperties({ title: fileName });
     doc.save(fileName);
+    saveUserFlag('relayPdfExported');
 }
 
 window.generateRelayTableOnlyPdf = generateRelayTableOnlyPdf;
