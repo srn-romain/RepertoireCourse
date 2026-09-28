@@ -3605,11 +3605,186 @@
         return result;
     }
 
+    // ─────────────────────────────────────────────────────────────────────────────
+    // 8.5. DÉTECTION DES MISSIONS VALIDÉES, TOASTERS & MISE EN RELIEF
+    // ─────────────────────────────────────────────────────────────────────────────
+    function showMissionUnlockedToast(badgeId, badgeDef) {
+        const badgeName = badgeDef.name || badgeId;
+        const badgeXp = badgeDef.xp || 50;
+
+        const htmlContent = `
+            <div class="flex flex-col gap-1 pr-1">
+                <div class="flex items-center gap-1.5 font-bold text-gray-900 text-xs sm:text-sm">
+                    <span>🎉 Mission validée !</span>
+                    <span class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-extrabold border border-emerald-300 shadow-2xs">+${badgeXp} XP</span>
+                </div>
+                <div class="text-xs text-gray-700 font-medium">« ${escapeBadgeHtml(badgeName)} »</div>
+                <div class="mt-1.5">
+                    <button type="button" 
+                            onclick="if(typeof window.highlightBadgeInModal==='function') window.highlightBadgeInModal('${badgeId}');" 
+                            class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-xs transition cursor-pointer transform hover:scale-105 active:scale-95">
+                        <i class="fas fa-award text-[11px]"></i>
+                        <span>Voir la mission</span>
+                    </button>
+                </div>
+            </div>
+        `;
+
+        if (typeof window.showToast === 'function') {
+            // Durée de 8 secondes avec pause au survol et bouton ✕
+            window.showToast(htmlContent, 'success', 8000);
+        }
+    }
+
+    function checkAndNotifyNewBadges(data) {
+        if (!data || !data.unlockedBadges) return;
+
+        // Obtenir la liste actuelle des badges réellement débloqués (badge débloqué ET niveau débloqué)
+        const currentUnlockedIds = [];
+        Object.entries(data.unlockedBadges).forEach(([badgeId, badgeInfo]) => {
+            if (!badgeInfo || !badgeInfo.unlocked) return;
+            const badgeDef = BADGES_DEFINITIONS[badgeId];
+            if (!badgeDef) return;
+            const levelId = 'level_' + badgeDef.level;
+            const isLevelUnlocked = data.levelsState[levelId] && data.levelsState[levelId].isUnlocked;
+            if (isLevelUnlocked) {
+                currentUnlockedIds.push(badgeId);
+            }
+        });
+
+        const currentUser = (typeof firebase !== 'undefined' && firebase.auth) ? firebase.auth().currentUser : null;
+        const storageKey = 'knownUnlockedBadges_' + (currentUser ? currentUser.uid : 'local_user');
+        const storedRaw = localStorage.getItem(storageKey);
+
+        // Premier passage sur ce navigateur : initialiser la baseline sans notifier
+        if (storedRaw === null) {
+            localStorage.setItem(storageKey, JSON.stringify(currentUnlockedIds));
+            return;
+        }
+
+        let knownIds = [];
+        try {
+            knownIds = JSON.parse(storedRaw) || [];
+        } catch (e) {
+            knownIds = [];
+        }
+        const knownSet = new Set(knownIds);
+
+        // Détection des missions nouvellement débloquées
+        const newBadges = currentUnlockedIds.filter(id => !knownSet.has(id));
+
+        // Mettre à jour le stockage avec l'état à jour
+        localStorage.setItem(storageKey, JSON.stringify(currentUnlockedIds));
+
+        if (newBadges.length === 0) return;
+
+        // 1. Jet de confettis qui traverse l'écran (au moins 10s, max 20s au total)
+        const confettiDuration = Math.min(20, Math.max(10, 10 + (newBadges.length - 1) * 3));
+        if (typeof window.launchMissionConfetti === 'function') {
+            window.launchMissionConfetti(confettiDuration);
+        }
+
+        // 2. Afficher un toaster pour chaque mission validée
+        newBadges.forEach((badgeId, idx) => {
+            const badgeDef = BADGES_DEFINITIONS[badgeId] || { name: badgeId, xp: 50 };
+            setTimeout(() => {
+                showMissionUnlockedToast(badgeId, badgeDef);
+            }, idx * 450);
+        });
+    }
+
+    function highlightBadgeInModal(badgeId) {
+        if (!badgeId) return;
+
+        // 1. Trouver la définition du badge et son niveau
+        const badgeDef = BADGES_DEFINITIONS[badgeId];
+        const lvl = badgeDef ? LEVELS_CONFIG.find(l => l.badgeIds && l.badgeIds.includes(badgeId)) : null;
+
+        // 2. Si un niveau spécifique est trouvé, s'assurer qu'il sera déplié
+        if (lvl) {
+            userLevelExpandedState[lvl.id] = true;
+            activeLevelTab = 'all';
+        }
+
+        // 3. Ouvrir la modale
+        displayRaceBadgesModal();
+
+        // 4. Si la barre de recherche masquait ce badge, la vider
+        const searchInput = document.getElementById('badgeSearchInput');
+        if (searchInput && searchInput.value) {
+            searchInput.value = '';
+            if (typeof applyBadgeFilters === 'function') {
+                applyBadgeFilters();
+            }
+        }
+
+        // 5. Attendre le rendu et faire défiler vers la carte
+        setTimeout(() => {
+            const levelBody = lvl ? document.getElementById(`level-body-${lvl.id}`) : null;
+            if (levelBody && levelBody.classList.contains('hidden')) {
+                levelBody.classList.remove('hidden');
+                const chevron = document.querySelector(`.level-header-toggle[data-level-id="${lvl.id}"] .level-chevron`);
+                if (chevron) chevron.classList.add('rotate-180');
+            }
+
+            const card = document.querySelector(`.badge-card[data-badge-id="${badgeId}"]`);
+            if (!card) return;
+
+            // Défilement fluide vers la carte au centre de l'écran
+            card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+            // Mise en relief visuelle (halo émeraude, échelle, macaron festif)
+            const originalTransform = card.style.transform;
+            const originalTransition = card.style.transition;
+            const originalBoxShadow = card.style.boxShadow;
+            const originalBorderColor = card.style.borderColor;
+
+            card.style.transition = 'all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)';
+            card.style.transform = 'scale(1.05)';
+            card.style.boxShadow = '0 0 0 4px #10B981, 0 20px 25px -5px rgba(16, 185, 129, 0.4)';
+            card.style.borderColor = '#10B981';
+            card.style.zIndex = '50';
+
+            // Macaron animé temporaire
+            let pill = card.querySelector('.badge-highlight-pill');
+            if (!pill) {
+                pill = document.createElement('span');
+                pill.className = 'badge-highlight-pill animate-bounce absolute -top-3 -right-2 px-2.5 py-0.5 rounded-full bg-amber-400 text-amber-950 font-black text-[10px] shadow-lg border border-white z-50';
+                pill.innerHTML = '🎉 DÉBLOQUÉ !';
+                card.appendChild(pill);
+            }
+
+            // Retour progressif à l'état normal après 4,5 secondes
+            setTimeout(() => {
+                card.style.transition = 'all 0.6s ease';
+                card.style.transform = originalTransform || '';
+                card.style.boxShadow = originalBoxShadow || '';
+                card.style.borderColor = originalBorderColor || '';
+                card.style.zIndex = '';
+                if (pill && pill.parentNode) {
+                    pill.remove();
+                }
+            }, 4500);
+        }, 150);
+    }
+
+    function checkBadgesForNewUnlocks() {
+        const racesData = (window.allUserRaces && window.allUserRaces.length > 0)
+            ? window.allUserRaces
+            : (window.races || []);
+        const data = calculateGamifiedBadges(racesData);
+        checkAndNotifyNewBadges(data);
+        return data;
+    }
+
     function calculateRaceBadges(racesList) {
         const data = calculateGamifiedBadges(racesList);
         window.recordCocardes = data.recordCocardes;
         const cocardesBadges = getCocardesBadgesByRace(data.recordCocardes);
         window.raceBadges = cocardesBadges;
+
+        // Détection et célébration automatique des missions validées
+        checkAndNotifyNewBadges(data);
 
         // Mise à jour automatique des XP en base de données Firestore dès la connexion / chargement des courses
         try {
@@ -3770,5 +3945,7 @@
     window.calculateRaceBadges = calculateRaceBadges;
     window.calculateRecordCocardes = calculateRecordCocardes;
     window.updateBadgesButtonVisibility = updateBadgesButtonVisibility;
+    window.highlightBadgeInModal = highlightBadgeInModal;
+    window.checkBadgesForNewUnlocks = checkBadgesForNewUnlocks;
 
 })();

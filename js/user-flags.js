@@ -22,6 +22,20 @@ window.saveUserFlag = function(flagName, value = true) {
 
     // 2. window global
     window[flagName] = value;
+    if (flagName === 'userFeedbackSent') {
+        window.feedbackSent = true;
+    }
+
+    // 2.5 Déclencher la détection d'accomplissement de mission
+    if (typeof window.checkBadgesForNewUnlocks === 'function') {
+        setTimeout(() => {
+            try {
+                window.checkBadgesForNewUnlocks();
+            } catch (e) {
+                console.warn('[UserFlags] checkBadgesForNewUnlocks error:', e);
+            }
+        }, 150);
+    }
 
     // 3. Firestore (asynchrone, en arrière-plan) - seulement si pas déjà sauvegardé
     const alreadySynced = localStorage.getItem(flagName + '_synced') === 'true';
