@@ -1,7 +1,7 @@
 /**
- * Helper de collage intelligent de date pour RépertoireCourse
- * Permet de coller une date directement (Ctrl+V ou Clic droit -> Coller)
- * dans les champs date des formulaires sans bouton ni label intrusif.
+ * Helper de collage intelligent de date et d'heure pour RépertoireCourse
+ * Permet de coller une date, une heure (raceHour) ou un temps de course (raceTime)
+ * directement via Ctrl+V ou Clic droit -> Coller sans bouton ni label intrusif.
  */
 (function(window) {
     'use strict';
@@ -51,19 +51,16 @@
         return `${y}-${m}-${d}`;
     }
 
+    /**
+     * Analyse flexible d'une date (texte ou numérique)
+     */
     function parseFlexibleDate(rawText) {
         if (!rawText || typeof rawText !== 'string') return null;
         let str = rawText.trim();
         if (!str) return null;
 
         // Extraction de l'heure si présente : ex "09:30", "9h30", "14h00", "09:30:00"
-        let extractedTime = null;
-        const timeMatch = str.match(/(?:(?:à|at|vers)\s*)?([01]?\d|2[0-3])(?::|h)([0-5]\d)(?::([0-5]\d))?/i);
-        if (timeMatch) {
-            const hh = timeMatch[1].padStart(2, '0');
-            const mm = timeMatch[2].padStart(2, '0');
-            extractedTime = `${hh}:${mm}`;
-        }
+        let extractedTime = parseFlexibleTime(str);
 
         // Nettoyage de préfixes courants : "le", "du", "au", "date:", "date :"
         let cleaned = str.replace(/^(?:date\s*:\s*|le\s+|du\s+|au\s+)/i, '');
@@ -139,6 +136,76 @@
         return null;
     }
 
+    /**
+     * Analyse flexible d'une heure (ex: 09:30, 9h30, 9h, 14h15, 2:30 pm, Départ à 10h00)
+     */
+    function parseFlexibleTime(rawText) {
+        if (!rawText || typeof rawText !== 'string') return null;
+        let str = rawText.trim();
+        if (!str) return null;
+
+        // 1. Format 12h AM/PM : "9:30 am", "09:30 PM", "2 pm", "2:15pm"
+        const ampmMatch = str.match(/\b(0?[1-9]|1[0-2])(?::([0-5]\d))?\s*(am|pm)\b/i);
+        if (ampmMatch) {
+            let h = parseInt(ampmMatch[1], 10);
+            const m = ampmMatch[2] ? parseInt(ampmMatch[2], 10) : 0;
+            const isPm = ampmMatch[3].toLowerCase() === 'pm';
+            if (isPm && h < 12) h += 12;
+            if (!isPm && h === 12) h = 0;
+            return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+        }
+
+        // 2. Format français avec 'h' ou 'H' : "9h30", "09h30", "9 h 30", "9h", "09h", "14h00", "14H15"
+        const frenchHourMatch = str.match(/\b([01]?\d|2[0-3])\s*[hH]\s*([0-5]\d)?\b/);
+        if (frenchHourMatch) {
+            const h = parseInt(frenchHourMatch[1], 10);
+            const m = frenchHourMatch[2] ? parseInt(frenchHourMatch[2], 10) : 0;
+            return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+        }
+
+        // 3. Format standard "HH:MM" ou "HH:MM:SS" (ex: "09:30", "9:30", "14:15:00")
+        const standardMatch = str.match(/\b([01]?\d|2[0-3]):([0-5]\d)(?::[0-5]\d)?\b/);
+        if (standardMatch) {
+            const h = parseInt(standardMatch[1], 10);
+            const m = parseInt(standardMatch[2], 10);
+            return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+        }
+
+        return null;
+    }
+
+    /**
+     * Analyse flexible d'un temps de course / durée (ex: 01:25:30, 1h25m30s, 45:15)
+     */
+    function parseFlexibleDuration(rawText) {
+        if (!rawText || typeof rawText !== 'string') return null;
+        let str = rawText.trim();
+        if (!str) return null;
+
+        // HH:MM:SS
+        const hmsMatch = str.match(/\b([0-9]{1,2}):([0-5]\d):([0-5]\d)\b/);
+        if (hmsMatch) {
+            return `${hmsMatch[1].padStart(2, '0')}:${hmsMatch[2]}:${hmsMatch[3]}`;
+        }
+
+        // MM:SS -> 00:MM:SS
+        const msMatch = str.match(/\b([0-5]?\d):([0-5]\d)\b/);
+        if (msMatch) {
+            return `00:${msMatch[1].padStart(2, '0')}:${msMatch[2]}`;
+        }
+
+        // 1h25m30s ou 1h25 ou 1h
+        const textHmsMatch = str.match(/\b(\d{1,2})\s*[hH]\s*(\d{1,2})?\s*(?:m|min)?\s*(\d{1,2})?\s*s?\b/);
+        if (textHmsMatch) {
+            const h = textHmsMatch[1].padStart(2, '0');
+            const m = (textHmsMatch[2] || '0').padStart(2, '0');
+            const s = (textHmsMatch[3] || '0').padStart(2, '0');
+            return `${h}:${m}:${s}`;
+        }
+
+        return null;
+    }
+
     function applyDateToInput(rawText, dateInput, hourInput) {
         if (!dateInput) return false;
         const result = parseFlexibleDate(rawText);
@@ -166,11 +233,52 @@
         return false;
     }
 
+    function applyTimeToInput(rawText, timeInput) {
+        if (!timeInput) return false;
+        const parsed = parseFlexibleTime(rawText);
+        if (parsed) {
+            timeInput.value = parsed;
+            timeInput.dispatchEvent(new Event('input', { bubbles: true }));
+            timeInput.dispatchEvent(new Event('change', { bubbles: true }));
+
+            // Retour visuel discret sur le champ
+            timeInput.classList.remove('border-red-500');
+            timeInput.classList.add('ring-2', 'ring-emerald-500');
+            setTimeout(() => {
+                timeInput.classList.remove('ring-2', 'ring-emerald-500');
+            }, 600);
+
+            return true;
+        }
+        return false;
+    }
+
+    function applyDurationToInput(rawText, durationInput) {
+        if (!durationInput) return false;
+        const parsed = parseFlexibleDuration(rawText);
+        if (parsed) {
+            durationInput.value = parsed;
+            durationInput.dispatchEvent(new Event('input', { bubbles: true }));
+            durationInput.dispatchEvent(new Event('change', { bubbles: true }));
+
+            const err = document.getElementById('raceTimeError');
+            if (err) err.classList.add('hidden');
+
+            durationInput.classList.remove('border-red-500');
+            durationInput.classList.add('ring-2', 'ring-emerald-500');
+            setTimeout(() => {
+                durationInput.classList.remove('ring-2', 'ring-emerald-500');
+            }, 600);
+
+            return true;
+        }
+        return false;
+    }
+
     function bindDateInput(dateInput, hourInput) {
         if (!dateInput || dateInput._hasDatePasteListener) return;
         dateInput._hasDatePasteListener = true;
 
-        // 1. Événement 'paste' (Ctrl+V ou Clic droit -> Coller)
         dateInput.addEventListener('paste', (e) => {
             const pastedText = (e.clipboardData || window.clipboardData)?.getData('text');
             if (pastedText) {
@@ -182,7 +290,6 @@
             }
         });
 
-        // 2. Événement 'keydown' (Ctrl+V / Cmd+V) si le navigateur intercepte 'paste'
         dateInput.addEventListener('keydown', (e) => {
             if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'v') {
                 setTimeout(async () => {
@@ -199,6 +306,53 @@
         });
     }
 
+    function bindTimeInput(timeInput) {
+        if (!timeInput || timeInput._hasTimePasteListener) return;
+        timeInput._hasTimePasteListener = true;
+
+        timeInput.addEventListener('paste', (e) => {
+            const pastedText = (e.clipboardData || window.clipboardData)?.getData('text');
+            if (pastedText) {
+                const applied = applyTimeToInput(pastedText, timeInput);
+                if (applied) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+            }
+        });
+
+        timeInput.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'v') {
+                setTimeout(async () => {
+                    if (navigator.clipboard && navigator.clipboard.readText) {
+                        try {
+                            const clipText = await navigator.clipboard.readText();
+                            if (clipText) {
+                                applyTimeToInput(clipText, timeInput);
+                            }
+                        } catch (_) {}
+                    }
+                }, 20);
+            }
+        });
+    }
+
+    function bindDurationInput(durationInput) {
+        if (!durationInput || durationInput._hasDurationPasteListener) return;
+        durationInput._hasDurationPasteListener = true;
+
+        durationInput.addEventListener('paste', (e) => {
+            const pastedText = (e.clipboardData || window.clipboardData)?.getData('text');
+            if (pastedText) {
+                const applied = applyDurationToInput(pastedText, durationInput);
+                if (applied) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+            }
+        });
+    }
+
     function initAll() {
         const raceDate = document.getElementById('raceDate');
         const raceHour = document.getElementById('raceHour');
@@ -206,15 +360,32 @@
             bindDateInput(raceDate, raceHour);
         }
 
+        if (raceHour) {
+            bindTimeInput(raceHour);
+        }
+
         const wishlistDate = document.getElementById('newWishlistItemDate');
         if (wishlistDate) {
             bindDateInput(wishlistDate, null);
+        }
+
+        // Champ temps de course (durée HH:MM:SS)
+        const raceTime = document.getElementById('raceTime');
+        if (raceTime) {
+            bindDurationInput(raceTime);
         }
 
         // Délégation globale sur tout input[type="date"]
         document.querySelectorAll('input[type="date"]').forEach(inp => {
             if (inp !== raceDate && inp !== wishlistDate) {
                 bindDateInput(inp, null);
+            }
+        });
+
+        // Délégation globale sur tout input[type="time"]
+        document.querySelectorAll('input[type="time"]').forEach(inp => {
+            if (inp !== raceHour) {
+                bindTimeInput(inp);
             }
         });
     }
@@ -227,8 +398,14 @@
 
     window.DatePasteHelper = {
         parseFlexibleDate,
+        parseFlexibleTime,
+        parseFlexibleDuration,
         applyDateToInput,
-        bindDateInput
+        applyTimeToInput,
+        applyDurationToInput,
+        bindDateInput,
+        bindTimeInput,
+        bindDurationInput
     };
 
 })(window);
