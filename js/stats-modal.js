@@ -1074,6 +1074,21 @@
                     }
 
                     html += `</div>`;
+                } else {
+                    html += `<div class="bg-blue-50/60 border border-dashed border-blue-200 p-4 rounded-lg mb-6 text-center">`;
+                    html += `  <div class="flex flex-col items-center justify-center gap-2">`;
+                    html += `    <div class="w-9 h-9 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center shadow-xs">`;
+                    html += `      <i class="fas fa-chart-line text-sm"></i>`;
+                    html += `    </div>`;
+                    html += `    <h4 class="font-bold text-blue-900 text-sm">Évolution des performances</h4>`;
+                    html += `    <p class="text-xs text-blue-700/80 max-w-md">`;
+                    html += `      Ajoutez au moins <strong>2 courses</strong> complètes (avec date, distance et chrono) pour afficher le graphique d'évolution.`;
+                    html += `    </p>`;
+                    html += `    <div class="mt-1 bg-white border border-gray-200 rounded-md py-1 px-3 flex items-center gap-2 text-[10px] text-gray-500 italic shadow-xs" title="5 courses minimum requises">`;
+                    html += `      <i class="fas fa-robot text-gray-500"></i> Prédiction IA indisponible (5 courses requises)`;
+                    html += `    </div>`;
+                    html += `  </div>`;
+                    html += `</div>`;
                 }
 
                 // Graphique avec liste déroulante

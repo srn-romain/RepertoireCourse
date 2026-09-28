@@ -123,7 +123,7 @@ const authModalsHTML = `
             <div>
                 <label for="signup-password" class="block text-sm font-semibold text-gray-700 mb-1">Mot de passe</label>
                 <div class="relative">
-                    <input type="password" id="signup-password" required minlength="6" autocomplete="new-password"
+                    <input type="password" id="signup-password" required minlength="8" autocomplete="new-password"
                         class="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none transition text-gray-800 placeholder-gray-400 pr-10"
                         placeholder="••••••••">
                     <button type="button" id="signup-toggle-password" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 focus:outline-none">
@@ -166,6 +166,9 @@ const authModalsHTML = `
                 <span>S'inscrire</span>
                 <i class="fas fa-spinner fa-spin ml-2 hidden" id="signup-loading"></i>
             </button>
+            <button type="button" onclick="checkAndCloseAuthModal('signupModal')" class="w-full py-2 text-center text-sm font-medium text-gray-500 hover:text-gray-700 transition cursor-pointer">
+                Annuler
+            </button>
         </form>
 
         <!-- SEPARATEUR OU -->
@@ -203,10 +206,10 @@ const unsavedChangesModalHTML = `
         <p class="text-gray-600 mb-6 text-sm leading-relaxed">Vous avez commencé à remplir des champs. Voulez-vous vraiment quitter sans enregistrer ?</p>
         <div class="flex gap-3">
             <button id="unsavedStayBtn" class="flex-1 px-4 py-2.5 border-2 border-gray-200 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition text-sm">
-                <i class="fas fa-arrow-left mr-1.5"></i> Non, rester
+                <i class="fas fa-arrow-left mr-1.5"></i> Continuer la saisie
             </button>
             <button id="unsavedLeaveBtn" class="flex-1 px-4 py-2.5 bg-red-500 hover:bg-red-600 text-white rounded-xl font-semibold transition text-sm">
-                <i class="fas fa-sign-out-alt mr-1.5"></i> Oui, quitter
+                <i class="fas fa-times mr-1.5"></i> Annuler / Quitter
             </button>
         </div>
     </div>
@@ -545,6 +548,7 @@ function initAuthLogic() {
     function checkPasswordStrength(password) {
         let score = 0;
         let validCount = 0;
+        const missing = [];
 
         // 1. Longueur (8 min)
         if (password.length >= 8) {
@@ -557,10 +561,13 @@ function initAuthLogic() {
             lengthResult.classList.remove('text-green-600', 'font-bold');
             lengthResult.classList.add('text-gray-400');
             lengthResult.innerHTML = '<i class="fas fa-circle text-[6px] mr-2 align-middle"></i> 8 caractères min.';
+            missing.push('au moins 8 caractères');
         }
 
-        // 2. Majuscule & Minuscule
-        if (/[A-Z]/.test(password) && /[a-z]/.test(password)) {
+        // 2. Majuscule & Minuscule (support des accents)
+        const hasUpper = /[A-ZÀ-ÖØ-ß]/.test(password);
+        const hasLower = /[a-zà-öø-ÿ]/.test(password);
+        if (hasUpper && hasLower) {
             uppercaseResult.classList.remove('text-gray-400');
             uppercaseResult.classList.add('text-green-600', 'font-bold');
             uppercaseResult.innerHTML = '<i class="fas fa-check mr-1"></i> Majuscule & Minuscule';
@@ -570,6 +577,7 @@ function initAuthLogic() {
             uppercaseResult.classList.remove('text-green-600', 'font-bold');
             uppercaseResult.classList.add('text-gray-400');
             uppercaseResult.innerHTML = '<i class="fas fa-circle text-[6px] mr-2 align-middle"></i> Majuscule & Minuscule';
+            missing.push('une majuscule et une minuscule');
         }
 
         // 3. Chiffre
@@ -583,10 +591,11 @@ function initAuthLogic() {
             numberResult.classList.remove('text-green-600', 'font-bold');
             numberResult.classList.add('text-gray-400');
             numberResult.innerHTML = '<i class="fas fa-circle text-[6px] mr-2 align-middle"></i> Chiffre';
+            missing.push('un chiffre');
         }
 
         // 4. Caractère spécial
-        if (/[^A-Za-z0-9]/.test(password)) {
+        if (/[^A-Za-zÀ-ÖØ-öø-ÿ0-9\s]/.test(password)) {
             specialResult.classList.remove('text-gray-400');
             specialResult.classList.add('text-green-600', 'font-bold');
             specialResult.innerHTML = '<i class="fas fa-check mr-1"></i> Caractère spécial';
@@ -596,6 +605,7 @@ function initAuthLogic() {
             specialResult.classList.remove('text-green-600', 'font-bold');
             specialResult.classList.add('text-gray-400');
             specialResult.innerHTML = '<i class="fas fa-circle text-[6px] mr-2 align-middle"></i> Caractère spécial';
+            missing.push('un caractère spécial');
         }
 
         // Mise à jour Barre
@@ -623,6 +633,7 @@ function initAuthLogic() {
             }
         }
 
+        checkPasswordStrength.missing = missing;
         return validCount === 4;
     }
 
@@ -649,7 +660,9 @@ function initAuthLogic() {
             }
 
             if (!checkPasswordStrength(password)) {
-                showError('signup-error', "Le mot de passe ne respecte pas les critères de sécurité.");
+                const missingList = checkPasswordStrength.missing || [];
+                const missingDetail = missingList.length > 0 ? ` : il manque ${missingList.join(', ')}.` : '.';
+                showError('signup-error', `Le mot de passe ne respecte pas les critères de sécurité${missingDetail}`);
                 // Animation shake
                 signupForm.classList.add('animate-pulse'); // Simple pulse for now
                 setTimeout(() => signupForm.classList.remove('animate-pulse'), 500);
