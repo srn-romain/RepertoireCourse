@@ -36,8 +36,14 @@
         let debounceTimer = null;
         let currentResults = [];
         let selectedIndex = -1;
+        let isSelecting = false;
+        let lastSelectedValue = '';
 
         function closeDropdown() {
+            if (debounceTimer) {
+                clearTimeout(debounceTimer);
+                debounceTimer = null;
+            }
             dropdown.classList.add('hidden');
             dropdown.innerHTML = '';
             currentResults = [];
@@ -49,7 +55,7 @@
             currentResults = results || [];
             selectedIndex = -1;
 
-            if (!currentResults || currentResults.length === 0) {
+            if (!currentResults || currentResults.length === 0 || isSelecting) {
                 dropdown.classList.add('hidden');
                 return;
             }
@@ -81,9 +87,10 @@
                     </div>
                 `;
 
-                // Gestion de la sélection par mousedown (évite la perte de focus)
+                // Gestion de la sélection par mousedown
                 item.addEventListener('mousedown', (e) => {
                     e.preventDefault();
+                    e.stopPropagation();
                     selectCity(city);
                 });
 
@@ -96,7 +103,13 @@
         function selectCity(city) {
             if (!city) return;
 
-            // Pré-remplir le champ de la ville
+            isSelecting = true;
+            lastSelectedValue = city.nom;
+
+            // Annuler tout timer en cours et fermer immédiatement
+            closeDropdown();
+
+            // Renseigner le champ de la ville
             input.value = city.nom;
 
             // Renseigner le département associé
@@ -109,20 +122,23 @@
                 regionInput.value = (city.region && city.region.nom) ? city.region.nom : '';
             }
 
-            // Déclencher les événements input et change sur le champ
-            input.dispatchEvent(new Event('input', { bubbles: true }));
+            // Déclencher les événements change sans relancer la recherche
             input.dispatchEvent(new Event('change', { bubbles: true }));
 
             if (typeof onSelectCallback === 'function') {
                 onSelectCallback(city);
             }
 
-            closeDropdown();
+            setTimeout(() => {
+                isSelecting = false;
+                closeDropdown();
+            }, 100);
         }
 
         async function fetchCities(query) {
+            if (isSelecting) return;
             const cleanQuery = query.trim();
-            if (cleanQuery.length < 3) {
+            if (cleanQuery.length < 3 || cleanQuery === lastSelectedValue) {
                 closeDropdown();
                 return;
             }
@@ -135,21 +151,35 @@
                     return;
                 }
                 const data = await response.json();
-                renderResults(data);
+                if (!isSelecting) {
+                    renderResults(data);
+                }
             } catch (err) {
                 console.warn('[CityAutocomplete] Error fetching Geo Gouv API:', err);
                 closeDropdown();
             }
         }
 
-        // Événement input avec debounce (300ms)
+        // Événement input avec debounce (300ms) déclenché uniquement par la saisie utilisateur réelle
         input.addEventListener('input', (e) => {
+            if (isSelecting) return;
             if (debounceTimer) clearTimeout(debounceTimer);
+
             const val = input.value || '';
+            // Si la valeur est identique à la dernière sélection, ne pas rouvrir
+            if (val.trim() === lastSelectedValue) {
+                closeDropdown();
+                return;
+            }
+
+            // Si l'utilisateur a modifié le texte, réinitialiser la dernière valeur sélectionnée
+            lastSelectedValue = '';
+
             if (val.trim().length < 3) {
                 closeDropdown();
                 return;
             }
+
             debounceTimer = setTimeout(() => {
                 fetchCities(val);
             }, 300);
@@ -190,18 +220,17 @@
             });
         }
 
-        // Fermeture propre au blur avec léger délai pour permettre le clic
+        // Fermeture propre au blur
         input.addEventListener('blur', () => {
             setTimeout(() => {
                 closeDropdown();
             }, 150);
         });
 
-        // Ré-ouvrir les suggestions au focus si au moins 3 caractères
-        input.addEventListener('focus', () => {
-            const val = (input.value || '').trim();
-            if (val.length >= 3) {
-                fetchCities(val);
+        // Fermeture globale au clic à l'extérieur
+        document.addEventListener('click', (e) => {
+            if (!parent.contains(e.target)) {
+                closeDropdown();
             }
         });
     }

@@ -289,21 +289,6 @@
                 }
             }
         });
-
-        dateInput.addEventListener('keydown', (e) => {
-            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'v') {
-                setTimeout(async () => {
-                    if (navigator.clipboard && navigator.clipboard.readText) {
-                        try {
-                            const clipText = await navigator.clipboard.readText();
-                            if (clipText) {
-                                applyDateToInput(clipText, dateInput, hourInput);
-                            }
-                        } catch (_) {}
-                    }
-                }, 20);
-            }
-        });
     }
 
     function bindTimeInput(timeInput) {
@@ -318,21 +303,6 @@
                     e.preventDefault();
                     e.stopPropagation();
                 }
-            }
-        });
-
-        timeInput.addEventListener('keydown', (e) => {
-            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'v') {
-                setTimeout(async () => {
-                    if (navigator.clipboard && navigator.clipboard.readText) {
-                        try {
-                            const clipText = await navigator.clipboard.readText();
-                            if (clipText) {
-                                applyTimeToInput(clipText, timeInput);
-                            }
-                        } catch (_) {}
-                    }
-                }, 20);
             }
         });
     }
