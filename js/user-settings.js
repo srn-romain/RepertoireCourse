@@ -333,7 +333,6 @@ async function initSettingsLogic() {
     let isInvite = false;
     if (typeof window.isInviteUser === 'function') {
         isInvite = await window.isInviteUser();
-        console.log('[user-settings] isInvite:', isInvite);
     } else {
         // Fallback si isInvite.js n'est pas encore chargé
         console.warn('window.isInviteUser not available');

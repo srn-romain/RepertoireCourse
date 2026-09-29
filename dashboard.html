@@ -49,7 +49,7 @@
     <link rel="stylesheet" href="css/runner-loader.css">
     <script src="js/runner-loader.js"></script>
     <script src="js/user-flags.js?v=20260929_1"></script>
-    <script src="js/badges-modal.js?v=20260929_1"></script>
+    <script src="js/badges-modal.js?v=20260929_2"></script>
     <script src="js/toast.js?v=20260929_1"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
     <script src="js/confetti.js?v=20260929_1"></script>
@@ -2031,6 +2031,31 @@
                 cliquer sur "Ajouter" ou vider le champ avant d'enregistrer.</p>
             <button id="closeWishlistUnsavedAlertBtn"
                 class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition">OK</button>
+        </div>
+    </div>
+
+    <!-- Modal Confirmation Suppression Item Wishlist -->
+    <div id="wishlistDeleteConfirmModal" class="fixed inset-0 flex items-center justify-center z-[75] hidden modal">
+        <div class="absolute inset-0 bg-black bg-opacity-50 blur-bg" onclick="closeWishlistDeleteConfirmModal()"></div>
+        <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm mx-4 z-10 p-6 flex flex-col items-center text-center">
+            <div class="w-14 h-14 rounded-full bg-red-100 flex items-center justify-center text-red-600 mb-4 shadow-inner">
+                <i class="fas fa-trash-alt text-2xl"></i>
+            </div>
+            <h3 class="text-lg font-bold text-gray-900 mb-2">Supprimer de la wishlist ?</h3>
+            <p class="text-sm text-gray-600 mb-6 leading-relaxed">
+                Êtes-vous sûr de vouloir supprimer <span id="wishlistDeleteConfirmItemName" class="font-semibold text-gray-900"></span> de votre wishlist ? Cette action est irréversible.
+            </p>
+            <div class="flex items-center gap-3 w-full">
+                <button type="button" id="wishlistDeleteCancelBtn" onclick="closeWishlistDeleteConfirmModal()"
+                    class="flex-1 px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl text-sm transition cursor-pointer">
+                    Annuler
+                </button>
+                <button type="button" id="wishlistDeleteConfirmBtn"
+                    class="flex-1 px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-xl text-sm shadow-md transition cursor-pointer flex items-center justify-center gap-1.5">
+                    <i class="fas fa-trash-alt text-xs"></i>
+                    <span>Supprimer</span>
+                </button>
+            </div>
         </div>
     </div>
 
@@ -10117,6 +10142,71 @@
             }
         }
 
+        // Gestion de la double confirmation de suppression d'un élément de la wishlist
+        let pendingWishlistDelete = null;
+
+        function openWishlistDeleteConfirmModal(item) {
+            pendingWishlistDelete = item;
+            const modal = document.getElementById('wishlistDeleteConfirmModal');
+            const nameSpan = document.getElementById('wishlistDeleteConfirmItemName');
+            if (nameSpan) {
+                nameSpan.textContent = `« ${item.name || 'cette course'} »`;
+            }
+            if (modal) {
+                modal.classList.remove('hidden');
+            }
+        }
+        window.openWishlistDeleteConfirmModal = openWishlistDeleteConfirmModal;
+
+        function closeWishlistDeleteConfirmModal() {
+            pendingWishlistDelete = null;
+            const modal = document.getElementById('wishlistDeleteConfirmModal');
+            if (modal) {
+                modal.classList.add('hidden');
+            }
+        }
+        window.closeWishlistDeleteConfirmModal = closeWishlistDeleteConfirmModal;
+
+        const wishlistDeleteConfirmBtn = document.getElementById('wishlistDeleteConfirmBtn');
+        if (wishlistDeleteConfirmBtn) {
+            wishlistDeleteConfirmBtn.onclick = function () {
+                if (!pendingWishlistDelete) {
+                    closeWishlistDeleteConfirmModal();
+                    return;
+                }
+                const item = pendingWishlistDelete;
+                const itemName = item.name || 'Course';
+
+                const performLocalDelete = () => {
+                    const index = wishlistEditItems.findIndex(i => i === item || (item.id && i.id === item.id));
+                    if (index !== -1) wishlistEditItems.splice(index, 1);
+                    updateWishlistSearchState(wishlistEditItems.length);
+                    updateWishlistEditTabsUI();
+                    handleWishlistSearch();
+                    closeWishlistDeleteConfirmModal();
+                    if (typeof showToast === 'function') {
+                        showToast(`« ${itemName} » a été supprimée de la wishlist`, 'info');
+                    }
+                };
+
+                if (item.id) {
+                    wishlistCollection.doc(item.id).delete()
+                        .then(() => {
+                            performLocalDelete();
+                        })
+                        .catch(err => {
+                            console.error("Erreur suppression item wishlist:", err);
+                            closeWishlistDeleteConfirmModal();
+                            if (typeof showToast === 'function') {
+                                showToast('Erreur lors de la suppression de la course', 'error');
+                            }
+                        });
+                } else {
+                    performLocalDelete();
+                }
+            };
+        }
+
         // Afficher la liste éditable avec éléments dépliables/repliables et pastille d'incomplétude
         function renderWishlistEditList(items) {
             // Sort items by category and then by name
@@ -10203,7 +10293,7 @@
                 pastilleSpan.className = 'wishlist-edit-pastille hidden';
                 headerRight.appendChild(pastilleSpan);
 
-                // Bouton suppression croix rouge (Ancien affichage)
+                // Bouton suppression croix rouge avec double confirmation
                 const delBtn = document.createElement('button');
                 delBtn.type = 'button';
                 delBtn.className = 'p-1 rounded hover:bg-red-100 flex-shrink-0 text-red-600 transition del-btn';
@@ -10211,21 +10301,7 @@
                 delBtn.title = 'Supprimer cette course';
                 delBtn.onclick = function (e) {
                     e.stopPropagation();
-                    if (item.id) {
-                        wishlistCollection.doc(item.id).delete().then(() => {
-                            const index = wishlistEditItems.findIndex(i => i === item || i.id === item.id);
-                            if (index !== -1) wishlistEditItems.splice(index, 1);
-                            updateWishlistSearchState(wishlistEditItems.length);
-                            updateWishlistEditTabsUI();
-                            handleWishlistSearch();
-                        });
-                    } else {
-                        const index = wishlistEditItems.findIndex(i => i === item);
-                        if (index !== -1) wishlistEditItems.splice(index, 1);
-                        updateWishlistSearchState(wishlistEditItems.length);
-                        updateWishlistEditTabsUI();
-                        handleWishlistSearch();
-                    }
+                    openWishlistDeleteConfirmModal(item);
                 };
                 headerRight.appendChild(delBtn);
 

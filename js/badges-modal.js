@@ -2754,9 +2754,10 @@
                 const st = data.levelsState[lvl.id];
                 const prevLvl = idx > 0 ? LEVELS_CONFIG[idx - 1] : null;
                 
+                const isCompleted = st.unlockedCount >= st.totalCount;
                 let isExpanded = userLevelExpandedState[lvl.id];
                 if (isExpanded === undefined) {
-                    isExpanded = activeLevelTab !== 'all' ? true : st.isUnlocked;
+                    isExpanded = activeLevelTab !== 'all' ? true : (st.isUnlocked && !isCompleted);
                 }
                 
                 sectionsHtml += `
@@ -2764,7 +2765,8 @@
                      data-level-id="${lvl.id}"
                      data-level-number="${lvl.levelNumber}"
                      data-level-name="${escapeBadgeHtml(lvl.name)}"
-                     data-level-unlocked="${st.isUnlocked ? 'true' : 'false'}">
+                     data-level-unlocked="${st.isUnlocked ? 'true' : 'false'}"
+                     data-level-completed="${isCompleted ? 'true' : 'false'}">
                     
                     <!-- Header de niveau interactif et repliable -->
                     <div class="level-header-toggle p-4 border-b border-gray-100 ${st.isUnlocked ? 'bg-gray-50/70 hover:bg-gray-100/80' : 'bg-gray-100/80 hover:bg-gray-200/70'} flex flex-wrap items-center justify-between gap-3 cursor-pointer transition select-none" data-level-id="${lvl.id}" title="Cliquer pour ${isExpanded ? 'replier' : 'déplier'} ce niveau">
@@ -3166,9 +3168,10 @@
                         }
                     } else {
                         // Rétablir l'état normal replié/déplié
+                        const isCompleted = section.getAttribute('data-level-completed') === 'true';
                         let isExpanded = userLevelExpandedState[levelId];
                         if (isExpanded === undefined) {
-                            isExpanded = (activeLevelTab !== 'all') ? true : isLevelUnlocked;
+                            isExpanded = (activeLevelTab !== 'all') ? true : (isLevelUnlocked && !isCompleted);
                         }
                         if (levelBody) {
                             if (isExpanded) {
