@@ -499,6 +499,7 @@
         upcomingFeaturesData.forEach((item) => {
             addUpcomingFeatureRow(item);
         });
+        updateUpcomingRowOrderButtons();
     }
 
     /**
@@ -914,6 +915,113 @@ Idée brute de l'administrateur : "${rawPrompt}"`;
     }
 
     /**
+     * Configuration du glisser-déposer (Drag & Drop) pour une ligne
+     */
+    function setupDragAndDropForRow(row) {
+        row.setAttribute('draggable', 'true');
+
+        row.addEventListener('dragstart', (e) => {
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', row.id);
+            row.classList.add('opacity-40', 'border-green-500', 'scale-[0.99]');
+        });
+
+        row.addEventListener('dragend', () => {
+            row.classList.remove('opacity-40', 'border-green-500', 'scale-[0.99]');
+            updateUpcomingRowOrderButtons();
+        });
+
+        row.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            const list = document.getElementById('upcomingFeaturesEditorList');
+            const dragging = list.querySelector('.opacity-40');
+            if (dragging && dragging !== row) {
+                const rect = row.getBoundingClientRect();
+                const next = (e.clientY - rect.top) / (rect.bottom - rect.top) > 0.5;
+                list.insertBefore(dragging, next ? row.nextSibling : row);
+            }
+        });
+    }
+
+    /**
+     * Déplace une ligne vers le haut ou vers le bas
+     */
+    window.moveUpcomingFeatureRow = function (rowId, direction) {
+        const row = document.getElementById(rowId);
+        if (!row) return;
+
+        if (direction === -1) {
+            const prev = row.previousElementSibling;
+            if (prev && prev.classList.contains('upcoming-feature-row')) {
+                prev.before(row);
+                row.classList.add('ring-2', 'ring-green-400');
+                setTimeout(() => row.classList.remove('ring-2', 'ring-green-400'), 400);
+                updateUpcomingRowOrderButtons();
+            }
+        } else if (direction === 1) {
+            const next = row.nextElementSibling;
+            if (next && next.classList.contains('upcoming-feature-row')) {
+                next.after(row);
+                row.classList.add('ring-2', 'ring-green-400');
+                setTimeout(() => row.classList.remove('ring-2', 'ring-green-400'), 400);
+                updateUpcomingRowOrderButtons();
+            }
+        }
+    };
+
+    /**
+     * Supprime une ligne spécifique et met à jour les boutons d'ordre
+     */
+    window.deleteUpcomingFeatureRow = function (rowId) {
+        const row = document.getElementById(rowId);
+        if (row) {
+            row.remove();
+            updateUpcomingRowOrderButtons();
+        }
+    };
+
+    /**
+     * Met à jour les compteurs et l'état actif/inactif des flèches Haut/Bas
+     */
+    function updateUpcomingRowOrderButtons() {
+        const listContainer = document.getElementById('upcomingFeaturesEditorList');
+        if (!listContainer) return;
+        const rows = listContainer.querySelectorAll('.upcoming-feature-row');
+        rows.forEach((row, idx) => {
+            const upBtn = row.querySelector('.btn-move-up');
+            const downBtn = row.querySelector('.btn-move-down');
+            const numBadge = row.querySelector('.row-number-badge');
+
+            if (numBadge) numBadge.textContent = `#${idx + 1}`;
+
+            if (upBtn) {
+                if (idx === 0) {
+                    upBtn.disabled = true;
+                    upBtn.classList.add('opacity-30', 'cursor-not-allowed');
+                    upBtn.classList.remove('hover:text-green-700', 'cursor-pointer');
+                } else {
+                    upBtn.disabled = false;
+                    upBtn.classList.remove('opacity-30', 'cursor-not-allowed');
+                    upBtn.classList.add('hover:text-green-700', 'cursor-pointer');
+                }
+            }
+
+            if (downBtn) {
+                if (idx === rows.length - 1) {
+                    downBtn.disabled = true;
+                    downBtn.classList.add('opacity-30', 'cursor-not-allowed');
+                    downBtn.classList.remove('hover:text-green-700', 'cursor-pointer');
+                } else {
+                    downBtn.disabled = false;
+                    downBtn.classList.remove('opacity-30', 'cursor-not-allowed');
+                    downBtn.classList.add('hover:text-green-700', 'cursor-pointer');
+                }
+            }
+        });
+    }
+
+    /**
      * Ajoute une ligne dans le formulaire d'édition
      */
     window.addUpcomingFeatureRow = function (data = { title: '', status: 'Planifié', date: '', description: '' }, isAiGenerated = false) {
@@ -935,15 +1043,27 @@ Idée brute de l'administrateur : "${rawPrompt}"`;
         const currentStatus = data.status || 'Planifié';
 
         const rowHTML = `
-            <div id="${rowId}" class="upcoming-feature-row bg-gray-50 border ${isAiGenerated ? 'border-purple-300 bg-purple-50/40' : 'border-gray-200'} rounded-lg p-3 relative space-y-2 transition duration-300">
+            <div id="${rowId}" class="upcoming-feature-row bg-gray-50 border ${isAiGenerated ? 'border-purple-300 bg-purple-50/40' : 'border-gray-200'} rounded-lg p-3 relative space-y-2 transition duration-300 cursor-default">
                 <div class="flex items-center justify-between gap-2">
-                    <span class="text-xs font-bold ${isAiGenerated ? 'text-purple-800' : 'text-green-800'} flex items-center gap-1.5">
-                        <i class="fas ${isAiGenerated ? 'fa-magic text-purple-600' : 'fa-list text-green-600'}"></i>
-                        <span>${isAiGenerated ? 'Proposition automatique (modifiable)' : 'Fonctionnalité'}</span>
-                    </span>
-                    <button type="button" onclick="document.getElementById('${rowId}').remove()" class="text-gray-400 hover:text-red-600 transition p-1 text-xs cursor-pointer" title="Supprimer">
-                        <i class="fas fa-trash-alt"></i>
-                    </button>
+                    <div class="flex items-center gap-1.5">
+                        <i class="fas fa-grip-vertical text-gray-400 cursor-grab px-1 select-none" title="Glisser-déposer pour réorganiser"></i>
+                        <span class="row-number-badge text-[10px] font-bold px-1.5 py-0.5 rounded bg-gray-200 text-gray-700">#</span>
+                        <span class="text-xs font-bold ${isAiGenerated ? 'text-purple-800' : 'text-green-800'} flex items-center gap-1.5 ml-1">
+                            <i class="fas ${isAiGenerated ? 'fa-magic text-purple-600' : 'fa-list text-green-600'}"></i>
+                            <span>${isAiGenerated ? 'Proposition automatique (modifiable)' : 'Fonctionnalité'}</span>
+                        </span>
+                    </div>
+                    <div class="flex items-center gap-1">
+                        <button type="button" onclick="window.moveUpcomingFeatureRow('${rowId}', -1)" class="btn-move-up text-gray-500 hover:text-green-700 p-1 text-xs transition cursor-pointer" title="Monter cette fonctionnalité">
+                            <i class="fas fa-arrow-up"></i>
+                        </button>
+                        <button type="button" onclick="window.moveUpcomingFeatureRow('${rowId}', 1)" class="btn-move-down text-gray-500 hover:text-green-700 p-1 text-xs transition cursor-pointer" title="Descendre cette fonctionnalité">
+                            <i class="fas fa-arrow-down"></i>
+                        </button>
+                        <button type="button" onclick="window.deleteUpcomingFeatureRow('${rowId}')" class="text-gray-400 hover:text-red-600 transition p-1 text-xs cursor-pointer ml-1.5" title="Supprimer">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
@@ -984,6 +1104,7 @@ Idée brute de l'administrateur : "${rawPrompt}"`;
 
         const insertedElement = document.getElementById(rowId);
         if (insertedElement) {
+            setupDragAndDropForRow(insertedElement);
             insertedElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
             if (isAiGenerated) {
@@ -996,6 +1117,8 @@ Idée brute de l'administrateur : "${rawPrompt}"`;
                 if (titleInput) titleInput.focus();
             }
         }
+
+        updateUpcomingRowOrderButtons();
     };
 
     /**
