@@ -105,9 +105,11 @@
         let startTime = Date.now();
         let timeoutId = null;
         let isPaused = false;
+        let isDismissing = false;
         const progressBar = toast.querySelector('.toast-progress-bar');
 
         function startTimer() {
+            if (isDismissing) return;
             startTime = Date.now();
             if (progressBar) {
                 progressBar.style.transition = `width ${remainingTime}ms linear`;
@@ -119,13 +121,15 @@
         }
 
         function pauseTimer() {
+            if (isDismissing) return;
             if (timeoutId && !isPaused) {
                 clearTimeout(timeoutId);
+                timeoutId = null;
                 isPaused = true;
                 const elapsed = Date.now() - startTime;
                 remainingTime = Math.max(0, remainingTime - elapsed);
                 if (progressBar) {
-                    const currentWidth = (remainingTime / duration) * 100;
+                    const currentWidth = duration > 0 ? (remainingTime / duration) * 100 : 0;
                     progressBar.style.transition = 'none';
                     progressBar.style.width = `${currentWidth}%`;
                 }
@@ -133,6 +137,7 @@
         }
 
         function resumeTimer() {
+            if (isDismissing) return;
             if (isPaused && remainingTime > 0) {
                 isPaused = false;
                 startTimer();
@@ -140,7 +145,16 @@
         }
 
         function dismissToast() {
-            if (timeoutId) clearTimeout(timeoutId);
+            if (isDismissing) return;
+            isDismissing = true;
+            if (timeoutId) {
+                clearTimeout(timeoutId);
+                timeoutId = null;
+            }
+            // Retirer immédiatement les écouteurs de survol pour éviter tout redémarrage du timer
+            toast.removeEventListener('mouseenter', pauseTimer);
+            toast.removeEventListener('mouseleave', resumeTimer);
+
             toast.classList.remove('translate-x-0', 'opacity-100');
             toast.classList.add('translate-x-8', 'opacity-0');
             setTimeout(() => {
@@ -150,14 +164,13 @@
             }, 300);
         }
 
-        // Écouteur bouton fermeture ✕
-        const closeBtn = toast.querySelector('.toast-close-btn');
-        if (closeBtn) {
-            closeBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
+        // Fermeture automatique lors du clic sur le bouton ✕ ou sur tout bouton d'action interne
+        toast.addEventListener('click', (e) => {
+            const btn = e.target.closest('button, a, [data-dismiss="toast"]');
+            if (btn) {
                 dismissToast();
-            });
-        }
+            }
+        });
 
         // Pause lors du survol de la souris
         toast.addEventListener('mouseenter', pauseTimer);
@@ -169,6 +182,21 @@
         }
 
         return dismissToast;
+    }
+
+    /**
+     * Ferme immédiatement tous les toasts actuellement affichés
+     */
+    function dismissAllToasts() {
+        const container = document.getElementById('global-toast-container');
+        if (container) {
+            const toasts = container.querySelectorAll('[role="alert"]');
+            toasts.forEach(t => {
+                t.classList.remove('translate-x-0', 'opacity-100');
+                t.classList.add('translate-x-8', 'opacity-0');
+                setTimeout(() => t.remove(), 250);
+            });
+        }
     }
 
     // Capture globale des erreurs non gérées (scripts, réseau, DOM)
@@ -213,5 +241,6 @@
 
     // Export global
     window.showToast = showToast;
+    window.dismissAllToasts = dismissAllToasts;
 
 })();

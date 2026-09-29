@@ -357,7 +357,7 @@
             xp: 25,
             name: 'Radin malin',
             icon: 'fa-piggy-bank',
-            description: 'Enregistrer 1 course avec un coût d\'inscription ≤ 0,80 €/km.'
+            description: 'Enregistrer 1 course avec un coût d\'inscription ≤ 1 €/km.'
         },
         visuel_personnalise: {
             id: 'visuel_personnalise',
@@ -1281,14 +1281,14 @@
         'herault': '34', 'ille et vilaine': '35', 'indre': '36', 'indre et loire': '37', 'isere': '38',
         'jura': '39', 'landes': '40', 'loir et cher': '41', 'loire': '42', 'haute loire': '43',
         'loire atlantique': '44', 'loiret': '45', 'lot': '46', 'lot et garonne': '47', 'lozere': '48',
-        'maine et loire': '49', 'manche': '50', 'marne': '51', 'haute marne': '52', 'mayenne': '53',
+        'maine et loire': '49', 'manche': '50', 'marne': '51', 'haute marne': '52',
         'meurthe et moselle': '54', 'meuse': '55', 'morbihan': '56', 'moselle': '57', 'nievre': '58',
         'nord': '59', 'oise': '60', 'orne': '61', 'pas de calais': '62', 'puy de dome': '63',
         'pyrenees atlantiques': '64', 'hautes pyrenees': '65', 'pyrenees orientales': '66', 'bas rhin': '67',
         'haut rhin': '68', 'rhone': '69', 'haute saone': '70', 'saone et loire': '71', 'sarthe': '72',
         'savoie': '73', 'haute savoie': '74', 'paris': '75', 'seine maritime': '76', 'seine et marne': '77',
         'yvelines': '78', 'deux sevres': '79', 'somme': '80', 'tarn': '81', 'tarn et garonne': '82',
-        'var': '83', 'vaucluse': '84', 'vendee': '85', 'vienne': '86', 'haute vienne': '87',
+        'var': '83', 'vaucluse': '84', 'vendee': '85', 'haute vienne': '87',
         'vosges': '88', 'yonne': '89', 'territoire de belfort': '90', 'essonne': '91', 'hauts de seine': '92',
         'seine saint denis': '93', 'val de marne': '94', 'val d oise': '95', 'guadeloupe': '971',
         'martinique': '972', 'guyane': '973', 'la reunion': '974', 'reunion': '974', 'mayotte': '976',
@@ -1975,7 +1975,7 @@
                         if (convertedWishlistCount >= 1) markBadgeUnlocked('projet_concretise');
                         raceMetrics.forEach(m => {
                             if (m.hasCompanions || m.isTeam) markBadgeUnlocked('copains_dechappee', m.race);
-                            if (m.dist >= 4.5 && m.price > 0 && (m.price / m.dist) <= 0.80) markBadgeUnlocked('radin_malin', m.race);
+                            if (m.dist >= 4.5 && m.price > 0 && (m.price / m.dist) <= 1.00) markBadgeUnlocked('radin_malin', m.race);
                             if (hasRacePhoto(m.race)) markBadgeUnlocked('visuel_personnalise', m.race);
                             if (m.elev >= 200) markBadgeUnlocked('chasseur_de_cotes', m.race);
                             if (m.dist >= 9.8) markBadgeUnlocked('le_cap_des_10', m.race);
@@ -2474,36 +2474,131 @@
             `;
         });
 
-        // Si l'utilisateur connecté n'est pas dans le top 5, afficher sa position en dessous
+        // Si l'utilisateur connecté n'est pas dans le top 5, afficher sa position, l'utilisateur au-dessus et l'écart d'XP
         if (!isUserInTop5 && currentUserIndex >= 0) {
+            const userAbove = allUsers[currentUserIndex - 1];
             const myLvl = getLevelFromTotalXP(currentUserXP);
-            rowsHtml += `
+
+            // Si l'utilisateur au-dessus n'est pas déjà affiché dans le Top 5 (rang > 6)
+            if (currentUserRank > 6 && userAbove) {
+                const aboveRank = currentUserRank - 1;
+                const abovePseudo = (userAbove.showPseudo && userAbove.pseudo) ? userAbove.pseudo : ('Utilisateur ' + aboveRank);
+                const aboveLvl = getLevelFromTotalXP(userAbove.xp);
+
+                rowsHtml += `
                 <div class="flex items-center justify-center py-1 text-gray-300 text-xs tracking-widest select-none">
                     <span>• • •</span>
                 </div>
-                <div class="flex items-center justify-between p-2.5 rounded-lg border bg-emerald-50/90 border-emerald-300 ring-1 ring-emerald-400/40 shadow-xs">
+                <div class="flex items-center justify-between p-2.5 rounded-lg border bg-gray-50/80 border-gray-200">
                     <div class="flex items-center gap-2.5 min-w-0">
                         <div class="shrink-0 flex items-center justify-center">
-                            <span class="w-6 text-center font-extrabold text-emerald-800 text-xs">#${currentUserRank}</span>
+                            <span class="w-6 text-center font-bold text-gray-500 text-xs">#${aboveRank}</span>
                         </div>
                         <div class="min-w-0">
-                            <div class="text-xs sm:text-sm truncate flex items-center gap-1.5 font-bold text-emerald-900">
-                                <span>${currentPseudo}</span>
-                                <span class="text-xs text-emerald-700 font-semibold">(Moi)</span>
+                            <div class="text-xs sm:text-sm truncate font-medium text-gray-800">
+                                <span>${abovePseudo}</span>
                             </div>
                         </div>
                     </div>
                     <div class="flex items-center gap-2 shrink-0">
-                        <span class="text-[11px] px-2 py-0.5 rounded ${myLvl.cocarde.pillBg} border hidden sm:inline-flex items-center gap-1">
-                            <span>${myLvl.emoji}</span>
-                            <span>${myLvl.name}</span>
+                        <span class="text-[11px] px-2 py-0.5 rounded ${aboveLvl.cocarde.pillBg} border hidden sm:inline-flex items-center gap-1">
+                            <span>${aboveLvl.emoji}</span>
+                            <span>${aboveLvl.name}</span>
                         </span>
-                        <span class="text-xs font-extrabold text-emerald-800 min-w-[70px] text-right">
-                            ${currentUserXP.toLocaleString('fr-FR')} XP
+                        <span class="text-xs font-bold text-gray-700 min-w-[70px] text-right">
+                            ${userAbove.xp.toLocaleString('fr-FR')} XP
                         </span>
                     </div>
                 </div>
+                `;
+            } else if (currentUserRank === 6) {
+                rowsHtml += `
+                <div class="flex items-center justify-center py-0.5 text-gray-300 text-xs tracking-widest select-none">
+                    <span>• • •</span>
+                </div>
+                `;
+            }
+
+            rowsHtml += `
+            <div class="flex items-center justify-between p-2.5 rounded-lg border bg-emerald-50/90 border-emerald-300 ring-1 ring-emerald-400/40 shadow-xs">
+                <div class="flex items-center gap-2.5 min-w-0">
+                    <div class="shrink-0 flex items-center justify-center">
+                        <span class="w-6 text-center font-extrabold text-emerald-800 text-xs">#${currentUserRank}</span>
+                    </div>
+                    <div class="min-w-0">
+                        <div class="text-xs sm:text-sm truncate flex items-center gap-1.5 font-bold text-emerald-900">
+                            <span>${currentPseudo}</span>
+                            <span class="text-xs text-emerald-700 font-semibold">(Moi)</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2 shrink-0">
+                    <span class="text-[11px] px-2 py-0.5 rounded ${myLvl.cocarde.pillBg} border hidden sm:inline-flex items-center gap-1">
+                        <span>${myLvl.emoji}</span>
+                        <span>${myLvl.name}</span>
+                    </span>
+                    <span class="text-xs font-extrabold text-emerald-800 min-w-[70px] text-right">
+                        ${currentUserXP.toLocaleString('fr-FR')} XP
+                    </span>
+                </div>
+            </div>
             `;
+
+            // Bloc de stimulation / Prochaine cible pour inciter l'utilisateur à gagner de l'XP
+            if (userAbove) {
+                const aboveRank = currentUserRank - 1;
+                const abovePseudo = (userAbove.showPseudo && userAbove.pseudo) ? userAbove.pseudo : ('Utilisateur ' + aboveRank);
+                const xpDiff = Math.max(0, userAbove.xp - currentUserXP);
+                const xpNeeded = xpDiff > 0 ? (xpDiff.toLocaleString('fr-FR') + ' XP') : '1 XP';
+
+                rowsHtml += `
+                <div class="mt-2.5 p-3 rounded-xl bg-gradient-to-r from-amber-50 via-orange-50 to-amber-50 border border-amber-200/90 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 text-xs shadow-2xs">
+                    <div class="flex items-center gap-2.5 min-w-0">
+                        <div class="w-8 h-8 rounded-lg bg-amber-500/15 text-amber-700 flex items-center justify-center shrink-0 text-sm shadow-2xs border border-amber-300/60">
+                            <i class="fas fa-crosshairs animate-pulse"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <div class="text-[11px] text-amber-800 font-semibold uppercase tracking-wider flex items-center gap-1.5 flex-wrap">
+                                <span>Prochaine cible à dépasser</span>
+                                <span class="bg-amber-200/80 text-amber-900 px-1.5 py-0.2 rounded text-[10px] font-bold">#${aboveRank}</span>
+                            </div>
+                            <div class="text-xs text-gray-800 mt-0.5 truncate">
+                                <strong class="text-amber-950 font-bold">${abovePseudo}</strong> est devant vous avec <strong class="text-gray-900 font-bold">${userAbove.xp.toLocaleString('fr-FR')} XP</strong>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="shrink-0 flex items-center justify-between sm:flex-col sm:items-end gap-1 pt-1.5 sm:pt-0 border-t sm:border-t-0 border-amber-200/60">
+                        <div class="text-[10px] font-semibold text-amber-800">Écart à combler</div>
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-orange-500 text-white font-extrabold text-xs shadow-xs">
+                            <i class="fas fa-bolt text-[10px]"></i> +${xpNeeded}
+                        </span>
+                    </div>
+                </div>
+                `;
+            }
+        } else if (isUserInTop5 && currentUserIndex > 0) {
+            // Utilisateur dans le Top 5 (mais pas 1er) : petit encouragement pour atteindre la place supérieure
+            const userAbove = allUsers[currentUserIndex - 1];
+            if (userAbove) {
+                const aboveRank = currentUserRank - 1;
+                const abovePseudo = (userAbove.showPseudo && userAbove.pseudo) ? userAbove.pseudo : ('Utilisateur ' + aboveRank);
+                const xpDiff = Math.max(0, userAbove.xp - currentUserXP);
+                const xpNeeded = xpDiff > 0 ? (xpDiff.toLocaleString('fr-FR') + ' XP') : '1 XP';
+
+                rowsHtml += `
+                <div class="mt-2 p-2 rounded-lg bg-emerald-50/80 border border-emerald-200 flex items-center justify-between gap-2 text-xs">
+                    <div class="flex items-center gap-2 min-w-0">
+                        <i class="fas fa-arrow-trend-up text-emerald-600 shrink-0"></i>
+                        <span class="truncate text-gray-700 text-[11px]">
+                            Plus que <strong class="text-emerald-800 font-bold">+${xpNeeded}</strong> pour dépasser <strong class="text-gray-900">${abovePseudo}</strong> (#${aboveRank}) !
+                        </span>
+                    </div>
+                    <span class="shrink-0 text-[10px] font-bold text-emerald-700 bg-white px-2 py-0.5 rounded border border-emerald-200">
+                        Objectif #${aboveRank}
+                    </span>
+                </div>
+                `;
+            }
         }
         rowsHtml += '</div>';
 
@@ -3921,7 +4016,10 @@
             activeLevelTab = 'all';
         }
 
-        // 3. Ouvrir la modale
+        // 3. Fermer les toasts et ouvrir la modale
+        if (typeof window.dismissAllToasts === 'function') {
+            window.dismissAllToasts();
+        }
         displayRaceBadgesModal();
 
         // 4. Si la barre de recherche masquait ce badge, la vider
