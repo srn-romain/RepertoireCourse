@@ -580,12 +580,10 @@ const manualModalHTML = `
                                     courses
                                     publiques :</p>
                                 <ul class="text-xs text-gray-600 list-disc ml-4 space-y-0.5">
-                                    <li>Afficher/Masquer votre pseudo dans vos courses publiques</li>
-                                    <li>Afficher/Masquer votre pseudo dans le classement des coureurs</li>
-                                    <li>Afficher/Masquer la ville de la course</li>
-                                    <li>Afficher/Masquer le jour précis (ex: 12 mars)</li>
-                                    <li>Afficher/Masquer le label "Favori"</li>
-                                    <li>Masquer le compteur de "J'aime"</li>
+                                    <li>Masquer votre pseudo dans vos courses publiques</li>
+                                    <li>Masquer la ville de la course</li>
+                                    <li>Masquer le statut "Favori"</li>
+                                    <li>Masquer le nombre de "J'aime"</li>
                                 </ul>
                             </div>
 
@@ -593,14 +591,13 @@ const manualModalHTML = `
                             <div class="bg-gray-50 p-3 rounded border border-gray-100">
                                 <p class="font-semibold text-gray-800 text-sm mb-1 flex items-center gap-2"><i
                                         class="fas fa-sliders-h text-green-600"></i> Préférences d'interface</p>
-                                <p class="text-xs text-gray-600 mb-1">Simplifiez votre tableau de bord en affichant
-                                    uniquement ce dont vous avez besoin :</p>
+                                <p class="text-xs text-gray-600 mb-1">Simplifiez votre tableau de bord en masquant les boutons non utilisés :</p>
                                 <ul class="text-xs text-gray-600 list-disc ml-4 space-y-0.5">
-                                    <li>Afficher/Masquer le bouton "Wishlist"</li>
-                                    <li>Afficher/Masquer le bouton "Statistiques"</li>
-                                    <li>Afficher/Masquer le bouton "Badges"</li>
+                                    <li>Masquer le bouton "Wishlist"</li>
+                                    <li>Masquer le bouton "Statistiques"</li>
+                                    <li>Masquer le bouton "Badges"</li>
                                 </ul>
-                                <p class="text-[10px] text-gray-400 italic mt-1">Par défaut, tous les boutons sont activés.</p>
+                                <p class="text-[10px] text-gray-400 italic mt-1">Par défaut, aucune information ni bouton n'est masqué.</p>
                             </div>
 
                             <!-- Gestion des données -->

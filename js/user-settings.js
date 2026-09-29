@@ -110,22 +110,18 @@ const userSettingsModalHTML = `
 
                     <!-- Options Niveau 1 & 2 : Informations de base sur l'accueil -->
                     <div id="privacyBasicOptions" class="pt-3 border-t border-gray-200 space-y-3">
-                        <p class="text-xs font-semibold text-gray-600 uppercase tracking-wider">Informations affichées sur l'accueil :</p>
+                        <p class="text-xs font-semibold text-gray-600 uppercase tracking-wider">Masquage sur l'accueil :</p>
                         <label class="flex items-center cursor-pointer">
-                            <input type="checkbox" id="prefShowPseudo" class="w-4 h-4 text-green-600 rounded focus:ring-green-500" checked>
-                            <span class="ml-2 text-sm text-gray-700">Afficher mon pseudo</span>
+                            <input type="checkbox" id="prefHidePseudo" class="w-4 h-4 text-green-600 rounded focus:ring-green-500">
+                            <span class="ml-2 text-sm text-gray-700">Masquer mon pseudo</span>
                         </label>
                         <label class="flex items-center cursor-pointer">
-                            <input type="checkbox" id="prefShowCity" class="w-4 h-4 text-green-600 rounded focus:ring-green-500" checked>
-                            <span class="ml-2 text-sm text-gray-700">Afficher la ville de la course</span>
+                            <input type="checkbox" id="prefHideCity" class="w-4 h-4 text-green-600 rounded focus:ring-green-500">
+                            <span class="ml-2 text-sm text-gray-700">Masquer la ville de la course</span>
                         </label>
                         <label class="flex items-center cursor-pointer">
-                            <input type="checkbox" id="prefShowDay" class="w-4 h-4 text-green-600 rounded focus:ring-green-500" checked>
-                            <span class="ml-2 text-sm text-gray-700">Afficher le jour précis (ex: 12 mars)</span>
-                        </label>
-                        <label class="flex items-center cursor-pointer">
-                            <input type="checkbox" id="prefShowFavorite" class="w-4 h-4 text-green-600 rounded focus:ring-green-500">
-                            <span class="ml-2 text-sm text-gray-700">Afficher le statut "Favori"</span>
+                            <input type="checkbox" id="prefHideFavorite" class="w-4 h-4 text-green-600 rounded focus:ring-green-500">
+                            <span class="ml-2 text-sm text-gray-700">Masquer le statut "Favori"</span>
                         </label>
                         <label class="flex items-center cursor-pointer">
                             <input type="checkbox" id="prefHideLikeCount" class="w-4 h-4 text-green-600 rounded focus:ring-green-500">
@@ -164,10 +160,22 @@ const userSettingsModalHTML = `
                             <input type="checkbox" id="prefHideCompanions" class="w-4 h-4 text-green-600 rounded focus:ring-green-500">
                             <span class="ml-2 text-sm text-gray-700">Masquer mes accompagnants</span>
                         </label>
+
+                        <!-- Libellé de recommandation si tout est masqué -->
+                        <div id="privacyAllHiddenHint" class="hidden mt-2 p-3 bg-blue-50/90 border border-blue-200 rounded-lg text-xs text-blue-900 leading-relaxed flex items-start gap-2.5 transition-all shadow-xs">
+                            <i class="fas fa-lightbulb text-amber-500 mt-0.5 text-sm shrink-0"></i>
+                            <div class="space-y-1">
+                                <p><strong>Conseil :</strong> Vous avez masqué la totalité des éléments de la fiche détaillée. Pour une consultation plus directe et épurée de vos courses, nous vous conseillons de basculer en mode <strong>« Aperçu simple »</strong>.</p>
+                                <button type="button" onclick="window.setPrivacyLevel(1)" class="inline-flex items-center gap-1 font-bold text-blue-700 hover:text-blue-900 underline cursor-pointer mt-1">
+                                    <span>Basculer vers l'Aperçu simple</span>
+                                    <i class="fas fa-arrow-right text-[10px]"></i>
+                                </button>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="pt-2 border-t border-gray-200 mt-2">
-                        <p class="text-xs text-green-600 font-medium"><i class="fas fa-check-circle mr-1"></i>Les modifications sont automatiquement enregistrées.</p>
+                        <p id="privacyAutoSaveStatus" class="text-xs text-green-600 font-medium flex items-center"><i class="fas fa-check-circle mr-1"></i>Modifications enregistrées automatiquement.</p>
                     </div>
                 </div>
             </div>
@@ -179,19 +187,19 @@ const userSettingsModalHTML = `
                 <h3 class="text-sm font-semibold text-gray-700 mb-3">Préférences d'interface</h3>
                 <div class="space-y-3 bg-gray-50 p-4 rounded-lg border border-gray-100">
                     <label class="flex items-center cursor-pointer">
-                        <input type="checkbox" id="prefShowWishlistBtn" class="w-4 h-4 text-green-600 rounded focus:ring-green-500" checked>
-                        <span class="ml-2 text-sm text-gray-700">Afficher le bouton "Wishlist"</span>
+                        <input type="checkbox" id="prefHideWishlistBtn" class="w-4 h-4 text-green-600 rounded focus:ring-green-500">
+                        <span class="ml-2 text-sm text-gray-700">Masquer le bouton "Wishlist"</span>
                     </label>
                     <label class="flex items-center cursor-pointer">
-                        <input type="checkbox" id="prefShowStatsBtn" class="w-4 h-4 text-green-600 rounded focus:ring-green-500">
-                        <span class="ml-2 text-sm text-gray-700">Afficher le bouton "Statistiques"</span>
+                        <input type="checkbox" id="prefHideStatsBtn" class="w-4 h-4 text-green-600 rounded focus:ring-green-500">
+                        <span class="ml-2 text-sm text-gray-700">Masquer le bouton "Statistiques"</span>
                     </label>
                     <label class="flex items-center cursor-pointer">
-                        <input type="checkbox" id="prefShowBadgesBtn" class="w-4 h-4 text-green-600 rounded focus:ring-green-500" checked>
-                        <span class="ml-2 text-sm text-gray-700">Afficher le bouton "Badges"</span>
+                        <input type="checkbox" id="prefHideBadgesBtn" class="w-4 h-4 text-green-600 rounded focus:ring-green-500">
+                        <span class="ml-2 text-sm text-gray-700">Masquer le bouton "Badges"</span>
                     </label>
                     <div class="pt-2 border-t border-gray-200 mt-2">
-                        <p class="text-xs text-green-600 font-medium"><i class="fas fa-check-circle mr-1"></i>Les modifications sont automatiquement enregistrées.</p>
+                        <p id="uiAutoSaveStatus" class="text-xs text-green-600 font-medium flex items-center"><i class="fas fa-check-circle mr-1"></i>Modifications enregistrées automatiquement.</p>
                     </div>
                 </div>
                 <div class="flex flex-col gap-1 mt-2">
@@ -351,8 +359,13 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-// Fonction spécifique de fermeture pour gérer le reload
-window.closeSettingsModal = function () {
+// Fonction spécifique de fermeture pour gérer le reload et le flush des sauvegardes
+window.closeSettingsModal = async function () {
+    // Si des modifications étaient en attente dans le debounce, les persister immédiatement
+    if (typeof window._flushPendingSettingsSave === 'function') {
+        await window._flushPendingSettingsSave();
+    }
+
     const modal = document.getElementById('userSettingsModal');
     if (modal) modal.classList.add('hidden');
     // Aussi fermer les sous-modales si ouvertes
@@ -369,7 +382,13 @@ window.closeSettingsModal = function () {
             window.location.reload();
         }
     }
-}
+};
+
+window.addEventListener('beforeunload', () => {
+    if (typeof window._flushPendingSettingsSave === 'function') {
+        window._flushPendingSettingsSave();
+    }
+});
 
 // Helper global closeModal (si modal-auth absent) - On le garde pour compatibilité générique
 if (typeof window.closeModal === 'undefined') {
@@ -397,10 +416,9 @@ async function initSettingsLogic() {
 
     // Contrôles Privacy & Niveau de visibilité
     const privacyLevelInput = document.getElementById('privacyLevelInput');
-    const prefShowPseudo = document.getElementById('prefShowPseudo');
-    const prefShowCity = document.getElementById('prefShowCity');
-    const prefShowFavorite = document.getElementById('prefShowFavorite');
-    const prefShowDay = document.getElementById('prefShowDay');
+    const prefHidePseudo = document.getElementById('prefHidePseudo');
+    const prefHideCity = document.getElementById('prefHideCity');
+    const prefHideFavorite = document.getElementById('prefHideFavorite');
     const prefHideLikeCount = document.getElementById('prefHideLikeCount');
     const prefShowPseudoInLeaderboard = document.getElementById('prefShowPseudoInLeaderboard');
 
@@ -414,9 +432,9 @@ async function initSettingsLogic() {
     const prefHideCompanions = document.getElementById('prefHideCompanions');
 
     // Checkboxes UI preferences
-    const prefShowStatsBtn = document.getElementById('prefShowStatsBtn');
-    const prefShowBadgesBtn = document.getElementById('prefShowBadgesBtn');
-    const prefShowWishlistBtn = document.getElementById('prefShowWishlistBtn');
+    const prefHideStatsBtn = document.getElementById('prefHideStatsBtn');
+    const prefHideBadgesBtn = document.getElementById('prefHideBadgesBtn');
+    const prefHideWishlistBtn = document.getElementById('prefHideWishlistBtn');
 
     let currentSelectedPrivacyLevel = 2;
 
@@ -480,6 +498,29 @@ async function initSettingsLogic() {
             if (basicOpts) basicOpts.classList.remove('hidden');
             if (detailOpts) detailOpts.classList.remove('hidden');
         }
+
+        checkAllDetailsHiddenSuggestion();
+    }
+
+    function checkAllDetailsHiddenSuggestion() {
+        const hintEl = document.getElementById('privacyAllHiddenHint');
+        if (!hintEl) return;
+
+        if (currentSelectedPrivacyLevel !== 2) {
+            hintEl.classList.add('hidden');
+            return;
+        }
+
+        const detailCheckboxes = [
+            prefHideNotes, prefHideRanking, prefHideStats, prefHidePhotos, prefHidePrice, prefHideBib, prefHideCompanions
+        ];
+
+        const allChecked = detailCheckboxes.length > 0 && detailCheckboxes.every(cb => cb && cb.checked);
+        if (allChecked) {
+            hintEl.classList.remove('hidden');
+        } else {
+            hintEl.classList.add('hidden');
+        }
     }
 
     window.setPrivacyLevel = function (lvl) {
@@ -521,7 +562,7 @@ async function initSettingsLogic() {
         });
 
         [
-            prefShowPseudo, prefShowCity, prefShowFavorite, prefShowDay, prefHideLikeCount, prefShowPseudoInLeaderboard,
+            prefHidePseudo, prefHideCity, prefHideFavorite, prefHideLikeCount, prefShowPseudoInLeaderboard,
             prefHideNotes, prefHideRanking, prefHideStats, prefHidePhotos, prefHidePrice, prefHideBib, prefHideCompanions
         ].forEach(cb => {
             if (cb) {
@@ -533,7 +574,7 @@ async function initSettingsLogic() {
         });
 
         // Désactiver toutes les checkboxes de préférences UI
-        [prefShowStatsBtn, prefShowBadgesBtn, prefShowWishlistBtn].forEach(cb => {
+        [prefHideStatsBtn, prefHideBadgesBtn, prefHideWishlistBtn].forEach(cb => {
             if (cb) {
                 cb.disabled = true;
                 cb.classList.add('opacity-50', 'cursor-not-allowed');
@@ -664,80 +705,199 @@ async function initSettingsLogic() {
         });
     }
 
-    // Sauvegarder les préférences au changement
-    const savePrivacySettings = async () => {
+    // Helper pour mettre à jour le statut visuel d'auto-save
+    function updateAutoSaveStatus(type, status) {
+        const el = document.getElementById(type === 'privacy' ? 'privacyAutoSaveStatus' : 'uiAutoSaveStatus');
+        if (!el) return;
+        if (status === 'saving') {
+            el.className = "text-xs text-amber-600 font-medium flex items-center";
+            el.innerHTML = `<i class="fas fa-arrows-rotate fa-spin mr-1 text-amber-500"></i>Enregistrement en cours...`;
+        } else if (status === 'success') {
+            el.className = "text-xs text-green-600 font-medium flex items-center";
+            el.innerHTML = `<i class="fas fa-check-circle mr-1"></i>Modifications enregistrées automatiquement.`;
+        } else if (status === 'error') {
+            el.className = "text-xs text-red-500 font-medium flex items-center";
+            el.innerHTML = `<i class="fas fa-exclamation-triangle mr-1"></i>Erreur lors de l'enregistrement.`;
+        }
+    }
+
+    let privacyDebounceTimer = null;
+    let pendingPrivacyPayload = null;
+
+    let uiDebounceTimer = null;
+    let pendingUIPayload = null;
+
+    // Fonction de flush immédiat des réglages en attente
+    const flushPendingSettingsSave = async () => {
+        const user = firebase.auth().currentUser;
+        if (!user) return;
+
+        if (privacyDebounceTimer) {
+            clearTimeout(privacyDebounceTimer);
+            privacyDebounceTimer = null;
+        }
+        if (uiDebounceTimer) {
+            clearTimeout(uiDebounceTimer);
+            uiDebounceTimer = null;
+        }
+
+        const promises = [];
+
+        if (pendingPrivacyPayload) {
+            const payload = pendingPrivacyPayload;
+            pendingPrivacyPayload = null;
+            promises.push(
+                db.collection('users').doc(user.uid).set(payload, { merge: true })
+                    .then(() => {
+                        console.log("Préférences de confidentialité synchronisées dans Firestore :", payload);
+                        window.settingsHasChanged = true;
+                        updateAutoSaveStatus('privacy', 'success');
+                    })
+                    .catch(err => {
+                        console.error("Erreur flush privacy :", err);
+                        updateAutoSaveStatus('privacy', 'error');
+                    })
+            );
+        }
+
+        if (pendingUIPayload) {
+            const payload = pendingUIPayload;
+            pendingUIPayload = null;
+            promises.push(
+                db.collection('users').doc(user.uid).set(payload, { merge: true })
+                    .then(() => {
+                        console.log("Préférences UI synchronisées dans Firestore :", payload);
+                        window.settingsHasChanged = true;
+                        updateAutoSaveStatus('ui', 'success');
+                    })
+                    .catch(err => {
+                        console.error("Erreur flush UI :", err);
+                        updateAutoSaveStatus('ui', 'error');
+                    })
+            );
+        }
+
+        if (promises.length > 0) {
+            await Promise.all(promises);
+        }
+    };
+
+    window._flushPendingSettingsSave = flushPendingSettingsSave;
+
+    // Sauvegarder les préférences avec debounce (800ms) pour éviter les requêtes Firestore excessives
+    const savePrivacySettings = () => {
         const user = firebase.auth().currentUser;
         if (!user) return;
 
         const currentLevel = currentSelectedPrivacyLevel;
         const isAccountPublic = currentLevel > 0;
-
         const isLeaderboardPseudoShown = (localStorage.getItem('prefShowPseudoInLeaderboard') !== 'false' && window.prefShowPseudoInLeaderboard !== false);
 
         const privacy = {
             level: currentLevel,
             isPublic: isAccountPublic,
-            showPseudo: prefShowPseudo ? prefShowPseudo.checked : true,
-            showCity: prefShowCity ? prefShowCity.checked : true,
-            showFavorite: prefShowFavorite ? prefShowFavorite.checked : false,
-            showDay: prefShowDay ? prefShowDay.checked : true,
+            hidePseudo: prefHidePseudo ? prefHidePseudo.checked : false,
+            hideCity: prefHideCity ? prefHideCity.checked : false,
+            hideFavorite: prefHideFavorite ? prefHideFavorite.checked : false,
             hideLikeCount: prefHideLikeCount ? prefHideLikeCount.checked : false,
             showPseudoInLeaderboard: isLeaderboardPseudoShown,
-            // Nouveaux masquages fiche détaillée
+            // Masquages fiche détaillée
             hideNotes: prefHideNotes ? prefHideNotes.checked : false,
             hideRanking: prefHideRanking ? prefHideRanking.checked : false,
             hideStats: prefHideStats ? prefHideStats.checked : false,
             hidePhotos: prefHidePhotos ? prefHidePhotos.checked : false,
             hidePrice: prefHidePrice ? prefHidePrice.checked : false,
             hideBib: prefHideBib ? prefHideBib.checked : false,
-            hideCompanions: prefHideCompanions ? prefHideCompanions.checked : false
+            hideCompanions: prefHideCompanions ? prefHideCompanions.checked : false,
+            // Rétrocompatibilité
+            showPseudo: prefHidePseudo ? !prefHidePseudo.checked : true,
+            showCity: prefHideCity ? !prefHideCity.checked : true,
+            showFavorite: prefHideFavorite ? !prefHideFavorite.checked : true
         };
 
+        // Mise à jour immédiate de la mémoire et du cache pour une réactivité UI instantanée (0ms)
         localStorage.setItem('prefAccountPublicRaces', isAccountPublic ? 'true' : 'false');
         window.prefAccountPublicRaces = isAccountPublic;
+        window.settingsHasChanged = true;
+        checkAllDetailsHiddenSuggestion();
 
-        try {
-            await db.collection('users').doc(user.uid).set({ privacy, isPublic: isAccountPublic }, { merge: true });
-            console.log("Préférences sauvegardées", privacy);
-            window.settingsHasChanged = true;
-            if (typeof loadPublicRaces === 'function') {
-                loadPublicRaces();
+        // Indication visuelle de mise en attente / enregistrement
+        updateAutoSaveStatus('privacy', 'saving');
+
+        // Préparation du payload (suppression explicite de showDay en BDD s'il existait)
+        pendingPrivacyPayload = {
+            privacy,
+            isPublic: isAccountPublic,
+            'privacy.showDay': firebase.firestore.FieldValue.delete()
+        };
+
+        // Debounce de l'écriture Firestore (800ms sans nouvelle modification)
+        if (privacyDebounceTimer) clearTimeout(privacyDebounceTimer);
+        privacyDebounceTimer = setTimeout(async () => {
+            if (pendingPrivacyPayload) {
+                const payload = pendingPrivacyPayload;
+                pendingPrivacyPayload = null;
+                privacyDebounceTimer = null;
+                try {
+                    await db.collection('users').doc(user.uid).set(payload, { merge: true });
+                    console.log("Préférences de confidentialité sauvegardées (debounced) :", payload);
+                    updateAutoSaveStatus('privacy', 'success');
+                } catch (e) {
+                    console.error("Erreur save privacy :", e);
+                    updateAutoSaveStatus('privacy', 'error');
+                }
             }
-        } catch (e) {
-            console.error("Erreur save privacy", e);
-        }
+        }, 800);
     };
 
-    // Sauvegarder les préférences d'interface
-    const saveUISettings = async () => {
+    // Sauvegarder les préférences d'interface avec debounce (800ms)
+    const saveUISettings = () => {
         const user = firebase.auth().currentUser;
         if (!user) return;
 
         const uiPreferences = {
-            showStatsBtn: prefShowStatsBtn.checked,
-            showBadgesBtn: prefShowBadgesBtn.checked,
-            showWishlistBtn: prefShowWishlistBtn.checked
+            hideStatsBtn: prefHideStatsBtn ? prefHideStatsBtn.checked : false,
+            hideBadgesBtn: prefHideBadgesBtn ? prefHideBadgesBtn.checked : false,
+            hideWishlistBtn: prefHideWishlistBtn ? prefHideWishlistBtn.checked : false,
+            // Rétrocompatibilité
+            showStatsBtn: prefHideStatsBtn ? !prefHideStatsBtn.checked : true,
+            showBadgesBtn: prefHideBadgesBtn ? !prefHideBadgesBtn.checked : true,
+            showWishlistBtn: prefHideWishlistBtn ? !prefHideWishlistBtn.checked : true
         };
 
-        try {
-            await db.collection('users').doc(user.uid).set({ uiPreferences }, { merge: true });
-            console.log("Préférences UI sauvegardées", uiPreferences);
-            settingsHasChanged = true; // Reload required to reflect changes
-        } catch (e) {
-            console.error("Erreur save UI preferences", e);
-        }
+        window.settingsHasChanged = true;
+        updateAutoSaveStatus('ui', 'saving');
+
+        pendingUIPayload = { uiPreferences };
+
+        if (uiDebounceTimer) clearTimeout(uiDebounceTimer);
+        uiDebounceTimer = setTimeout(async () => {
+            if (pendingUIPayload) {
+                const payload = pendingUIPayload;
+                pendingUIPayload = null;
+                uiDebounceTimer = null;
+                try {
+                    await db.collection('users').doc(user.uid).set(payload, { merge: true });
+                    console.log("Préférences UI sauvegardées (debounced) :", payload);
+                    updateAutoSaveStatus('ui', 'success');
+                } catch (e) {
+                    console.error("Erreur save UI preferences :", e);
+                    updateAutoSaveStatus('ui', 'error');
+                }
+            }
+        }, 800);
     };
 
     // Ne pas attacher les listeners si l'utilisateur est invité
     if (!isInvite) {
         [
-            prefShowPseudo, prefShowCity, prefShowFavorite, prefShowDay, prefHideLikeCount,
+            prefHidePseudo, prefHideCity, prefHideFavorite, prefHideLikeCount,
             prefHideNotes, prefHideRanking, prefHideStats, prefHidePhotos, prefHidePrice, prefHideBib, prefHideCompanions
         ].forEach(cb => {
             if (cb) cb.addEventListener('change', savePrivacySettings);
         });
 
-        [prefShowStatsBtn, prefShowBadgesBtn, prefShowWishlistBtn].forEach(cb => {
+        [prefHideStatsBtn, prefHideBadgesBtn, prefHideWishlistBtn].forEach(cb => {
             if (cb) cb.addEventListener('change', saveUISettings);
         });
 
@@ -849,17 +1009,16 @@ async function initSettingsLogic() {
                 window.prefAccountPublicRaces = isAccountPublic;
 
                 if (data.privacy) {
-                    if (prefShowPseudo) prefShowPseudo.checked = data.privacy.showPseudo !== false;
-                    if (prefShowCity) prefShowCity.checked = data.privacy.showCity !== false;
-                    if (prefShowFavorite) prefShowFavorite.checked = data.privacy.showFavorite === true;
-                    if (prefShowDay) prefShowDay.checked = data.privacy.showDay !== false;
+                    if (prefHidePseudo) prefHidePseudo.checked = data.privacy.hidePseudo === true || data.privacy.showPseudo === false;
+                    if (prefHideCity) prefHideCity.checked = data.privacy.hideCity === true || data.privacy.showCity === false;
+                    if (prefHideFavorite) prefHideFavorite.checked = data.privacy.hideFavorite === true;
                     if (prefHideLikeCount) prefHideLikeCount.checked = data.privacy.hideLikeCount === true;
                     if (data.privacy.showPseudoInLeaderboard !== undefined) {
                         const isChecked = data.privacy.showPseudoInLeaderboard === true;
                         localStorage.setItem('prefShowPseudoInLeaderboard', isChecked ? 'true' : 'false');
                         window.prefShowPseudoInLeaderboard = isChecked;
                     }
-                    // Nouveaux masquages fiche détaillée
+                    // Masquages fiche détaillée
                     if (prefHideNotes) prefHideNotes.checked = data.privacy.hideNotes === true;
                     if (prefHideRanking) prefHideRanking.checked = data.privacy.hideRanking === true;
                     if (prefHideStats) prefHideStats.checked = data.privacy.hideStats === true;
@@ -868,10 +1027,10 @@ async function initSettingsLogic() {
                     if (prefHideBib) prefHideBib.checked = data.privacy.hideBib === true;
                     if (prefHideCompanions) prefHideCompanions.checked = data.privacy.hideCompanions === true;
                 } else {
-                    if (prefShowPseudo) prefShowPseudo.checked = true;
-                    if (prefShowCity) prefShowCity.checked = true;
-                    if (prefShowFavorite) prefShowFavorite.checked = false;
-                    if (prefShowDay) prefShowDay.checked = true;
+                    // Par défaut, aucune case n'est cochée (rien n'est masqué)
+                    if (prefHidePseudo) prefHidePseudo.checked = false;
+                    if (prefHideCity) prefHideCity.checked = false;
+                    if (prefHideFavorite) prefHideFavorite.checked = false;
                     if (prefHideLikeCount) prefHideLikeCount.checked = false;
                     if (prefHideNotes) prefHideNotes.checked = false;
                     if (prefHideRanking) prefHideRanking.checked = false;
@@ -882,16 +1041,16 @@ async function initSettingsLogic() {
                     if (prefHideCompanions) prefHideCompanions.checked = false;
                 }
 
-                // UI preferences (Default to true if undefined, as buttons were previously visible)
+                // UI preferences (Default to false/unchecked, so nothing is hidden)
                 if (data.uiPreferences) {
-                    if (prefShowStatsBtn) prefShowStatsBtn.checked = data.uiPreferences.showStatsBtn !== false;
-                    if (prefShowBadgesBtn) prefShowBadgesBtn.checked = data.uiPreferences.showBadgesBtn !== false;
-                    if (prefShowWishlistBtn) prefShowWishlistBtn.checked = data.uiPreferences.showWishlistBtn !== false;
+                    if (prefHideStatsBtn) prefHideStatsBtn.checked = data.uiPreferences.hideStatsBtn === true || data.uiPreferences.showStatsBtn === false;
+                    if (prefHideBadgesBtn) prefHideBadgesBtn.checked = data.uiPreferences.hideBadgesBtn === true || data.uiPreferences.showBadgesBtn === false;
+                    if (prefHideWishlistBtn) prefHideWishlistBtn.checked = data.uiPreferences.hideWishlistBtn === true || data.uiPreferences.showWishlistBtn === false;
                 } else {
-                    // Defaults if no settings saved yet
-                    if (prefShowStatsBtn) prefShowStatsBtn.checked = true;
-                    if (prefShowBadgesBtn) prefShowBadgesBtn.checked = true;
-                    if (prefShowWishlistBtn) prefShowWishlistBtn.checked = true;
+                    // Defaults: none hidden
+                    if (prefHideStatsBtn) prefHideStatsBtn.checked = false;
+                    if (prefHideBadgesBtn) prefHideBadgesBtn.checked = false;
+                    if (prefHideWishlistBtn) prefHideWishlistBtn.checked = false;
                 }
 
                 // Pseudo input
@@ -899,6 +1058,8 @@ async function initSettingsLogic() {
                 if (pseudoInput && data.pseudo) {
                     pseudoInput.value = data.pseudo;
                 }
+
+                checkAllDetailsHiddenSuggestion();
             }
         } catch (e) {
             console.error("Erreur chargement settings", e);
@@ -1180,10 +1341,9 @@ window.openUserSettings = async function () {
     const inviteNotice = document.getElementById('inviteNotice');
 
     // Checkboxes inputs
-    const prefShowPseudo = document.getElementById('prefShowPseudo');
-    const prefShowCity = document.getElementById('prefShowCity');
-    const prefShowFavorite = document.getElementById('prefShowFavorite');
-    const prefShowDay = document.getElementById('prefShowDay');
+    const prefHidePseudo = document.getElementById('prefHidePseudo');
+    const prefHideCity = document.getElementById('prefHideCity');
+    const prefHideFavorite = document.getElementById('prefHideFavorite');
     const prefHideLikeCount = document.getElementById('prefHideLikeCount');
     const prefShowPseudoInLeaderboard = document.getElementById('prefShowPseudoInLeaderboard');
 
@@ -1230,22 +1390,38 @@ window.openUserSettings = async function () {
             }
 
             const p = data.privacy || {};
-            if (prefShowPseudo) prefShowPseudo.checked = (p.showPseudo !== undefined) ? p.showPseudo : true;
-            if (prefShowCity) prefShowCity.checked = (p.showCity !== undefined) ? p.showCity : true;
-            if (prefShowFavorite) prefShowFavorite.checked = (p.showFavorite !== undefined) ? p.showFavorite : false;
-            if (prefShowDay) prefShowDay.checked = (p.showDay !== undefined) ? p.showDay : true;
-            if (prefHideLikeCount) prefHideLikeCount.checked = (p.hideLikeCount !== undefined) ? p.hideLikeCount : false;
+            if (prefHidePseudo) prefHidePseudo.checked = (p.hidePseudo === true) || (p.showPseudo === false);
+            if (prefHideCity) prefHideCity.checked = (p.hideCity === true) || (p.showCity === false);
+            if (prefHideFavorite) prefHideFavorite.checked = (p.hideFavorite === true);
+            if (prefHideLikeCount) prefHideLikeCount.checked = (p.hideLikeCount === true);
             if (prefShowPseudoInLeaderboard) prefShowPseudoInLeaderboard.checked = (p.showPseudoInLeaderboard !== undefined) ? p.showPseudoInLeaderboard : true;
+
+            // Masquages fiche détaillée
+            const prefHideNotes = document.getElementById('prefHideNotes');
+            const prefHideRanking = document.getElementById('prefHideRanking');
+            const prefHideStats = document.getElementById('prefHideStats');
+            const prefHidePhotos = document.getElementById('prefHidePhotos');
+            const prefHidePrice = document.getElementById('prefHidePrice');
+            const prefHideBib = document.getElementById('prefHideBib');
+            const prefHideCompanions = document.getElementById('prefHideCompanions');
+
+            if (prefHideNotes) prefHideNotes.checked = p.hideNotes === true;
+            if (prefHideRanking) prefHideRanking.checked = p.hideRanking === true;
+            if (prefHideStats) prefHideStats.checked = p.hideStats === true;
+            if (prefHidePhotos) prefHidePhotos.checked = p.hidePhotos === true;
+            if (prefHidePrice) prefHidePrice.checked = p.hidePrice === true;
+            if (prefHideBib) prefHideBib.checked = p.hideBib === true;
+            if (prefHideCompanions) prefHideCompanions.checked = p.hideCompanions === true;
 
             // Charger les préférences UI
             const ui = data.uiPreferences || {};
-            const prefShowStatsBtn = document.getElementById('prefShowStatsBtn');
-            const prefShowBadgesBtn = document.getElementById('prefShowBadgesBtn');
-            const prefShowWishlistBtn = document.getElementById('prefShowWishlistBtn');
+            const prefHideStatsBtn = document.getElementById('prefHideStatsBtn');
+            const prefHideBadgesBtn = document.getElementById('prefHideBadgesBtn');
+            const prefHideWishlistBtn = document.getElementById('prefHideWishlistBtn');
 
-            if (prefShowStatsBtn) prefShowStatsBtn.checked = (ui.showStatsBtn !== undefined) ? ui.showStatsBtn : true;
-            if (prefShowBadgesBtn) prefShowBadgesBtn.checked = (ui.showBadgesBtn !== undefined) ? ui.showBadgesBtn : true;
-            if (prefShowWishlistBtn) prefShowWishlistBtn.checked = (ui.showWishlistBtn !== undefined) ? ui.showWishlistBtn : true;
+            if (prefHideStatsBtn) prefHideStatsBtn.checked = (ui.hideStatsBtn === true) || (ui.showStatsBtn === false);
+            if (prefHideBadgesBtn) prefHideBadgesBtn.checked = (ui.hideBadgesBtn === true) || (ui.showBadgesBtn === false);
+            if (prefHideWishlistBtn) prefHideWishlistBtn.checked = (ui.hideWishlistBtn === true) || (ui.showWishlistBtn === false);
 
         } else {
             if (pseudoInput) pseudoInput.value = "";

@@ -700,16 +700,22 @@ function initAuthLogic() {
                     lastLogin: firebase.firestore.FieldValue.serverTimestamp(),
                     role: 'user',
                     privacy: {
-                        showPseudo: true,
-                        showCity: true,
-                        showFavorite: false,
-                        showDay: true,
-                        hideLikeCount: false
+                        hidePseudo: false,
+                        hideCity: false,
+                        hideFavorite: false,
+                        hideLikeCount: false,
+                        hideNotes: false,
+                        hideRanking: false,
+                        hideStats: false,
+                        hidePhotos: false,
+                        hidePrice: false,
+                        hideBib: false,
+                        hideCompanions: false
                     },
                     uiPreferences: {
-                        showStatsBtn: true,
-                        showBadgesBtn: true,
-                        showWishlistBtn: true
+                        hideStatsBtn: false,
+                        hideBadgesBtn: false,
+                        hideWishlistBtn: false
                     }
                 }, { merge: true });
 

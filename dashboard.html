@@ -2663,12 +2663,13 @@
                         if (!docSnapshot.exists) {
                             updateData.role = 'user'; // Rôle par défaut à la création
                             updateData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
-                            // Valeurs par défaut pour les préférences (sinon showDay apparait décoché)
+                            // Valeurs par défaut pour les préférences (rien n'est masqué par défaut)
                             updateData.privacy = {
-                                showPseudo: true, showCity: true, showFavorite: false,
-                                showDay: true, hideLikeCount: false
+                                hidePseudo: false, hideCity: false, hideFavorite: false, hideLikeCount: false,
+                                hideNotes: false, hideRanking: false, hideStats: false, hidePhotos: false,
+                                hidePrice: false, hideBib: false, hideCompanions: false
                             };
-                            updateData.uiPreferences = { showStatsBtn: true, showBadgesBtn: true, showWishlistBtn: true };
+                            updateData.uiPreferences = { hideStatsBtn: false, hideBadgesBtn: false, hideWishlistBtn: false };
                         }
 
                         await userDocRef.set(updateData, { merge: true });
@@ -9283,33 +9284,24 @@
                     const uiPrefs = data.uiPreferences || {};
 
                     // Stats button
-                    let showStats = true;
-                    if (uiPrefs.hasOwnProperty('showStatsBtn')) {
-                        showStats = uiPrefs.showStatsBtn;
-                    }
+                    const hideStats = (uiPrefs.hideStatsBtn === true) || (uiPrefs.showStatsBtn === false);
                     if (statsBtn) {
-                        if (showStats) statsBtn.classList.remove('hidden');
-                        else statsBtn.classList.add('hidden');
+                        if (hideStats) statsBtn.classList.add('hidden');
+                        else statsBtn.classList.remove('hidden');
                     }
 
                     // Badges button
-                    let showBadges = true;
-                    if (uiPrefs.hasOwnProperty('showBadgesBtn')) {
-                        showBadges = uiPrefs.showBadgesBtn;
-                    }
+                    const hideBadges = (uiPrefs.hideBadgesBtn === true) || (uiPrefs.showBadgesBtn === false);
                     if (badgesBtn) {
-                        if (showBadges) badgesBtn.classList.remove('hidden');
-                        else badgesBtn.classList.add('hidden');
+                        if (hideBadges) badgesBtn.classList.add('hidden');
+                        else badgesBtn.classList.remove('hidden');
                     }
 
                     // Wishlist button
-                    let showWishlist = true;
-                    if (uiPrefs.hasOwnProperty('showWishlistBtn')) {
-                        showWishlist = uiPrefs.showWishlistBtn;
-                    }
+                    const hideWishlist = (uiPrefs.hideWishlistBtn === true) || (uiPrefs.showWishlistBtn === false);
                     if (wishlistBtn) {
-                        if (showWishlist) wishlistBtn.classList.remove('hidden');
-                        else wishlistBtn.classList.add('hidden');
+                        if (hideWishlist) wishlistBtn.classList.add('hidden');
+                        else wishlistBtn.classList.remove('hidden');
                     }
                 }
             } catch (error) {
@@ -10185,7 +10177,7 @@
     <script src="js/race-details-modal.js?v=20260930_1"></script>
     <script src="js/stats-modal.js?v=4"></script>
     <script src="js/advanced-filters.js?v=20260929_1"></script>
-    <script src="js/user-settings.js?v=20260930_3"></script>
+    <script src="js/user-settings.js?v=20260930_7"></script>
     <script src="js/reviews.js"></script>
     <script src="js/admin-modal.js?v=20260929_1"></script>
     <script src="js/scroll-lock.js"></script>

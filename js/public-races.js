@@ -190,22 +190,22 @@ async function loadPublicRaces() {
             const privacy = userData.privacy || {};
 
             // 1. Pseudo & Photo
+            const isPseudoHidden = (privacy.hidePseudo === true) || (privacy.showPseudo === false);
             let ownerPseudoDisplay = userData.pseudo;
-            if (privacy.showPseudo === false) {
+            if (isPseudoHidden) {
                 ownerPseudoDisplay = "Utilisateur Anonyme";
                 userData.photoURL = null;
             }
 
             // 2. City
-            const showCity = privacy.showCity !== false;
+            const isCityHidden = (privacy.hideCity === true) || (privacy.showCity === false);
+            const showCity = !isCityHidden;
 
             // 3. Favorite
-            const showFavorite = privacy.showFavorite === true;
+            const isFavoriteHidden = (privacy.hideFavorite === true);
+            const showFavorite = !isFavoriteHidden;
 
-            // 4. Date (Day)
-            const showDay = privacy.showDay !== false;
-
-            // 5. Hide Like Count
+            // 4. Hide Like Count
             const hideLikeCount = privacy.hideLikeCount === true;
             const shouldShowCount = !hideLikeCount;
 
@@ -224,10 +224,8 @@ async function loadPublicRaces() {
             // === DISPLAY LOGIC ===
             const raceDate = new Date(race.date);
 
-            // Date Format
-            const dateOptions = showDay
-                ? { day: 'numeric', month: 'long', year: 'numeric' }
-                : { month: 'long', year: 'numeric' };
+            // Date Format : Le jour précis est toujours divulgué pour une course publique
+            const dateOptions = { day: 'numeric', month: 'long', year: 'numeric' };
             const dateStr = raceDate.toLocaleDateString('fr-FR', dateOptions);
 
             let locationDisplay = race.location || '';
