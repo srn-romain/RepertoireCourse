@@ -468,7 +468,7 @@
     }
 
     // Afficher les détails d'une course
-    function showRaceDetails(idOrRace, optionalRacesList) {
+    function showRaceDetails(idOrRace, optionalRacesList, authorPrivacy) {
         if (window.isSelectionMode) return;
 
         ensureModalInDom();
@@ -491,6 +491,10 @@
         }
 
         if (!race) return;
+
+        const effectivePrivacy = authorPrivacy || race._authorPrivacy || race.privacy || null;
+        const currentUid = (typeof firebase !== 'undefined' && firebase.auth && firebase.auth().currentUser) ? firebase.auth().currentUser.uid : null;
+        const isOwner = (race._uid && currentUid && race._uid === currentUid) || (!race._uid && (typeof window.location !== 'undefined' && window.location.pathname.includes('dashboard')));
 
         cachedRacesListForNav = racesList;
         currentRaceIdInDetails = race.id;
@@ -2199,6 +2203,38 @@
             }
         } else {
             if (driveContainer) driveContainer.classList.add('hidden');
+        }
+
+        // Application des restrictions de confidentialité pour les visiteurs non propriétaires
+        if (effectivePrivacy && !isOwner) {
+            if (effectivePrivacy.hideNotes) {
+                const notesContainer = document.getElementById('detailsNotesContainer');
+                if (notesContainer) notesContainer.classList.add('hidden');
+            }
+            if (effectivePrivacy.hideRanking) {
+                const rankingContainer = document.getElementById('detailsRankingContainer');
+                if (rankingContainer) rankingContainer.classList.add('hidden');
+            }
+            if (effectivePrivacy.hideStats) {
+                const speedInfo = document.getElementById('averageSpeedInfo');
+                if (speedInfo) speedInfo.innerHTML = '';
+            }
+            if (effectivePrivacy.hidePhotos) {
+                const photoContainer = document.getElementById('detailsPhotoContainer');
+                const parcoursContainer = document.getElementById('detailsParcoursContainer');
+                const imageButton = document.getElementById('ImageButton');
+                if (photoContainer) photoContainer.classList.add('hidden');
+                if (parcoursContainer) parcoursContainer.classList.add('hidden');
+                if (imageButton) imageButton.classList.add('hidden');
+            }
+            if (effectivePrivacy.hidePrice) {
+                const priceContainer = document.getElementById('detailsPriceContainer');
+                if (priceContainer) priceContainer.classList.add('hidden');
+            }
+            if (effectivePrivacy.hideBib) {
+                const bibContainer = document.getElementById('detailsBibContainer');
+                if (bibContainer) bibContainer.classList.add('hidden');
+            }
         }
 
         // Afficher la modale

@@ -67,24 +67,50 @@ const userSettingsModalHTML = `
                     <i class="fas fa-user-shield text-green-600"></i>
                     <span>Visibilité du carnet & Confidentialité</span>
                 </h3>
-                <div class="space-y-3 bg-gray-50 p-4 rounded-xl border border-gray-200">
-                    <div class="p-3 bg-white rounded-lg border border-green-200 shadow-2xs">
-                        <label class="flex items-start justify-between cursor-pointer gap-3">
-                            <div class="min-w-0">
-                                <span class="text-sm font-bold text-gray-800 flex items-center gap-1.5">
-                                    <i class="fas fa-globe-europe text-green-600"></i>
-                                    Rendre mes courses publiques
-                                </span>
-                                <p class="text-xs text-gray-500 mt-0.5 leading-relaxed">
-                                    Si activé, toutes les courses de votre compte sont visibles sur l'accueil public communautaire. Si désactivé, tout votre carnet est 100% privé.
-                                </p>
+                <div class="space-y-4 bg-gray-50 p-4 rounded-xl border border-gray-200">
+                    
+                    <!-- Sélecteur de niveau de visibilité à 3 paliers -->
+                    <div class="p-3.5 bg-white rounded-xl border border-gray-200 shadow-xs space-y-3">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-bold uppercase tracking-wider text-gray-500">Niveau de visibilité</span>
+                            <span id="privacyLevelBadge" class="text-xs px-2.5 py-1 rounded-full font-semibold flex items-center gap-1.5 transition-all bg-green-100 text-green-800 border border-green-200">
+                                <i class="fas fa-file-lines text-green-600"></i> Fiche complète
+                            </span>
+                        </div>
+
+                        <!-- 3 Boutons segmentés directs (UX tactile et clic immédiat) -->
+                        <div class="grid grid-cols-3 gap-1.5 bg-gray-100 p-1.5 rounded-xl border border-gray-200">
+                            <button type="button" id="btnPrivacyLvl0" onclick="window.setPrivacyLevel(0)"
+                                class="privacy-lvl-btn py-2 px-2 rounded-lg text-xs font-semibold flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 transition-all text-gray-600 hover:text-gray-900 cursor-pointer">
+                                <i class="fas fa-lock text-sm text-red-500"></i>
+                                <span>Privé</span>
+                            </button>
+                            <button type="button" id="btnPrivacyLvl1" onclick="window.setPrivacyLevel(1)"
+                                class="privacy-lvl-btn py-2 px-2 rounded-lg text-xs font-semibold flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 transition-all text-gray-600 hover:text-gray-900 cursor-pointer">
+                                <i class="fas fa-eye text-sm text-blue-500"></i>
+                                <span>Aperçu</span>
+                            </button>
+                            <button type="button" id="btnPrivacyLvl2" onclick="window.setPrivacyLevel(2)"
+                                class="privacy-lvl-btn py-2 px-2 rounded-lg text-xs font-semibold flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 transition-all bg-white text-green-800 shadow-sm border border-green-200 cursor-pointer">
+                                <i class="fas fa-file-lines text-sm text-green-600"></i>
+                                <span>Fiche complète</span>
+                            </button>
+                        </div>
+
+                        <input type="hidden" id="privacyLevelInput" value="2">
+
+                        <!-- Explication dynamique du niveau -->
+                        <div id="privacyLevelDescription" class="text-xs text-gray-700 bg-green-50/70 p-2.5 rounded-lg border border-green-100 leading-relaxed flex items-start gap-2">
+                            <i class="fas fa-info-circle text-green-600 mt-0.5 shrink-0"></i>
+                            <div id="privacyLevelDescriptionText">
+                                <strong>Fiche détaillée publique :</strong> Vos courses sont publiques et les visiteurs peuvent ouvrir la fiche complète.
                             </div>
-                            <input type="checkbox" id="prefAccountPublicRaces" class="w-5 h-5 text-green-600 rounded focus:ring-green-500 shrink-0 mt-0.5" checked>
-                        </label>
+                        </div>
                     </div>
 
-                    <div class="pt-1 space-y-2.5">
-                        <p class="text-xs font-semibold text-gray-600 uppercase tracking-wider">Détails affichés sur les courses publiques :</p>
+                    <!-- Options Niveau 1 & 2 : Informations de base sur l'accueil -->
+                    <div id="privacyBasicOptions" class="pt-1 space-y-2.5">
+                        <p class="text-xs font-semibold text-gray-600 uppercase tracking-wider">Informations affichées sur l'accueil :</p>
                         <label class="flex items-center cursor-pointer">
                             <input type="checkbox" id="prefShowPseudo" class="w-4 h-4 text-green-600 rounded focus:ring-green-500" checked>
                             <span class="ml-2 text-sm text-gray-700">Afficher mon pseudo</span>
@@ -105,6 +131,39 @@ const userSettingsModalHTML = `
                             <input type="checkbox" id="prefHideLikeCount" class="w-4 h-4 text-green-600 rounded focus:ring-green-500">
                             <span class="ml-2 text-sm text-gray-700">Masquer le nombre de J'aime (pour les visiteurs)</span>
                         </label>
+                    </div>
+
+                    <!-- Options Niveau 2 : Masquage spécifique dans la fiche détaillée -->
+                    <div id="privacyDetailOptions" class="pt-2 border-t border-gray-200 space-y-2.5">
+                        <p class="text-xs font-semibold text-gray-600 uppercase tracking-wider">Masquage dans la fiche détaillée :</p>
+                        <label class="flex items-center cursor-pointer">
+                            <input type="checkbox" id="prefHideNotes" class="w-4 h-4 text-green-600 rounded focus:ring-green-500">
+                            <span class="ml-2 text-sm text-gray-700">Masquer mes notes personnelles</span>
+                        </label>
+                        <label class="flex items-center cursor-pointer">
+                            <input type="checkbox" id="prefHideRanking" class="w-4 h-4 text-green-600 rounded focus:ring-green-500">
+                            <span class="ml-2 text-sm text-gray-700">Masquer mes classements</span>
+                        </label>
+                        <label class="flex items-center cursor-pointer">
+                            <input type="checkbox" id="prefHideStats" class="w-4 h-4 text-green-600 rounded focus:ring-green-500">
+                            <span class="ml-2 text-sm text-gray-700">Masquer les stats calculées (allure, vitesse, D+/km)</span>
+                        </label>
+                        <label class="flex items-center cursor-pointer">
+                            <input type="checkbox" id="prefHidePhotos" class="w-4 h-4 text-green-600 rounded focus:ring-green-500">
+                            <span class="ml-2 text-sm text-gray-700">Masquer mes photos</span>
+                        </label>
+                        <label class="flex items-center cursor-pointer">
+                            <input type="checkbox" id="prefHidePrice" class="w-4 h-4 text-green-600 rounded focus:ring-green-500">
+                            <span class="ml-2 text-sm text-gray-700">Masquer le prix d'inscription</span>
+                        </label>
+                        <label class="flex items-center cursor-pointer">
+                            <input type="checkbox" id="prefHideBib" class="w-4 h-4 text-green-600 rounded focus:ring-green-500">
+                            <span class="ml-2 text-sm text-gray-700">Masquer le numéro de dossard</span>
+                        </label>
+                    </div>
+
+                    <!-- Options Classement des missions (toujours visible quel que soit le niveau des courses) -->
+                    <div class="pt-2 border-t border-gray-200">
                         <label class="flex items-center cursor-pointer">
                             <input type="checkbox" id="prefShowPseudoInLeaderboard" class="w-4 h-4 text-green-600 rounded focus:ring-green-500 shrink-0" checked>
                             <span class="ml-2 text-xs text-gray-700">Faire apparaître mon pseudo dans le classement des missions</span>
@@ -335,8 +394,8 @@ async function initSettingsLogic() {
     const resetBtn = document.getElementById('btnSendPasswordReset');
     const msgContainer = document.getElementById('settingsMessageContainer');
 
-    // Checkboxes Privacy & Visibilité globale
-    const prefAccountPublicRaces = document.getElementById('prefAccountPublicRaces');
+    // Contrôles Privacy & Niveau de visibilité
+    const privacyLevelInput = document.getElementById('privacyLevelInput');
     const prefShowPseudo = document.getElementById('prefShowPseudo');
     const prefShowCity = document.getElementById('prefShowCity');
     const prefShowFavorite = document.getElementById('prefShowFavorite');
@@ -344,10 +403,88 @@ async function initSettingsLogic() {
     const prefHideLikeCount = document.getElementById('prefHideLikeCount');
     const prefShowPseudoInLeaderboard = document.getElementById('prefShowPseudoInLeaderboard');
 
+    // Nouveaux masquages spécifiques Fiche détaillée (Niveau 2)
+    const prefHideNotes = document.getElementById('prefHideNotes');
+    const prefHideRanking = document.getElementById('prefHideRanking');
+    const prefHideStats = document.getElementById('prefHideStats');
+    const prefHidePhotos = document.getElementById('prefHidePhotos');
+    const prefHidePrice = document.getElementById('prefHidePrice');
+    const prefHideBib = document.getElementById('prefHideBib');
+
     // Checkboxes UI preferences
     const prefShowStatsBtn = document.getElementById('prefShowStatsBtn');
     const prefShowBadgesBtn = document.getElementById('prefShowBadgesBtn');
     const prefShowWishlistBtn = document.getElementById('prefShowWishlistBtn');
+
+    let currentSelectedPrivacyLevel = 2;
+
+    // Mise à jour de l'affichage UI selon le niveau de confidentialité
+    function updatePrivacyUI(level) {
+        const lvl = parseInt(level) || 0;
+        currentSelectedPrivacyLevel = lvl;
+
+        const input = document.getElementById('privacyLevelInput');
+        if (input) input.value = lvl;
+
+        const badge = document.getElementById('privacyLevelBadge');
+        const descText = document.getElementById('privacyLevelDescriptionText');
+        const descBox = document.getElementById('privacyLevelDescription');
+        const basicOpts = document.getElementById('privacyBasicOptions');
+        const detailOpts = document.getElementById('privacyDetailOptions');
+
+        // Boutons segmentés de niveau
+        const btn0 = document.getElementById('btnPrivacyLvl0');
+        const btn1 = document.getElementById('btnPrivacyLvl1');
+        const btn2 = document.getElementById('btnPrivacyLvl2');
+
+        const inactiveBase = "privacy-lvl-btn py-2 px-2 rounded-lg text-xs font-semibold flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 transition-all text-gray-600 hover:text-gray-900 hover:bg-gray-200/60 cursor-pointer";
+        const activeBase = "privacy-lvl-btn py-2 px-2 rounded-lg text-xs font-bold flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 transition-all bg-white shadow-sm border cursor-pointer";
+
+        if (btn0) btn0.className = lvl === 0 ? `${activeBase} text-red-700 border-red-200` : inactiveBase;
+        if (btn1) btn1.className = lvl === 1 ? `${activeBase} text-blue-700 border-blue-200` : inactiveBase;
+        if (btn2) btn2.className = lvl === 2 ? `${activeBase} text-green-800 border-green-200` : inactiveBase;
+
+        if (lvl === 0) {
+            if (badge) {
+                badge.className = "text-xs px-2.5 py-1 rounded-full font-semibold flex items-center gap-1.5 bg-red-100 text-red-700 border border-red-200";
+                badge.innerHTML = `<i class="fas fa-lock text-red-500"></i> 100% Privé`;
+            }
+            if (descBox) descBox.className = "text-xs text-gray-700 bg-red-50/70 p-2.5 rounded-lg border border-red-100 leading-relaxed flex items-start gap-2";
+            if (descText) {
+                descText.innerHTML = `<strong>Totalement privé :</strong> Vos courses sont invisibles sur la page d'accueil communautaire. Vous seul pouvez les consulter dans votre carnet.`;
+            }
+            if (basicOpts) basicOpts.classList.add('hidden');
+            if (detailOpts) detailOpts.classList.add('hidden');
+        } else if (lvl === 1) {
+            if (badge) {
+                badge.className = "text-xs px-2.5 py-1 rounded-full font-semibold flex items-center gap-1.5 bg-blue-100 text-blue-700 border border-blue-200";
+                badge.innerHTML = `<i class="fas fa-eye text-blue-500"></i> Aperçu simple`;
+            }
+            if (descBox) descBox.className = "text-xs text-gray-700 bg-blue-50/70 p-2.5 rounded-lg border border-blue-100 leading-relaxed flex items-start gap-2";
+            if (descText) {
+                descText.innerHTML = `<strong>Aperçu public :</strong> Vos courses apparaissent sur l'accueil avec les données de base (date, distance, terrain). Les visiteurs n'ont pas accès à la fiche détaillée (au clic sur le nom, ils sont redirigés vers le site officiel s'il est renseigné).`;
+            }
+            if (basicOpts) basicOpts.classList.remove('hidden');
+            if (detailOpts) detailOpts.classList.add('hidden');
+        } else {
+            if (badge) {
+                badge.className = "text-xs px-2.5 py-1 rounded-full font-semibold flex items-center gap-1.5 bg-green-100 text-green-800 border border-green-200";
+                badge.innerHTML = `<i class="fas fa-file-lines text-green-600"></i> Fiche complète`;
+            }
+            if (descBox) descBox.className = "text-xs text-gray-700 bg-green-50/70 p-2.5 rounded-lg border border-green-100 leading-relaxed flex items-start gap-2";
+            if (descText) {
+                descText.innerHTML = `<strong>Fiche détaillée publique :</strong> Vos courses sont publiques et les visiteurs peuvent ouvrir la fiche complète. Vous pouvez choisir ci-dessous les éléments à masquer.`;
+            }
+            if (basicOpts) basicOpts.classList.remove('hidden');
+            if (detailOpts) detailOpts.classList.remove('hidden');
+        }
+    }
+
+    window.setPrivacyLevel = function (lvl) {
+        if (isInvite) return;
+        updatePrivacyUI(lvl);
+        savePrivacySettings();
+    };
 
     // Vérifier si l'utilisateur est invité
     let isInvite = false;
@@ -372,8 +509,19 @@ async function initSettingsLogic() {
             pseudoSubmitBtn.classList.add('opacity-50', 'cursor-not-allowed');
         }
 
-        // Désactiver toutes les checkboxes de confidentialité
-        [prefAccountPublicRaces, prefShowPseudo, prefShowCity, prefShowFavorite, prefShowDay, prefHideLikeCount, prefShowPseudoInLeaderboard].forEach(cb => {
+        // Désactiver les boutons de niveau de confidentialité et toutes les checkboxes
+        ['btnPrivacyLvl0', 'btnPrivacyLvl1', 'btnPrivacyLvl2'].forEach(id => {
+            const btn = document.getElementById(id);
+            if (btn) {
+                btn.disabled = true;
+                btn.classList.add('opacity-50', 'cursor-not-allowed');
+            }
+        });
+
+        [
+            prefShowPseudo, prefShowCity, prefShowFavorite, prefShowDay, prefHideLikeCount, prefShowPseudoInLeaderboard,
+            prefHideNotes, prefHideRanking, prefHideStats, prefHidePhotos, prefHidePrice, prefHideBib
+        ].forEach(cb => {
             if (cb) {
                 cb.disabled = true;
                 cb.classList.add('opacity-50', 'cursor-not-allowed');
@@ -519,21 +667,29 @@ async function initSettingsLogic() {
         const user = firebase.auth().currentUser;
         if (!user) return;
 
-        const isAccountPublic = prefAccountPublicRaces ? prefAccountPublicRaces.checked : true;
+        const currentLevel = currentSelectedPrivacyLevel;
+        const isAccountPublic = currentLevel > 0;
+
         const privacy = {
+            level: currentLevel,
             isPublic: isAccountPublic,
             showPseudo: prefShowPseudo ? prefShowPseudo.checked : true,
             showCity: prefShowCity ? prefShowCity.checked : true,
             showFavorite: prefShowFavorite ? prefShowFavorite.checked : false,
             showDay: prefShowDay ? prefShowDay.checked : true,
             hideLikeCount: prefHideLikeCount ? prefHideLikeCount.checked : false,
-            showPseudoInLeaderboard: prefShowPseudoInLeaderboard ? prefShowPseudoInLeaderboard.checked : true
+            showPseudoInLeaderboard: prefShowPseudoInLeaderboard ? prefShowPseudoInLeaderboard.checked : true,
+            // Nouveaux masquages fiche détaillée
+            hideNotes: prefHideNotes ? prefHideNotes.checked : false,
+            hideRanking: prefHideRanking ? prefHideRanking.checked : false,
+            hideStats: prefHideStats ? prefHideStats.checked : false,
+            hidePhotos: prefHidePhotos ? prefHidePhotos.checked : false,
+            hidePrice: prefHidePrice ? prefHidePrice.checked : false,
+            hideBib: prefHideBib ? prefHideBib.checked : false
         };
 
-        if (prefAccountPublicRaces) {
-            localStorage.setItem('prefAccountPublicRaces', isAccountPublic ? 'true' : 'false');
-            window.prefAccountPublicRaces = isAccountPublic;
-        }
+        localStorage.setItem('prefAccountPublicRaces', isAccountPublic ? 'true' : 'false');
+        window.prefAccountPublicRaces = isAccountPublic;
 
         if (prefShowPseudoInLeaderboard) {
             localStorage.setItem('prefShowPseudoInLeaderboard', prefShowPseudoInLeaderboard.checked ? 'true' : 'false');
@@ -571,7 +727,10 @@ async function initSettingsLogic() {
 
     // Ne pas attacher les listeners si l'utilisateur est invité
     if (!isInvite) {
-        [prefAccountPublicRaces, prefShowPseudo, prefShowCity, prefShowFavorite, prefShowDay, prefHideLikeCount, prefShowPseudoInLeaderboard].forEach(cb => {
+        [
+            prefShowPseudo, prefShowCity, prefShowFavorite, prefShowDay, prefHideLikeCount, prefShowPseudoInLeaderboard,
+            prefHideNotes, prefHideRanking, prefHideStats, prefHidePhotos, prefHidePrice, prefHideBib
+        ].forEach(cb => {
             if (cb) cb.addEventListener('change', savePrivacySettings);
         });
 
@@ -670,12 +829,19 @@ async function initSettingsLogic() {
             if (doc.exists) {
                 const data = doc.data();
 
-                // Privacy settings & Account-wide race visibility
-                const isAccountPublic = (data.privacy && data.privacy.isPublic !== undefined)
-                    ? (data.privacy.isPublic === true)
-                    : (data.isPublic !== undefined ? data.isPublic === true : true);
+                // Privacy level
+                let privacyLevel = 2; // default full
+                if (data.privacy && data.privacy.level !== undefined) {
+                    privacyLevel = parseInt(data.privacy.level);
+                } else if (data.privacy && data.privacy.isPublic !== undefined) {
+                    privacyLevel = data.privacy.isPublic === true ? 2 : 0;
+                } else if (data.isPublic !== undefined) {
+                    privacyLevel = data.isPublic === true ? 2 : 0;
+                }
 
-                if (prefAccountPublicRaces) prefAccountPublicRaces.checked = isAccountPublic;
+                updatePrivacyUI(privacyLevel);
+
+                const isAccountPublic = privacyLevel > 0;
                 localStorage.setItem('prefAccountPublicRaces', isAccountPublic ? 'true' : 'false');
                 window.prefAccountPublicRaces = isAccountPublic;
 
@@ -691,6 +857,13 @@ async function initSettingsLogic() {
                         localStorage.setItem('prefShowPseudoInLeaderboard', isChecked ? 'true' : 'false');
                         window.prefShowPseudoInLeaderboard = isChecked;
                     }
+                    // Nouveaux masquages fiche détaillée
+                    if (prefHideNotes) prefHideNotes.checked = data.privacy.hideNotes === true;
+                    if (prefHideRanking) prefHideRanking.checked = data.privacy.hideRanking === true;
+                    if (prefHideStats) prefHideStats.checked = data.privacy.hideStats === true;
+                    if (prefHidePhotos) prefHidePhotos.checked = data.privacy.hidePhotos === true;
+                    if (prefHidePrice) prefHidePrice.checked = data.privacy.hidePrice === true;
+                    if (prefHideBib) prefHideBib.checked = data.privacy.hideBib === true;
                 } else {
                     if (prefShowPseudo) prefShowPseudo.checked = true;
                     if (prefShowCity) prefShowCity.checked = true;
@@ -698,6 +871,12 @@ async function initSettingsLogic() {
                     if (prefShowDay) prefShowDay.checked = true;
                     if (prefHideLikeCount) prefHideLikeCount.checked = false;
                     if (prefShowPseudoInLeaderboard) prefShowPseudoInLeaderboard.checked = true;
+                    if (prefHideNotes) prefHideNotes.checked = false;
+                    if (prefHideRanking) prefHideRanking.checked = false;
+                    if (prefHideStats) prefHideStats.checked = false;
+                    if (prefHidePhotos) prefHidePhotos.checked = false;
+                    if (prefHidePrice) prefHidePrice.checked = false;
+                    if (prefHideBib) prefHideBib.checked = false;
                 }
 
                 // UI preferences (Default to true if undefined, as buttons were previously visible)
