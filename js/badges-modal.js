@@ -1268,10 +1268,221 @@
         return null;
     }
 
-    function extractDepartment(loc) {
-        if (!loc || typeof loc !== 'string') return null;
-        const m = loc.match(/\b(0[1-9]|[1-8]\d|9[0-5]|97[1-6]|2[AB])\b/);
-        return m ? m[1] : null;
+    // Dictionnaire des départements français et des principales villes / préfectures
+    const DEPARTMENTS_MAP = {
+        // Départements officiels (noms normalisés sans accents ni tirets)
+        'ain': '01', 'aisne': '02', 'allier': '03', 'alpes de haute provence': '04', 'hautes alpes': '05',
+        'alpes maritimes': '06', 'ardeche': '07', 'ardennes': '08', 'ariege': '09', 'aube': '10',
+        'aude': '11', 'aveyron': '12', 'bouches du rhone': '13', 'calvados': '14', 'cantal': '15',
+        'charente': '16', 'charente maritime': '17', 'cher': '18', 'correze': '19', 'corse du sud': '2A',
+        'haute corse': '2B', 'corse': '2A', 'cote d or': '21', 'cotes d armor': '22', 'creuse': '23',
+        'dordogne': '24', 'doubs': '25', 'drome': '26', 'eure': '27', 'eure et loir': '28',
+        'finistere': '29', 'gard': '30', 'haute garonne': '31', 'gers': '32', 'gironde': '33',
+        'herault': '34', 'ille et vilaine': '35', 'indre': '36', 'indre et loire': '37', 'isere': '38',
+        'jura': '39', 'landes': '40', 'loir et cher': '41', 'loire': '42', 'haute loire': '43',
+        'loire atlantique': '44', 'loiret': '45', 'lot': '46', 'lot et garonne': '47', 'lozere': '48',
+        'maine et loire': '49', 'manche': '50', 'marne': '51', 'haute marne': '52', 'mayenne': '53',
+        'meurthe et moselle': '54', 'meuse': '55', 'morbihan': '56', 'moselle': '57', 'nievre': '58',
+        'nord': '59', 'oise': '60', 'orne': '61', 'pas de calais': '62', 'puy de dome': '63',
+        'pyrenees atlantiques': '64', 'hautes pyrenees': '65', 'pyrenees orientales': '66', 'bas rhin': '67',
+        'haut rhin': '68', 'rhone': '69', 'haute saone': '70', 'saone et loire': '71', 'sarthe': '72',
+        'savoie': '73', 'haute savoie': '74', 'paris': '75', 'seine maritime': '76', 'seine et marne': '77',
+        'yvelines': '78', 'deux sevres': '79', 'somme': '80', 'tarn': '81', 'tarn et garonne': '82',
+        'var': '83', 'vaucluse': '84', 'vendee': '85', 'vienne': '86', 'haute vienne': '87',
+        'vosges': '88', 'yonne': '89', 'territoire de belfort': '90', 'essonne': '91', 'hauts de seine': '92',
+        'seine saint denis': '93', 'val de marne': '94', 'val d oise': '95', 'guadeloupe': '971',
+        'martinique': '972', 'guyane': '973', 'la reunion': '974', 'reunion': '974', 'mayotte': '976',
+
+        // Villes, préfectures et hauts lieux de course
+        'marseille': '13', 'aix en provence': '13', 'arles': '13', 'salon de provence': '13', 'cassis': '13', 'la ciotat': '13', 'aubagne': '13', 'istres': '13', 'martigues': '13',
+        'lyon': '69', 'villeurbanne': '69', 'venissieux': '69', 'caluire': '69', 'saint priest': '69', 'vaulx en velin': '69',
+        'toulouse': '31', 'colomiers': '31', 'tournefeuille': '31', 'blagnac': '31', 'muret': '31',
+        'nice': '06', 'cannes': '06', 'antibes': '06', 'menton': '06', 'grasse': '06', 'cagnes sur mer': '06', 'mandelieu': '06',
+        'nantes': '44', 'saint nazaire': '44', 'saint herblain': '44', 'reze': '44', 'pornic': '44', 'la baule': '44', 'guerande': '44', 'clisson': '44',
+        'strasbourg': '67', 'haguenau': '67', 'schiltigheim': '67', 'illkirch': '67', 'saverne': '67', 'selestat': '67',
+        'montpellier': '34', 'beziers': '34', 'sete': '34', 'agde': '34', 'lunel': '34', 'frontignan': '34', 'castelnau le lez': '34',
+        'bordeaux': '33', 'merignac': '33', 'pessac': '33', 'talence': '33', 'villenave': '33', 'arcachon': '33', 'libourne': '33',
+        'lille': '59', 'roubaix': '59', 'tourcoing': '59', 'dunkerque': '59', 'villeneuve d ascq': '59', 'valenciennes': '59', 'douai': '59', 'cambrai': '59',
+        'rennes': '35', 'saint malo': '35', 'fougeres': '35', 'vitre': '35', 'dinard': '35',
+        'reims': '51', 'chalons en champagne': '51', 'epernay': '51',
+        'toulon': '83', 'la seyne sur mer': '83', 'hyeres': '83', 'frejus': '83', 'saint raphael': '83', 'saint tropez': '83', 'draguignan': '83',
+        'saint etienne': '42', 'roanne': '42', 'saint chamond': '42', 'firminy': '42',
+        'le havre': '76', 'rouen': '76', 'dieppe': '76', 'fecamp': '76', 'etretat': '76',
+        'grenoble': '38', 'saint martin d heres': '38', 'echirolles': '38', 'vienne': '38', 'bourgoin jallieu': '38', 'voiron': '38', 'chamrousse': '38', 'l alpe d huez': '38', 'alpe d huez': '38', 'les deux alpes': '38',
+        'dijon': '21', 'beaune': '21', 'chenove': '21',
+        'angers': '49', 'cholet': '49', 'saumur': '49',
+        'nimes': '30', 'ales': '30', 'bagnols sur ceze': '30', 'uzes': '30',
+        'le mans': '72', 'la fleche': '72',
+        'brest': '29', 'quimper': '29', 'concarneau': '29', 'morlaix': '29', 'crozon': '29', 'douarnenez': '29',
+        'tours': '37', 'joue les tours': '37', 'amboise': '37', 'chinon': '37',
+        'amiens': '80', 'abbeville': '80',
+        'limoges': '87', 'saint junien': '87',
+        'annecy': '74', 'chamonix': '74', 'morzine': '74', 'la clusaz': '74', 'megeve': '74', 'thonon les bains': '74', 'evian': '74', 'annemasse': '74', 'cluses': '74', 'sallanches': '74', 'saint gervais': '74', 'avoriaz': '74', 'le grand bornand': '74',
+        'chambery': '73', 'aix les bains': '73', 'albertville': '73', 'val d isere': '73', 'tignes': '73', 'courchevel': '73', 'meribel': '73', 'les arcs': '73', 'la plagne': '73', 'val thorens': '73', 'modane': '73', 'saint jean de maurienne': '73',
+        'perpignan': '66', 'canet en roussillon': '66', 'font romeu': '66', 'argeles sur mer': '66', 'collioure': '66',
+        'boulogne billancourt': '92', 'nanterre': '92', 'courbevoie': '92', 'colombes': '92', 'asnieres sur seine': '92', 'rueil malmaison': '92', 'issy les moulineaux': '92', 'levallois perret': '92', 'antony': '92', 'neuilly sur seine': '92', 'clichy': '92',
+        'metz': '57', 'thionville': '57', 'montigny les metz': '57', 'forbach': '57', 'sarreguemines': '57',
+        'besancon': '25', 'montbeliard': '25', 'pontarlier': '25',
+        'orleans': '45', 'fleury les aubrais': '45', 'olivet': '45', 'montargis': '45',
+        'saint denis': '93', 'montreuil': '93', 'aubervilliers': '93', 'aulnay sous bois': '93', 'drancy': '93', 'noisy le grand': '93', 'pantin': '93', 'bondy': '93', 'epinay sur seine': '93',
+        'argenteuil': '95', 'sarcelles': '95', 'cergy': '95', 'garges les gonesse': '95', 'franconville': '95', 'pontoise': '95', 'bezons': '95',
+        'mulhouse': '68', 'colmar': '68', 'saint louis': '68',
+        'caen': '14', 'herouville saint clair': '14', 'lisieux': '14', 'deauville': '14', 'cabourg': '14', 'honfleur': '14',
+        'nancy': '54', 'vandoeuvre les nancy': '54', 'luneville': '54', 'toul': '54',
+        'saint paul': '974', 'saint denis reunion': '974', 'saint pierre': '974', 'le tampon': '974', 'saint andre': '974', 'saint louis reunion': '974', 'le port': '974', 'cilaos': '974', 'salazie': '974',
+        'avignon': '84', 'orange': '84', 'carpentras': '84', 'cavaillon': '84',
+        'poitiers': '86', 'chatellerault': '86',
+        'creteil': '94', 'vitry sur seine': '94', 'champigny sur marne': '94', 'saint maur des fosses': '94', 'ivry sur seine': '94', 'villejuif': '94', 'fontenay sous bois': '94', 'vincennes': '94', 'maisons alfort': '94',
+        'versailles': '78', 'sartrouville': '78', 'mantes la jolie': '78', 'saint germain en laye': '78', 'poissy': '78', 'conflans sainte honorine': '78', 'plaisir': '78', 'rambouillet': '78',
+        'pau': '64', 'bayonne': '64', 'anglet': '64', 'biarritz': '64', 'saint jean de luz': '64', 'hendaye': '64',
+        'calais': '62', 'boulogne sur mer': '62', 'arras': '62', 'lens': '62', 'lievin': '62', 'le touquet': '62',
+        'bourges': '18', 'vierzon': '18',
+        'la rochelle': '17', 'saintes': '17', 'rochefort': '17', 'royan': '17', 'ile de re': '17', 'ile d oleron': '17',
+        'valence': '26', 'montelimar': '26', 'romans sur isere': '26',
+        'ajaccio': '2A', 'porto vecchio': '2A', 'propriano': '2A', 'bonifacio': '2A',
+        'bastia': '2B', 'calvi': '2B', 'corte': '2B', 'ile rousse': '2B',
+        'troyes': '10', 'romilly sur seine': '10',
+        'niort': '79', 'bressuire': '79', 'parthenay': '79',
+        'lorient': '56', 'vannes': '56', 'lanester': '56', 'ploemeur': '56', 'auray': '56', 'pontivy': '56', 'quiberon': '56',
+        'montauban': '82', 'castelsarrasin': '82',
+        'saint quentin': '02', 'soissons': '02', 'laon': '02',
+        'saint brieuc': '22', 'lannion': '22', 'ploufragan': '22', 'dinan': '22', 'guingamp': '22',
+        'cherbourg': '50', 'saint lo': '50', 'granville': '50', 'coutances': '50', 'avranches': '50', 'mont saint michel': '50',
+        'evry': '91', 'corbeil essonnes': '91', 'massy': '91', 'savigny sur orge': '91', 'sainte genevieve des bois': '91', 'palaiseau': '91', 'athis mons': '91',
+        'meaux': '77', 'chelles': '77', 'melun': '77', 'pontault combault': '77', 'savigny le temple': '77', 'fontainebleau': '77',
+        'beauvais': '60', 'compiegne': '60', 'creil': '60', 'senlis': '60', 'chantilly': '60',
+        'laval': '53', 'mayenne': '53', 'chateau gontier': '53',
+        'chartres': '28', 'dreux': '28', 'chateaudun': '28',
+        'blois': '41', 'romorantin': '41', 'vendome': '41',
+        'chateauroux': '36', 'issoudun': '36',
+        'albi': '81', 'castres': '81', 'gaillac': '81',
+        'tarbes': '65', 'lourdes': '65', 'saint lary': '65', 'cauterets': '65', 'bagneres de bigorre': '65', 'gavarnie': '65',
+        'rodez': '12', 'millau': '12', 'villefranche de rouergue': '12',
+        'aurillac': '15', 'saint flour': '15',
+        'mende': '48', 'marvejols': '48',
+        'cahors': '46', 'figeac': '46',
+        'agen': '47', 'villeneuve sur lot': '47', 'marmande': '47',
+        'auch': '32', 'condom': '32', 'fleurance': '32',
+        'mont de marsan': '40', 'dax': '40', 'biscarrosse': '40', 'hossegor': '40', 'capbreton': '40',
+        'perigueux': '24', 'bergerac': '24', 'sarlat': '24',
+        'angouleme': '16', 'cognac': '16',
+        'gueret': '23', 'aubusson': '23',
+        'tulle': '19', 'brive la gaillarde': '19', 'brive': '19', 'ussel': '19',
+        'moulins': '03', 'vichy': '03', 'montlucon': '03',
+        'le puy en velay': '43', 'monistrol': '43', 'yssingeaux': '43',
+        'nevers': '58', 'cosne cours sur loire': '58',
+        'auxerre': '89', 'sens': '89', 'joigny': '89',
+        'macon': '71', 'chalon sur saone': '71', 'autun': '71', 'le creusot': '71', 'montceau les mines': '71',
+        'vesoul': '70', 'lure': '70', 'luxeuil': '70',
+        'lons le saunier': '39', 'dole': '39', 'saint claude': '39', 'les rousses': '39',
+        'belfort': '90', 'delle': '90',
+        'gap': '05', 'briancon': '05', 'embrun': '05', 'serre chevalier': '05',
+        'digne les bains': '04', 'manosque': '04', 'sisteron': '04',
+        'charleville mezieres': '08', 'sedan': '08', 'revin': '08',
+        'chaumont': '52', 'saint dizier': '52', 'langres': '52',
+        'bar le duc': '55', 'verdun': '55', 'commercy': '55',
+        'epinal': '88', 'saint die des vosges': '88', 'gerardmer': '88', 'la bresse': '88', 'remiremont': '88',
+        'alencon': '61', 'flers': '61', 'argentan': '61',
+        'evreux': '27', 'vernon': '27', 'louviers': '27',
+        'monaco': '98'
+    };
+
+    function normalizeLocationStr(str) {
+        if (!str || typeof str !== 'string') return '';
+        return str
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .toLowerCase()
+            .replace(/[^a-z0-9]/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim();
+    }
+
+    function extractDepartment(locOrRace) {
+        if (!locOrRace) return null;
+
+        // 1. Si c'est un objet course ou une chaîne, on inspecte toutes les propriétés potentielles
+        const textCandidates = [];
+        if (typeof locOrRace === 'object') {
+            const r = locOrRace;
+            if (r.department) textCandidates.push(String(r.department));
+            if (r.dept) textCandidates.push(String(r.dept));
+            if (r.departement) textCandidates.push(String(r.departement));
+            if (r.postalCode) textCandidates.push(String(r.postalCode));
+            if (r.codePostal) textCandidates.push(String(r.codePostal));
+            if (r.cp) textCandidates.push(String(r.cp));
+            if (r.zip) textCandidates.push(String(r.zip));
+            if (r.zipCode) textCandidates.push(String(r.zipCode));
+            if (r.location) textCandidates.push(String(r.location));
+            if (r.city) textCandidates.push(String(r.city));
+            if (r.ville) textCandidates.push(String(r.ville));
+            if (r.place) textCandidates.push(String(r.place));
+            if (r.lieu) textCandidates.push(String(r.lieu));
+            if (r.region) textCandidates.push(String(r.region));
+            if (r.name) textCandidates.push(String(r.name));
+        } else if (typeof locOrRace === 'string' || typeof locOrRace === 'number') {
+            textCandidates.push(String(locOrRace));
+        }
+
+        if (textCandidates.length === 0) return null;
+
+        for (let raw of textCandidates) {
+            if (!raw || typeof raw !== 'string') continue;
+            const str = raw.trim();
+            if (!str) continue;
+
+            // Détection si c'est directement un numéro pur (ex: "75", "6", "2A", "2B", "974")
+            const pureMatch = str.match(/^(0[1-9]|[1-8]\d|9[0-5]|97[1-6]|2[ABab]|[1-9])$/i);
+            if (pureMatch) {
+                const val = pureMatch[1].toUpperCase();
+                return val.length === 1 ? '0' + val : val;
+            }
+
+            // Code postal français à 5 chiffres (ex: 75012, 69002, 33000, 20167, 97400)
+            const cpMatch = str.match(/\b(0[1-9]|[1-8]\d|9[0-5]|97[1-6]|20)\d{3}\b/);
+            if (cpMatch) {
+                const prefix = cpMatch[1];
+                if (prefix === '20') {
+                    const fullCp = cpMatch[0];
+                    const num = parseInt(fullCp, 10);
+                    return (num >= 20000 && num <= 20199) ? '2A' : '2B';
+                }
+                return prefix;
+            }
+
+            // Département entre parenthèses, crochets ou après mention dept (ex: "(75)", "dept 33", "[06]")
+            const deptExplicitMatch = str.match(/(?:[\(\[\{,\/\s-]|\b)(?:dept|dpt|d[eé]partement|d[eé]p\.?)?\s*(0[1-9]|[1-8]\d|9[0-5]|97[1-6]|2[ABab])(?:[\)\]\},.\/\s-]|\b)/i);
+            if (deptExplicitMatch) {
+                return deptExplicitMatch[1].toUpperCase();
+            }
+
+            // Normalisation pour recherche textuelle (villes et départements en toutes lettres)
+            const norm = normalizeLocationStr(str);
+            if (!norm) continue;
+
+            // Recherche exacte dans le dictionnaire
+            if (DEPARTMENTS_MAP[norm]) {
+                return DEPARTMENTS_MAP[norm];
+            }
+
+            // Recherche des mots clés du dictionnaire dans le texte normalisé
+            const words = norm.split(' ');
+            for (let word of words) {
+                if (word.length >= 3 && DEPARTMENTS_MAP[word]) {
+                    return DEPARTMENTS_MAP[word];
+                }
+            }
+
+            // Test des clés composées (ex: "haute savoie", "saint malo", "aix en provence")
+            const dictKeys = Object.keys(DEPARTMENTS_MAP);
+            for (let key of dictKeys) {
+                if (key.includes(' ') && norm.includes(key)) {
+                    return DEPARTMENTS_MAP[key];
+                }
+            }
+        }
+
+        return null;
     }
 
     function hasConsecutiveMonths(dates, count) {
@@ -1471,12 +1682,12 @@
                 else if (typeof race.companions === 'object') hasCompanions = Object.keys(race.companions).length > 0;
             }
 
-            const rawLoc = typeof race.location === 'string' ? race.location : (typeof race.city === 'string' ? race.city : '');
-            const loc = rawLoc.trim().toLowerCase();
+            const rawLoc = typeof race.location === 'string' ? race.location : (typeof race.city === 'string' ? race.city : (typeof race.place === 'string' ? race.place : ''));
+            const loc = normalizeLocationStr(rawLoc);
             const rawTerrain = typeof race.terrain === 'string' ? race.terrain : 'route';
             const terrain = rawTerrain.trim().toLowerCase();
             const season = getSeason(race.date);
-            const dept = extractDepartment(rawLoc);
+            const dept = extractDepartment(race);
 
             totalKm += dist;
             totalElev += elev;
@@ -1964,7 +2175,7 @@
                             unlockedBadges.grand_chelem_annuel.unlocked = true;
                             unlockedBadges.grand_chelem_annuel.races = [...eligibleRaces];
                         }
-                        if (uniqueDepartments.size >= 3) {
+                        if (uniqueDepartments.size >= 3 || uniqueCities.size >= 3) {
                             unlockedBadges.explorateur_regional.unlocked = true;
                             unlockedBadges.explorateur_regional.races = [...eligibleRaces];
                         }
