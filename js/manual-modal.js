@@ -491,6 +491,10 @@ const manualModalHTML = `
                                 <i class="fas fa-check-circle text-green-600 mt-0.5"></i>
                                 <span><strong>Étoiles de favori au choix :</strong> Lors de l'ajout d'une course depuis la wishlist, vos courses favorites sont immédiatement repérables grâce à une étoile (★) affichée dans la liste déroulante de sélection.</span>
                             </li>
+                            <li class="flex items-start gap-2">
+                                <i class="fas fa-check-circle text-green-600 mt-0.5"></i>
+                                <span><strong>Ajout depuis les courses publiques :</strong> Sur la page d'accueil, cliquez sur le bouton « + Wishlist » présent sur les courses des autres coureurs pour importer directement leur nom, discipline, date et site web dans votre wishlist.</span>
+                            </li>
                         </ul>
                     </div>
                 </section>

@@ -166,7 +166,7 @@ const authModalsHTML = `
                 <span>S'inscrire</span>
                 <i class="fas fa-spinner fa-spin ml-2 hidden" id="signup-loading"></i>
             </button>
-            <button type="button" onclick="checkAndCloseAuthModal('signupModal')" class="w-full mt-2 px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition-colors text-center text-sm font-medium cursor-pointer">
+            <button type="button" onclick="checkAndCloseAuthModal('signupModal')" class="w-full mt-2.5 py-2.5 px-4 bg-gray-100 hover:bg-gray-200 text-gray-600 hover:text-gray-800 font-semibold rounded-full transition transform hover:scale-[1.01] border border-gray-200 text-center text-sm cursor-pointer shadow-xs">
                 Annuler
             </button>
         </form>

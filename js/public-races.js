@@ -87,6 +87,80 @@ window.updatePublicRaceFilter = function (type, value) {
     loadPublicRaces();
 };
 
+// Helper pour nettoyer les noms de course des termes génériques pour la comparaison de similarité
+function getMeaningfulWishlistName(name) {
+    if (!name) return "";
+    const genericTerms = ["marathon", "relai", "relais", "course", "trail", "run", "triathlon", "semi", "10km", "5km"];
+    const words = String(name).toLowerCase()
+        .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, " ")
+        .split(/\s+/);
+
+    return words.filter(word => {
+        return word.length > 2 && !genericTerms.includes(word);
+    }).join(' ').trim();
+}
+
+// Fonction pour vérifier les similarités avec les éléments existants de la wishlist
+function findSimilarWishlistItems(itemName, itemsList) {
+    const similarItems = [];
+    const mNew = getMeaningfulWishlistName(itemName);
+    if (!mNew || mNew.length < 3) return similarItems;
+
+    (itemsList || []).forEach(item => {
+        const mExisting = getMeaningfulWishlistName(item.name);
+        if (!mExisting || mExisting.length < 3) return;
+
+        // 1. Correspondance exacte du sens
+        if (mNew === mExisting) {
+            similarItems.push(item);
+            return;
+        }
+
+        // 2. 4 caractères consécutifs ou plus en commun sur les parties significatives
+        let foundMatch = false;
+        for (let i = 0; i <= mNew.length - 4 && !foundMatch; i++) {
+            const fourChars = mNew.substring(i, i + 4);
+            if (mExisting.includes(fourChars)) {
+                let maxMatch = fourChars;
+                for (let j = i + 4; j <= mNew.length; j++) {
+                    const longerSubstring = mNew.substring(i, j);
+                    if (mExisting.includes(longerSubstring)) {
+                        maxMatch = longerSubstring;
+                    } else {
+                        break;
+                    }
+                }
+                if (maxMatch.length >= 4 && !similarItems.find(s => s.name === item.name)) {
+                    similarItems.push(item);
+                    foundMatch = true;
+                }
+            }
+        }
+    });
+    return similarItems;
+}
+
+// Helper pour déterminer si une course est déjà dans la wishlist (correspondance exacte ou sens complet identique)
+function checkIsRaceInWishlist(raceName, itemsList) {
+    if (!raceName || !itemsList || itemsList.length === 0) return false;
+    const cleanName = String(raceName).trim().toLowerCase();
+    
+    // 1. Correspondance exacte insensible à la casse
+    const exact = itemsList.some(item => (item.name || '').trim().toLowerCase() === cleanName);
+    if (exact) return true;
+    
+    // 2. Correspondance exacte sur le sens complet (ex: "Marathon de Paris" vs "Paris Marathon")
+    const mNew = getMeaningfulWishlistName(raceName);
+    if (mNew && mNew.length >= 3) {
+        return itemsList.some(item => {
+            const mExisting = getMeaningfulWishlistName(item.name);
+            return mExisting && mExisting === mNew;
+        });
+    }
+
+    return false;
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     loadPublicRaces();
 });
@@ -107,9 +181,10 @@ async function loadPublicRaces() {
     grid.innerHTML = typeof getRunnerLoaderHTML === 'function' ? getRunnerLoaderHTML(3) : '<div class="col-span-full flex justify-center items-center py-12"><i class="fas fa-circle-notch fa-spin text-green-500 text-4xl"></i></div>';
 
     try {
+        const fetchLimit = Math.max(publicRaceFilters.limit * 3, 50);
         const snapshot = await db.collectionGroup('races')
             .orderBy('date', publicRaceFilters.sort) // Tri dynamique
-            .limit(publicRaceFilters.limit) // Limite dynamique
+            .limit(fetchLimit)
             .get();
 
         // Check Admin Status centrally to avoid N reads
@@ -122,6 +197,26 @@ async function loadPublicRaces() {
         let isInvite = false;
         if (typeof window.isInviteUser === 'function') {
             isInvite = await window.isInviteUser();
+        }
+
+        const currentUser = firebase.auth().currentUser;
+
+        // Fetch connected user's wishlist for duplicate / similarity checking
+        let userWishlist = [];
+        if (currentUser && !isInvite) {
+            try {
+                const wishSnap = await db.collection('users').doc(currentUser.uid).collection('wishlist').get();
+                wishSnap.forEach(d => {
+                    userWishlist.push({ id: d.id, ...d.data() });
+                });
+                window.currentUserWishlist = userWishlist;
+            } catch (e) {
+                console.warn("Could not load user wishlist for public races:", e);
+                window.currentUserWishlist = window.currentUserWishlist || [];
+                userWishlist = window.currentUserWishlist;
+            }
+        } else {
+            window.currentUserWishlist = [];
         }
 
         if (snapshot.empty) {
@@ -143,6 +238,7 @@ async function loadPublicRaces() {
             return num.toLocaleString('fr-FR', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
         };
 
+        let displayedCount = 0;
         for (const doc of snapshot.docs) {
             const race = { id: doc.id, ...doc.data() };
 
@@ -387,6 +483,45 @@ async function loadPublicRaces() {
                 }
             }
 
+            // === WISHLIST BUTTON (Only for connected user, not owner, not guest/invite) ===
+            let wishlistBtnHtml = '';
+            if (currentUser && !isOwner && !isInvite) {
+                const rawTerrain = (race.terrain || '').toLowerCase();
+                let wishlistCategory = 'route';
+                if (rawTerrain === 'trail') wishlistCategory = 'trail';
+                else if (rawTerrain === 'triathlon') wishlistCategory = 'triathlon';
+                else if (rawTerrain === 'relai') wishlistCategory = 'relai';
+
+                const raceName = (race.name || '').trim();
+                const raceDateStr = race.date ? (typeof race.date === 'string' ? race.date.split('T')[0] : '') : '';
+                const raceLink = officialUrl || '';
+
+                const isAlreadyInWishlist = checkIsRaceInWishlist(raceName, window.currentUserWishlist);
+
+                if (isAlreadyInWishlist) {
+                    wishlistBtnHtml = `
+                        <span onclick="event.stopPropagation();" class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-medium border border-emerald-300 shrink-0 shadow-xs" title="Cette course est déjà dans votre wishlist">
+                            <i class="fas fa-check text-emerald-600 text-[10px]"></i>
+                            <span>Dans ma wishlist</span>
+                        </span>
+                    `;
+                } else {
+                    wishlistBtnHtml = `
+                        <button type="button"
+                            onclick="event.stopPropagation(); window.addPublicRaceToWishlist(this)"
+                            data-name="${escapeHtml(raceName)}"
+                            data-category="${escapeHtml(wishlistCategory)}"
+                            data-date="${escapeHtml(raceDateStr)}"
+                            data-link="${escapeHtml(raceLink)}"
+                            class="wishlist-add-btn inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 hover:bg-emerald-100 active:bg-emerald-200 text-emerald-700 hover:text-emerald-900 text-[11px] font-semibold border border-emerald-200 hover:border-emerald-300 transition-all shrink-0 shadow-xs hover:scale-105 active:scale-95 cursor-pointer"
+                            title="Ajouter « ${escapeHtml(raceName)} » à ma wishlist">
+                            <i class="far fa-bookmark text-emerald-600 text-[10px]"></i>
+                            <span>+ Wishlist</span>
+                        </button>
+                    `;
+                }
+            }
+
             // === CARD CONTENT ===
             raceCard.innerHTML = `
                 <div class="p-6 relative h-full flex flex-col justify-between">
@@ -486,7 +621,7 @@ async function loadPublicRaces() {
 </div>
 
                     <!-- Footer -->
-                    <div class="mt-4 pt-3 flex items-center justify-between border-t border-green-50 pr-28">
+                    <div class="mt-4 pt-3 flex items-center border-t border-green-50 pr-28">
                         <span class="text-xs text-gray-500 flex items-center gap-2" title="${escapeHtml(ownerPseudoDisplay)}">
                             ${userData.photoURL ?
                     `<img src="${escapeHtml(userData.photoURL)}" onclick="event.stopPropagation(); zoomImage('${escapeHtml(userData.photoURL)}')" class="w-6 h-6 rounded-full object-cover border border-green-200 shadow-sm cursor-zoom-in hover:scale-110 transition-transform">` :
@@ -497,22 +632,34 @@ async function loadPublicRaces() {
                         </span>
                     </div>
 
-                    <!-- Image -->
-                    <div class="absolute bottom-3 right-3 h-28 w-28 group-hover:scale-105 transition-transform duration-300">
-                        ${race.photo ?
-                    `<img src="${race.photo}" onclick="event.stopPropagation(); zoomImage('${race.photo}')" alt="Photo course" class="h-full w-full object-cover rounded-lg shadow-md border border-green-200 cursor-zoom-in" />`
-                    : (race.parcours ?
-                    `<img src="${race.parcours}" onclick="event.stopPropagation(); zoomImage('${race.parcours}')" alt="Parcours course" class="h-full w-full object-cover rounded-lg shadow-md border border-green-200 cursor-zoom-in" />`
-                    :
-                    `<div class="h-full w-full flex flex-col items-center justify-center bg-gray-100 rounded-lg border border-gray-300">
-                                <i class="fas fa-running text-gray-300 text-3xl"></i>
-                            </div>`)
-                }
+                    <!-- Wishlist & Image (Bottom Right) -->
+                    <div class="absolute bottom-3 right-3 flex flex-col items-end gap-1.5 z-10">
+                        ${wishlistBtnHtml}
+                        <div class="h-28 w-28 group-hover:scale-105 transition-transform duration-300">
+                            ${race.photo ?
+                        `<img src="${race.photo}" onclick="event.stopPropagation(); zoomImage('${race.photo}')" alt="Photo course" class="h-full w-full object-cover rounded-lg shadow-md border border-green-200 cursor-zoom-in" />`
+                        : (race.parcours ?
+                        `<img src="${race.parcours}" onclick="event.stopPropagation(); zoomImage('${race.parcours}')" alt="Parcours course" class="h-full w-full object-cover rounded-lg shadow-md border border-green-200 cursor-zoom-in" />`
+                        :
+                        `<div class="h-full w-full flex flex-col items-center justify-center bg-gray-100 rounded-lg border border-gray-300">
+                                    <i class="fas fa-running text-gray-300 text-3xl"></i>
+                                </div>`)
+                    }
+                        </div>
                     </div>
                 </div>
             `;
 
             fragment.appendChild(raceCard);
+            displayedCount++;
+            if (displayedCount >= publicRaceFilters.limit) {
+                break;
+            }
+        }
+
+        if (fragment.children.length === 0) {
+            grid.innerHTML = '<div class="col-span-full text-center text-gray-500 py-8">Aucune course publique trouvée.</div>';
+            return;
         }
 
         // ATOMIC UPDATE: Clear and Append
@@ -531,6 +678,92 @@ async function loadPublicRaces() {
         setPublicFiltersLoading(false);
         isLoadingPublicRaces = false;
     }
+}
+
+// === WISHLIST HANDLER FOR PUBLIC RACES ===
+window.addPublicRaceToWishlist = async function (btn) {
+    const user = firebase.auth().currentUser;
+    if (!user) {
+        const modal = document.getElementById('permissionDeniedModal');
+        if (modal) {
+            const msg = document.getElementById('permissionDeniedMessage');
+            if (msg) msg.textContent = "Vous devez être connecté pour ajouter une course à votre wishlist.";
+            modal.classList.remove('hidden');
+        }
+        return;
+    }
+
+    const name = (btn.dataset.name || '').trim();
+    const category = (btn.dataset.category || 'route').trim();
+    const date = (btn.dataset.date || '').trim();
+    const link = (btn.dataset.link || '').trim();
+
+    if (!name) return;
+
+    btn.disabled = true;
+    const originalContent = btn.innerHTML;
+    btn.innerHTML = `<i class="fas fa-circle-notch fa-spin text-emerald-600 text-[10px]"></i> <span>Ajout...</span>`;
+
+    try {
+        window.currentUserWishlist = window.currentUserWishlist || [];
+
+        // Check if race already exists in wishlist (exact or similar)
+        const alreadyExists = checkIsRaceInWishlist(name, window.currentUserWishlist);
+        if (alreadyExists) {
+            if (typeof showToast === 'function') {
+                showToast(`« ${name} » est déjà dans votre wishlist !`, 'info');
+            }
+            updateWishlistButtonsForRace(name);
+            return;
+        }
+
+        const newItem = {
+            name: name,
+            category: category || 'route',
+            date: date || '',
+            link: link || '',
+            favorite: false,
+            addedAt: new Date().toISOString()
+        };
+
+        const docRef = await db.collection('users').doc(user.uid).collection('wishlist').add(newItem);
+        newItem.id = docRef.id;
+        window.currentUserWishlist.push(newItem);
+
+        // Update all buttons for this race on the page
+        updateWishlistButtonsForRace(name);
+
+        if (typeof showToast === 'function') {
+            showToast(`« ${name} » ajoutée à votre wishlist !`, 'success');
+        }
+
+        if (typeof window.checkBadgesForNewUnlocks === 'function') {
+            window.checkBadgesForNewUnlocks();
+        }
+    } catch (err) {
+        console.error("Erreur lors de l'ajout à la wishlist :", err);
+        btn.disabled = false;
+        btn.innerHTML = originalContent;
+        if (typeof showToast === 'function') {
+            showToast("Erreur lors de l'ajout à la wishlist", "error");
+        }
+    }
+};
+
+function updateWishlistButtonsForRace(raceName) {
+    const buttons = document.querySelectorAll('.wishlist-add-btn');
+    const badgeHtml = `
+        <span onclick="event.stopPropagation();" class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-medium border border-emerald-300 shrink-0 shadow-xs" title="Cette course est dans votre wishlist">
+            <i class="fas fa-check text-emerald-600 text-[10px]"></i>
+            <span>Dans ma wishlist</span>
+        </span>
+    `;
+    buttons.forEach(b => {
+        const bName = (b.dataset.name || '').trim();
+        if (bName.toLowerCase() === raceName.toLowerCase() || checkIsRaceInWishlist(bName, [{ name: raceName }])) {
+            b.outerHTML = badgeHtml;
+        }
+    });
 }
 
 // Nouvelle fonction pour calculer les stats sur TOUTE la base de données
