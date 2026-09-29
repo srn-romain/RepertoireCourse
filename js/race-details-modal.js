@@ -1972,33 +1972,15 @@
             const showBibInBadgeBox = hasBib && (!effectivePrivacy || !effectivePrivacy.hideBib);
 
             if (isOnPublicPage) {
-                if (showBibInBadgeBox) {
-                    if (badgeTitleP) {
-                        badgeTitleP.innerHTML = `
-                            <i class="fas fa-id-badge text-green-500"></i>
-                            <span>Dossard</span>
-                        `;
-                    }
-                    if (detailBadgeText) {
-                        detailBadgeText.innerHTML = `<span class="font-semibold text-green-800 text-sm">N°${bibDisplay}</span>`;
-                    }
-                } else {
-                    if (badgeTitleP) {
-                        badgeTitleP.innerHTML = `
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-500" viewBox="0 0 24 24"
-                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                stroke-linejoin="round">
-                                <circle cx="12" cy="8" r="7" />
-                                <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88" />
-                            </svg>
-                            <span>Badge</span>
-                        `;
-                    }
-                    if (detailBadgeText) {
-                        detailBadgeText.textContent = '/';
+                if (badgeButton) badgeButton.classList.add('hidden');
+                if (bibContainer) {
+                    if (hasBib && (!effectivePrivacy || !effectivePrivacy.hideBib) && bibText) {
+                        bibText.innerHTML = `Dossard n°${bibDisplay}`;
+                        bibContainer.classList.remove('hidden');
+                    } else {
+                        bibContainer.classList.add('hidden');
                     }
                 }
-                if (bibContainer) bibContainer.classList.add('hidden');
             } else {
                 if (hasBib && likeCount === 0) {
                     if (badgeTitleP) {
@@ -2284,6 +2266,19 @@
             if (effectivePrivacy.hideBib) {
                 const bibContainer = document.getElementById('detailsBibContainer');
                 if (bibContainer) bibContainer.classList.add('hidden');
+            }
+            if (effectivePrivacy.hideCompanions) {
+                const detailsCompanions = document.getElementById('detailsCompanions');
+                if (detailsCompanions) detailsCompanions.classList.add('hidden');
+            }
+        }
+
+        if (isOnPublicPage) {
+            const badgeBtn = document.getElementById('BadgeButton');
+            const imgBtn = document.getElementById('ImageButton');
+            if (badgeBtn) badgeBtn.classList.add('hidden');
+            if (imgBtn && !imgBtn.classList.contains('hidden')) {
+                imgBtn.classList.add('col-span-2');
             }
         }
 

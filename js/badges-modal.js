@@ -2657,6 +2657,65 @@
         }
     }
 
+    async function toggleLeaderboardPseudo() {
+        const currentlyShown = (localStorage.getItem('prefShowPseudoInLeaderboard') !== 'false' && window.prefShowPseudoInLeaderboard !== false);
+        const newShown = !currentlyShown;
+
+        // 1. Mettre à jour l'état local
+        localStorage.setItem('prefShowPseudoInLeaderboard', newShown ? 'true' : 'false');
+        window.prefShowPseudoInLeaderboard = newShown;
+
+        // 2. Mettre à jour le statut et le bouton dans la modale
+        const statusEl = document.getElementById('leaderboard-privacy-status');
+        const btnEl = document.getElementById('btnToggleLeaderboardPseudo');
+        const rowsWrapper = document.getElementById('leaderboard-rows-wrapper');
+
+        if (statusEl) {
+            statusEl.className = `flex items-center gap-1.5 transition-colors duration-200 ${newShown ? 'text-gray-600' : 'text-amber-700 font-medium'}`;
+            statusEl.innerHTML = `
+                <i class="fas ${newShown ? 'fa-eye text-emerald-600' : 'fa-eye-slash text-amber-500'}"></i>
+                <span>${newShown ? 'Votre pseudo est actuellement visible par la communauté.' : 'Votre pseudo est actuellement masqué dans le classement.'}</span>
+            `;
+        }
+
+        if (btnEl) {
+            btnEl.innerHTML = `
+                <i class="fas ${newShown ? 'fa-user-slash' : 'fa-user-check'} text-xs"></i>
+                <span>${newShown ? 'Masquer mon pseudo dans le classement' : 'Afficher mon pseudo dans le classement'}</span>
+            `;
+        }
+
+        // 3. Rafraîchir les lignes du classement
+        if (rowsWrapper && window._lastBadgesData) {
+            const currentPseudo = window._lastCurrentPseudo || window.currentUserPseudo || localStorage.getItem('userPseudo') || 'Moi';
+            const currentUid = window._lastCurrentUid || ((typeof firebase !== 'undefined' && firebase.auth && firebase.auth().currentUser) ? firebase.auth().currentUser.uid : null);
+            const updatedLeaderboard = renderLeaderboardRowsHTML(window._lastBadgesData.totalPoints, currentPseudo, currentUid);
+            rowsWrapper.innerHTML = updatedLeaderboard.rowsHtml;
+
+            const rankBadge = document.getElementById('leaderboard-rank-badge');
+            if (rankBadge) {
+                rankBadge.className = `text-xs font-semibold px-2.5 py-1 rounded-full ${updatedLeaderboard.isUserInTop5 ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-gray-100 text-gray-700 border border-gray-200'}`;
+                rankBadge.innerHTML = `Votre rang : <strong class="font-extrabold">#${updatedLeaderboard.currentUserRank}</strong> (${window._lastBadgesData.totalPoints.toLocaleString('fr-FR')} XP)`;
+            }
+        }
+
+        // 4. Sauvegarder dans Firestore pour l'utilisateur
+        const user = (typeof firebase !== 'undefined' && firebase.auth) ? firebase.auth().currentUser : null;
+        if (user && typeof db !== 'undefined') {
+            try {
+                await db.collection('users').doc(user.uid).set({
+                    privacy: {
+                        showPseudoInLeaderboard: newShown
+                    }
+                }, { merge: true });
+            } catch (err) {
+                console.error("Erreur mise à jour confidentialité classement :", err);
+            }
+        }
+    }
+
+    window.toggleLeaderboardPseudo = toggleLeaderboardPseudo;
+
     function displayRaceBadgesModal() {
         if (window.isSelectionMode) return;
         ensureBadgesModalInDom();
@@ -2775,6 +2834,11 @@
         </div>
         `;
 
+        // Stocker pour le rafraîchissement dynamique du classement
+        window._lastBadgesData = data;
+        window._lastCurrentPseudo = currentPseudo;
+        window._lastCurrentUid = currentUid;
+
         // 2. SECTION DU CLASSEMENT DES VRAIS UTILISATEURS (Repliable)
         const userLeaderboardExpandedState = localStorage.getItem('leaderboardExpandedState') !== 'false';
         const initialLeaderboard = renderLeaderboardRowsHTML(data.totalPoints, currentPseudo, currentUid);
@@ -2812,13 +2876,14 @@
                 <div id="leaderboard-rows-wrapper">
                     ${initialLeaderboard.rowsHtml}
                 </div>
-                <div class="mt-2.5 pt-2 border-t border-gray-100 flex flex-wrap items-center justify-between gap-2 text-[11px] text-gray-400">
-                    <span class="flex items-center gap-1">
-                        <i class="fas fa-user-shield text-gray-400"></i>
-                        ${isShowPseudoInLeaderboard ? 'Votre pseudo est affiché dans le classement.' : 'Votre pseudo est anonymisé (« Utilisateur X »).'}
+                <div class="mt-2.5 pt-2 border-t border-gray-100 flex flex-wrap items-center justify-between gap-2 text-[11px]">
+                    <span id="leaderboard-privacy-status" class="flex items-center gap-1.5 transition-colors duration-200 ${isShowPseudoInLeaderboard ? 'text-gray-600' : 'text-amber-700 font-medium'}">
+                        <i class="fas ${isShowPseudoInLeaderboard ? 'fa-eye text-emerald-600' : 'fa-eye-slash text-amber-500'}"></i>
+                        <span>${isShowPseudoInLeaderboard ? 'Votre pseudo est actuellement visible par la communauté.' : 'Votre pseudo est actuellement masqué dans le classement.'}</span>
                     </span>
-                    <button type="button" onclick="openUserSettingsForLeaderboard()" class="text-green-700 hover:text-green-800 hover:underline font-semibold cursor-pointer">
-                        ${leaderboardToggleText}
+                    <button type="button" id="btnToggleLeaderboardPseudo" onclick="toggleLeaderboardPseudo()" class="text-green-700 hover:text-green-800 hover:underline font-semibold cursor-pointer flex items-center gap-1">
+                        <i class="fas ${isShowPseudoInLeaderboard ? 'fa-user-slash' : 'fa-user-check'} text-xs"></i>
+                        <span>${leaderboardToggleText}</span>
                     </button>
                 </div>
             </div>
@@ -4264,5 +4329,6 @@
     window.updateBadgesButtonVisibility = updateBadgesButtonVisibility;
     window.highlightBadgeInModal = highlightBadgeInModal;
     window.checkBadgesForNewUnlocks = checkBadgesForNewUnlocks;
+    window.toggleLeaderboardPseudo = toggleLeaderboardPseudo;
 
 })();

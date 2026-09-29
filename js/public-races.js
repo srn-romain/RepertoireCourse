@@ -265,6 +265,14 @@ async function loadPublicRaces() {
                 }
             }
 
+            // Lien officiel de la course (recherche sur tous les champs possibles : website, link, siteUrl, url, resultUrl, site)
+            const rawLink = (race.website || race.link || race.siteUrl || race.url || race.resultUrl || race.site)
+                ? String(race.website || race.link || race.siteUrl || race.url || race.resultUrl || race.site).trim()
+                : '';
+            const officialUrl = rawLink
+                ? (rawLink.startsWith('http://') || rawLink.startsWith('https://') ? rawLink : 'https://' + rawLink)
+                : null;
+
             const raceCard = document.createElement('div');
             if (privacyLevel === 2) {
                 raceCard.className = 'bg-white rounded-xl overflow-hidden shadow-md card-hover cursor-pointer relative group h-full public-race-card';
@@ -273,6 +281,12 @@ async function loadPublicRaces() {
                     if (typeof window.showRaceDetails === 'function') {
                         window.showRaceDetails(race, null, privacy);
                     }
+                });
+            } else if (privacyLevel === 1 && officialUrl) {
+                raceCard.className = 'bg-white rounded-xl overflow-hidden shadow-md card-hover cursor-pointer relative group h-full public-race-card';
+                raceCard.addEventListener('click', (e) => {
+                    if (e.target.closest('button, a, img, .like-btn-wrapper')) return;
+                    window.open(officialUrl, '_blank');
                 });
             } else {
                 raceCard.className = 'bg-white rounded-xl overflow-hidden shadow-md relative group h-full public-race-card';
@@ -283,10 +297,6 @@ async function loadPublicRaces() {
             race._authorPrivacy = privacy;
             raceCard._raceData = race;
             raceCard._authorPrivacy = privacy;
-
-            // Lien officiel de la course (si renseigné)
-            const rawLink = race.link ? String(race.link).trim() : '';
-            const officialUrl = rawLink ? (rawLink.startsWith('http') ? rawLink : 'https://' + rawLink) : null;
 
             // Favorite Icon conditional
             const favIcon = (showFavorite && race.favorite)
@@ -345,7 +355,7 @@ async function loadPublicRaces() {
             let titleHtml = '';
             if (privacyLevel === 2) {
                 titleHtml = `
-                    <h3 class="text-xl font-bold text-green-800 mb-1 flex items-center gap-1.5 cursor-pointer hover:text-green-600 transition"
+                    <h3 class="text-xl font-bold text-green-800 mb-1 flex items-center gap-1.5 cursor-pointer"
                         title="Ouvrir la fiche complète de la course"
                         onclick="event.stopPropagation(); if(typeof window.showRaceDetails==='function') window.showRaceDetails(this.closest('.public-race-card')?._raceData || null, null, this.closest('.public-race-card')?._authorPrivacy || null);">
                         ${favIcon}
@@ -353,21 +363,24 @@ async function loadPublicRaces() {
                     </h3>
                 `;
             } else if (privacyLevel === 1) {
-                const discreetLock = `<i class="fas fa-lock text-gray-400 text-xs shrink-0" title="Aperçu simple (fiche détaillée confidentielle)"></i>`;
+                const discreetLock = `<i class="fas fa-lock text-gray-400 text-xs shrink-0 ml-1" title="Aperçu simple (fiche détaillée confidentielle)"></i>`;
                 if (officialUrl) {
                     titleHtml = `
-                        <h3 class="text-xl font-bold text-green-800 mb-1 flex items-center gap-1.5 cursor-pointer hover:text-blue-600 transition"
-                            title="Accéder au site officiel de la course : ${escapeHtml(officialUrl)}"
-                            onclick="event.stopPropagation(); window.open('${escapeHtml(officialUrl)}', '_blank');">
+                        <h3 class="text-xl font-bold text-green-800 mb-1 flex items-center gap-1.5 group-hover:text-blue-600 transition-colors">
                             ${favIcon}
-                            <span>${escapeHtml(race.name || 'Course')}</span>
+                            <a href="${escapeHtml(officialUrl)}" target="_blank" rel="noopener noreferrer" 
+                               class="group-hover:text-blue-600 group-hover:underline flex items-center gap-1.5 text-inherit no-underline"
+                               onclick="event.stopPropagation();"
+                               title="Accéder au site officiel de la course : ${escapeHtml(officialUrl)}">
+                                <span>${escapeHtml(race.name || 'Course')}</span>
+                                <i class="fas fa-external-link-alt text-xs text-blue-500 shrink-0 group-hover:scale-110 transition-transform"></i>
+                            </a>
                             ${discreetLock}
-                            <i class="fas fa-external-link-alt text-xs text-blue-500 shrink-0"></i>
                         </h3>
                     `;
                 } else {
                     titleHtml = `
-                        <h3 class="text-xl font-bold text-green-800 mb-1 flex items-center gap-1.5" title="Aperçu simple (fiche détaillée confidentielle)">
+                        <h3 class="text-xl font-bold text-green-800 mb-1 flex items-center gap-1.5" title="Aperçu simple (fiche détaillée confidentielle, aucun lien officiel renseigné)">
                             ${favIcon}
                             <span>${escapeHtml(race.name || 'Course')}</span>
                             ${discreetLock}

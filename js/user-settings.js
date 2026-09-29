@@ -63,116 +63,111 @@ const userSettingsModalHTML = `
 
             <!-- Confidentialité et visibilité du carnet -->
             <div>
-                <h3 class="text-sm font-semibold text-gray-700 mb-2.5 flex items-center gap-2">
-                    <i class="fas fa-user-shield text-green-600"></i>
-                    <span>Visibilité du carnet & Confidentialité</span>
-                </h3>
-                <div class="space-y-4 bg-gray-50 p-4 rounded-xl border border-gray-200">
-                    
-                    <!-- Sélecteur de niveau de visibilité à 3 paliers -->
-                    <div class="p-3.5 bg-white rounded-xl border border-gray-200 shadow-xs space-y-3">
-                        <div class="flex items-center justify-between">
-                            <span class="text-xs font-bold uppercase tracking-wider text-gray-500">Niveau de visibilité</span>
-                            <span id="privacyLevelBadge" class="text-xs px-2.5 py-1 rounded-full font-semibold flex items-center gap-1.5 transition-all bg-green-100 text-green-800 border border-green-200">
-                                <i class="fas fa-file-lines text-green-600"></i> Fiche complète
-                            </span>
-                        </div>
+                <div class="flex items-center justify-between mb-2.5">
+                    <h3 class="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                        <i class="fas fa-user-shield text-green-600"></i>
+                        <span>Visibilité du carnet & Confidentialité</span>
+                    </h3>
+                    <span id="privacyLevelBadge" class="text-xs px-2.5 py-0.5 rounded-full font-semibold flex items-center gap-1.5 transition-all bg-green-100 text-green-800 border border-green-200">
+                        <i class="fas fa-file-lines text-green-600"></i> Fiche complète
+                    </span>
+                </div>
 
-                        <!-- 3 Boutons segmentés directs (UX tactile et clic immédiat) -->
-                        <div class="grid grid-cols-3 gap-1.5 bg-gray-100 p-1.5 rounded-xl border border-gray-200">
-                            <button type="button" id="btnPrivacyLvl0" onclick="window.setPrivacyLevel(0)"
-                                class="privacy-lvl-btn py-2 px-2 rounded-lg text-xs font-semibold flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 transition-all text-gray-600 hover:text-gray-900 cursor-pointer">
-                                <i class="fas fa-lock text-sm text-red-500"></i>
-                                <span>Privé</span>
-                            </button>
-                            <button type="button" id="btnPrivacyLvl1" onclick="window.setPrivacyLevel(1)"
-                                class="privacy-lvl-btn py-2 px-2 rounded-lg text-xs font-semibold flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 transition-all text-gray-600 hover:text-gray-900 cursor-pointer">
-                                <i class="fas fa-eye text-sm text-blue-500"></i>
-                                <span>Aperçu</span>
-                            </button>
-                            <button type="button" id="btnPrivacyLvl2" onclick="window.setPrivacyLevel(2)"
-                                class="privacy-lvl-btn py-2 px-2 rounded-lg text-xs font-semibold flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 transition-all bg-white text-green-800 shadow-sm border border-green-200 cursor-pointer">
-                                <i class="fas fa-file-lines text-sm text-green-600"></i>
-                                <span>Fiche complète</span>
-                            </button>
-                        </div>
+                <!-- Sélecteur épuré à 3 onglets -->
+                <div class="grid grid-cols-3 gap-1 bg-gray-100 p-1 rounded-xl mb-3">
+                    <button type="button" id="btnPrivacyLvl0" onclick="window.setPrivacyLevel(0)"
+                        class="privacy-lvl-btn py-2 px-2 rounded-lg text-xs font-semibold flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 transition-all text-gray-600 hover:text-gray-900 cursor-pointer">
+                        <i class="fas fa-lock text-sm text-red-500"></i>
+                        <span>Privé</span>
+                    </button>
+                    <button type="button" id="btnPrivacyLvl1" onclick="window.setPrivacyLevel(1)"
+                        class="privacy-lvl-btn py-2 px-2 rounded-lg text-xs font-semibold flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 transition-all text-gray-600 hover:text-gray-900 cursor-pointer">
+                        <i class="fas fa-eye text-sm text-blue-500"></i>
+                        <span>Aperçu</span>
+                    </button>
+                    <button type="button" id="btnPrivacyLvl2" onclick="window.setPrivacyLevel(2)"
+                        class="privacy-lvl-btn py-2 px-2 rounded-lg text-xs font-semibold flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 transition-all bg-white text-green-800 shadow-sm border border-green-200 cursor-pointer">
+                        <i class="fas fa-file-lines text-sm text-green-600"></i>
+                        <span>Fiche complète</span>
+                    </button>
+                </div>
 
-                        <input type="hidden" id="privacyLevelInput" value="2">
+                <input type="hidden" id="privacyLevelInput" value="2">
 
-                        <!-- Explication dynamique du niveau -->
-                        <div id="privacyLevelDescription" class="text-xs text-gray-700 bg-green-50/70 p-2.5 rounded-lg border border-green-100 leading-relaxed flex items-start gap-2">
-                            <i class="fas fa-info-circle text-green-600 mt-0.5 shrink-0"></i>
-                            <div id="privacyLevelDescriptionText">
-                                <strong>Fiche détaillée publique :</strong> Vos courses sont publiques et les visiteurs peuvent ouvrir la fiche complète.
-                            </div>
-                        </div>
+                <!-- Explication dynamique épurée -->
+                <div id="privacyLevelDescription" class="text-xs text-gray-600 bg-green-50/60 pl-3 pr-2.5 py-2 rounded-lg border-l-3 border-green-500 mb-4 leading-relaxed flex items-start gap-2">
+                    <div id="privacyLevelDescriptionText">
+                        <strong>Fiche détaillée publique :</strong> Vos courses sont publiques et les visiteurs peuvent ouvrir la fiche complète.
                     </div>
+                </div>
 
-                    <!-- Options Niveau 1 & 2 : Informations de base sur l'accueil -->
-                    <div id="privacyBasicOptions" class="pt-1 space-y-2.5">
-                        <p class="text-xs font-semibold text-gray-600 uppercase tracking-wider">Informations affichées sur l'accueil :</p>
-                        <label class="flex items-center cursor-pointer">
+                <!-- Options Niveau 1 & 2 : Informations de base sur l'accueil -->
+                <div id="privacyBasicOptions" class="space-y-2 mb-4">
+                    <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Informations affichées sur l'accueil :</p>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <label class="flex items-center cursor-pointer hover:text-gray-900 transition">
                             <input type="checkbox" id="prefShowPseudo" class="w-4 h-4 text-green-600 rounded focus:ring-green-500" checked>
-                            <span class="ml-2 text-sm text-gray-700">Afficher mon pseudo</span>
+                            <span class="ml-2 text-xs sm:text-sm text-gray-700">Afficher mon pseudo</span>
                         </label>
-                        <label class="flex items-center cursor-pointer">
+                        <label class="flex items-center cursor-pointer hover:text-gray-900 transition">
                             <input type="checkbox" id="prefShowCity" class="w-4 h-4 text-green-600 rounded focus:ring-green-500" checked>
-                            <span class="ml-2 text-sm text-gray-700">Afficher la ville de la course</span>
+                            <span class="ml-2 text-xs sm:text-sm text-gray-700">Afficher la ville de la course</span>
                         </label>
-                        <label class="flex items-center cursor-pointer">
+                        <label class="flex items-center cursor-pointer hover:text-gray-900 transition">
                             <input type="checkbox" id="prefShowDay" class="w-4 h-4 text-green-600 rounded focus:ring-green-500" checked>
-                            <span class="ml-2 text-sm text-gray-700">Afficher le jour précis (ex: 12 mars)</span>
+                            <span class="ml-2 text-xs sm:text-sm text-gray-700">Afficher le jour précis</span>
                         </label>
-                        <label class="flex items-center cursor-pointer">
+                        <label class="flex items-center cursor-pointer hover:text-gray-900 transition">
                             <input type="checkbox" id="prefShowFavorite" class="w-4 h-4 text-green-600 rounded focus:ring-green-500">
-                            <span class="ml-2 text-sm text-gray-700">Afficher le statut "Favori"</span>
+                            <span class="ml-2 text-xs sm:text-sm text-gray-700">Afficher le statut "Favori"</span>
                         </label>
-                        <label class="flex items-center cursor-pointer">
+                        <label class="flex items-center cursor-pointer hover:text-gray-900 transition sm:col-span-2">
                             <input type="checkbox" id="prefHideLikeCount" class="w-4 h-4 text-green-600 rounded focus:ring-green-500">
-                            <span class="ml-2 text-sm text-gray-700">Masquer le nombre de J'aime (pour les visiteurs)</span>
+                            <span class="ml-2 text-xs sm:text-sm text-gray-700">Masquer le nombre de J'aime</span>
                         </label>
                     </div>
+                </div>
 
-                    <!-- Options Niveau 2 : Masquage spécifique dans la fiche détaillée -->
-                    <div id="privacyDetailOptions" class="pt-2 border-t border-gray-200 space-y-2.5">
-                        <p class="text-xs font-semibold text-gray-600 uppercase tracking-wider">Masquage dans la fiche détaillée :</p>
-                        <label class="flex items-center cursor-pointer">
+                <!-- Options Niveau 2 : Masquage spécifique dans la fiche détaillée -->
+                <div id="privacyDetailOptions" class="pt-3 border-t border-gray-100 space-y-2 mb-2">
+                    <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Masquage dans la fiche détaillée :</p>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <label class="flex items-center cursor-pointer hover:text-gray-900 transition">
                             <input type="checkbox" id="prefHideNotes" class="w-4 h-4 text-green-600 rounded focus:ring-green-500">
-                            <span class="ml-2 text-sm text-gray-700">Masquer mes notes personnelles</span>
+                            <span class="ml-2 text-xs sm:text-sm text-gray-700">Masquer mes notes</span>
                         </label>
-                        <label class="flex items-center cursor-pointer">
+                        <label class="flex items-center cursor-pointer hover:text-gray-900 transition">
                             <input type="checkbox" id="prefHideRanking" class="w-4 h-4 text-green-600 rounded focus:ring-green-500">
-                            <span class="ml-2 text-sm text-gray-700">Masquer mes classements</span>
+                            <span class="ml-2 text-xs sm:text-sm text-gray-700">Masquer mes classements</span>
                         </label>
-                        <label class="flex items-center cursor-pointer">
+                        <label class="flex items-center cursor-pointer hover:text-gray-900 transition">
                             <input type="checkbox" id="prefHideStats" class="w-4 h-4 text-green-600 rounded focus:ring-green-500">
-                            <span class="ml-2 text-sm text-gray-700">Masquer les stats calculées (allure, vitesse, D+/km)</span>
+                            <span class="ml-2 text-xs sm:text-sm text-gray-700">Masquer les stats calculées</span>
                         </label>
-                        <label class="flex items-center cursor-pointer">
+                        <label class="flex items-center cursor-pointer hover:text-gray-900 transition">
                             <input type="checkbox" id="prefHidePhotos" class="w-4 h-4 text-green-600 rounded focus:ring-green-500">
-                            <span class="ml-2 text-sm text-gray-700">Masquer mes photos</span>
+                            <span class="ml-2 text-xs sm:text-sm text-gray-700">Masquer mes photos</span>
                         </label>
-                        <label class="flex items-center cursor-pointer">
+                        <label class="flex items-center cursor-pointer hover:text-gray-900 transition">
                             <input type="checkbox" id="prefHidePrice" class="w-4 h-4 text-green-600 rounded focus:ring-green-500">
-                            <span class="ml-2 text-sm text-gray-700">Masquer le prix d'inscription</span>
+                            <span class="ml-2 text-xs sm:text-sm text-gray-700">Masquer le prix</span>
                         </label>
-                        <label class="flex items-center cursor-pointer">
+                        <label class="flex items-center cursor-pointer hover:text-gray-900 transition">
                             <input type="checkbox" id="prefHideBib" class="w-4 h-4 text-green-600 rounded focus:ring-green-500">
-                            <span class="ml-2 text-sm text-gray-700">Masquer le numéro de dossard</span>
+                            <span class="ml-2 text-xs sm:text-sm text-gray-700">Masquer le dossard</span>
+                        </label>
+                        <label class="flex items-center cursor-pointer hover:text-gray-900 transition sm:col-span-2">
+                            <input type="checkbox" id="prefHideCompanions" class="w-4 h-4 text-green-600 rounded focus:ring-green-500">
+                            <span class="ml-2 text-xs sm:text-sm text-gray-700">Masquer mes accompagnants</span>
                         </label>
                     </div>
+                </div>
 
-                    <!-- Options Classement des missions (toujours visible quel que soit le niveau des courses) -->
-                    <div class="pt-2 border-t border-gray-200">
-                        <label class="flex items-center cursor-pointer">
-                            <input type="checkbox" id="prefShowPseudoInLeaderboard" class="w-4 h-4 text-green-600 rounded focus:ring-green-500 shrink-0" checked>
-                            <span class="ml-2 text-xs text-gray-700">Faire apparaître mon pseudo dans le classement des missions</span>
-                        </label>
-                    </div>
-
-                    <div class="pt-2 border-t border-gray-200 mt-2">
-                        <p class="text-xs text-green-600 font-medium"><i class="fas fa-check-circle mr-1"></i>Les modifications sont automatiquement enregistrées.</p>
-                    </div>
+                <div class="pt-2">
+                    <p class="text-xs text-green-600 font-medium flex items-center gap-1">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Enregistrement automatique des modifications.</span>
+                    </p>
                 </div>
             </div>
 
@@ -415,6 +410,7 @@ async function initSettingsLogic() {
     const prefHidePhotos = document.getElementById('prefHidePhotos');
     const prefHidePrice = document.getElementById('prefHidePrice');
     const prefHideBib = document.getElementById('prefHideBib');
+    const prefHideCompanions = document.getElementById('prefHideCompanions');
 
     // Checkboxes UI preferences
     const prefShowStatsBtn = document.getElementById('prefShowStatsBtn');
@@ -451,32 +447,32 @@ async function initSettingsLogic() {
 
         if (lvl === 0) {
             if (badge) {
-                badge.className = "text-xs px-2.5 py-1 rounded-full font-semibold flex items-center gap-1.5 bg-red-100 text-red-700 border border-red-200";
+                badge.className = "text-xs px-2.5 py-0.5 rounded-full font-semibold flex items-center gap-1.5 bg-red-100 text-red-700 border border-red-200";
                 badge.innerHTML = `<i class="fas fa-lock text-red-500"></i> 100% Privé`;
             }
-            if (descBox) descBox.className = "text-xs text-gray-700 bg-red-50/70 p-2.5 rounded-lg border border-red-100 leading-relaxed flex items-start gap-2";
+            if (descBox) descBox.className = "text-xs text-gray-600 bg-red-50/60 pl-3 pr-2.5 py-2 rounded-lg border-l-3 border-red-500 mb-4 leading-relaxed flex items-start gap-2";
             if (descText) {
-                descText.innerHTML = `<strong>Totalement privé :</strong> Vos courses sont invisibles sur la page d'accueil communautaire. Vous seul pouvez les consulter dans votre carnet.`;
+                descText.innerHTML = `<strong>Totalement privé :</strong> Vos courses sont invisibles sur l'accueil communautaire. Vous seul pouvez les consulter dans votre carnet.`;
             }
             if (basicOpts) basicOpts.classList.add('hidden');
             if (detailOpts) detailOpts.classList.add('hidden');
         } else if (lvl === 1) {
             if (badge) {
-                badge.className = "text-xs px-2.5 py-1 rounded-full font-semibold flex items-center gap-1.5 bg-blue-100 text-blue-700 border border-blue-200";
+                badge.className = "text-xs px-2.5 py-0.5 rounded-full font-semibold flex items-center gap-1.5 bg-blue-100 text-blue-700 border border-blue-200";
                 badge.innerHTML = `<i class="fas fa-eye text-blue-500"></i> Aperçu simple`;
             }
-            if (descBox) descBox.className = "text-xs text-gray-700 bg-blue-50/70 p-2.5 rounded-lg border border-blue-100 leading-relaxed flex items-start gap-2";
+            if (descBox) descBox.className = "text-xs text-gray-600 bg-blue-50/60 pl-3 pr-2.5 py-2 rounded-lg border-l-3 border-blue-500 mb-4 leading-relaxed flex items-start gap-2";
             if (descText) {
-                descText.innerHTML = `<strong>Aperçu public :</strong> Vos courses apparaissent sur l'accueil avec les données de base (date, distance, terrain). Les visiteurs n'ont pas accès à la fiche détaillée (au clic sur le nom, ils sont redirigés vers le site officiel s'il est renseigné).`;
+                descText.innerHTML = `<strong>Aperçu public :</strong> Vos courses apparaissent sur l'accueil avec les données de base (date, distance, terrain). Les visiteurs n'ont pas accès à la fiche détaillée (au clic sur le nom, ils sont redirigés vers le site officiel).`;
             }
             if (basicOpts) basicOpts.classList.remove('hidden');
             if (detailOpts) detailOpts.classList.add('hidden');
         } else {
             if (badge) {
-                badge.className = "text-xs px-2.5 py-1 rounded-full font-semibold flex items-center gap-1.5 bg-green-100 text-green-800 border border-green-200";
+                badge.className = "text-xs px-2.5 py-0.5 rounded-full font-semibold flex items-center gap-1.5 bg-green-100 text-green-800 border border-green-200";
                 badge.innerHTML = `<i class="fas fa-file-lines text-green-600"></i> Fiche complète`;
             }
-            if (descBox) descBox.className = "text-xs text-gray-700 bg-green-50/70 p-2.5 rounded-lg border border-green-100 leading-relaxed flex items-start gap-2";
+            if (descBox) descBox.className = "text-xs text-gray-600 bg-green-50/60 pl-3 pr-2.5 py-2 rounded-lg border-l-3 border-green-500 mb-4 leading-relaxed flex items-start gap-2";
             if (descText) {
                 descText.innerHTML = `<strong>Fiche détaillée publique :</strong> Vos courses sont publiques et les visiteurs peuvent ouvrir la fiche complète. Vous pouvez choisir ci-dessous les éléments à masquer.`;
             }
@@ -525,7 +521,7 @@ async function initSettingsLogic() {
 
         [
             prefShowPseudo, prefShowCity, prefShowFavorite, prefShowDay, prefHideLikeCount, prefShowPseudoInLeaderboard,
-            prefHideNotes, prefHideRanking, prefHideStats, prefHidePhotos, prefHidePrice, prefHideBib
+            prefHideNotes, prefHideRanking, prefHideStats, prefHidePhotos, prefHidePrice, prefHideBib, prefHideCompanions
         ].forEach(cb => {
             if (cb) {
                 cb.disabled = true;
@@ -675,6 +671,8 @@ async function initSettingsLogic() {
         const currentLevel = currentSelectedPrivacyLevel;
         const isAccountPublic = currentLevel > 0;
 
+        const isLeaderboardPseudoShown = (localStorage.getItem('prefShowPseudoInLeaderboard') !== 'false' && window.prefShowPseudoInLeaderboard !== false);
+
         const privacy = {
             level: currentLevel,
             isPublic: isAccountPublic,
@@ -683,23 +681,19 @@ async function initSettingsLogic() {
             showFavorite: prefShowFavorite ? prefShowFavorite.checked : false,
             showDay: prefShowDay ? prefShowDay.checked : true,
             hideLikeCount: prefHideLikeCount ? prefHideLikeCount.checked : false,
-            showPseudoInLeaderboard: prefShowPseudoInLeaderboard ? prefShowPseudoInLeaderboard.checked : true,
+            showPseudoInLeaderboard: isLeaderboardPseudoShown,
             // Nouveaux masquages fiche détaillée
             hideNotes: prefHideNotes ? prefHideNotes.checked : false,
             hideRanking: prefHideRanking ? prefHideRanking.checked : false,
             hideStats: prefHideStats ? prefHideStats.checked : false,
             hidePhotos: prefHidePhotos ? prefHidePhotos.checked : false,
             hidePrice: prefHidePrice ? prefHidePrice.checked : false,
-            hideBib: prefHideBib ? prefHideBib.checked : false
+            hideBib: prefHideBib ? prefHideBib.checked : false,
+            hideCompanions: prefHideCompanions ? prefHideCompanions.checked : false
         };
 
         localStorage.setItem('prefAccountPublicRaces', isAccountPublic ? 'true' : 'false');
         window.prefAccountPublicRaces = isAccountPublic;
-
-        if (prefShowPseudoInLeaderboard) {
-            localStorage.setItem('prefShowPseudoInLeaderboard', prefShowPseudoInLeaderboard.checked ? 'true' : 'false');
-            window.prefShowPseudoInLeaderboard = prefShowPseudoInLeaderboard.checked;
-        }
 
         try {
             await db.collection('users').doc(user.uid).set({ privacy, isPublic: isAccountPublic }, { merge: true });
@@ -736,8 +730,8 @@ async function initSettingsLogic() {
     // Ne pas attacher les listeners si l'utilisateur est invité
     if (!isInvite) {
         [
-            prefShowPseudo, prefShowCity, prefShowFavorite, prefShowDay, prefHideLikeCount, prefShowPseudoInLeaderboard,
-            prefHideNotes, prefHideRanking, prefHideStats, prefHidePhotos, prefHidePrice, prefHideBib
+            prefShowPseudo, prefShowCity, prefShowFavorite, prefShowDay, prefHideLikeCount,
+            prefHideNotes, prefHideRanking, prefHideStats, prefHidePhotos, prefHidePrice, prefHideBib, prefHideCompanions
         ].forEach(cb => {
             if (cb) cb.addEventListener('change', savePrivacySettings);
         });
@@ -859,9 +853,8 @@ async function initSettingsLogic() {
                     if (prefShowFavorite) prefShowFavorite.checked = data.privacy.showFavorite === true;
                     if (prefShowDay) prefShowDay.checked = data.privacy.showDay !== false;
                     if (prefHideLikeCount) prefHideLikeCount.checked = data.privacy.hideLikeCount === true;
-                    if (prefShowPseudoInLeaderboard) {
+                    if (data.privacy.showPseudoInLeaderboard !== undefined) {
                         const isChecked = data.privacy.showPseudoInLeaderboard === true;
-                        prefShowPseudoInLeaderboard.checked = isChecked;
                         localStorage.setItem('prefShowPseudoInLeaderboard', isChecked ? 'true' : 'false');
                         window.prefShowPseudoInLeaderboard = isChecked;
                     }
@@ -872,19 +865,20 @@ async function initSettingsLogic() {
                     if (prefHidePhotos) prefHidePhotos.checked = data.privacy.hidePhotos === true;
                     if (prefHidePrice) prefHidePrice.checked = data.privacy.hidePrice === true;
                     if (prefHideBib) prefHideBib.checked = data.privacy.hideBib === true;
+                    if (prefHideCompanions) prefHideCompanions.checked = data.privacy.hideCompanions === true;
                 } else {
                     if (prefShowPseudo) prefShowPseudo.checked = true;
                     if (prefShowCity) prefShowCity.checked = true;
                     if (prefShowFavorite) prefShowFavorite.checked = false;
                     if (prefShowDay) prefShowDay.checked = true;
                     if (prefHideLikeCount) prefHideLikeCount.checked = false;
-                    if (prefShowPseudoInLeaderboard) prefShowPseudoInLeaderboard.checked = true;
                     if (prefHideNotes) prefHideNotes.checked = false;
                     if (prefHideRanking) prefHideRanking.checked = false;
                     if (prefHideStats) prefHideStats.checked = false;
                     if (prefHidePhotos) prefHidePhotos.checked = false;
                     if (prefHidePrice) prefHidePrice.checked = false;
                     if (prefHideBib) prefHideBib.checked = false;
+                    if (prefHideCompanions) prefHideCompanions.checked = false;
                 }
 
                 // UI preferences (Default to true if undefined, as buttons were previously visible)
