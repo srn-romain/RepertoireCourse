@@ -373,7 +373,7 @@ async function loadPublicRaces() {
                                onclick="event.stopPropagation();"
                                title="Accéder au site officiel de la course : ${escapeHtml(officialUrl)}">
                                 <span>${escapeHtml(race.name || 'Course')}</span>
-                                <i class="fas fa-external-link-alt text-xs text-blue-500 shrink-0 group-hover:scale-110 transition-transform"></i>
+                                <i class="fas fa-external-link-alt text-xs text-blue-500 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200"></i>
                             </a>
                             ${discreetLock}
                         </h3>
