@@ -366,7 +366,12 @@ window.closeSettingsModal = function () {
     document.body.classList.remove('overflow-hidden'); // Unfreeze background
 
     if (window.settingsHasChanged) {
-        window.location.reload();
+        window.settingsHasChanged = false;
+        if (typeof loadPublicRaces === 'function') {
+            loadPublicRaces();
+        } else {
+            window.location.reload();
+        }
     }
 }
 
@@ -699,7 +704,10 @@ async function initSettingsLogic() {
         try {
             await db.collection('users').doc(user.uid).set({ privacy, isPublic: isAccountPublic }, { merge: true });
             console.log("Préférences sauvegardées", privacy);
-            settingsHasChanged = true; // Reload required to reflect changes on public page
+            window.settingsHasChanged = true;
+            if (typeof loadPublicRaces === 'function') {
+                loadPublicRaces();
+            }
         } catch (e) {
             console.error("Erreur save privacy", e);
         }

@@ -505,9 +505,10 @@
         const isInviteCheck = (typeof isInvite === 'function')
             ? isInvite()
             : ((typeof BackendAPI !== 'undefined' && BackendAPI.isInvite) ? BackendAPI.isInvite() : false);
+        const isOnPublicPage = (typeof window.location !== 'undefined' && (window.location.pathname.includes('index.html') || window.location.pathname === '/' || window.location.pathname.endsWith('/')));
 
         if (detailsActionsContainer) {
-            if (isInviteCheck || typeof populateEditForm !== 'function') {
+            if (isOnPublicPage || isInviteCheck || typeof populateEditForm !== 'function') {
                 detailsActionsContainer.classList.add('hidden');
             } else {
                 detailsActionsContainer.classList.remove('hidden');
@@ -1717,38 +1718,44 @@
             };
         }
 
-        // Timestamps création / modification
+        // Timestamps création / modification (Métadonnées strictement privées pour le tableau de bord)
         const timestampsElement = document.getElementById('detailsTimestamps');
         if (timestampsElement) {
-            let timestampHtml = '';
-            const formatOpts = { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' };
+            if (isOnPublicPage || effectivePrivacy) {
+                timestampsElement.textContent = '';
+                timestampsElement.classList.add('hidden');
+            } else {
+                timestampsElement.classList.remove('hidden');
+                let timestampHtml = '';
+                const formatOpts = { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' };
 
-            let createdStr = '';
-            if (race.createdAt) {
-                const cDate = (typeof race.createdAt.toDate === 'function') ? race.createdAt.toDate() : new Date(race.createdAt);
-                if (!isNaN(cDate.getTime())) {
-                    createdStr = `Créée le ${cDate.toLocaleDateString('fr-FR', formatOpts)}`;
+                let createdStr = '';
+                if (race.createdAt) {
+                    const cDate = (typeof race.createdAt.toDate === 'function') ? race.createdAt.toDate() : new Date(race.createdAt);
+                    if (!isNaN(cDate.getTime())) {
+                        createdStr = `Créée le ${cDate.toLocaleDateString('fr-FR', formatOpts)}`;
+                    }
                 }
-            }
 
-            let updatedStr = '';
-            if (race.updatedAt) {
-                const uDate = (typeof race.updatedAt.toDate === 'function') ? race.updatedAt.toDate() : new Date(race.updatedAt);
-                if (!isNaN(uDate.getTime())) {
-                    updatedStr = `Modifiée le ${uDate.toLocaleDateString('fr-FR', formatOpts)}`;
+                let updatedStr = '';
+                if (race.updatedAt) {
+                    const uDate = (typeof race.updatedAt.toDate === 'function') ? race.updatedAt.toDate() : new Date(race.updatedAt);
+                    if (!isNaN(uDate.getTime())) {
+                        updatedStr = `Modifiée le ${uDate.toLocaleDateString('fr-FR', formatOpts)}`;
+                    }
                 }
-            }
 
-            if (createdStr) {
-                timestampHtml = createdStr;
-                if (updatedStr && updatedStr !== createdStr) {
-                    timestampHtml += ` | ${updatedStr}`;
+                if (createdStr) {
+                    timestampHtml = createdStr;
+                    if (updatedStr && updatedStr !== createdStr) {
+                        timestampHtml += ` | ${updatedStr}`;
+                    }
+                } else if (updatedStr) {
+                    timestampHtml = updatedStr;
                 }
-            } else if (updatedStr) {
-                timestampHtml = updatedStr;
-            }
 
-            timestampsElement.textContent = timestampHtml;
+                timestampsElement.textContent = timestampHtml;
+            }
         }
 
         // Terrain label
@@ -1962,49 +1969,81 @@
 
         } else {
             const badgeTitleP = badgeButton?.querySelector('p');
-            if (hasBib && likeCount === 0) {
-                if (badgeTitleP) {
-                    badgeTitleP.innerHTML = `
-                        <i class="fas fa-id-badge text-green-500"></i>
-                        <span>Dossard</span>
-                    `;
-                }
-                if (detailBadgeText) {
-                    detailBadgeText.innerHTML = `<span class="font-semibold text-green-800 text-sm">N°${bibDisplay}</span>`;
+            const showBibInBadgeBox = hasBib && (!effectivePrivacy || !effectivePrivacy.hideBib);
+
+            if (isOnPublicPage) {
+                if (showBibInBadgeBox) {
+                    if (badgeTitleP) {
+                        badgeTitleP.innerHTML = `
+                            <i class="fas fa-id-badge text-green-500"></i>
+                            <span>Dossard</span>
+                        `;
+                    }
+                    if (detailBadgeText) {
+                        detailBadgeText.innerHTML = `<span class="font-semibold text-green-800 text-sm">N°${bibDisplay}</span>`;
+                    }
+                } else {
+                    if (badgeTitleP) {
+                        badgeTitleP.innerHTML = `
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-500" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <circle cx="12" cy="8" r="7" />
+                                <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88" />
+                            </svg>
+                            <span>Badge</span>
+                        `;
+                    }
+                    if (detailBadgeText) {
+                        detailBadgeText.textContent = '/';
+                    }
                 }
                 if (bibContainer) bibContainer.classList.add('hidden');
             } else {
-                if (badgeTitleP) {
-                    badgeTitleP.innerHTML = `
-                        <i class="fas fa-heart text-green-500"></i>
-                        <span>J'aime</span>
-                    `;
-                }
-                if (detailBadgeText) {
-                    const likeHoverHtml = (likeCount > 0) ? `
-                        <div class="like-hover-trigger-modal inline-flex items-center gap-2 cursor-help relative group/likes-modal"
-                             data-liked-by='${JSON.stringify(likedBy)}'>
-                            <span class="font-normal text-green-800 text-sm flex items-center gap-2">${likeText}</span>
-                            ${likesLockIcon}
+                if (hasBib && likeCount === 0) {
+                    if (badgeTitleP) {
+                        badgeTitleP.innerHTML = `
+                            <i class="fas fa-id-badge text-green-500"></i>
+                            <span>Dossard</span>
+                        `;
+                    }
+                    if (detailBadgeText) {
+                        detailBadgeText.innerHTML = `<span class="font-semibold text-green-800 text-sm">N°${bibDisplay}</span>`;
+                    }
+                    if (bibContainer) bibContainer.classList.add('hidden');
+                } else {
+                    if (badgeTitleP) {
+                        badgeTitleP.innerHTML = `
+                            <i class="fas fa-heart text-green-500"></i>
+                            <span>J'aime</span>
+                        `;
+                    }
+                    if (detailBadgeText) {
+                        const likeHoverHtml = (likeCount > 0) ? `
+                            <div class="like-hover-trigger-modal inline-flex items-center gap-2 cursor-help relative group/likes-modal"
+                                 data-liked-by='${JSON.stringify(likedBy)}'>
+                                <span class="font-normal text-green-800 text-sm flex items-center gap-2">${likeText}</span>
+                                ${likesLockIcon}
 
-                            <div class="liker-tooltip hidden absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 bg-white border border-red-100 shadow-xl rounded-xl p-3 z-[1000]">
-                                <p class="text-[10px] text-gray-400 mb-2 border-b pb-1 font-bold uppercase tracking-wider">Aimé par :</p>
-                                <ul class="liker-list space-y-2 max-h-40 overflow-y-auto">
-                                    <li class="text-[10px] italic text-gray-400">Chargement...</li>
-                                </ul>
-                                <div class="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-white border-b border-r border-red-100 transform rotate-45"></div>
+                                <div class="liker-tooltip hidden absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 bg-white border border-red-100 shadow-xl rounded-xl p-3 z-[1000]">
+                                    <p class="text-[10px] text-gray-400 mb-2 border-b pb-1 font-bold uppercase tracking-wider">Aimé par :</p>
+                                    <ul class="liker-list space-y-2 max-h-40 overflow-y-auto">
+                                        <li class="text-[10px] italic text-gray-400">Chargement...</li>
+                                    </ul>
+                                    <div class="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-white border-b border-r border-red-100 transform rotate-45"></div>
+                                </div>
                             </div>
-                        </div>
-                    ` : `<span class="font-normal text-green-800 text-sm flex items-center gap-2">${likeText} ${likesLockIcon}</span>`;
+                        ` : `<span class="font-normal text-green-800 text-sm flex items-center gap-2">${likeText} ${likesLockIcon}</span>`;
 
-                    detailBadgeText.innerHTML = likeHoverHtml;
-                }
+                        detailBadgeText.innerHTML = likeHoverHtml;
+                    }
 
-                if (hasBib && bibContainer && bibText) {
-                    bibText.innerHTML = `Dossard n°${bibDisplay}`;
-                    bibContainer.classList.remove('hidden');
-                } else if (bibContainer) {
-                    bibContainer.classList.add('hidden');
+                    if (hasBib && bibContainer && bibText) {
+                        bibText.innerHTML = `Dossard n°${bibDisplay}`;
+                        bibContainer.classList.remove('hidden');
+                    } else if (bibContainer) {
+                        bibContainer.classList.add('hidden');
+                    }
                 }
             }
         }
@@ -2188,7 +2227,7 @@
         // Google Drive Link
         const driveContainer = document.getElementById('driveButtonContainer');
         const openDriveBtn = document.getElementById('openDriveBtn');
-        if (race.driveId && race.driveId.trim() !== '') {
+        if (race.driveId && race.driveId.trim() !== '' && !isOnPublicPage) {
             if (driveContainer) driveContainer.classList.remove('hidden');
             if (openDriveBtn) {
                 openDriveBtn.onclick = () => {
@@ -2205,15 +2244,18 @@
             if (driveContainer) driveContainer.classList.add('hidden');
         }
 
-        // Application des restrictions de confidentialité pour les visiteurs non propriétaires
-        if (effectivePrivacy && !isOwner) {
+        // Application des restrictions de confidentialité
+        if (effectivePrivacy) {
             if (effectivePrivacy.hideNotes) {
                 const notesContainer = document.getElementById('detailsNotesContainer');
                 if (notesContainer) notesContainer.classList.add('hidden');
             }
             if (effectivePrivacy.hideRanking) {
                 const rankingContainer = document.getElementById('detailsRankingContainer');
-                if (rankingContainer) rankingContainer.classList.add('hidden');
+                if (rankingContainer) {
+                    rankingContainer.classList.add('hidden');
+                    rankingContainer.classList.remove('flex');
+                }
             }
             if (effectivePrivacy.hideStats) {
                 const speedInfo = document.getElementById('averageSpeedInfo');
@@ -2228,8 +2270,16 @@
                 if (imageButton) imageButton.classList.add('hidden');
             }
             if (effectivePrivacy.hidePrice) {
+                // Pour raisons esthétiques, le carré reste visible dans la grille mais le montant est flouté
                 const priceContainer = document.getElementById('detailsPriceContainer');
-                if (priceContainer) priceContainer.classList.add('hidden');
+                const priceElement = document.getElementById('detailsPrice');
+                if (priceContainer) {
+                    priceContainer.classList.remove('hidden');
+                    priceContainer.style.display = '';
+                }
+                if (priceElement) {
+                    priceElement.innerHTML = `<span class="inline-block filter blur-[4px] select-none text-green-800 font-semibold opacity-70 cursor-not-allowed" title="Prix confidentiel">25.00 €</span>`;
+                }
             }
             if (effectivePrivacy.hideBib) {
                 const bibContainer = document.getElementById('detailsBibContainer');
