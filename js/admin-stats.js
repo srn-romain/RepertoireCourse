@@ -140,11 +140,13 @@ async function loadAdminStats() {
 
         const userRaceCount = {};
         const userNames = {};
+        const usersDataMap = {};
         usersSnapshot.forEach(doc => {
             stats.totalUsers++;
             userRaceCount[doc.id] = 0;
             const d = doc.data();
             userNames[doc.id] = d.pseudo || d.email || 'Utilisateur';
+            usersDataMap[doc.id] = d;
 
             if (d.role !== 'admin' && d.lastLogin) {
                 const lDateObj = d.lastLogin.toDate ? d.lastLogin.toDate() : new Date(d.lastLogin);
@@ -197,7 +199,9 @@ async function loadAdminStats() {
                 userRaceCount[userId]++;
             }
 
-            if (race.public === true) stats.publicRaces++; else stats.privateRaces++;
+            const uData = usersDataMap[userId];
+            const isUserPublic = uData ? ((uData.privacy?.isPublic !== false) && (uData.isPublic !== false)) : true;
+            if (isUserPublic) stats.publicRaces++; else stats.privateRaces++;
             if (raceDate >= today) stats.upcomingRaces++; else stats.pastRaces++;
 
             if (race.distance) {

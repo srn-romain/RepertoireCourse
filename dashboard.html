@@ -288,15 +288,6 @@
                             </select>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-green-700 mb-2">Visibilité</label>
-                            <select id="filterVisibility"
-                                class="w-full px-3 py-2 border border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
-                                <option value="">Tout</option>
-                                <option value="public">Publique</option>
-                                <option value="private">Privée</option>
-                            </select>
-                        </div>
-                        <div>
                             <label class="block text-sm font-medium text-green-700 mb-2">Commentaires</label>
                             <select id="filterComments"
                                 class="w-full px-3 py-2 border border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
@@ -474,14 +465,6 @@
                             <input type="checkbox" id="raceFavorite"
                                 class="w-5 h-5 text-green-600 border-green-300 rounded focus:ring-green-500 focus:ring-2">
                             <span class="ml-2 text-green-700">Marquer comme favori</span>
-                        </label>
-                    </div>
-                    <div class="mb-4">
-                        <label class="flex items-center cursor-pointer">
-                            <input type="checkbox" id="racePublic" checked
-                                class="w-5 h-5 text-blue-600 border-blue-300 rounded focus:ring-blue-500 focus:ring-2">
-                            <span class="ml-2 text-green-700">Rendre public</span>
-                            <p class="text-xs text-gray-400 italic mt-1 ml-7">(Visible par la communauté)</p>
                         </label>
                     </div>
                     <div class="mb-4 flex flex-col sm:flex-row gap-4">
@@ -3986,10 +3969,6 @@
             }
             delete raceForm.dataset.wishlistConfirmed;
 
-            // Réinitialiser la checkbox public à true par défaut
-            const publicCheckbox = document.getElementById('racePublic');
-            if (publicCheckbox) publicCheckbox.checked = true;
-
             // Réinitialiser la checkbox auto-image
             const autoImageCheckbox = document.getElementById('autoImageCheckbox');
             if (autoImageCheckbox) autoImageCheckbox.checked = false;
@@ -5342,8 +5321,11 @@
             // Titre avec surlignage si correspond
             const titleElement = document.getElementById('detailsTitle');
 
-            // Icône de cadenas si la course n'est pas publique
-            const lockIcon = (race.public !== true) ? '<i class="fas fa-lock text-gray-400 mr-2 cursor-pointer hover:text-gray-600 transition-colors" onclick="showPrivateInfo()" title="Course privée"></i>' : '';
+            // Icône de cadenas si le compte est privé
+            const isAccountPublicForLock = (typeof window.prefAccountPublicRaces !== 'undefined')
+                ? (window.prefAccountPublicRaces === true)
+                : (localStorage.getItem('prefAccountPublicRaces') !== 'false');
+            const lockIcon = (!isAccountPublicForLock) ? '<i class="fas fa-lock text-gray-400 mr-2 cursor-pointer hover:text-gray-600 transition-colors" onclick="showPrivateInfo()" title="Compte privé (courses privées)"></i>' : '';
 
             if (fieldMatchesSearch(race.name, searchQuery)) {
                 titleElement.innerHTML = lockIcon + highlightSearchMatch(race.name, searchQuery);
@@ -6659,9 +6641,12 @@
                 badgeHtml = `<div class="flex flex-col gap-1 w-full justify-center my-auto">${badgesPills.join('')}</div>`;
             }
 
-            // Définir l'icône de cadenas pour les courses privées
-            const likesLockIcon = (race.public !== true)
-                ? `<i class="fas fa-lock text-green-500 cursor-pointer" title="Une course privée ne peut pas recevoir de J'aime de la communauté" onclick="event.stopPropagation(); document.getElementById('privateRaceModal').classList.remove('hidden');"></i>`
+            // Définir l'icône de cadenas pour les comptes privés
+            const isAccountPublicForLikes = (typeof window.prefAccountPublicRaces !== 'undefined')
+                ? (window.prefAccountPublicRaces === true)
+                : (localStorage.getItem('prefAccountPublicRaces') !== 'false');
+            const likesLockIcon = (!isAccountPublicForLikes)
+                ? `<i class="fas fa-lock text-green-500 cursor-pointer" title="Votre compte est privé (courses privées), elles ne peuvent pas recevoir de J'aime de la communauté" onclick="event.stopPropagation(); document.getElementById('privateRaceModal').classList.remove('hidden');"></i>`
                 : '';
 
             if (hasBadges) {
@@ -7889,7 +7874,6 @@
             document.getElementById('raceGpxUrl').value = race.gpxUrl || '';
             document.getElementById('raceDriveId').value = race.driveId || '';
             document.getElementById('raceFavorite').checked = race.favorite || false;
-            document.getElementById('racePublic').checked = (race.public !== undefined) ? race.public : true;
 
             // Masquer les bulles d'aide
             const driveHelpEdit = document.getElementById('driveHelpBox');
@@ -8245,8 +8229,7 @@
                 gpxUrl: gpxUrl ? gpxUrl.trim() : null,
                 driveId: driveId ? driveId.trim() : null,
                 companions: (currentCompanions && currentCompanions.length > 0) ? currentCompanions : null,
-                favorite: favorite || false,
-                public: document.getElementById('racePublic').checked
+                favorite: favorite || false
             };
 
             // Champs spécifiques par type de terrain
@@ -12280,10 +12263,11 @@
     <script src="js/isAdmin.js"></script>
     <script src="js/isInvite.js"></script>
     <script src="js/stats-modal.js?v=4"></script>
-    <script src="js/advanced-filters.js"></script>
-    <script src="js/user-settings.js"></script>
+    <script src="js/advanced-filters.js?v=20260929_1"></script>
+    <script src="js/user-settings.js?v=20260929_1"></script>
     <script src="js/reviews.js"></script>
-    <script src="js/admin-modal.js"></script>
+    <script src="js/admin-modal.js?v=20260929_1"></script>
+    <script src="js/migrate-race-privacy.js?v=20260929_1"></script>
     <script src="js/scroll-lock.js"></script>
     <script src="js/date-paste-helper.js?v=20260929_1"></script>
     <script>

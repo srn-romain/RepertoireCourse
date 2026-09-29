@@ -180,6 +180,20 @@ const adminModalHTML = `
                 </div>
             </div>
 
+            <!-- MAINTENANCE ET OUTILS BDD -->
+            <div class="mt-6 bg-white rounded-xl border border-gray-100 shadow-sm p-4">
+                <h4 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 italic">Outils & Maintenance BDD</h4>
+                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-blue-50 border border-blue-200 rounded-lg p-3">
+                    <div>
+                        <p class="text-sm font-semibold text-blue-900">Migration Visibilité Comptes / Courses</p>
+                        <p class="text-xs text-blue-700">Supprime les champs individuels 'public' / 'private' des courses et applique le réglage global au niveau du compte utilisateur.</p>
+                    </div>
+                    <button id="btnRunPrivacyMigrationAdmin" onclick="window.runPrivacyMigration && window.runPrivacyMigration()" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg shadow transition whitespace-nowrap">
+                        <i class="fas fa-sync-alt mr-1"></i> Lancer la migration
+                    </button>
+                </div>
+            </div>
+
             <!-- CARTE ADMIN -->
             <div class="mt-6 bg-white rounded-xl border border-gray-100 shadow-lg overflow-hidden">
                 <div class="bg-gray-50 px-4 py-2 border-b flex justify-between items-center">
@@ -355,12 +369,14 @@ async function calculateAndRenderStats(allRacesSnapshot, usersSnapshot, existing
 
         const userRaceCount = {};
         const userNames = {};
+        const usersDataMap = {};
         const usersWithCommentsSet = new Set();
         usersSnapshot.forEach(doc => {
             stats.totalUsers++;
             userRaceCount[doc.id] = 0;
             const d = doc.data();
             userNames[doc.id] = d.pseudo || d.email || 'Utilisateur';
+            usersDataMap[doc.id] = d;
 
             if (d.role !== 'admin' && d.lastLogin) {
                 const lDateObj = d.lastLogin.toDate ? d.lastLogin.toDate() : new Date(d.lastLogin);
@@ -413,7 +429,9 @@ async function calculateAndRenderStats(allRacesSnapshot, usersSnapshot, existing
             if (raceDate >= today) {
                 stats.upcomingRaces++;
             } else {
-                if (race.public === true) stats.publicRaces++; else stats.privateRaces++;
+                const uData = usersDataMap[userId];
+                const isUserPublic = uData ? ((uData.privacy?.isPublic !== false) && (uData.isPublic !== false)) : true;
+                if (isUserPublic) stats.publicRaces++; else stats.privateRaces++;
             }
 
             if (race.distance) {

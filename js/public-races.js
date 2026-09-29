@@ -210,8 +210,11 @@ async function loadPublicRaces() {
             const hideLikeCount = privacy.hideLikeCount === true;
             const shouldShowCount = !hideLikeCount || isOwner || isAdmin;
 
-            // === FILTER: Public Race ===
-            if (race.public === false) continue;
+            // === FILTER: Account Privacy (Rendre mes courses publiques) ===
+            const isAccountPublic = (privacy.isPublic !== undefined)
+                ? (privacy.isPublic === true)
+                : (userData.isPublic !== undefined ? userData.isPublic === true : true);
+            if (!isAccountPublic && !isAdmin) continue;
 
             // === DISPLAY LOGIC ===
             const raceDate = new Date(race.date);

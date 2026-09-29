@@ -1781,7 +1781,10 @@
 
         const hasFavoriteRace = racesList.some(r => r.favorite === true || r.isFavorite === true || r.starred === true);
         const hasCardConfig = localStorage.getItem('hasConfiguredCards') === 'true' || window.hasConfiguredCards === true;
-        const hasPublicRace = racesList.some(r => r.isPublic === true || r.public === true || r.shared === true);
+        const isAccountPublicSetting = (typeof window.prefAccountPublicRaces !== 'undefined')
+            ? (window.prefAccountPublicRaces === true)
+            : (localStorage.getItem('prefAccountPublicRaces') !== 'false');
+        const hasPublicRace = isAccountPublicSetting && racesList.length > 0;
         const convertedWishlistCount = racesList.filter(r => r.fromWishlist === true || r.wishlistConverted === true || (r.notes && r.notes.toLowerCase().includes('wishlist'))).length;
         const hasLikedPublicRace = localStorage.getItem('hasLikedPublicRace') === 'true' || window.hasLikedPublicRace === true;
         const hasNotesReport = racesList.some(r => (typeof r.notes === 'string' && r.notes.trim().length > 3) || (typeof r.comment === 'string' && r.comment.trim().length > 3));
@@ -1969,7 +1972,7 @@
                     case 'level_2': // Sandale (560 XP)
                         if (hasCardConfig) markBadgeUnlocked('a_ma_sauce');
                         if (hasPublicRace) {
-                            const pub = racesList.find(r => r.isPublic || r.public || r.shared);
+                            const pub = racesList[0];
                             markBadgeUnlocked('partage_communautaire', pub);
                         }
                         if (convertedWishlistCount >= 1) markBadgeUnlocked('projet_concretise');

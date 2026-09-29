@@ -61,40 +61,59 @@ const userSettingsModalHTML = `
 
             <hr class="border-gray-100">
 
-            <!-- Confidentialité -->
+            <!-- Confidentialité et visibilité du carnet -->
             <div>
-                <h3 class="text-sm font-semibold text-gray-700 mb-3">Confidentialité (Affichage public)</h3>
-                <div class="space-y-3 bg-gray-50 p-4 rounded-lg border border-gray-100">
-                    <label class="flex items-center cursor-pointer">
-                        <input type="checkbox" id="prefShowPseudo" class="w-4 h-4 text-green-600 rounded focus:ring-green-500" checked>
-                        <span class="ml-2 text-sm text-gray-700">Afficher mon pseudo</span>
-                    </label>
-                    <label class="flex items-center cursor-pointer">
-                        <input type="checkbox" id="prefShowCity" class="w-4 h-4 text-green-600 rounded focus:ring-green-500" checked>
-                        <span class="ml-2 text-sm text-gray-700">Afficher la ville de la course</span>
-                    </label>
-                    <label class="flex items-center cursor-pointer">
-                        <input type="checkbox" id="prefShowDay" class="w-4 h-4 text-green-600 rounded focus:ring-green-500" checked>
-                        <span class="ml-2 text-sm text-gray-700">Afficher le jour précis (ex: 12 mars)</span>
-                    </label>
-                    <label class="flex items-center cursor-pointer">
-                        <input type="checkbox" id="prefShowFavorite" class="w-4 h-4 text-green-600 rounded focus:ring-green-500">
-                        <span class="ml-2 text-sm text-gray-700">Afficher le statut "Favori"</span>
-                    </label>
-                    <label class="flex items-center cursor-pointer">
-                        <input type="checkbox" id="prefHideLikeCount" class="w-4 h-4 text-green-600 rounded focus:ring-green-500">
-                        <span class="ml-2 text-sm text-gray-700">Masquer le nombre de J'aime (pour les visiteurs)</span>
-                    </label>
-                    <label class="flex items-center cursor-pointer">
-                        <input type="checkbox" id="prefShowPseudoInLeaderboard" class="w-4 h-4 text-green-600 rounded focus:ring-green-500 shrink-0" checked>
-                        <span class="ml-2 text-xs text-gray-700">Faire apparaître mon pseudo dans le classement des missions</span>
-                    </label>
+                <h3 class="text-sm font-semibold text-gray-700 mb-2.5 flex items-center gap-2">
+                    <i class="fas fa-user-shield text-green-600"></i>
+                    <span>Visibilité du carnet & Confidentialité</span>
+                </h3>
+                <div class="space-y-3 bg-gray-50 p-4 rounded-xl border border-gray-200">
+                    <div class="p-3 bg-white rounded-lg border border-green-200 shadow-2xs">
+                        <label class="flex items-start justify-between cursor-pointer gap-3">
+                            <div class="min-w-0">
+                                <span class="text-sm font-bold text-gray-800 flex items-center gap-1.5">
+                                    <i class="fas fa-globe-europe text-green-600"></i>
+                                    Rendre mes courses publiques
+                                </span>
+                                <p class="text-xs text-gray-500 mt-0.5 leading-relaxed">
+                                    Si activé, toutes les courses de votre compte sont visibles sur l'accueil public communautaire. Si désactivé, tout votre carnet est 100% privé.
+                                </p>
+                            </div>
+                            <input type="checkbox" id="prefAccountPublicRaces" class="w-5 h-5 text-green-600 rounded focus:ring-green-500 shrink-0 mt-0.5" checked>
+                        </label>
+                    </div>
+
+                    <div class="pt-1 space-y-2.5">
+                        <p class="text-xs font-semibold text-gray-600 uppercase tracking-wider">Détails affichés sur les courses publiques :</p>
+                        <label class="flex items-center cursor-pointer">
+                            <input type="checkbox" id="prefShowPseudo" class="w-4 h-4 text-green-600 rounded focus:ring-green-500" checked>
+                            <span class="ml-2 text-sm text-gray-700">Afficher mon pseudo</span>
+                        </label>
+                        <label class="flex items-center cursor-pointer">
+                            <input type="checkbox" id="prefShowCity" class="w-4 h-4 text-green-600 rounded focus:ring-green-500" checked>
+                            <span class="ml-2 text-sm text-gray-700">Afficher la ville de la course</span>
+                        </label>
+                        <label class="flex items-center cursor-pointer">
+                            <input type="checkbox" id="prefShowDay" class="w-4 h-4 text-green-600 rounded focus:ring-green-500" checked>
+                            <span class="ml-2 text-sm text-gray-700">Afficher le jour précis (ex: 12 mars)</span>
+                        </label>
+                        <label class="flex items-center cursor-pointer">
+                            <input type="checkbox" id="prefShowFavorite" class="w-4 h-4 text-green-600 rounded focus:ring-green-500">
+                            <span class="ml-2 text-sm text-gray-700">Afficher le statut "Favori"</span>
+                        </label>
+                        <label class="flex items-center cursor-pointer">
+                            <input type="checkbox" id="prefHideLikeCount" class="w-4 h-4 text-green-600 rounded focus:ring-green-500">
+                            <span class="ml-2 text-sm text-gray-700">Masquer le nombre de J'aime (pour les visiteurs)</span>
+                        </label>
+                        <label class="flex items-center cursor-pointer">
+                            <input type="checkbox" id="prefShowPseudoInLeaderboard" class="w-4 h-4 text-green-600 rounded focus:ring-green-500 shrink-0" checked>
+                            <span class="ml-2 text-xs text-gray-700">Faire apparaître mon pseudo dans le classement des missions</span>
+                        </label>
+                    </div>
+
                     <div class="pt-2 border-t border-gray-200 mt-2">
                         <p class="text-xs text-green-600 font-medium"><i class="fas fa-check-circle mr-1"></i>Les modifications sont automatiquement enregistrées.</p>
                     </div>
-                </div>
-                <div class="flex flex-col gap-1 mt-2">
-                    <p class="text-xs text-gray-400 italic">Ces réglages s'appliquent à toutes vos courses publiques.</p>
                 </div>
             </div>
 
@@ -316,7 +335,8 @@ async function initSettingsLogic() {
     const resetBtn = document.getElementById('btnSendPasswordReset');
     const msgContainer = document.getElementById('settingsMessageContainer');
 
-    // Checkboxes
+    // Checkboxes Privacy & Visibilité globale
+    const prefAccountPublicRaces = document.getElementById('prefAccountPublicRaces');
     const prefShowPseudo = document.getElementById('prefShowPseudo');
     const prefShowCity = document.getElementById('prefShowCity');
     const prefShowFavorite = document.getElementById('prefShowFavorite');
@@ -353,7 +373,7 @@ async function initSettingsLogic() {
         }
 
         // Désactiver toutes les checkboxes de confidentialité
-        [prefShowPseudo, prefShowCity, prefShowFavorite, prefShowDay, prefHideLikeCount, prefShowPseudoInLeaderboard].forEach(cb => {
+        [prefAccountPublicRaces, prefShowPseudo, prefShowCity, prefShowFavorite, prefShowDay, prefHideLikeCount, prefShowPseudoInLeaderboard].forEach(cb => {
             if (cb) {
                 cb.disabled = true;
                 cb.classList.add('opacity-50', 'cursor-not-allowed');
@@ -499,7 +519,9 @@ async function initSettingsLogic() {
         const user = firebase.auth().currentUser;
         if (!user) return;
 
+        const isAccountPublic = prefAccountPublicRaces ? prefAccountPublicRaces.checked : true;
         const privacy = {
+            isPublic: isAccountPublic,
             showPseudo: prefShowPseudo ? prefShowPseudo.checked : true,
             showCity: prefShowCity ? prefShowCity.checked : true,
             showFavorite: prefShowFavorite ? prefShowFavorite.checked : false,
@@ -508,13 +530,18 @@ async function initSettingsLogic() {
             showPseudoInLeaderboard: prefShowPseudoInLeaderboard ? prefShowPseudoInLeaderboard.checked : true
         };
 
+        if (prefAccountPublicRaces) {
+            localStorage.setItem('prefAccountPublicRaces', isAccountPublic ? 'true' : 'false');
+            window.prefAccountPublicRaces = isAccountPublic;
+        }
+
         if (prefShowPseudoInLeaderboard) {
             localStorage.setItem('prefShowPseudoInLeaderboard', prefShowPseudoInLeaderboard.checked ? 'true' : 'false');
             window.prefShowPseudoInLeaderboard = prefShowPseudoInLeaderboard.checked;
         }
 
         try {
-            await db.collection('users').doc(user.uid).set({ privacy }, { merge: true });
+            await db.collection('users').doc(user.uid).set({ privacy, isPublic: isAccountPublic }, { merge: true });
             console.log("Préférences sauvegardées", privacy);
             settingsHasChanged = true; // Reload required to reflect changes on public page
         } catch (e) {
@@ -544,7 +571,7 @@ async function initSettingsLogic() {
 
     // Ne pas attacher les listeners si l'utilisateur est invité
     if (!isInvite) {
-        [prefShowPseudo, prefShowCity, prefShowFavorite, prefShowDay, prefHideLikeCount, prefShowPseudoInLeaderboard].forEach(cb => {
+        [prefAccountPublicRaces, prefShowPseudo, prefShowCity, prefShowFavorite, prefShowDay, prefHideLikeCount, prefShowPseudoInLeaderboard].forEach(cb => {
             if (cb) cb.addEventListener('change', savePrivacySettings);
         });
 
@@ -643,9 +670,17 @@ async function initSettingsLogic() {
             if (doc.exists) {
                 const data = doc.data();
 
-                // Privacy settings
+                // Privacy settings & Account-wide race visibility
+                const isAccountPublic = (data.privacy && data.privacy.isPublic !== undefined)
+                    ? (data.privacy.isPublic === true)
+                    : (data.isPublic !== undefined ? data.isPublic === true : true);
+
+                if (prefAccountPublicRaces) prefAccountPublicRaces.checked = isAccountPublic;
+                localStorage.setItem('prefAccountPublicRaces', isAccountPublic ? 'true' : 'false');
+                window.prefAccountPublicRaces = isAccountPublic;
+
                 if (data.privacy) {
-                    if (prefShowPseudo) prefShowPseudo.checked = data.privacy.showPseudo !== false; // Default true if undefined? assuming privacy centric maybe false? let's stick to what's stored.
+                    if (prefShowPseudo) prefShowPseudo.checked = data.privacy.showPseudo !== false;
                     if (prefShowCity) prefShowCity.checked = data.privacy.showCity !== false;
                     if (prefShowFavorite) prefShowFavorite.checked = data.privacy.showFavorite === true;
                     if (prefShowDay) prefShowDay.checked = data.privacy.showDay !== false;
@@ -656,6 +691,13 @@ async function initSettingsLogic() {
                         localStorage.setItem('prefShowPseudoInLeaderboard', isChecked ? 'true' : 'false');
                         window.prefShowPseudoInLeaderboard = isChecked;
                     }
+                } else {
+                    if (prefShowPseudo) prefShowPseudo.checked = true;
+                    if (prefShowCity) prefShowCity.checked = true;
+                    if (prefShowFavorite) prefShowFavorite.checked = false;
+                    if (prefShowDay) prefShowDay.checked = true;
+                    if (prefHideLikeCount) prefHideLikeCount.checked = false;
+                    if (prefShowPseudoInLeaderboard) prefShowPseudoInLeaderboard.checked = true;
                 }
 
                 // UI preferences (Default to true if undefined, as buttons were previously visible)

@@ -122,14 +122,13 @@
 
             // Utiliser les valeurs actives pour les filtres de la 2ème ligne
             const typeFilter = activeTypeFilter;
-            const visibilityFilter = activeVisibilityFilter;
             const commentsFilter = activeCommentsFilter;
             const companionsFilter = activeCompanionsFilter;
 
             const nameQuery = (searchInput?.value || '').toLowerCase().trim();
 
             console.log('[advanced-filters] Filtres 1ère ligne:', { locationFilter, priceFilter, elevationFilter, distanceFilter });
-            console.log('[advanced-filters] Filtres 2ème ligne:', { typeFilter, visibilityFilter, commentsFilter, companionsFilter });
+            console.log('[advanced-filters] Filtres 2ème ligne:', { typeFilter, commentsFilter, companionsFilter });
             console.log('[advanced-filters] Recherche:', nameQuery);
 
             // Utiliser les données non filtrées si disponibles
@@ -223,16 +222,7 @@
                 console.log(`[advanced-filters] Filtre type (${typeFilter}): ${beforeTypeFilter} → ${filteredRaces.length} courses`);
             }
 
-            // Filtre par visibilité
-            if (visibilityFilter) {
-                const beforeVisibilityFilter = filteredRaces.length;
-                filteredRaces = filteredRaces.filter(race => {
-                    if (visibilityFilter === 'public') return race.public === true;
-                    if (visibilityFilter === 'private') return race.public === false;
-                    return true;
-                });
-                console.log(`[advanced-filters] Filtre visibilité (${visibilityFilter}): ${beforeVisibilityFilter} → ${filteredRaces.length} courses`);
-            }
+
 
             // Filtre par commentaires
             if (commentsFilter) {
@@ -301,7 +291,7 @@
             document.getElementById('filterElevation').value = '';
             document.getElementById('filterDistance').value = '';
             document.getElementById('filterType').value = '';
-            document.getElementById('filterVisibility').value = '';
+            if (document.getElementById('filterVisibility')) document.getElementById('filterVisibility').value = '';
             document.getElementById('filterComments').value = '';
             document.getElementById('filterCompanions').value = '';
 
@@ -330,14 +320,13 @@
                 console.log('[advanced-filters] Clic sur bouton Rechercher');
 
                 // Mettre à jour les valeurs actives des filtres de la deuxième ligne
-                activeTypeFilter = document.getElementById('filterType').value;
-                activeVisibilityFilter = document.getElementById('filterVisibility').value;
-                activeCommentsFilter = document.getElementById('filterComments').value;
-                activeCompanionsFilter = document.getElementById('filterCompanions').value;
+                activeTypeFilter = document.getElementById('filterType')?.value || '';
+                activeVisibilityFilter = document.getElementById('filterVisibility')?.value || '';
+                activeCommentsFilter = document.getElementById('filterComments')?.value || '';
+                activeCompanionsFilter = document.getElementById('filterCompanions')?.value || '';
 
                 console.log('[advanced-filters] Valeurs stockées:', {
                     activeTypeFilter,
-                    activeVisibilityFilter,
                     activeCommentsFilter,
                     activeCompanionsFilter
                 });
