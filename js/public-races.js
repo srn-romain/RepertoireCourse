@@ -539,7 +539,11 @@ window.toggleRaceLike = async function (racePath, btn) {
                 countSpan.innerText = c > 0 ? c : '';
             }
         }
-        alert("Erreur : Impossible de liker. Vérifiez que vous êtes bien connecté. Si le problème persiste, il s'agit probablement d'une restriction des droits d'accès (règles de sécurité Firestore).");
+        if (typeof showToast === 'function') {
+            showToast("Impossible de liker. Vérifiez les règles de sécurité Firestore.", "error");
+        } else {
+            alert("Erreur : Impossible de liker. Vérifiez que vous êtes bien connecté. Si le problème persiste, il s'agit probablement d'une restriction des droits d'accès (règles de sécurité Firestore).");
+        }
     }
 };
 

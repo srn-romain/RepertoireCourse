@@ -3565,20 +3565,53 @@
         // Correction : garder la référence du filtre actif et appliquer updateStats sur le bon tableau
         let currentYearFilter = 'all';
         let currentFavoritesFilter = false;
+        window.currentYearFilter = 'all';
+        window.currentFavoritesFilter = false;
 
         // Filtrer par année, mettre à jour currentYearFilter, stats et affichage
         function filterRacesByYear(year) {
             currentYearFilter = year;
-            applyFilters();
+            window.currentYearFilter = year;
+            if (typeof applyAdvancedFilters === 'function') {
+                applyAdvancedFilters();
+            } else if (typeof window.applyAdvancedFilters === 'function') {
+                window.applyAdvancedFilters();
+            } else {
+                applyFilters();
+            }
         }
 
         function filterRacesByFavorites(showFavorites) {
             currentFavoritesFilter = showFavorites;
-            applyFilters();
+            window.currentFavoritesFilter = showFavorites;
+            if (typeof applyAdvancedFilters === 'function') {
+                applyAdvancedFilters();
+            } else if (typeof window.applyAdvancedFilters === 'function') {
+                window.applyAdvancedFilters();
+            } else {
+                applyFilters();
+            }
         }
 
         function applyFilters() {
-            let filteredRaces = races;
+            if (typeof applyAdvancedFilters === 'function') {
+                applyAdvancedFilters();
+                return;
+            } else if (typeof window.applyAdvancedFilters === 'function') {
+                window.applyAdvancedFilters();
+                return;
+            }
+
+            let filteredRaces = (window.originalRaces && Array.isArray(window.originalRaces)) ? window.originalRaces : races;
+
+            // Filtre par recherche si présente
+            const q = (searchInput?.value || '').toLowerCase().trim();
+            if (q) {
+                filteredRaces = filteredRaces.filter(race => {
+                    const searchStr = `${race.name || ''} ${race.location || ''} ${race.date || ''} ${race.elevation || ''} ${race.distance || ''} ${race.time || ''} ${race.notes || ''}`.toLowerCase();
+                    return searchStr.includes(q);
+                });
+            }
 
             // Filtre par année
             if (currentYearFilter !== 'all') {
@@ -8926,18 +8959,39 @@
         // Initialiser l'état du bouton au chargement
         updateClearSearchButton();
 
-        // Afficher/masquer le bouton selon le contenu du champ
+        let searchDebounceTimer = null;
+        function triggerSearchFilter() {
+            if (typeof applyAdvancedFilters === 'function') {
+                applyAdvancedFilters();
+            } else if (typeof window.applyAdvancedFilters === 'function') {
+                window.applyAdvancedFilters();
+            } else if (typeof searchRaces === 'function') {
+                searchRaces(searchInput ? searchInput.value : '');
+            }
+        }
+
+        // Afficher/masquer le bouton selon le contenu du champ et adapter la recherche en direct
         searchInput.addEventListener('input', (e) => {
             updateClearSearchButton();
             if (e.target.value.trim().length >= 2) {
                 saveUserFlag('searchUsed');
             }
+            clearTimeout(searchDebounceTimer);
+            searchDebounceTimer = setTimeout(triggerSearchFilter, 100);
         });
 
-        // Lancer la recherche sur la touche Entrée
+        // Gérer aussi l'événement search natif (ex: clic sur la croix native de l'input type="search")
+        searchInput.addEventListener('search', () => {
+            updateClearSearchButton();
+            clearTimeout(searchDebounceTimer);
+            triggerSearchFilter();
+        });
+
+        // Lancer la recherche immédiatement sur la touche Entrée sans attendre le debounce
         searchInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
-                applyAdvancedFilters();
+                clearTimeout(searchDebounceTimer);
+                triggerSearchFilter();
             }
         });
 
@@ -8945,7 +8999,8 @@
         const mainSearchBtn = document.getElementById('mainSearchBtn');
         if (mainSearchBtn) {
             mainSearchBtn.addEventListener('click', () => {
-                applyAdvancedFilters();
+                clearTimeout(searchDebounceTimer);
+                triggerSearchFilter();
             });
         }
 
@@ -8953,13 +9008,12 @@
         clearSearchBtn.addEventListener('click', () => {
             searchInput.value = '';
             updateClearSearchButton();
-            applyAdvancedFilters();
+            clearTimeout(searchDebounceTimer);
+            triggerSearchFilter();
         });
 
         // Les écouteurs pour applyFiltersBtn, resetFiltersBtn et toggleFiltersBtn
-        // sont maintenant gérés directement dans js/advanced-filters.js
-
-        // (Live filter supprimé à la demande de l'utilisateur)
+        // sont gérés directement dans js/advanced-filters.js
 
         // Gestion de la Wishlist
         // wishlistCollection est défini globalement

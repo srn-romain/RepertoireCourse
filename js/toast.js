@@ -49,10 +49,10 @@
                 barBg: 'bg-rose-500'
             },
             error: {
-                bg: 'bg-white/95 border-rose-200/90 text-gray-800 shadow-rose-500/10',
-                iconBg: 'bg-rose-100 text-rose-600',
+                bg: 'bg-white/95 border-red-200 text-red-950 shadow-xl shadow-red-500/15',
+                iconBg: 'bg-red-100 text-red-600',
                 icon: 'fa-exclamation-circle',
-                barBg: 'bg-rose-500'
+                barBg: 'bg-red-500'
             },
             warning: {
                 bg: 'bg-white/95 border-amber-200/90 text-gray-800 shadow-amber-500/10',
@@ -169,6 +169,46 @@
         }
 
         return dismissToast;
+    }
+
+    // Capture globale des erreurs non gérées (scripts, réseau, DOM)
+    window.addEventListener('error', function (event) {
+        if (!event || !event.message) return;
+        const msg = event.message;
+        if (msg.includes('ResizeObserver') || msg.includes('Script error.') || msg.includes('chrome-extension://')) return;
+        showToast(msg, 'error', 5000);
+    });
+
+    // Capture globale des rejets de promesses (Firebase, Firestore, async/await)
+    window.addEventListener('unhandledrejection', function (event) {
+        if (!event) return;
+        const reason = event.reason;
+        let msg = reason ? (reason.message || String(reason)) : 'Une erreur inattendue est survenue.';
+        if (msg.includes('ResizeObserver') || msg.includes('chrome-extension://')) return;
+        if (msg.includes('Missing or insufficient permissions')) {
+            msg = "Erreur de permissions Firestore : action non autorisée par les règles de sécurité.";
+        }
+        showToast(msg, 'error', 5000);
+    });
+
+    // Remplacement élégant de window.alert() pour afficher un toast propre
+    try {
+        window.alert = function (message) {
+            if (!message) return;
+            const str = String(message);
+            const lower = str.toLowerCase();
+            let type = 'info';
+            if (lower.includes('erreur') || lower.includes('impossible') || lower.includes('error') || lower.includes('échec') || lower.includes('refus')) {
+                type = 'error';
+            } else if (lower.includes('attention') || lower.includes('veuillez') || lower.includes('doit') || lower.includes('warning') || lower.includes('réservé')) {
+                type = 'warning';
+            } else if (lower.includes('succès') || lower.includes('réussi') || lower.includes('success') || lower.includes('enregistré') || lower.includes('supprimé')) {
+                type = 'success';
+            }
+            showToast(str, type, type === 'error' ? 4500 : 3500);
+        };
+    } catch (e) {
+        console.warn('[Toast] Could not wrap window.alert:', e);
     }
 
     // Export global
