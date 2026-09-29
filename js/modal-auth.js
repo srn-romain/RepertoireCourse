@@ -242,17 +242,20 @@ document.addEventListener('DOMContentLoaded', () => {
 // et gèle/libère le scroll du body automatiquement.
 
 function updateBodyScroll() {
-    // Sélectionne tout élément fixe qui n'est pas caché
-    const fixedEls = document.querySelectorAll(
-        '.modal:not(.hidden), ' +
-        '[id*="odal"]:not(.hidden), ' +
-        '[id*="ODAL"]:not(.hidden)'
-    );
+    if (typeof window.syncBodyScroll === 'function') {
+        window.syncBodyScroll();
+        return;
+    }
+    const candidates = document.querySelectorAll('.modal, [id$="Modal"], [id$="modal"]');
     let anyVisible = false;
-    fixedEls.forEach(el => {
+    candidates.forEach(el => {
+        if (el.classList.contains('hidden') || el.classList.contains('invisible')) return;
         const style = getComputedStyle(el);
-        if (style.display !== 'none' && style.visibility !== 'hidden' && style.position === 'fixed') {
-            anyVisible = true;
+        if (style.display !== 'none' && style.visibility !== 'hidden' && (style.position === 'fixed' || style.position === 'absolute')) {
+            const rect = el.getBoundingClientRect();
+            if (rect.width > 0 && rect.height > 0) {
+                anyVisible = true;
+            }
         }
     });
     document.body.style.overflow = anyVisible ? 'hidden' : '';

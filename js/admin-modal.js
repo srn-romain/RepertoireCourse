@@ -177,7 +177,9 @@ const adminModalHTML = `
                     <div class="flex justify-center items-center gap-1"><span class="text-base font-bold text-gray-800" id="adminWishlistTrend7">0</span> <span id="adminWishlistTrendIcon7" class="text-[10px]"></span></div>
                     <div class="flex justify-center items-center gap-1 border-l border-r border-gray-100"><span class="text-base font-bold text-gray-800" id="adminWishlistTrend30">0</span> <span id="adminWishlistTrendIcon30" class="text-[10px]"></span></div>
                     <div class="flex justify-center items-center gap-1"><span class="text-base font-bold text-gray-800" id="adminWishlistTrend365">0</span> <span id="adminWishlistTrendIcon365" class="text-[10px]"></span></div>
-            <!-- CARTE ADMIN -->
+                </div>
+        </div>
+         <!-- CARTE ADMIN -->
             <div class="mt-6 bg-white rounded-xl border border-gray-100 shadow-lg overflow-hidden">
                 <div class="bg-gray-50 px-4 py-2 border-b flex justify-between items-center">
                     <h4 class="text-sm font-bold text-gray-700 flex items-center gap-2">
@@ -187,7 +189,6 @@ const adminModalHTML = `
                 </div>
                 <div id="adminRacesMap" class="w-full h-80 bg-gray-50 z-0"></div>
             </div>
-        </div>
     </div>
 </div>
 `;

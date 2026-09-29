@@ -6,11 +6,15 @@
     'use strict';
 
     function isAnyModalOpen() {
-        const candidates = document.querySelectorAll('.modal, [id*="odal"]');
+        const candidates = document.querySelectorAll('.modal, [id$="Modal"], [id$="modal"]');
         for (const el of candidates) {
-            if (!el.classList.contains('hidden') && !el.classList.contains('invisible')) {
-                const cs = window.getComputedStyle(el);
-                if (cs.display !== 'none' && cs.visibility !== 'hidden' && cs.position === 'fixed') {
+            if (el.classList.contains('hidden') || el.classList.contains('invisible')) {
+                continue;
+            }
+            const cs = window.getComputedStyle(el);
+            if (cs.display !== 'none' && cs.visibility !== 'hidden' && (cs.position === 'fixed' || cs.position === 'absolute')) {
+                const rect = el.getBoundingClientRect();
+                if (rect.width > 0 && rect.height > 0) {
                     return true;
                 }
             }
@@ -24,26 +28,25 @@
     }
 
     function init() {
-        // Synchronisation initiale
         syncBodyScroll();
 
-        // Observer tout changement de classe sur le body et ses enfants
         const observer = new MutationObserver(function () {
             syncBodyScroll();
         });
 
         observer.observe(document.body, {
             attributes: true,
-            attributeFilter: ['class'],
+            attributeFilter: ['class', 'style'],
             subtree: true
         });
     }
 
-    // Lancer dès que possible
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', init);
     } else {
         init();
     }
 
+    window.syncBodyScroll = syncBodyScroll;
 })();
+

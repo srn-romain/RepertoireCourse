@@ -13,7 +13,7 @@
     // Template HTML de la modale de détails
     const raceDetailsModalHTML = `
     <div id="detailsModal" class="fixed inset-0 z-50 hidden modal overflow-y-auto">
-        <div class="fixed inset-0 bg-black bg-opacity-50 blur-bg" id="detailsModalBackdrop"></div>
+        <div class="fixed inset-0 bg-black bg-opacity-50 blur-bg" id="detailsBackdrop"></div>
         <button id="prevRaceBtn"
             class="fixed md:-translate-x-[296px] top-1/2 left-4 md:left-1/2 md:-translate-x-[280px] transform -translate-y-1/2 text-gray-700 hover:text-gray-900 bg-white rounded-full p-3 shadow-xl hover:bg-gray-50 transition-all disabled:opacity-30 disabled:cursor-not-allowed z-[100]"
             title="Course précédente">
