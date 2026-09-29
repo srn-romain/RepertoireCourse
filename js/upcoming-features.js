@@ -100,7 +100,7 @@
                     <i class="fas fa-trash-alt"></i> Tout vider
                 </button>
                 <div class="flex items-center gap-2 ml-auto">
-                    <button type="button" onclick="closeModal('upcomingFeaturesModal')" class="px-3 py-1.5 text-xs font-semibold text-gray-600 hover:bg-gray-100 rounded-lg transition cursor-pointer">
+                    <button type="button" onclick="closeModal('upcomingFeaturesModal')" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition-colors cursor-pointer text-xs font-semibold">
                         Annuler
                     </button>
                     <button type="button" id="saveUpcomingFeaturesBtn" onclick="window.saveUpcomingFeatures()" class="px-4 py-1.5 text-xs font-bold text-white bg-green-600 hover:bg-green-700 rounded-lg shadow-sm transition flex items-center gap-1.5 cursor-pointer">

@@ -90,7 +90,7 @@ const deleteReviewModalHTML = `
             <p class="text-sm text-gray-500 mb-6">Voulez-vous vraiment supprimer votre avis ? Cette action est définitive.</p>
         </div>
         <div class="flex gap-3">
-            <button id="cancelDeleteReviewBtn" class="flex-1 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl transition-all">
+            <button id="cancelDeleteReviewBtn" class="flex-1 px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition-colors font-semibold">
                 Annuler
             </button>
             <button id="confirmDeleteReviewBtn" class="flex-1 py-2.5 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-xl transition-all shadow-md shadow-red-100">

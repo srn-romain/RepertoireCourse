@@ -177,23 +177,6 @@ const adminModalHTML = `
                     <div class="flex justify-center items-center gap-1"><span class="text-base font-bold text-gray-800" id="adminWishlistTrend7">0</span> <span id="adminWishlistTrendIcon7" class="text-[10px]"></span></div>
                     <div class="flex justify-center items-center gap-1 border-l border-r border-gray-100"><span class="text-base font-bold text-gray-800" id="adminWishlistTrend30">0</span> <span id="adminWishlistTrendIcon30" class="text-[10px]"></span></div>
                     <div class="flex justify-center items-center gap-1"><span class="text-base font-bold text-gray-800" id="adminWishlistTrend365">0</span> <span id="adminWishlistTrendIcon365" class="text-[10px]"></span></div>
-                </div>
-            </div>
-
-            <!-- MAINTENANCE ET OUTILS BDD -->
-            <div class="mt-6 bg-white rounded-xl border border-gray-100 shadow-sm p-4">
-                <h4 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 italic">Outils & Maintenance BDD</h4>
-                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-blue-50 border border-blue-200 rounded-lg p-3">
-                    <div>
-                        <p class="text-sm font-semibold text-blue-900">Migration Visibilité Comptes / Courses</p>
-                        <p class="text-xs text-blue-700">Supprime les champs individuels 'public' / 'private' des courses et applique le réglage global au niveau du compte utilisateur.</p>
-                    </div>
-                    <button id="btnRunPrivacyMigrationAdmin" onclick="window.runPrivacyMigration && window.runPrivacyMigration()" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg shadow transition whitespace-nowrap">
-                        <i class="fas fa-sync-alt mr-1"></i> Lancer la migration
-                    </button>
-                </div>
-            </div>
-
             <!-- CARTE ADMIN -->
             <div class="mt-6 bg-white rounded-xl border border-gray-100 shadow-lg overflow-hidden">
                 <div class="bg-gray-50 px-4 py-2 border-b flex justify-between items-center">

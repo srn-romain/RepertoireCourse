@@ -6,7 +6,7 @@
     let isInitialized = false;
     // Variables pour stocker les filtres actifs de la deuxième ligne
     let activeTypeFilter = '';
-    let activeVisibilityFilter = '';
+    let activeRankFilter = '';
     let activeCommentsFilter = '';
     let activeCompanionsFilter = '';
 
@@ -122,13 +122,14 @@
 
             // Utiliser les valeurs actives pour les filtres de la 2ème ligne
             const typeFilter = activeTypeFilter;
+            const rankFilter = activeRankFilter;
             const commentsFilter = activeCommentsFilter;
             const companionsFilter = activeCompanionsFilter;
 
             const nameQuery = (searchInput?.value || '').toLowerCase().trim();
 
             console.log('[advanced-filters] Filtres 1ère ligne:', { locationFilter, priceFilter, elevationFilter, distanceFilter });
-            console.log('[advanced-filters] Filtres 2ème ligne:', { typeFilter, commentsFilter, companionsFilter });
+            console.log('[advanced-filters] Filtres 2ème ligne:', { typeFilter, rankFilter, commentsFilter, companionsFilter });
             console.log('[advanced-filters] Recherche:', nameQuery);
 
             // Utiliser les données non filtrées si disponibles
@@ -224,6 +225,40 @@
 
 
 
+            // Fonction utilitaire pour calculer le pourcentage du classement dans le peloton
+            function getRaceRankPercent(race) {
+                const pos = parseFloat(race.rankPos);
+                const total = parseFloat(race.rankTotal);
+                if (!isNaN(pos) && !isNaN(total) && total > 0 && pos > 0) {
+                    return (pos / total) * 100;
+                }
+                const gPos = parseFloat(race.rankGenderPos);
+                const gTotal = parseFloat(race.rankGenderTotal);
+                if (!isNaN(gPos) && !isNaN(gTotal) && gTotal > 0 && gPos > 0) {
+                    return (gPos / gTotal) * 100;
+                }
+                return null;
+            }
+
+            // Filtre par classement (% peloton / quartiles)
+            if (rankFilter) {
+                const beforeRankFilter = filteredRaces.length;
+                filteredRaces = filteredRaces.filter(race => {
+                    const pct = getRaceRankPercent(race);
+                    if (rankFilter === 'none') return pct === null;
+                    if (pct === null) return false;
+
+                    if (rankFilter === 'top10') return pct <= 10;
+                    if (rankFilter === '0-25') return pct <= 25;
+                    if (rankFilter === '25-50') return pct > 25 && pct <= 50;
+                    if (rankFilter === 'top50') return pct <= 50;
+                    if (rankFilter === '50-75') return pct > 50 && pct <= 75;
+                    if (rankFilter === '75-100') return pct > 75 && pct <= 100;
+                    return true;
+                });
+                console.log(`[advanced-filters] Filtre classement (${rankFilter}): ${beforeRankFilter} → ${filteredRaces.length} courses`);
+            }
+
             // Filtre par commentaires
             if (commentsFilter) {
                 const beforeCommentsFilter = filteredRaces.length;
@@ -291,13 +326,13 @@
             document.getElementById('filterElevation').value = '';
             document.getElementById('filterDistance').value = '';
             document.getElementById('filterType').value = '';
-            if (document.getElementById('filterVisibility')) document.getElementById('filterVisibility').value = '';
+            if (document.getElementById('filterRank')) document.getElementById('filterRank').value = '';
             document.getElementById('filterComments').value = '';
             document.getElementById('filterCompanions').value = '';
 
             // Réinitialiser aussi les variables actives
             activeTypeFilter = '';
-            activeVisibilityFilter = '';
+            activeRankFilter = '';
             activeCommentsFilter = '';
             activeCompanionsFilter = '';
 
@@ -321,12 +356,13 @@
 
                 // Mettre à jour les valeurs actives des filtres de la deuxième ligne
                 activeTypeFilter = document.getElementById('filterType')?.value || '';
-                activeVisibilityFilter = document.getElementById('filterVisibility')?.value || '';
+                activeRankFilter = document.getElementById('filterRank')?.value || '';
                 activeCommentsFilter = document.getElementById('filterComments')?.value || '';
                 activeCompanionsFilter = document.getElementById('filterCompanions')?.value || '';
 
                 console.log('[advanced-filters] Valeurs stockées:', {
                     activeTypeFilter,
+                    activeRankFilter,
                     activeCommentsFilter,
                     activeCompanionsFilter
                 });
