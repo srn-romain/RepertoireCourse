@@ -522,7 +522,15 @@ window.toggleRaceLike = async function (racePath, btn) {
             await raceRef.update({
                 likedBy: firebase.firestore.FieldValue.arrayUnion(uid)
             });
-            saveUserFlag('hasLikedPublicRace');
+            try {
+                if (typeof window.saveUserFlag === 'function') {
+                    window.saveUserFlag('hasLikedPublicRace');
+                } else if (typeof saveUserFlag === 'function') {
+                    saveUserFlag('hasLikedPublicRace');
+                }
+            } catch (flagErr) {
+                console.warn('[Like] saveUserFlag error:', flagErr);
+            }
         }
     } catch (error) {
         console.error("Error toggling like:", error);

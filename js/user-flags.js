@@ -12,7 +12,7 @@
  * @param {string} flagName - Nom du flag (ex: 'statsModalViewed')
  * @param {boolean} [value=true]
  */
-window.saveUserFlag = function(flagName, value = true) {
+var saveUserFlag = function(flagName, value = true) {
     // 1. localStorage (synchrone, immédiat)
     if (value) {
         localStorage.setItem(flagName, 'true');
@@ -56,6 +56,7 @@ window.saveUserFlag = function(flagName, value = true) {
         }
     }
 };
+window.saveUserFlag = saveUserFlag;
 
 /**
  * Charge les flags depuis Firestore au démarrage et les injecte dans localStorage.

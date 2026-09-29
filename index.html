@@ -1488,14 +1488,16 @@
     <script src="js/firebase-config.js"></script>
     <script src="js/isAdmin.js"></script>
     <script src="js/isInvite.js"></script>
-    <script src="js/toast.js"></script>
+    <script src="js/toast.js?v=20260929_1"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
-    <script src="js/confetti.js"></script>
+    <script src="js/confetti.js?v=20260929_1"></script>
+    <script src="js/user-flags.js?v=20260929_1"></script>
+    <script src="js/badges-modal.js?v=20260929_1"></script>
 
     <!-- Auth Modals & Logic (Injects Login/Signup Modals) -->
     <script src="js/runner-loader.js"></script>
     <script src="js/modal-auth.js"></script>
-    <script src="js/public-races.js"></script>
+    <script src="js/public-races.js?v=20260929_1"></script>
     <script src="js/user-settings.js"></script>
     <script src="js/reviews.js"></script>
     <script src="js/manual-modal.js"></script>
@@ -1631,6 +1633,25 @@
                         window.currentUserPseudo = userPseudo;
                         localStorage.setItem('userPseudo', userPseudo);
                     } catch (e) { console.error(e); }
+
+                    // Charger les flags de gamification et courses de l'utilisateur
+                    try {
+                        if (typeof window.loadUserFlagsFromFirestore === 'function') {
+                            await window.loadUserFlagsFromFirestore();
+                        }
+                        const racesSnap = await db.collection('users').doc(user.uid).collection('races').get();
+                        const userRaces = [];
+                        racesSnap.forEach(doc => {
+                            userRaces.push({ id: doc.id, ...doc.data() });
+                        });
+                        window.allUserRaces = userRaces;
+                        window.races = userRaces;
+                        if (typeof window.checkBadgesForNewUnlocks === 'function') {
+                            window.checkBadgesForNewUnlocks();
+                        }
+                    } catch (e) {
+                        console.warn('Erreur chargement flags/courses gamification:', e);
+                    }
 
                     // Affichage Final
                     if (authStatusText) {
