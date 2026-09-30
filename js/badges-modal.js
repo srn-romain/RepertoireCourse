@@ -1620,8 +1620,62 @@
     }
 
     // ─────────────────────────────────────────────────────────────────────────────
-    // 5. CALCUL GLOBAL DES BADGES & DES NIVEAUX GAMIFIÉS
+    // 5. METADATA DE VALIDATION DES MISSIONS & CALCUL GLOBAL
     // ─────────────────────────────────────────────────────────────────────────────
+    function formatBadgeUnlockDate(isoString) {
+        if (!isoString) return '';
+        try {
+            const d = new Date(isoString);
+            if (isNaN(d.getTime())) return '';
+            const day = String(d.getDate()).padStart(2, '0');
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const year = d.getFullYear();
+            const hours = String(d.getHours()).padStart(2, '0');
+            const minutes = String(d.getMinutes()).padStart(2, '0');
+            return `${day}/${month}/${year} à ${hours}h${minutes}`;
+        } catch (e) {
+            return '';
+        }
+    }
+    window.formatBadgeUnlockDate = formatBadgeUnlockDate;
+
+    function getStoredBadgesMetadata() {
+        if (window.unlockedBadgesMetadata && typeof window.unlockedBadgesMetadata === 'object' && Object.keys(window.unlockedBadgesMetadata).length > 0) {
+            return window.unlockedBadgesMetadata;
+        }
+        const currentUser = (typeof firebase !== 'undefined' && firebase.auth) ? firebase.auth().currentUser : null;
+        const storageKey = 'unlockedBadgesMetadata_' + (currentUser ? currentUser.uid : 'local_user');
+        try {
+            const stored = localStorage.getItem(storageKey);
+            if (stored) {
+                window.unlockedBadgesMetadata = JSON.parse(stored) || {};
+                return window.unlockedBadgesMetadata;
+            }
+        } catch (e) {}
+        window.unlockedBadgesMetadata = window.unlockedBadgesMetadata || {};
+        return window.unlockedBadgesMetadata;
+    }
+
+    function syncBadgesMetadataToFirestore(metadataMap) {
+        try {
+            const fbUser = (typeof firebase !== 'undefined' && firebase.auth) ? firebase.auth().currentUser : null;
+            if (!fbUser || !fbUser.uid || typeof db === 'undefined') return;
+            
+            const payload = {};
+            Object.entries(metadataMap).forEach(([badgeId, meta]) => {
+                if (meta && meta.unlockedAt) {
+                    payload[`badgesMetadata.${badgeId}`] = meta;
+                }
+            });
+            if (Object.keys(payload).length > 0) {
+                db.collection('users').doc(fbUser.uid).set(payload, { merge: true })
+                    .catch(e => console.warn('[Badges] Firestore sync badgesMetadata error:', e));
+            }
+        } catch (e) {
+            console.warn('[Badges] syncBadgesMetadataToFirestore error:', e);
+        }
+    }
+
     function calculateGamifiedBadges(racesList) {
         const badgesByRace = {};
         const unlockedBadges = {};
@@ -2317,6 +2371,37 @@
                 earnedXP: lvlEarnedXP
             };
         });
+
+        // Gestion et synchronisation des metadata de validation (date et heure de déblocage)
+        const badgesMetadata = getStoredBadgesMetadata();
+        const newMetadataToSync = {};
+        let metadataChanged = false;
+
+        Object.keys(BADGES_DEFINITIONS).forEach(id => {
+            if (unlockedBadges[id] && unlockedBadges[id].unlocked) {
+                let meta = badgesMetadata[id];
+                if (!meta || !meta.unlockedAt) {
+                    meta = { unlockedAt: new Date().toISOString() };
+                    badgesMetadata[id] = meta;
+                    newMetadataToSync[id] = meta;
+                    metadataChanged = true;
+                }
+                unlockedBadges[id].unlockedAt = meta.unlockedAt;
+                unlockedBadges[id].metadata = meta;
+            }
+        });
+
+        if (metadataChanged) {
+            window.unlockedBadgesMetadata = badgesMetadata;
+            const currentUser = (typeof firebase !== 'undefined' && firebase.auth) ? firebase.auth().currentUser : null;
+            const storageKey = 'unlockedBadgesMetadata_' + (currentUser ? currentUser.uid : 'local_user');
+            try {
+                localStorage.setItem(storageKey, JSON.stringify(badgesMetadata));
+            } catch (e) {}
+            if (Object.keys(newMetadataToSync).length > 0) {
+                syncBadgesMetadataToFirestore(newMetadataToSync);
+            }
+        }
 
         const recordCocardes = calculateRecordCocardes(racesList);
 
@@ -3355,6 +3440,22 @@
                         sectionsHtml += `<div class="text-[11px] font-semibold text-green-700 flex items-center gap-1"><i class="fas fa-check"></i> Mission accomplie</div>`;
                     } else {
                         sectionsHtml += `<div class="text-[11px] text-gray-400 flex items-center gap-1"><i class="fas fa-hourglass-start text-[10px]"></i> En attente</div>`;
+                    }
+
+                    // Metadata discrète : Date et heure de validation
+                    if (isUnlocked) {
+                        const badgeUnlockedAt = badgeState.unlockedAt || (window.unlockedBadgesMetadata && window.unlockedBadgesMetadata[badgeId] && window.unlockedBadgesMetadata[badgeId].unlockedAt);
+                        if (badgeUnlockedAt) {
+                            const formattedDateStr = formatBadgeUnlockDate(badgeUnlockedAt);
+                            if (formattedDateStr) {
+                                sectionsHtml += `
+                                    <div class="mt-2 pt-1.5 border-t border-gray-100 flex items-center gap-1.5 text-[10px] text-gray-400 font-normal select-none" title="Validé le ${formattedDateStr}">
+                                        <i class="far fa-clock text-gray-400 text-[9px]"></i>
+                                        <span>Validé le ${formattedDateStr}</span>
+                                    </div>
+                                `;
+                            }
+                        }
                     }
 
                     sectionsHtml += `

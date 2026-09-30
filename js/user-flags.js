@@ -100,6 +100,13 @@ window.loadUserFlagsFromFirestore = async function() {
             window.tutorialCompleted = true;
         }
 
+        // Synchroniser badgesMetadata (date et heure de validation des missions)
+        if (data.badgesMetadata && typeof data.badgesMetadata === 'object') {
+            window.unlockedBadgesMetadata = Object.assign({}, window.unlockedBadgesMetadata || {}, data.badgesMetadata);
+            try {
+                localStorage.setItem('unlockedBadgesMetadata_' + fbUser.uid, JSON.stringify(window.unlockedBadgesMetadata));
+            } catch(e) {}
+        }
     } catch(e) {
         console.warn('[UserFlags] loadUserFlagsFromFirestore error:', e);
     }
