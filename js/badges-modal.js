@@ -4082,6 +4082,8 @@
         }
     }
 
+    const BADGES_SESSION_START_TIME = window.__badgesSessionStartTime || (window.__badgesSessionStartTime = Date.now());
+
     function checkAndNotifyNewBadges(data) {
         if (!data || !data.unlockedBadges) return;
 
@@ -4098,29 +4100,76 @@
             }
         });
 
+        // Récupérer l'utilisateur courant et les clés de stockage
         const currentUser = (typeof firebase !== 'undefined' && firebase.auth) ? firebase.auth().currentUser : null;
-        const storageKey = 'knownUnlockedBadges_' + (currentUser ? currentUser.uid : 'local_user');
+        const uid = currentUser ? currentUser.uid : 'local_user';
+        const storageKey = 'knownUnlockedBadges_' + uid;
         const storedRaw = localStorage.getItem(storageKey);
-
-        // Premier passage sur ce navigateur : initialiser la baseline sans notifier
-        if (storedRaw === null) {
-            localStorage.setItem(storageKey, JSON.stringify(currentUnlockedIds));
-            return;
-        }
 
         let knownIds = [];
         try {
-            knownIds = JSON.parse(storedRaw) || [];
+            if (storedRaw !== null) {
+                knownIds = JSON.parse(storedRaw) || [];
+            }
         } catch (e) {
             knownIds = [];
         }
+
+        // Récupérer également les badges déjà validés depuis les métadonnées (Firestore & localStorage)
+        const badgesMetadata = (window.unlockedBadgesMetadata && typeof window.unlockedBadgesMetadata === 'object')
+            ? window.unlockedBadgesMetadata
+            : (function() {
+                try {
+                    const rawMeta = localStorage.getItem('unlockedBadgesMetadata_' + uid);
+                    return rawMeta ? JSON.parse(rawMeta) : {};
+                } catch(e) { return {}; }
+            })();
+
         const knownSet = new Set(knownIds);
 
-        // Détection des missions nouvellement débloquées
-        const newBadges = currentUnlockedIds.filter(id => !knownSet.has(id));
+        // Tous les badges qui ont une date de validation antérieure au chargement de la session sont considérés comme déjà connus
+        Object.entries(badgesMetadata).forEach(([bId, meta]) => {
+            if (meta && meta.unlockedAt) {
+                const unlockTime = new Date(meta.unlockedAt).getTime();
+                // Si la validation date d'avant le début de la session (marge de 2 secondes)
+                if (unlockTime < BADGES_SESSION_START_TIME - 2000) {
+                    knownSet.add(bId);
+                }
+            }
+        });
 
-        // Mettre à jour le stockage avec l'état à jour
-        localStorage.setItem(storageKey, JSON.stringify(currentUnlockedIds));
+        // Premier passage sur cette page / session : initialiser la baseline sans notifier
+        if (!window.__badgesInitialBaselineSet || storedRaw === null) {
+            window.__badgesInitialBaselineSet = true;
+            if (currentUnlockedIds.length > 0) {
+                currentUnlockedIds.forEach(id => knownSet.add(id));
+                localStorage.setItem(storageKey, JSON.stringify(Array.from(knownSet)));
+            }
+            return;
+        }
+
+        // Si la liste actuelle est vide (ex: courses pas encore chargées), ne pas écraser les badges connus
+        if (currentUnlockedIds.length === 0 && knownSet.size > 0) {
+            return;
+        }
+
+        // Détection des missions véritablement nouvellement débloquées pendant cette session active
+        const newBadges = currentUnlockedIds.filter(id => {
+            if (knownSet.has(id)) return false;
+            // Vérifier via les métadonnées que ce badge a bien été débloqué à l'instant (pendant cette session)
+            const meta = badgesMetadata[id];
+            if (meta && meta.unlockedAt) {
+                const unlockTime = new Date(meta.unlockedAt).getTime();
+                if (unlockTime < BADGES_SESSION_START_TIME - 2000) {
+                    return false; // Badge historique déjà validé auparavant
+                }
+            }
+            return true;
+        });
+
+        // Mettre à jour le stockage avec l'ensemble des badges connus
+        currentUnlockedIds.forEach(id => knownSet.add(id));
+        localStorage.setItem(storageKey, JSON.stringify(Array.from(knownSet)));
 
         if (newBadges.length === 0) return;
 
