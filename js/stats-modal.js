@@ -590,6 +590,377 @@
                 };
             }
 
+            // Calcul des allures & chronos moyens et RP (1km, 10km, semi-marathon) avec modèle d'endurance
+            function calculateEstimatedPaces(racesList) {
+                if (!racesList || racesList.length === 0) return null;
+
+                const runData = [];
+
+                racesList.forEach(race => {
+                    if (race.terrain === 'relai' && race.relayLaps && race.relayLaps.length > 0) {
+                        race.relayLaps.forEach((lap, idx) => {
+                            if (lap.runner === 'Moi' || !lap.runner || lap.runner === 'Tous ensemble') {
+                                const dist = parseFloat(lap.dist) || 0;
+                                const elev = parseFloat(lap.elev) || 0;
+                                const tSec = timeToSeconds(lap.time);
+                                if (dist >= 0.3 && tSec && tSec > 0) {
+                                    // Distance équivalente à plat : 100m D+ = 1km à plat
+                                    const flatDist = dist + (elev > 0 ? elev / 100 : 0);
+                                    runData.push({
+                                        rawRace: race,
+                                        name: `${race.name} (Relais #${idx + 1})`,
+                                        raceId: race.id,
+                                        date: race.date,
+                                        dist,
+                                        flatDist,
+                                        elev,
+                                        timeSec: tSec,
+                                        paceSecPerKm: tSec / flatDist
+                                    });
+                                }
+                            }
+                        });
+                    } else if (race.terrain === 'hyrox') {
+                        if (race.hyroxLaps && race.hyroxLaps.length > 0) {
+                            [0, 2, 4, 6, 8, 10, 12, 14].forEach(idx => {
+                                const tSec = timeToSeconds(race.hyroxLaps[idx]);
+                                if (tSec && tSec > 0) {
+                                    runData.push({
+                                        rawRace: race,
+                                        name: `${race.name} (Course 1km)`,
+                                        raceId: race.id,
+                                        date: race.date,
+                                        dist: 1.0,
+                                        flatDist: 1.0,
+                                        elev: 0,
+                                        timeSec: tSec,
+                                        paceSecPerKm: tSec
+                                    });
+                                }
+                            });
+                        }
+                    } else if (race.terrain !== 'triathlon') {
+                        const dist = parseFloat(race.distance) || 0;
+                        const elev = parseFloat(race.elevation) || 0;
+                        const tSec = timeToSeconds(race.time);
+                        if (dist >= 0.3 && tSec && tSec > 0) {
+                            const flatDist = dist + (elev > 0 ? elev / 100 : 0);
+                            runData.push({
+                                rawRace: race,
+                                name: race.name,
+                                raceId: race.id,
+                                date: race.date,
+                                dist,
+                                flatDist,
+                                elev,
+                                timeSec: tSec,
+                                paceSecPerKm: tSec / flatDist
+                            });
+                        }
+                    }
+                });
+
+                if (runData.length === 0) return null;
+
+                const totalFlatDist = runData.reduce((acc, r) => acc + r.flatDist, 0);
+                const totalTimeSec = runData.reduce((acc, r) => acc + r.timeSec, 0);
+
+                // Estimation de l'indice d'endurance / coefficient de fatigue (Formule athlétique de Peter Riegel)
+                let fatigueExponent = 1.07;
+                const shortRuns = runData.filter(r => r.flatDist >= 3.0 && r.flatDist <= 12.0);
+                const longRuns = runData.filter(r => r.flatDist >= 15.0);
+
+                if (shortRuns.length > 0 && longRuns.length > 0) {
+                    const avgShortDist = shortRuns.reduce((s, r) => s + r.flatDist, 0) / shortRuns.length;
+                    const avgShortTime = shortRuns.reduce((s, r) => s + r.timeSec, 0) / shortRuns.length;
+                    const avgLongDist = longRuns.reduce((s, r) => s + r.flatDist, 0) / longRuns.length;
+                    const avgLongTime = longRuns.reduce((s, r) => s + r.timeSec, 0) / longRuns.length;
+
+                    if (avgLongDist > avgShortDist * 1.3 && avgLongTime > avgShortTime) {
+                        const customF = Math.log(avgLongTime / avgShortTime) / Math.log(avgLongDist / avgShortDist);
+                        if (!isNaN(customF) && customF >= 1.03 && customF <= 1.18) {
+                            fatigueExponent = customF;
+                        }
+                    }
+                } else {
+                    const maxDist = Math.max(...runData.map(r => r.flatDist));
+                    if (maxDist < 10) {
+                        fatigueExponent = 1.085;
+                    } else if (maxDist >= 21) {
+                        fatigueExponent = 1.06;
+                    }
+                }
+
+                function projectRiegel(tRef, dRef, dTarget, exponent) {
+                    return tRef * Math.pow(dTarget / dRef, exponent);
+                }
+
+                const baseRefDist = totalFlatDist / runData.length;
+                const baseRefTime = totalTimeSec / runData.length;
+
+                // Extraction des courses réelles correspondant aux distances cibles
+                const real1kRaces = runData.filter(r => r.flatDist >= 0.8 && r.flatDist <= 1.4);
+                const real10kRaces = runData.filter(r => r.flatDist >= 8.5 && r.flatDist <= 11.5);
+                const realSemiRaces = runData.filter(r => r.flatDist >= 19.0 && r.flatDist <= 23.0);
+
+                // --- 1 KM : MOYENNE & RP ---
+                let est1kSec = 0;
+                let is1kReal = false;
+                const model1k = projectRiegel(baseRefTime, baseRefDist, 1.0, fatigueExponent);
+                if (real1kRaces.length >= 2) {
+                    const avgReal1k = real1kRaces.reduce((s, r) => s + (r.timeSec / r.flatDist), 0) / real1kRaces.length;
+                    est1kSec = Math.round(0.7 * avgReal1k + 0.3 * model1k);
+                    is1kReal = true;
+                } else if (real1kRaces.length === 1) {
+                    const singleReal1k = real1kRaces[0].timeSec / real1kRaces[0].flatDist;
+                    est1kSec = Math.round(0.5 * singleReal1k + 0.5 * model1k);
+                    is1kReal = true;
+                } else {
+                    est1kSec = Math.round(model1k);
+                }
+
+                // RP 1 km
+                let rp1k = null;
+                if (real1kRaces.length > 0) {
+                    let bestTime = Infinity;
+                    let bestRace = null;
+                    real1kRaces.forEach(r => {
+                        const t = (r.timeSec / r.flatDist) * 1.0;
+                        if (t < bestTime) {
+                            bestTime = t;
+                            bestRace = r;
+                        }
+                    });
+                    rp1k = {
+                        timeSec: Math.round(bestTime),
+                        isReal: true,
+                        raceName: bestRace.name,
+                        raceId: bestRace.raceId,
+                        rawRace: bestRace.rawRace
+                    };
+                } else {
+                    let bestScaledTime = Infinity;
+                    let bestScaledRace = null;
+                    runData.forEach(r => {
+                        const proj = projectRiegel(r.timeSec, r.flatDist, 1.0, fatigueExponent);
+                        if (proj < bestScaledTime) {
+                            bestScaledTime = proj;
+                            bestScaledRace = r;
+                        }
+                    });
+                    rp1k = {
+                        timeSec: Math.round(bestScaledTime),
+                        isReal: false,
+                        raceName: bestScaledRace ? bestScaledRace.name : null,
+                        raceId: bestScaledRace ? bestScaledRace.raceId : null,
+                        rawRace: bestScaledRace ? bestScaledRace.rawRace : null
+                    };
+                }
+
+                // --- 10 KM : MOYENNE & RP ---
+                let est10kSec = 0;
+                let is10kReal = false;
+                const model10k = projectRiegel(baseRefTime, baseRefDist, 10.0, fatigueExponent);
+                if (real10kRaces.length >= 2) {
+                    const avgReal10k = real10kRaces.reduce((s, r) => s + (r.timeSec / r.flatDist) * 10.0, 0) / real10kRaces.length;
+                    est10kSec = Math.round(0.75 * avgReal10k + 0.25 * model10k);
+                    is10kReal = true;
+                } else if (real10kRaces.length === 1) {
+                    const singleReal10k = (real10kRaces[0].timeSec / real10kRaces[0].flatDist) * 10.0;
+                    est10kSec = Math.round(0.6 * singleReal10k + 0.4 * model10k);
+                    is10kReal = true;
+                } else {
+                    est10kSec = Math.round(model10k);
+                }
+
+                // RP 10 km
+                let rp10k = null;
+                if (real10kRaces.length > 0) {
+                    let bestTime = Infinity;
+                    let bestRace = null;
+                    real10kRaces.forEach(r => {
+                        const t = (r.timeSec / r.flatDist) * 10.0;
+                        if (t < bestTime) {
+                            bestTime = t;
+                            bestRace = r;
+                        }
+                    });
+                    rp10k = {
+                        timeSec: Math.round(bestTime),
+                        isReal: true,
+                        raceName: bestRace.name,
+                        raceId: bestRace.raceId,
+                        rawRace: bestRace.rawRace
+                    };
+                } else {
+                    let bestScaledTime = Infinity;
+                    let bestScaledRace = null;
+                    runData.forEach(r => {
+                        const proj = projectRiegel(r.timeSec, r.flatDist, 10.0, fatigueExponent);
+                        if (proj < bestScaledTime) {
+                            bestScaledTime = proj;
+                            bestScaledRace = r;
+                        }
+                    });
+                    rp10k = {
+                        timeSec: Math.round(bestScaledTime),
+                        isReal: false,
+                        raceName: bestScaledRace ? bestScaledRace.name : null,
+                        raceId: bestScaledRace ? bestScaledRace.raceId : null,
+                        rawRace: bestScaledRace ? bestScaledRace.rawRace : null
+                    };
+                }
+
+                // --- SEMI-MARATHON (21.0975 KM) : MOYENNE & RP ---
+                let estSemiSec = 0;
+                let isSemiReal = false;
+                const targetSemiDist = 21.0975;
+                const modelSemi = projectRiegel(baseRefTime, baseRefDist, targetSemiDist, fatigueExponent);
+                if (realSemiRaces.length >= 2) {
+                    const avgRealSemi = realSemiRaces.reduce((s, r) => s + (r.timeSec / r.flatDist) * targetSemiDist, 0) / realSemiRaces.length;
+                    estSemiSec = Math.round(0.8 * avgRealSemi + 0.2 * modelSemi);
+                    isSemiReal = true;
+                } else if (realSemiRaces.length === 1) {
+                    const singleRealSemi = (realSemiRaces[0].timeSec / realSemiRaces[0].flatDist) * targetSemiDist;
+                    estSemiSec = Math.round(0.65 * singleRealSemi + 0.35 * modelSemi);
+                    isSemiReal = true;
+                } else {
+                    estSemiSec = Math.round(modelSemi);
+                }
+
+                // RP Semi-Marathon
+                let rpSemi = null;
+                if (realSemiRaces.length > 0) {
+                    let bestTime = Infinity;
+                    let bestRace = null;
+                    realSemiRaces.forEach(r => {
+                        const t = (r.timeSec / r.flatDist) * targetSemiDist;
+                        if (t < bestTime) {
+                            bestTime = t;
+                            bestRace = r;
+                        }
+                    });
+                    rpSemi = {
+                        timeSec: Math.round(bestTime),
+                        isReal: true,
+                        raceName: bestRace.name,
+                        raceId: bestRace.raceId,
+                        rawRace: bestRace.rawRace
+                    };
+                } else {
+                    let bestScaledTime = Infinity;
+                    let bestScaledRace = null;
+                    runData.forEach(r => {
+                        const proj = projectRiegel(r.timeSec, r.flatDist, targetSemiDist, fatigueExponent);
+                        if (proj < bestScaledTime) {
+                            bestScaledTime = proj;
+                            bestScaledRace = r;
+                        }
+                    });
+                    rpSemi = {
+                        timeSec: Math.round(bestScaledTime),
+                        isReal: false,
+                        raceName: bestScaledRace ? bestScaledRace.name : null,
+                        raceId: bestScaledRace ? bestScaledRace.raceId : null,
+                        rawRace: bestScaledRace ? bestScaledRace.rawRace : null
+                    };
+                }
+
+                function formatPace(paceSec) {
+                    if (!paceSec || isNaN(paceSec) || paceSec <= 0) return "-'--\"";
+                    const mins = Math.floor(paceSec / 60);
+                    const secs = Math.round(paceSec % 60);
+                    return `${mins}'${String(secs).padStart(2, '0')}"/km`;
+                }
+
+                function formatSpeed(distKm, timeSec) {
+                    if (!timeSec || timeSec <= 0) return '- km/h';
+                    const speed = distKm / (timeSec / 3600);
+                    return `${speed.toFixed(1)} km/h`;
+                }
+
+                function formatHumanTime(seconds) {
+                    if (!seconds || seconds <= 0) return '00:00:00';
+                    const hours = Math.floor(seconds / 3600);
+                    const minutes = Math.floor((seconds % 3600) / 60);
+                    const secs = Math.round(seconds % 60);
+                    if (hours > 0) {
+                        return `${hours}h ${String(minutes).padStart(2, '0')}m ${String(secs).padStart(2, '0')}s`;
+                    }
+                    return `${minutes}m ${String(secs).padStart(2, '0')}s`;
+                }
+
+                return {
+                    sampleSize: runData.length,
+                    fatigueExponent: Math.round(fatigueExponent * 100) / 100,
+                    k1: {
+                        distance: 1.0,
+                        timeSec: est1kSec,
+                        timeFormatted: formatHumanTime(est1kSec),
+                        timeClock: secondsToTime(est1kSec),
+                        paceStr: formatPace(est1kSec),
+                        speedStr: formatSpeed(1.0, est1kSec),
+                        hasRealData: is1kReal,
+                        realCount: real1kRaces.length,
+                        rp: {
+                            timeSec: rp1k.timeSec,
+                            timeFormatted: formatHumanTime(rp1k.timeSec),
+                            timeClock: secondsToTime(rp1k.timeSec),
+                            paceStr: formatPace(rp1k.timeSec),
+                            speedStr: formatSpeed(1.0, rp1k.timeSec),
+                            isReal: rp1k.isReal,
+                            raceName: rp1k.raceName,
+                            raceId: rp1k.raceId,
+                            rawRace: rp1k.rawRace
+                        }
+                    },
+                    k10: {
+                        distance: 10.0,
+                        timeSec: est10kSec,
+                        timeFormatted: formatHumanTime(est10kSec),
+                        timeClock: secondsToTime(est10kSec),
+                        paceStr: formatPace(est10kSec / 10.0),
+                        speedStr: formatSpeed(10.0, est10kSec),
+                        hasRealData: is10kReal,
+                        realCount: real10kRaces.length,
+                        rp: {
+                            timeSec: rp10k.timeSec,
+                            timeFormatted: formatHumanTime(rp10k.timeSec),
+                            timeClock: secondsToTime(rp10k.timeSec),
+                            paceStr: formatPace(rp10k.timeSec / 10.0),
+                            speedStr: formatSpeed(10.0, rp10k.timeSec),
+                            isReal: rp10k.isReal,
+                            raceName: rp10k.raceName,
+                            raceId: rp10k.raceId,
+                            rawRace: rp10k.rawRace
+                        }
+                    },
+                    semi: {
+                        distance: targetSemiDist,
+                        timeSec: estSemiSec,
+                        timeFormatted: formatHumanTime(estSemiSec),
+                        timeClock: secondsToTime(estSemiSec),
+                        paceStr: formatPace(estSemiSec / targetSemiDist),
+                        speedStr: formatSpeed(targetSemiDist, estSemiSec),
+                        hasRealData: isSemiReal,
+                        realCount: realSemiRaces.length,
+                        rp: {
+                            timeSec: rpSemi.timeSec,
+                            timeFormatted: formatHumanTime(rpSemi.timeSec),
+                            timeClock: secondsToTime(rpSemi.timeSec),
+                            paceStr: formatPace(rpSemi.timeSec / targetSemiDist),
+                            speedStr: formatSpeed(targetSemiDist, rpSemi.timeSec),
+                            isReal: rpSemi.isReal,
+                            raceName: rpSemi.raceName,
+                            raceId: rpSemi.raceId,
+                            rawRace: rpSemi.rawRace
+                        }
+                    }
+                };
+            }
+
+            const estimatedPaces = calculateEstimatedPaces(pastRaces);
+
             return {
                 totalRaces: pastRaces.length,
                 validRaces: pastRaces,
@@ -613,7 +984,8 @@
                 racesWithPricePerKm,
                 racesWithPricePerKmWithElevation,
                 triathlonStats,
-                hyroxStats
+                hyroxStats,
+                estimatedPaces
             };
         }
 
@@ -847,6 +1219,160 @@
                 }
 
                 html += '</div>'; // Fermeture de la grid à 2 colonnes
+
+                // Allures et chronos moyens (1km, 10km, Semi-Marathon) avec records personnels (RP)
+                if (stats.estimatedPaces) {
+                    const ep = stats.estimatedPaces;
+
+                    // Helper pour afficher le lien de course du RP
+                    function renderRpRaceLink(rpObj) {
+                        if (!rpObj || !rpObj.raceName) return '';
+                        if (rpObj.rawRace) {
+                            return `<div class="text-[11px] text-gray-600 truncate mt-1">
+                                <span class="text-gray-400">Course :</span> ${getUniqueRaceName(rpObj.rawRace, stats.validRaces)}
+                            </div>`;
+                        }
+                        if (rpObj.raceId) {
+                            return `<div class="text-[11px] text-gray-600 truncate mt-1">
+                                <span class="text-gray-400">Course :</span> <span class="stat-race-link font-medium text-green-800 hover:text-green-600 hover:underline cursor-pointer" data-race-id="${rpObj.raceId}">${rpObj.raceName} <i class="fas fa-external-link-alt text-[9px] text-green-600"></i></span>
+                            </div>`;
+                        }
+                        return `<div class="text-[11px] text-gray-500 truncate mt-1" title="${rpObj.raceName}"><span class="text-gray-400">Course :</span> ${rpObj.raceName}</div>`;
+                    }
+
+                    html += `
+                    <div class="bg-green-50 p-4 rounded-lg mb-6 border border-green-200">
+                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
+                            <div>
+                                <h4 class="font-bold text-green-800 flex items-center gap-2 text-base">
+                                    <i class="fas fa-stopwatch text-green-600"></i>
+                                    <span>Temps & Allures Moyens</span>
+                                </h4>
+                                <p class="text-xs text-green-700 mt-0.5">
+                                    Calculé selon vos données de courses (ajusté au dénivelé D+ et à la fatigue d'endurance).
+                                </p>
+                            </div>
+                            <button type="button" id="fatigueIndexBadgeBtn" class="flex items-center gap-1.5 self-start sm:self-auto bg-white hover:bg-green-100 border border-green-300 px-3 py-1 rounded-full text-xs font-semibold text-green-800 shadow-2xs cursor-pointer transition-all active:scale-95 group" title="Cliquer pour comprendre votre score d'indice de fatigue">
+                                <i class="fas fa-heartbeat text-red-500 group-hover:scale-110 transition-transform"></i>
+                                <span>Indice fatigue : <strong>${ep.fatigueExponent}</strong></span>
+                                <i class="fas fa-info-circle text-green-600 text-[11px] ml-0.5 opacity-80 group-hover:opacity-100"></i>
+                            </button>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <!-- 1 KM -->
+                            <div class="bg-white rounded-lg p-4 border border-green-200 shadow-xs flex flex-col justify-between">
+                                <div>
+                                    <div class="flex items-center justify-between mb-3 border-b border-gray-100 pb-2">
+                                        <span class="font-bold text-green-800 text-sm flex items-center gap-1.5">
+                                            <i class="fas fa-bolt text-amber-500"></i> 1 km
+                                        </span>
+                                        <span class="text-[10px] text-gray-500 font-medium">${ep.k1.hasRealData ? (ep.k1.realCount + ' repère' + (ep.k1.realCount > 1 ? 's' : '')) : 'Modélisé'}</span>
+                                    </div>
+                                    <div class="mb-3">
+                                        <span class="text-[11px] uppercase tracking-wider text-gray-400 font-bold block mb-0.5">Temps moyen</span>
+                                        <div class="text-xl font-bold text-gray-900 flex items-baseline gap-1.5">
+                                            <span>${ep.k1.timeFormatted}</span>
+                                            <span class="text-xs text-gray-400 font-normal">(${ep.k1.timeClock})</span>
+                                        </div>
+                                        <div class="text-xs font-semibold text-green-700 mt-1 flex items-center gap-1">
+                                            <i class="fas fa-tachometer-alt text-[10px] text-green-500"></i>
+                                            <span>Allure : <strong>${ep.k1.paceStr}</strong></span>
+                                            <span class="text-gray-400 font-normal ml-1">(${ep.k1.speedStr})</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mt-2 pt-2.5 border-t border-dashed border-gray-200 bg-amber-50/70 -mx-4 -mb-4 p-3 rounded-b-lg">
+                                    <div class="flex items-center justify-between mb-1">
+                                        <span class="text-xs font-bold text-amber-900 flex items-center gap-1">
+                                            <i class="fas fa-trophy text-amber-500"></i> RP (Record Personnel)
+                                        </span>
+                                        <span class="text-[10px] text-amber-800 font-semibold bg-amber-100 px-1.5 py-0.5 rounded">${ep.k1.rp.isReal ? 'Réel' : 'Estimé'}</span>
+                                    </div>
+                                    <div class="flex items-baseline justify-between gap-2">
+                                        <span class="text-base font-extrabold text-amber-900">${ep.k1.rp.timeFormatted}</span>
+                                        <span class="text-xs font-semibold text-amber-800">${ep.k1.rp.paceStr}</span>
+                                    </div>
+                                    ${renderRpRaceLink(ep.k1.rp)}
+                                </div>
+                            </div>
+
+                            <!-- 10 KM -->
+                            <div class="bg-white rounded-lg p-4 border border-green-200 shadow-xs flex flex-col justify-between">
+                                <div>
+                                    <div class="flex items-center justify-between mb-3 border-b border-gray-100 pb-2">
+                                        <span class="font-bold text-green-800 text-sm flex items-center gap-1.5">
+                                            <i class="fas fa-running text-green-600"></i> 10 km
+                                        </span>
+                                        <span class="text-[10px] text-gray-500 font-medium">${ep.k10.hasRealData ? (ep.k10.realCount + ' course' + (ep.k10.realCount > 1 ? 's' : '') + ' ~10k') : 'Modélisé'}</span>
+                                    </div>
+                                    <div class="mb-3">
+                                        <span class="text-[11px] uppercase tracking-wider text-gray-400 font-bold block mb-0.5">Temps moyen</span>
+                                        <div class="text-xl font-bold text-gray-900 flex items-baseline gap-1.5">
+                                            <span>${ep.k10.timeFormatted}</span>
+                                            <span class="text-xs text-gray-400 font-normal">(${ep.k10.timeClock})</span>
+                                        </div>
+                                        <div class="text-xs font-semibold text-green-700 mt-1 flex items-center gap-1">
+                                            <i class="fas fa-tachometer-alt text-[10px] text-green-500"></i>
+                                            <span>Allure : <strong>${ep.k10.paceStr}</strong></span>
+                                            <span class="text-gray-400 font-normal ml-1">(${ep.k10.speedStr})</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mt-2 pt-2.5 border-t border-dashed border-gray-200 bg-amber-50/70 -mx-4 -mb-4 p-3 rounded-b-lg">
+                                    <div class="flex items-center justify-between mb-1">
+                                        <span class="text-xs font-bold text-amber-900 flex items-center gap-1">
+                                            <i class="fas fa-trophy text-amber-500"></i> RP (Record Personnel)
+                                        </span>
+                                        <span class="text-[10px] text-amber-800 font-semibold bg-amber-100 px-1.5 py-0.5 rounded">${ep.k10.rp.isReal ? 'Réel' : 'Estimé'}</span>
+                                    </div>
+                                    <div class="flex items-baseline justify-between gap-2">
+                                        <span class="text-base font-extrabold text-amber-900">${ep.k10.rp.timeFormatted}</span>
+                                        <span class="text-xs font-semibold text-amber-800">${ep.k10.rp.paceStr}</span>
+                                    </div>
+                                    ${renderRpRaceLink(ep.k10.rp)}
+                                </div>
+                            </div>
+
+                            <!-- SEMI-MARATHON -->
+                            <div class="bg-white rounded-lg p-4 border border-green-200 shadow-xs flex flex-col justify-between">
+                                <div>
+                                    <div class="flex items-center justify-between mb-3 border-b border-gray-100 pb-2">
+                                        <span class="font-bold text-green-800 text-sm flex items-center gap-1.5">
+                                            <i class="fas fa-mountain text-teal-600"></i> Semi-Marathon
+                                        </span>
+                                        <span class="text-[10px] text-gray-500 font-medium">${ep.semi.hasRealData ? (ep.semi.realCount + ' semi' + (ep.semi.realCount > 1 ? 's' : '') + ' couru' + (ep.semi.realCount > 1 ? 's' : '')) : 'Modélisé'}</span>
+                                    </div>
+                                    <div class="mb-3">
+                                        <span class="text-[11px] uppercase tracking-wider text-gray-400 font-bold block mb-0.5">Temps moyen</span>
+                                        <div class="text-xl font-bold text-gray-900 flex items-baseline gap-1.5">
+                                            <span>${ep.semi.timeFormatted}</span>
+                                            <span class="text-xs text-gray-400 font-normal">(${ep.semi.timeClock})</span>
+                                        </div>
+                                        <div class="text-xs font-semibold text-green-700 mt-1 flex items-center gap-1">
+                                            <i class="fas fa-tachometer-alt text-[10px] text-green-500"></i>
+                                            <span>Allure : <strong>${ep.semi.paceStr}</strong></span>
+                                            <span class="text-gray-400 font-normal ml-1">(${ep.semi.speedStr})</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mt-2 pt-2.5 border-t border-dashed border-gray-200 bg-amber-50/70 -mx-4 -mb-4 p-3 rounded-b-lg">
+                                    <div class="flex items-center justify-between mb-1">
+                                        <span class="text-xs font-bold text-amber-900 flex items-center gap-1">
+                                            <i class="fas fa-trophy text-amber-500"></i> RP (Record Personnel)
+                                        </span>
+                                        <span class="text-[10px] text-amber-800 font-semibold bg-amber-100 px-1.5 py-0.5 rounded">${ep.semi.rp.isReal ? 'Réel' : 'Estimé'}</span>
+                                    </div>
+                                    <div class="flex items-baseline justify-between gap-2">
+                                        <span class="text-base font-extrabold text-amber-900">${ep.semi.rp.timeFormatted}</span>
+                                        <span class="text-xs font-semibold text-amber-800">${ep.semi.rp.paceStr}</span>
+                                    </div>
+                                    ${renderRpRaceLink(ep.semi.rp)}
+                                </div>
+                            </div>
+                        </div>
+                    </div>`;
+                }
 
                 // Statistiques spécifiques Triathlon (en pleine largeur)
                 if (stats.triathlonStats) {
@@ -1202,10 +1728,150 @@
                         if (raceId) openRaceFromStats(raceId);
                     });
                 });
+
+                // Attacher l'écouteur sur le bouton Indice de fatigue
+                const fatigueBadgeBtn = statsContent.querySelector('#fatigueIndexBadgeBtn');
+                if (fatigueBadgeBtn && stats.estimatedPaces) {
+                    fatigueBadgeBtn.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        openFatigueInfoModal(stats.estimatedPaces.fatigueExponent);
+                    });
+                }
             } catch (e) {
                 console.error('[stats-modal] Erreur affichage stats:', e);
             }
         };
+
+        // Fonction pour ouvrir la mini-modale d'explication de l'indice de fatigue
+        function openFatigueInfoModal(score) {
+            const existing = document.getElementById('fatigueInfoModal');
+            if (existing) existing.remove();
+
+            const numScore = parseFloat(score) || 1.07;
+            let interpretationTitle = '';
+            let interpretationDesc = '';
+            let badgeStyle = '';
+
+            if (numScore < 1.06) {
+                interpretationTitle = 'Profil très endurant (Marathonien / Ultra)';
+                interpretationDesc = 'Vous conservez une excellente régularité de vitesse sur la durée. Votre dégradation d\'allure due à la fatigue sur le semi-marathon est minime.';
+                badgeStyle = 'bg-emerald-100 text-emerald-900 border-emerald-300';
+            } else if (numScore <= 1.09) {
+                interpretationTitle = 'Profil équilibré (Standard régulier)';
+                interpretationDesc = 'Votre gestion de l\'effort est saine et équilibrée. Votre allure diminue progressivement et naturellement avec la distance selon les standards athlétiques.';
+                badgeStyle = 'bg-green-100 text-green-900 border-green-300';
+            } else {
+                interpretationTitle = 'Profil explosif / Vitesse (Court & Intense)';
+                interpretationDesc = 'Vous avez une très bonne vitesse sur les formats courts (1km à 10km), mais l\'accumulation de fatigue réduit plus vite votre allure au-delà de 15 km.';
+                badgeStyle = 'bg-amber-100 text-amber-900 border-amber-300';
+            }
+
+            const modalHtml = `
+            <div id="fatigueInfoModal" class="fixed inset-0 flex items-center justify-center p-4 bg-black bg-opacity-50 backdrop-blur-sm transition-opacity duration-200" style="z-index: 10005;">
+                <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-5 sm:p-6 border border-gray-100">
+                    <!-- Header -->
+                    <div class="flex items-center justify-between pb-3 mb-4 border-b border-gray-100">
+                        <div class="flex items-center gap-2">
+                            <h3 class="text-lg font-semibold text-green-800 flex items-center gap-2">
+                                <i class="fas fa-heartbeat text-red-500"></i>
+                                <span>Indice de fatigue</span>
+                            </h3>
+                        </div>
+                        <button type="button" id="closeFatigueInfoModal" class="text-gray-400 hover:text-green-800 text-xl transition cursor-pointer" title="Fermer">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+
+                    <!-- Body -->
+                    <div class="space-y-4 text-sm text-gray-700">
+                        <p class="text-xs text-gray-600 leading-relaxed">
+                            Issu de la formule de <strong>Peter Riegel</strong>, cet indice mesure l'évolution de votre allure lorsque la distance augmente.
+                        </p>
+
+                        <!-- Score utilisateur -->
+                        <div class="bg-green-50 border border-green-200 rounded-lg p-3.5">
+                            <div class="flex items-center justify-between mb-1.5">
+                                <span class="text-xs text-green-800 font-semibold">Votre score :</span>
+                                <span class="px-2 py-0.5 rounded text-xs font-bold bg-white text-green-900 border border-green-300">
+                                    ${numScore.toFixed(2)}
+                                </span>
+                            </div>
+                            <p class="font-bold text-gray-900 text-xs mb-1">
+                                ${interpretationTitle}
+                            </p>
+                            <p class="text-xs text-gray-600 leading-normal">
+                                ${interpretationDesc}
+                            </p>
+                        </div>
+
+                        <!-- Grille repères -->
+                        <div class="grid grid-cols-3 gap-2 text-center text-xs">
+                            <div class="bg-gray-50 border border-gray-200 p-2 rounded">
+                                <span class="block font-bold text-green-800">&lt; 1.06</span>
+                                <span class="text-[10px] text-gray-500">Endurant</span>
+                            </div>
+                            <div class="bg-gray-50 border border-gray-200 p-2 rounded">
+                                <span class="block font-bold text-green-800">1.06 - 1.09</span>
+                                <span class="text-[10px] text-gray-500">Standard</span>
+                            </div>
+                            <div class="bg-gray-50 border border-gray-200 p-2 rounded">
+                                <span class="block font-bold text-green-800">&gt; 1.09</span>
+                                <span class="text-[10px] text-gray-500">Explosif</span>
+                            </div>
+                        </div>
+
+                        <!-- Section calcul -->
+                        <div class="border-t border-gray-100 pt-3">
+                            <h4 class="font-bold text-gray-800 text-xs uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                                <i class="fas fa-calculator text-green-600"></i> Comment est-il calculé ?
+                            </h4>
+                            <p class="text-xs text-gray-600 leading-relaxed">
+                                L'application compare vos allures réelles entre vos courses courtes (&le; 10 km) et plus longues (&ge; 15 km), en ajustant le dénivelé (<strong>100m D+ = 1 km à plat</strong>). La formule athlétique de Peter Riegel <span class="font-mono text-[11px] bg-gray-100 px-1 py-0.5 rounded text-gray-700">T₂ = T₁ &times; (D₂/D₁)^F</span> en déduit précisément votre coefficient personnel d'endurance.
+                            </p>
+                        </div>
+
+                        <!-- Lien En savoir plus -->
+                        <div class="pt-1 flex items-center justify-between">
+                            <a href="https://www.u-run.fr/30595-la-formule-de-riegel" target="_blank" rel="noopener noreferrer" class="text-xs text-green-700 hover:text-green-900 hover:underline inline-flex items-center gap-1 font-medium transition-colors">
+                                <i class="fas fa-book-open text-green-600 text-[11px]"></i>
+                                <span>En savoir plus sur la formule de Riegel</span>
+                                <i class="fas fa-external-link-alt text-[9px] opacity-70"></i>
+                            </a>
+                        </div>
+
+                        <button type="button" id="okFatigueInfoModal" class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg text-sm transition cursor-pointer mt-2">
+                            Fermer
+                        </button>
+                    </div>
+                </div>
+            </div>
+            `;
+
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+            const modalEl = document.getElementById('fatigueInfoModal');
+            const closeBtn = document.getElementById('closeFatigueInfoModal');
+            const okBtn = document.getElementById('okFatigueInfoModal');
+
+            function closeModal() {
+                if (modalEl) modalEl.remove();
+                document.removeEventListener('keydown', handleEsc);
+            }
+
+            function handleEsc(e) {
+                if (e.key === 'Escape') closeModal();
+            }
+
+            if (closeBtn) closeBtn.addEventListener('click', closeModal);
+            if (okBtn) okBtn.addEventListener('click', closeModal);
+            if (modalEl) {
+                modalEl.addEventListener('click', function (e) {
+                    if (e.target === modalEl) closeModal();
+                });
+            }
+            document.addEventListener('keydown', handleEsc);
+        }
 
         // Fonction pour mettre à jour le graphique
         function updateChart(chartType = 'distance', sortOrder = 'desc', limit = 10) {
