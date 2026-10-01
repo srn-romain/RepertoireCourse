@@ -3278,8 +3278,8 @@
                         sectionsHtml += `
                         <div class="badge-card rounded-lg p-3.5 border border-dashed border-gray-300 bg-gray-50/80 flex flex-col justify-between"
                              data-badge-id="${badgeId}"
-                             data-badge-name="${escapeBadgeHtml(badge ? badge.name : '')}"
-                             data-badge-desc="${escapeBadgeHtml(badge ? badge.description : '')}"
+                             data-badge-name="Défi Mystère"
+                             data-badge-desc="Atteignez ${lvl.requiredXP} XP au total pour révéler ce défi..."
                              data-badge-status="locked"
                              data-badge-xp="${badgeXp}"
                              data-level-id="${lvl.id}"
@@ -3299,12 +3299,10 @@
                                     </div>
                                     <div class="flex-grow">
                                         <h5 class="font-semibold text-sm text-gray-500 flex items-center gap-1.5">
-                                            <span class="badge-title-normal">Défi Mystère</span>
-                                            <span class="badge-title-revealed hidden text-amber-800 font-bold">${badge ? badge.name : 'Défi Mystère'}</span>
+                                            <span>Défi Mystère</span>
                                         </h5>
                                         <p class="text-xs text-gray-400 mt-0.5 italic">
-                                            <span class="badge-desc-normal">Atteignez ${lvl.requiredXP} XP au total pour révéler ce défi...</span>
-                                            <span class="badge-desc-revealed hidden text-gray-600 not-italic">${badge ? badge.description : ''}</span>
+                                            <span>Atteignez ${lvl.requiredXP} XP au total pour révéler ce défi...</span>
                                         </p>
                                     </div>
                                 </div>
@@ -3603,25 +3601,6 @@
                         card.style.display = '';
                         levelMatchesCount++;
                         totalMatches++;
-
-                        // Si niveau verrouillé et recherche active, révéler les infos de la mission
-                        if (!isLevelUnlocked) {
-                            const normalTitle = card.querySelector('.badge-title-normal');
-                            const revealedTitle = card.querySelector('.badge-title-revealed');
-                            const normalDesc = card.querySelector('.badge-desc-normal');
-                            const revealedDesc = card.querySelector('.badge-desc-revealed');
-                            if (hasQuery) {
-                                if (normalTitle) normalTitle.classList.add('hidden');
-                                if (revealedTitle) revealedTitle.classList.remove('hidden');
-                                if (normalDesc) normalDesc.classList.add('hidden');
-                                if (revealedDesc) revealedDesc.classList.remove('hidden');
-                            } else {
-                                if (normalTitle) normalTitle.classList.remove('hidden');
-                                if (revealedTitle) revealedTitle.classList.add('hidden');
-                                if (normalDesc) normalDesc.classList.remove('hidden');
-                                if (revealedDesc) revealedDesc.classList.add('hidden');
-                            }
-                        }
                     } else {
                         card.classList.add('hidden');
                         card.style.display = 'none';
@@ -3635,12 +3614,6 @@
                         // Déplier automatiquement pour afficher les résultats
                         if (levelBody) levelBody.classList.remove('hidden');
                         if (chevron) chevron.classList.add('rotate-180');
-                        if (!isLevelUnlocked) {
-                            if (lockOverlay) lockOverlay.classList.add('hidden');
-                            if (cardsGrid) {
-                                cardsGrid.classList.remove('filter', 'blur-[1.5px]', 'opacity-35', 'select-none', 'pointer-events-none');
-                            }
-                        }
                     } else {
                         // Rétablir l'état normal replié/déplié
                         const isCompleted = section.getAttribute('data-level-completed') === 'true';
@@ -3655,12 +3628,6 @@
                             } else {
                                 levelBody.classList.add('hidden');
                                 if (chevron) chevron.classList.remove('rotate-180');
-                            }
-                        }
-                        if (!isLevelUnlocked) {
-                            if (lockOverlay) lockOverlay.classList.remove('hidden');
-                            if (cardsGrid) {
-                                cardsGrid.classList.add('filter', 'blur-[1.5px]', 'opacity-35', 'select-none', 'pointer-events-none');
                             }
                         }
                     }
