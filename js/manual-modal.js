@@ -349,13 +349,11 @@ const manualModalHTML = `
                     <h4 class="text-xl font-bold text-green-700 mb-3 flex items-center gap-2">
                         <i class="fas fa-chart-line text-green-600"></i> Statistiques & Analyses
                     </h4>
-                    <div class="bg-white border border-green-100 rounded-lg overflow-hidden shadow-sm">
+                    <div class="bg-white border border-green-100 rounded-lg overflow-hidden shadow-sm space-y-4">
                         <img src="img/stat.png" alt="Statistiques" class="w-full h-auto">
                         <div class="p-4 bg-gray-50">
                             <p class="text-sm text-gray-600 mb-3">
-                                <strong>Graphiques interactifs :</strong> Visualisez votre progression avec
-                                plusieurs
-                                types de graphiques.
+                                <strong>Graphiques interactifs :</strong> Visualisez votre progression avec plusieurs types de graphiques.
                             </p>
                             <div class="grid md:grid-cols-2 gap-2 text-xs text-gray-600">
                                 <div>📊 Distance par mois/année</div>
@@ -366,6 +364,30 @@ const manualModalHTML = `
                                 <div>🏆 Records D+ et D- par course</div>
                                 <div>📈 Courbe d'évolution vitesse & allure</div>
                                 <div>🤖 Prédiction IA de vos prochaines performances</div>
+                            </div>
+                        </div>
+
+                        <!-- Allures moyennes, RP & Indice de fatigue -->
+                        <div class="p-4 bg-emerald-50/70 border-t border-emerald-200">
+                            <h5 class="font-bold text-emerald-900 text-sm mb-2 flex items-center gap-2">
+                                <i class="fas fa-tachometer-alt text-emerald-600"></i> Allures de référence, RP & Indice de fatigue
+                            </h5>
+                            <p class="text-xs text-gray-700 mb-3 leading-relaxed">
+                                Dans la modale de statistiques, un encart dédié analyse vos données de courses pour vous fournir des repères athlétiques précis :
+                            </p>
+                            <div class="grid md:grid-cols-3 gap-3 text-xs text-gray-700">
+                                <div class="bg-white p-3 rounded-lg border border-emerald-200 shadow-2xs">
+                                    <p class="font-bold text-emerald-800 mb-1">⏱️ Allures moyennes</p>
+                                    <p class="text-gray-600">Estimation de vos temps et allures pour <strong>1 km</strong>, <strong>10 km</strong> et le <strong>semi-marathon</strong>, ajustée à votre dénivelé réel.</p>
+                                </div>
+                                <div class="bg-white p-3 rounded-lg border border-emerald-200 shadow-2xs">
+                                    <p class="font-bold text-emerald-800 mb-1">🥇 Records Personnels (RP)</p>
+                                    <p class="text-gray-600">Mise en avant immédiate de votre meilleur chrono historique pour chaque distance de référence.</p>
+                                </div>
+                                <div class="bg-white p-3 rounded-lg border border-emerald-200 shadow-2xs">
+                                    <p class="font-bold text-emerald-800 mb-1">❤️ Indice de fatigue</p>
+                                    <p class="text-gray-600">Calcul basé sur la formule athlétique de Peter Riegel. Cliquez sur le badge pour ouvrir la mini-modale explicative interactive.</p>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -533,6 +555,21 @@ const manualModalHTML = `
                                     <i class="fas fa-eye text-blue-600 mt-0.5"></i>
                                     <span><strong>Découvrir :</strong> Consultez les performances des autres coureurs sur la page d'accueil de l'application.</span>
                                 </li>
+                            </ul>
+                        </div>
+
+                        <hr class="border-red-50">
+
+                        <!-- Compteur kilométrique collectif & Contribution -->
+                        <div>
+                            <h5 class="font-bold text-green-900 mb-2 flex items-center gap-2">
+                                <i class="fas fa-globe-europe text-green-600"></i> Compteur Kilométrique Collectif
+                            </h5>
+                            <p class="text-sm text-gray-600 mb-2">Un suivi en direct des efforts de toute la communauté :</p>
+                            <ul class="text-xs text-gray-600 ml-4 space-y-1.5">
+                                <li>• <strong>Cumul global :</strong> La page d'accueil affiche le cumul total des kilomètres parcourus par l'ensemble des membres de la communauté.</li>
+                                <li>• <strong>Contribution personnelle :</strong> Lorsque vous êtes connecté, l'application calcule automatiquement votre pourcentage de contribution au total collectif ainsi que votre kilométrage personnel cumulé.</li>
+                                <li>• <strong>Optimisation & Vitesse :</strong> Chargement instantané grâce à un cache local intelligent sans surcoût de chargement.</li>
                             </ul>
                         </div>
 
