@@ -313,28 +313,58 @@
         // Restore body
         document.body.style.overflow = '';
 
-        if (isCompleted === true) {
-            window.tutorialCompleted = true;
-            localStorage.setItem('tutorialCompleted', 'true');
+        window.tutorialCompleted = true;
+        localStorage.setItem('tutorialCompleted', 'true');
+        if (typeof saveUserFlag === 'function') {
+            saveUserFlag('tutorialCompleted', true);
+        }
 
-            // Marquer le tutoriel comme terminé dans Firestore
-            const user = firebase.auth().currentUser;
-            if (user && typeof db !== 'undefined') {
-                try {
-                    await db.collection('users').doc(user.uid).set({
-                        tutorialCompleted: true,
-                        tutorialCompletedAt: firebase.firestore.FieldValue.serverTimestamp()
-                    }, { merge: true });
-                } catch (error) {
-                    console.error('Erreur lors de la sauvegarde du statut du tutoriel:', error);
-                }
+        // Marquer le tutoriel comme terminé dans Firestore
+        const user = (typeof firebase !== 'undefined' && firebase.auth) ? firebase.auth().currentUser : null;
+        if (user && typeof db !== 'undefined') {
+            try {
+                await db.collection('users').doc(user.uid).set({
+                    tutorialCompleted: true,
+                    tutorialCompletedAt: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
+            } catch (error) {
+                console.error('Erreur lors de la sauvegarde du statut du tutoriel:', error);
+            }
+        }
+    }
+
+    // Refuser / Fermer la proposition de tutoriel
+    async function dismissTutorialPrompt() {
+        const modal = document.getElementById('tutorialPromptModal');
+        if (modal) modal.classList.add('hidden');
+
+        window.tutorialCompleted = true;
+        localStorage.setItem('tutorialCompleted', 'true');
+        if (typeof saveUserFlag === 'function') {
+            saveUserFlag('tutorialCompleted', true);
+        }
+
+        const user = (typeof firebase !== 'undefined' && firebase.auth) ? firebase.auth().currentUser : null;
+        if (user && typeof db !== 'undefined') {
+            try {
+                await db.collection('users').doc(user.uid).set({
+                    tutorialCompleted: true,
+                    tutorialDismissedAt: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
+            } catch (error) {
+                console.warn('Erreur lors de la sauvegarde du refus du tutoriel:', error);
             }
         }
     }
 
     // Vérifier si l'utilisateur a déjà vu le tutoriel
     async function shouldShowTutorialPrompt() {
-        const user = firebase.auth().currentUser;
+        // 1. Vérification rapide locale (si déjà complété ou refusé)
+        if (localStorage.getItem('tutorialCompleted') === 'true' || window.tutorialCompleted === true) {
+            return false;
+        }
+
+        const user = (typeof firebase !== 'undefined' && firebase.auth) ? firebase.auth().currentUser : null;
         if (!user) return false;
 
         // Ne pas afficher pour les invités
@@ -345,8 +375,15 @@
 
         try {
             const doc = await db.collection('users').doc(user.uid).get();
-            if (doc.exists && doc.data().tutorialCompleted) {
-                return false; // Déjà vu
+            if (doc.exists) {
+                const data = doc.data() || {};
+                const isCompleted = (data.tutorialCompleted === true || data.tutorialCompleted === 'true') ||
+                                   (data.flags && (data.flags.tutorialCompleted === true || data.flags.tutorialCompleted === 'true'));
+                if (isCompleted) {
+                    localStorage.setItem('tutorialCompleted', 'true');
+                    window.tutorialCompleted = true;
+                    return false; // Déjà vu / validé
+                }
             }
             return true; // Pas encore vu
         } catch (error) {
@@ -377,5 +414,6 @@
     // Exposer les fonctions globalement
     window.startTutorial = startTutorial;
     window.endTutorial = endTutorial;
+    window.dismissTutorialPrompt = dismissTutorialPrompt;
 
 })();

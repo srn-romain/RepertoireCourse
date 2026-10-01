@@ -2408,7 +2408,7 @@
             </div>
 
             <div class="flex gap-3 justify-center">
-                <button onclick="document.getElementById('tutorialPromptModal').classList.add('hidden')"
+                <button onclick="if(typeof dismissTutorialPrompt === 'function') dismissTutorialPrompt(); else document.getElementById('tutorialPromptModal').classList.add('hidden');"
                     class="px-6 py-3 bg-gray-200 hover:bg-gray-300 rounded-lg text-gray-800 transition font-medium">
                     <i class="fas fa-times mr-2"></i>Non merci
                 </button>
@@ -2464,7 +2464,7 @@
 
     <script src="js/firebase-config.js"></script>
     <script src="js/isInvite.js"></script>
-    <script src="js/tutorial.js"></script>
+    <script src="js/tutorial.js?v=20261001_1"></script>
     <script src="js/pdf-generator.js"></script>
     <script>
         // Utility function to format distances (max 4 decimal places)

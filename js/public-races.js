@@ -527,18 +527,21 @@ async function loadPublicRaces() {
                 <div class="p-6 relative h-full flex flex-col justify-between">
                     <div>
                         <div class="flex justify-between items-start">
-                        <div>
-                            ${titleHtml}
-                            <p class="text-green-600 capitalize">
-                                ${dateStr}
-                            </p>
+                            <div class="min-w-0 flex-1 pr-2">
+                                ${titleHtml}
+                                <div class="flex items-center gap-2 mt-0.5 flex-wrap">
+                                    <p class="text-green-600 capitalize text-sm">
+                                        ${dateStr}
+                                    </p>
+                                    ${wishlistBtnHtml}
+                                </div>
+                            </div>
+                            <!-- LIKE BUTTON (Top Right) -->
+                            ${likeButtonHtml}
                         </div>
-                         <!-- LIKE BUTTON (Top Right) -->
-                        ${likeButtonHtml}
-                    </div>
 
-                    <div class="mt-4 flex flex-col gap-2 pr-28">
-                        <div class="flex flex-wrap items-center gap-2">
+                        <div class="mt-4 flex flex-col gap-2 pr-28">
+                            <div class="flex flex-wrap items-center gap-2">
                             ${race.terrain === 'triathlon' ?
                     (race.raceFormat === 'team' ?
                         (() => {
@@ -616,9 +619,9 @@ async function loadPublicRaces() {
                      <span class="flex items-center gap-1 px-2 py-1 bg-indigo-50 text-indigo-800 text-xs rounded-full"><i class="fas fa-road text-indigo-500"></i> Route</span>
                      ` : ''}`
                 }
+                            </div>
                         </div>
                     </div>
-</div>
 
                     <!-- Footer -->
                     <div class="mt-4 pt-3 flex items-center border-t border-green-50 pr-28">
@@ -632,9 +635,8 @@ async function loadPublicRaces() {
                         </span>
                     </div>
 
-                    <!-- Wishlist & Image (Bottom Right) -->
-                    <div class="absolute bottom-3 right-3 flex flex-col items-end gap-1.5 z-10">
-                        ${wishlistBtnHtml}
+                    <!-- Image (Bottom Right) -->
+                    <div class="absolute bottom-3 right-3 z-10">
                         <div class="h-28 w-28 group-hover:scale-105 transition-transform duration-300">
                             ${race.photo ?
                         `<img src="${race.photo}" onclick="event.stopPropagation(); zoomImage('${race.photo}')" alt="Photo course" class="h-full w-full object-cover rounded-lg shadow-md border border-green-200 cursor-zoom-in" />`
