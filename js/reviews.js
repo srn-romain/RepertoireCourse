@@ -617,6 +617,28 @@ function escapeHtml(str) {
 }
 
 // ─────────────────────────────────────────────
+//  Vérification de l'état réel de l'avis utilisateur
+// ─────────────────────────────────────────────
+async function checkUserReviewState(user) {
+    if (!user) {
+        user = (typeof firebase !== 'undefined' && firebase.auth) ? firebase.auth().currentUser : null;
+    }
+    if (!user || typeof db === 'undefined') return;
+
+    try {
+        const doc = await db.collection('reviews').doc(user.uid).get();
+        if (doc.exists && doc.data() && doc.data().stars > 0) {
+            saveUserFlag('userFeedbackSent', true);
+        } else {
+            saveUserFlag('userFeedbackSent', false);
+        }
+    } catch (e) {
+        console.warn('[Reviews] checkUserReviewState error:', e);
+    }
+}
+window.checkUserReviewState = checkUserReviewState;
+
+// ─────────────────────────────────────────────
 //  Initialisation
 // ─────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
@@ -624,8 +646,17 @@ document.addEventListener('DOMContentLoaded', () => {
     if (document.getElementById('reviewsSection')) {
         initReviewsDisplay();
     }
+
+    if (typeof firebase !== 'undefined' && firebase.auth) {
+        firebase.auth().onAuthStateChanged((user) => {
+            if (user) {
+                checkUserReviewState(user);
+            }
+        });
+    }
 });
 
 // Exposer pour appel externe
 window.injectReviewForm = injectReviewForm;
 window.initReviewsDisplay = initReviewsDisplay;
+

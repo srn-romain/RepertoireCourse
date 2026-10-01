@@ -25,19 +25,31 @@ levels.forEach(lvl => {
         const badgeDef = defs[badgeId];
         
         // Simuler un jeu de données spécifique ciblant ce badge
+        global.window.currentUserPseudo = 'Romain';
+        global.window.currentUserPhoto = 'https://cloudinary.com/romain.jpg';
         global.localStorage.store = {
             tutorialCompleted: 'true',
             userProfileCustomized: 'true',
+            profileCustomized: 'true',
+            bioUpdated: 'true',
             cardActionsConfig: 'true',
+            hasConfiguredCards: 'true',
             likedRaces: 'true',
+            hasLikedPublicRace: 'true',
+            userLikedPublicRace: 'true',
             pdfDownloaded: 'true',
             userFeedbackSent: 'true',
             bulkActionUsed: 'true',
+            bulkNoteUsed: 'true',
             exportDownloaded: 'true',
             statsModalViewed: 'true',
             searchUsed: 'true',
             relayPdfExported: 'true',
-            wishlistCount: '5'
+            wishlistCount: '5',
+            hasCopiedPublicWishlist: 'true',
+            publicRacesViewed: 'true',
+            ratingGroupModalUsed: 'true',
+            quickActionButtonUsed: 'true'
         };
 
         const mockRaces = [];
@@ -53,12 +65,26 @@ levels.forEach(lvl => {
                 if (r === 4) terrain = 'triathlon';
                 if (r === 5) terrain = 'trail relai';
 
+                const comps = [
+                    { name: 'Ami coureur 1', type: 'runner' },
+                    { name: 'Ami coureur 2', type: 'runner' },
+                    { name: 'Supporter 1', type: 'spectator' },
+                    { name: 'Supporter 2', type: 'spectator' },
+                    { name: 'Supporter 3', type: 'spectator' },
+                    { name: 'Ami 6', type: 'runner' },
+                    { name: 'Ami 7', type: 'runner' },
+                    { name: 'Ami 8', type: 'runner' },
+                    { name: 'Ami 9', type: 'spectator' },
+                    { name: 'Ami 10', type: 'spectator' }
+                ];
+
                 mockRaces.push({
                     id: 'r_' + idx,
                     name: 'Course ' + idx + ' Hyrox Triathlon L',
                     date: `2024-${mStr}-${day}`,
+                    hour: (idx % 2 === 0 ? '03:30' : '09:00'),
                     distance: '102 km',
-                    time: '00:34:00',
+                    time: (idx <= 10 ? '05:45:00' : '00:34:00'),
                     elevation: '4800',
                     favorite: true,
                     ranking: '3',
@@ -74,10 +100,10 @@ levels.forEach(lvl => {
                     website: 'https://site.fr',
                     driveLink: 'https://drive.google.com/test',
                     isPublic: true,
-                    companions: ['Camarade'],
+                    companions: comps,
                     fromWishlist: true,
-                    country: (idx === 10 ? 'Italie' : 'France'),
-                    location: 'Ville_' + (idx % 8) + ' (' + (69 + (idx % 4)) + ')'
+                    country: (idx % 3 === 0 ? 'Espagne' : (idx % 5 === 0 ? 'Suisse' : 'France')),
+                    location: 'Ville_' + (idx % 8) + ' (' + (69 + (idx % 12)) + ')'
                 });
             }
         }

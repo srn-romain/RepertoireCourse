@@ -51,7 +51,7 @@
             },
             badgeIds: [
                 'a_ma_sauce', 'partage_communautaire', 'copains_dechappee', 'radin_malin', 'visuel_personnalise', 'projet_concretise',
-                'compteur_lance', 'la_vingtaine', 'compteur_dplus_lance', 'chasseur_de_cotes', 'le_cap_des_10', 'aventurier_express'
+                'compteur_lance', 'la_vingtaine', 'compteur_dplus_lance', 'chasseur_de_cotes', 'le_cap_des_10', 'duo_support'
             ]
         },
         {
@@ -72,7 +72,7 @@
             },
             badgeIds: [
                 'social_runner', 'memoire_de_course', 'rapport_propre', 'carnet_soigne', 'galerie_gpx', 'dossard_double',
-                'fidele_du_bitume', 'club_des_50', 'mur_du_denivele', 'belle_bosse', 'le_15_bornes', 'allure_530'
+                'fidele_du_bitume', 'club_des_50', 'mur_du_denivele', 'belle_bosse', 'le_15_bornes', 'course_nocturne'
             ]
         },
         {
@@ -93,7 +93,7 @@
             },
             badgeIds: [
                 'voix_du_coureur', 'action_groupee', 'bouton_express', 'bilan_officiel', 'dossier_drive', 'explorateur_local',
-                'quotidien_actif', 'habitue_du_carnet', 'cap_des_100', 'chamois_des_collines', 'fleche_des_10k', 'demi_dieu'
+                'quotidien_actif', 'habitue_du_carnet', 'cap_des_100', 'chamois_des_collines', 'double_soutien', 'demi_dieu'
             ]
         },
         {
@@ -114,7 +114,7 @@
             },
             badgeIds: [
                 'sauvegarde_externe', 'oeil_sur_les_chiffres', 'note_groupee', 'adepte_de_la_route', 'adepte_des_sentiers', 'passeur_de_temoin',
-                'compteur_a_dix', 'objectif_3000_dplus', 'grand_volume', 'au_dela_du_semi', 'grimpeur_confirme', 'semi_solide'
+                'compteur_a_dix', 'objectif_3000_dplus', 'grand_volume', 'au_dela_du_semi', 'grimpeur_confirme', 'defi_longue_duree'
             ]
         },
         {
@@ -135,7 +135,7 @@
             },
             badgeIds: [
                 'wishlist_fournie', 'rapport_dequipe', 'fidele_de_la_wishlist', 'dossard_4_saisons', 'esprit_collectif', 'grand_total_courses',
-                'quinze_au_compteur', 'double_centurion', 'le_cap_des_35', 'grosse_montee', 'vitesse_45', 'semi_express'
+                'quinze_au_compteur', 'double_centurion', 'le_cap_des_35', 'grosse_montee', 'peloton_dami', 'debrief_detaille'
             ]
         },
         {
@@ -156,7 +156,7 @@
             },
             badgeIds: [
                 'recherche_ciblee', 'reseau_de_compagnons', 'fiche_parfaite', 'grand_voyageur', 'specialiste_trail', 'discipline_hybride',
-                'vingtieme_borne', 'le_cap_des_8000_dplus', 'les_300_bornes', 'le_cap_des_cimes', 'rythme_soutenu', 'le_mythe_du_42'
+                'vingtieme_borne', 'le_cap_des_8000_dplus', 'les_300_bornes', 'le_cap_des_cimes', 'communaute_active', 'le_mythe_du_42'
             ]
         },
         {
@@ -177,7 +177,7 @@
             },
             badgeIds: [
                 'grand_chelem_annuel', 'explorateur_regional', 'traceur_regulier', 'pilier_dequipe', 'mois_intense', 'quart_de_cent',
-                'le_cap_des_400', 'tete_de_peloton', 'entree_dans_lultra', 'haute_altitude', 'semi_de_feu', 'marathonien_confirme'
+                'le_cap_des_400', 'tete_de_peloton', 'entree_dans_lultra', 'haute_altitude', 'tribu_en_course', 'tour_de_france_des_courses'
             ]
         },
         {
@@ -198,7 +198,7 @@
             },
             badgeIds: [
                 'dossier_centralise', 'triple_effort_confirme', 'passionne_des_sentiers', 'regularite_de_fer', 'grand_format_cumule', 'grand_volume_dplus',
-                'trente_dossards', 'demi_millier', 'ultra_longue_distance', 'toit_des_montagnes', 'sous_les_40', 'marathon_sub_3h30'
+                'trente_dossards', 'demi_millier', 'ultra_longue_distance', 'toit_des_montagnes', 'triple_epreuve_5h', 'arsenal_complet'
             ]
         },
         {
@@ -219,7 +219,7 @@
             },
             badgeIds: [
                 'collection_de_favoris', 'hors_frontieres', 'bibliotheque_vivante', 'marathonien_de_volume', 'sommet_de_denivele', 'le_demi_cent',
-                'le_grand_millier', 'format_endurance_extreme', 'le_cap_des_100_ultra', 'reine_des_montees', 'semi_elite_amateur', 'marathon_sub_3h15'
+                'le_grand_millier', 'format_endurance_extreme', 'le_cap_des_100_ultra', 'reine_des_montees', 'garde_des_souvenirs', 'grand_explorateur_mondial'
             ]
         }
     ];
@@ -415,13 +415,13 @@
             icon: 'fa-medal',
             description: 'Terminer une course officielle d\'au moins 10 km.'
         },
-        aventurier_express: {
-            id: 'aventurier_express',
+        duo_support: {
+            id: 'duo_support',
             level: 2,
             xp: 130,
-            name: 'L\'aventurier express',
-            icon: 'fa-bolt-lightning',
-            description: 'Boucler un 10 km en moins de 1 h 00 (≤ 6:00/km).'
+            name: 'Duo en or',
+            icon: 'fa-people-arrows',
+            description: 'Avoir couru avec au moins 1 accompagnant regardant (spectateur) et 1 accompagnant coureur.'
         },
 
         // === NIVEAU 3 : ESPADRILLE (660 XP) ===
@@ -513,13 +513,13 @@
             icon: 'fa-location-arrow',
             description: 'Terminer une course d\'au moins 15 km.'
         },
-        allure_530: {
-            id: 'allure_530',
+        course_nocturne: {
+            id: 'course_nocturne',
             level: 3,
             xp: 130,
-            name: 'Allure 5:30',
-            icon: 'fa-stopwatch-20',
-            description: 'Boucler un 10 km en moins de 55 min (≤ 5:30/km).'
+            name: 'Oiseau de nuit',
+            icon: 'fa-moon',
+            description: 'Courir ou prendre un départ de course ou de relais entre 00h00 et 06h00 du matin.'
         },
 
         // === NIVEAU 4 : MOCASSIN (780 XP) ===
@@ -603,13 +603,13 @@
             icon: 'fa-mountain-city',
             description: 'Terminer une course avec au moins 700 m de D+.'
         },
-        fleche_des_10k: {
-            id: 'fleche_des_10k',
+        double_soutien: {
+            id: 'double_soutien',
             level: 4,
             xp: 140,
-            name: 'La flèche des 10k',
-            icon: 'fa-bolt',
-            description: 'Boucler un 10 km en moins de 50 min (≤ 5:00/km).'
+            name: 'Fan-club au complet',
+            icon: 'fa-users-viewfinder',
+            description: 'Avoir couru avec au moins 2 accompagnants regardants et 2 accompagnants coureurs.'
         },
         demi_dieu: {
             id: 'demi_dieu',
@@ -709,13 +709,13 @@
             icon: 'fa-mountain',
             description: 'Terminer une course avec au moins 1 000 m de D+.'
         },
-        semi_solide: {
-            id: 'semi_solide',
+        defi_longue_duree: {
+            id: 'defi_longue_duree',
             level: 5,
             xp: 180,
-            name: 'Semi solide',
-            icon: 'fa-clock',
-            description: 'Boucler un semi-marathon en moins de 2 h 00.'
+            name: 'Course au long cours',
+            icon: 'fa-hourglass-end',
+            description: 'Terminer une épreuve dont la durée totale dépasse 5 heures (solo, relais ou triathlon).'
         },
 
         // === NIVEAU 6 : CHAUSSURE DE ROUTE (1 070 XP) ===
@@ -799,21 +799,21 @@
             icon: 'fa-mountain-sun',
             description: 'Terminer une course avec au moins 1 500 m de D+.'
         },
-        vitesse_45: {
-            id: 'vitesse_45',
+        peloton_dami: {
+            id: 'peloton_dami',
             level: 6,
             xp: 150,
-            name: 'Vitesse 45',
-            icon: 'fa-gauge-simple-high',
-            description: 'Boucler un 10 km en moins de 45 min (≤ 4:30/km).'
+            name: 'Peloton d\'amis',
+            icon: 'fa-users-rays',
+            description: 'Avoir couru avec au moins 5 accompagnants au total sur une même course.'
         },
-        semi_express: {
-            id: 'semi_express',
+        debrief_detaille: {
+            id: 'debrief_detaille',
             level: 6,
             xp: 150,
-            name: 'Semi express',
-            icon: 'fa-forward-fast',
-            description: 'Boucler un semi-marathon en moins de 1 h 45.'
+            name: 'Plume du coureur',
+            icon: 'fa-feather-pointed',
+            description: 'Avoir rédigé des débriefings ou notes personnelles sur au moins 3 courses différentes.'
         },
 
         // === NIVEAU 7 : CHAUSSURE DE TRAIL (1 200 XP) ===
@@ -897,13 +897,13 @@
             icon: 'fa-icicles',
             description: 'Terminer une course avec au moins 2 000 m de D+.'
         },
-        rythme_soutenu: {
-            id: 'rythme_soutenu',
+        communaute_active: {
+            id: 'communaute_active',
             level: 7,
             xp: 190,
-            name: 'Rythme soutenu',
-            icon: 'fa-angles-right',
-            description: 'Boucler un 10 km en moins de 42 min (≤ 4:12/km).'
+            name: 'Liaison publique',
+            icon: 'fa-share-nodes',
+            description: 'Ajouter à sa Wishlist au moins 1 course depuis le répertoire public et donner au moins 1 « J\'aime ».'
         },
         le_mythe_du_42: {
             id: 'le_mythe_du_42',
@@ -995,21 +995,21 @@
             icon: 'fa-mountain-sun',
             description: 'Terminer une course avec au moins 2 500 m de D+.'
         },
-        semi_de_feu: {
-            id: 'semi_de_feu',
+        tribu_en_course: {
+            id: 'tribu_en_course',
             level: 8,
             xp: 180,
-            name: 'Semi de feu',
-            icon: 'fa-fire',
-            description: 'Boucler un semi-marathon en moins de 1 h 35.'
+            name: 'Grande tribu',
+            icon: 'fa-people-group',
+            description: 'Avoir couru avec au moins 10 accompagnants au total sur une même course.'
         },
-        marathonien_confirme: {
-            id: 'marathonien_confirme',
+        tour_de_france_des_courses: {
+            id: 'tour_de_france_des_courses',
             level: 8,
             xp: 180,
-            name: 'Marathonien confirmé',
-            icon: 'fa-shield-halved',
-            description: 'Boucler un marathon officiel en moins de 3 h 45.'
+            name: 'Tour de France des courses',
+            icon: 'fa-route',
+            description: 'Avoir couru dans au moins 5 départements français différents.'
         },
 
         // === NIVEAU 9 : RANGERS (1 540 XP) ===
@@ -1093,21 +1093,21 @@
             icon: 'fa-mountain',
             description: 'Terminer une course avec au moins 3 500 m de D+.'
         },
-        sous_les_40: {
-            id: 'sous_les_40',
+        triple_epreuve_5h: {
+            id: 'triple_epreuve_5h',
             level: 9,
             xp: 210,
-            name: 'Sous les 40',
-            icon: 'fa-meteor',
-            description: 'Boucler un 10 km en moins de 40 min (≤ 4:00/km).'
+            name: 'Maître de l\'endurance 5h',
+            icon: 'fa-stopwatch-20',
+            description: 'Avoir terminé au moins 2 épreuves d\'une durée supérieure à 5 heures.'
         },
-        marathon_sub_3h30: {
-            id: 'marathon_sub_3h30',
+        arsenal_complet: {
+            id: 'arsenal_complet',
             level: 9,
             xp: 220,
-            name: 'Marathon sub 3h30',
-            icon: 'fa-medal',
-            description: 'Boucler un marathon officiel en moins de 3 h 30.'
+            name: 'Carnet ultra-équipé',
+            icon: 'fa-toolbox',
+            description: 'Avoir au moins 5 courses complètes réunissant tous les éléments : photo, trace GPX, note, classement et lien Drive.'
         },
 
         // === NIVEAU 10 : CRAMPONS (1 450 XP) ===
@@ -1124,7 +1124,7 @@
             level: 10,
             xp: 80,
             name: 'Hors frontières',
-            icon: 'fa-globe',
+            icon: 'fa-earth-americas',
             description: 'Enregistrer au moins 1 course officielle terminée hors de France.'
         },
         bibliotheque_vivante: {
@@ -1191,21 +1191,21 @@
             icon: 'fa-mountain-sun',
             description: 'Terminer une épreuve avec au moins 4 500 m de D+.'
         },
-        semi_elite_amateur: {
-            id: 'semi_elite_amateur',
+        garde_des_souvenirs: {
+            id: 'garde_des_souvenirs',
             level: 10,
             xp: 150,
-            name: 'Semi d\'élite amateur',
-            icon: 'fa-jet-fighter',
-            description: 'Boucler un semi-marathon en moins de 1 h 25.'
+            name: 'Archives vivantes',
+            icon: 'fa-camera-retro',
+            description: 'Avoir au moins 15 courses avec photos souvenirs et traces GPX associées.'
         },
-        marathon_sub_3h15: {
-            id: 'marathon_sub_3h15',
+        grand_explorateur_mondial: {
+            id: 'grand_explorateur_mondial',
             level: 10,
             xp: 160,
-            name: 'Marathon sub 3h15',
-            icon: 'fa-gem',
-            description: 'Boucler un marathon officiel en moins de 3 h 15.'
+            name: 'Globe-trotteur',
+            icon: 'fa-globe',
+            description: 'Avoir couru dans au moins 2 pays différents ou dans 10 départements distincts.'
         }
     };
 
@@ -1834,13 +1834,14 @@
         );
 
         const hasFavoriteRace = racesList.some(r => r.favorite === true || r.isFavorite === true || r.starred === true);
-        const hasCardConfig = localStorage.getItem('hasConfiguredCards') === 'true' || window.hasConfiguredCards === true;
+        const hasCardConfig = localStorage.getItem('hasConfiguredCards') === 'true' || localStorage.getItem('cardActionsConfig') === 'true' || window.hasConfiguredCards === true;
         const isAccountPublicSetting = (typeof window.prefAccountPublicRaces !== 'undefined')
             ? (window.prefAccountPublicRaces === true)
             : (localStorage.getItem('prefAccountPublicRaces') !== 'false');
-        const hasPublicRace = isAccountPublicSetting && racesList.length > 0;
+        const hasPublicRace = (isAccountPublicSetting && racesList.length > 0) || racesList.some(r => r.isPublic === true);
         const convertedWishlistCount = racesList.filter(r => r.fromWishlist === true || r.wishlistConverted === true || (r.notes && r.notes.toLowerCase().includes('wishlist'))).length;
-        const hasLikedPublicRace = localStorage.getItem('hasLikedPublicRace') === 'true' || window.hasLikedPublicRace === true;
+        const hasLikedPublicRace = localStorage.getItem('hasLikedPublicRace') === 'true' || localStorage.getItem('userLikedPublicRace') === 'true' || localStorage.getItem('likedRaces') === 'true' || window.hasLikedPublicRace === true;
+        const hasCopiedPublicWishlist = localStorage.getItem('hasCopiedPublicWishlist') === 'true' || localStorage.getItem('wishlistFromPublic') === 'true' || window.hasCopiedPublicWishlist === true || racesList.some(r => r.fromWishlist === true || r.wishlistConverted === true || (r.notes && r.notes.toLowerCase().includes('wishlist')));
         const hasNotesReport = racesList.some(r => (typeof r.notes === 'string' && r.notes.trim().length > 3) || (typeof r.comment === 'string' && r.comment.trim().length > 3));
         const hasDownloadedPdf = localStorage.getItem('pdfDownloaded') === 'true' || window.pdfDownloaded === true;
         const hasUserFeedback = localStorage.getItem('userFeedbackSent') === 'true' || window.userFeedbackSent === true || window.feedbackSent === true;
@@ -1967,6 +1968,119 @@
             );
         }
 
+        function getRaceCompanionStats(race) {
+            if (!race || !race.companions) return { runners: 0, spectators: 0, total: 0 };
+            let comps = [];
+            if (Array.isArray(race.companions)) comps = race.companions;
+            else if (typeof race.companions === 'string' && race.companions.trim() !== '') {
+                comps = race.companions.split(',').map(s => s.trim()).filter(Boolean);
+            } else if (typeof race.companions === 'object') {
+                comps = Object.values(race.companions);
+            }
+            let runners = 0;
+            let spectators = 0;
+            comps.forEach(c => {
+                if (typeof c === 'object' && c !== null) {
+                    const type = (c.type || 'runner').toLowerCase();
+                    if (type === 'spectator' || type === 'regardant' || type === 'supporter') {
+                        spectators++;
+                    } else {
+                        runners++;
+                    }
+                } else if (typeof c === 'string' && c.trim() !== '') {
+                    runners++;
+                }
+            });
+            return { runners, spectators, total: runners + spectators };
+        }
+
+        function isNightRace(race) {
+            if (!race) return false;
+            if (race.hour && typeof race.hour === 'string') {
+                const parts = race.hour.trim().split(':');
+                if (parts.length >= 2) {
+                    const h = parseInt(parts[0], 10);
+                    const m = parseInt(parts[1], 10) || 0;
+                    if (h >= 0 && h < 6) return true;
+                    if (h === 6 && m === 0) return true;
+                }
+            }
+            if ((race.terrain === 'relai' || race.raceFormat === 'team') && Array.isArray(race.relayLaps) && race.hour) {
+                const parts = race.hour.trim().split(':');
+                if (parts.length >= 2) {
+                    const startH = parseInt(parts[0], 10);
+                    const startM = parseInt(parts[1], 10) || 0;
+                    let cumSec = startH * 3600 + startM * 60;
+                    for (let i = 0; i < race.relayLaps.length; i++) {
+                        const lap = race.relayLaps[i];
+                        const lapSec = parseTimeToSeconds(lap.time) || 0;
+                        const lapStartSec = cumSec % 86400;
+                        cumSec += lapSec;
+                        const lapEndSec = cumSec % 86400;
+                        const isUserLap = (lap.isUser !== false && (lap.isUser === true || lap.runner === race.userPseudo || lap.runner === 'Moi'));
+                        if (isUserLap) {
+                            const startH = lapStartSec / 3600;
+                            const endH = lapEndSec / 3600;
+                            if (startH <= 6 || endH <= 6 || (lapStartSec > 18 * 3600 && cumSec >= 86400)) {
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+
+        function getRaceTotalDurationSeconds(race) {
+            if (!race) return 0;
+            if ((race.terrain === 'relai' || race.raceFormat === 'team') && Array.isArray(race.relayLaps) && race.relayLaps.length > 0) {
+                let totalS = 0;
+                race.relayLaps.forEach(lap => {
+                    const s = parseTimeToSeconds(lap.time);
+                    if (s && s > 0) totalS += s;
+                });
+                if (totalS > 0) return totalS;
+            }
+            if ((race.terrain || '').toLowerCase().includes('triathlon')) {
+                let triTotal = 0;
+                const swim = parseTimeToSeconds(race.swimTime || race.triSwimTime);
+                const t1 = parseTimeToSeconds(race.t1Time || race.triT1Time);
+                const bike = parseTimeToSeconds(race.bikeTime || race.triBikeTime);
+                const t2 = parseTimeToSeconds(race.t2Time || race.triT2Time);
+                const run = parseTimeToSeconds(race.runTime || race.triRunTime);
+                if (swim) triTotal += swim;
+                if (t1) triTotal += t1;
+                if (bike) triTotal += bike;
+                if (t2) triTotal += t2;
+                if (run) triTotal += run;
+                if (triTotal > 0) return triTotal;
+            }
+            return parseTimeToSeconds(race.time || race.duration || race.chrono) || 0;
+        }
+
+        function isForeignCountryRace(race) {
+            if (!race) return false;
+            if (race.isInternational === true) return true;
+            if (race.country && typeof race.country === 'string') {
+                const c = race.country.trim().toLowerCase();
+                if (c !== '' && !['france', 'fr', 'métropole', 'metropole', 'hexagone', 'française', 'dom-tom', 'guadeloupe', 'martinique', 'réunion', 'reunion', 'mayotte', 'guyane'].includes(c)) {
+                    return true;
+                }
+            }
+            const loc = ((race.location || '') + ' ' + (race.city || '') + ' ' + (race.country || '')).toLowerCase();
+            const foreignKeywords = [
+                'suisse', 'switzerland', 'belgique', 'belgium', 'espagne', 'spain', 'italie', 'italy', 'allemagne', 'germany',
+                'portugal', 'royaume-uni', 'angleterre', 'uk', 'united kingdom', 'london', 'londres', 'maroc', 'morocco',
+                'etats-unis', 'usa', 'united states', 'new york', 'boston', 'chicago', 'canada', 'quebec', 'montreal',
+                'luxembourg', 'pays-bas', 'netherlands', 'amsterdam', 'autriche', 'austria', 'monaco', 'andorre', 'andorra', 'japon', 'tokyo'
+            ];
+            return foreignKeywords.some(k => loc.includes(k));
+        }
+
+        function isUltraCompleteRace(r) {
+            return hasRacePhoto(r) && hasRaceGpx(r) && hasRaceNote(r) && hasAnyRaceRanking(r) && hasRaceDrive(r);
+        }
+
         const maxRacesInSingleMonth = Object.values(monthGroups).length > 0 ? Math.max(...Object.values(monthGroups)) : 0;
         const maxRacesInSingleYear = Object.values(yearGroups).length > 0 ? Math.max(...Object.values(yearGroups)) : 0;
         const gpxRacesCount = racesList.filter(hasRaceGpx).length;
@@ -1979,7 +2093,7 @@
         const perfectRacesCount = racesList.filter(isPerfectRace).length;
         const gpxAndNoteCount = racesList.filter(r => hasRaceGpx(r) && hasRaceNote(r)).length;
         const favGpxAndNoteCount = racesList.filter(r => (r.favorite || r.isFavorite || r.starred) && hasRaceGpx(r) && hasRaceNote(r)).length;
-        const hasInternationalRace = racesList.some(r => r.country && !['france', 'fr', 'métropole'].includes(r.country.trim().toLowerCase()));
+        const hasInternationalRace = racesList.some(isForeignCountryRace);
         const marathonRacesCount = raceMetrics.filter(m => m.dist >= 41.8).length;
         const thirtyKmRacesCount = raceMetrics.filter(m => m.dist >= 29.8).length;
 
@@ -2036,7 +2150,8 @@
                             if (hasRacePhoto(m.race)) markBadgeUnlocked('visuel_personnalise', m.race);
                             if (m.elev >= 200) markBadgeUnlocked('chasseur_de_cotes', m.race);
                             if (m.dist >= 9.8) markBadgeUnlocked('le_cap_des_10', m.race);
-                            if (m.dist >= 9.8 && m.seconds !== null && (m.seconds / m.dist) <= 360) markBadgeUnlocked('aventurier_express', m.race);
+                            const stats = getRaceCompanionStats(m.race);
+                            if (stats.runners >= 1 && stats.spectators >= 1) markBadgeUnlocked('duo_support', m.race);
                         });
                         if (eligibleRaces.length >= 3) {
                             unlockedBadges.compteur_lance.unlocked = true;
@@ -2086,7 +2201,7 @@
                         raceMetrics.forEach(m => {
                             if (m.elev >= 400) markBadgeUnlocked('belle_bosse', m.race);
                             if (m.dist >= 14.8) markBadgeUnlocked('le_15_bornes', m.race);
-                            if (m.dist >= 9.8 && m.seconds !== null && (m.seconds / m.dist) <= 330) markBadgeUnlocked('allure_530', m.race);
+                            if (isNightRace(m.race)) markBadgeUnlocked('course_nocturne', m.race);
                         });
                         break;
 
@@ -2098,7 +2213,8 @@
                             if (hasRaceRankings(m.race)) markBadgeUnlocked('bilan_officiel', m.race);
                             if (hasRaceDrive(m.race)) markBadgeUnlocked('dossier_drive', m.race);
                             if (m.elev >= 700) markBadgeUnlocked('chamois_des_collines', m.race);
-                            if (m.dist >= 9.8 && m.seconds !== null && (m.seconds / m.dist) <= 300) markBadgeUnlocked('fleche_des_10k', m.race);
+                            const stats = getRaceCompanionStats(m.race);
+                            if (stats.runners >= 2 && stats.spectators >= 2) markBadgeUnlocked('double_soutien', m.race);
                             if (m.dist >= 20.8) markBadgeUnlocked('demi_dieu', m.race);
                         });
                         if (uniqueCities.size >= 3) {
@@ -2150,7 +2266,7 @@
                         raceMetrics.forEach(m => {
                             if (m.dist >= 27.8) markBadgeUnlocked('au_dela_du_semi', m.race);
                             if (m.elev >= 1000) markBadgeUnlocked('grimpeur_confirme', m.race);
-                            if (m.dist >= 20.8 && m.seconds !== null && m.seconds <= 7200) markBadgeUnlocked('semi_solide', m.race);
+                            if (getRaceTotalDurationSeconds(m.race) >= 5 * 3600) markBadgeUnlocked('defi_longue_duree', m.race);
                         });
                         break;
 
@@ -2178,16 +2294,24 @@
                             unlockedBadges.double_centurion.unlocked = true;
                             unlockedBadges.double_centurion.races = [...eligibleRaces];
                         }
+                        {
+                            const racesWithNotes = racesList.filter(hasRaceNote);
+                            if (racesWithNotes.length >= 3) {
+                                unlockedBadges.debrief_detaille.unlocked = true;
+                                unlockedBadges.debrief_detaille.races = racesWithNotes;
+                            }
+                        }
                         raceMetrics.forEach(m => {
                             if (m.dist >= 34.8) markBadgeUnlocked('le_cap_des_35', m.race);
                             if (m.elev >= 1490) markBadgeUnlocked('grosse_montee', m.race);
-                            if (m.dist >= 9.8 && m.seconds !== null && (m.seconds / m.dist) <= 270) markBadgeUnlocked('vitesse_45', m.race);
-                            if (m.dist >= 20.8 && m.seconds !== null && m.seconds <= 6300) markBadgeUnlocked('semi_express', m.race);
+                            const stats = getRaceCompanionStats(m.race);
+                            if (stats.total >= 5) markBadgeUnlocked('peloton_dami', m.race);
                         });
                         break;
 
                     case 'level_7': // Chaussure de trail (1 200 XP)
                         if (hasUsedSearch) markBadgeUnlocked('recherche_ciblee');
+                        if (hasLikedPublicRace && hasCopiedPublicWishlist) markBadgeUnlocked('communaute_active');
                         if (racesWithCompanionsCount >= 5) {
                             unlockedBadges.reseau_de_compagnons.unlocked = true;
                             unlockedBadges.reseau_de_compagnons.races = raceMetrics.filter(m => m.hasCompanions).map(m => m.race);
@@ -2222,7 +2346,6 @@
                         }
                         raceMetrics.forEach(m => {
                             if (m.elev >= 2000) markBadgeUnlocked('le_cap_des_cimes', m.race);
-                            if (m.dist >= 9.8 && m.seconds !== null && (m.seconds / m.dist) <= 252) markBadgeUnlocked('rythme_soutenu', m.race);
                             if (m.dist >= 41.8) markBadgeUnlocked('le_mythe_du_42', m.race);
                         });
                         break;
@@ -2235,6 +2358,10 @@
                         if (uniqueDepartments.size >= 3 || uniqueCities.size >= 3) {
                             unlockedBadges.explorateur_regional.unlocked = true;
                             unlockedBadges.explorateur_regional.races = [...eligibleRaces];
+                        }
+                        if (uniqueDepartments.size >= 5) {
+                            unlockedBadges.tour_de_france_des_courses.unlocked = true;
+                            unlockedBadges.tour_de_france_des_courses.races = [...eligibleRaces];
                         }
                         if (gpxRacesCount >= 15) {
                             unlockedBadges.traceur_regulier.unlocked = true;
@@ -2263,8 +2390,8 @@
                         raceMetrics.forEach(m => {
                             if (m.dist >= 49.8) markBadgeUnlocked('entree_dans_lultra', m.race);
                             if (m.elev >= 2500) markBadgeUnlocked('haute_altitude', m.race);
-                            if (m.dist >= 20.8 && m.seconds !== null && m.seconds <= 5700) markBadgeUnlocked('semi_de_feu', m.race);
-                            if (m.dist >= 41.8 && m.seconds !== null && m.seconds <= 13500) markBadgeUnlocked('marathonien_confirme', m.race);
+                            const stats = getRaceCompanionStats(m.race);
+                            if (stats.total >= 10) markBadgeUnlocked('tribu_en_course', m.race);
                         });
                         break;
 
@@ -2301,26 +2428,38 @@
                             unlockedBadges.demi_millier.unlocked = true;
                             unlockedBadges.demi_millier.races = [...eligibleRaces];
                         }
+                        {
+                            const fiveHourRaces = racesList.filter(r => getRaceTotalDurationSeconds(r) >= 5 * 3600);
+                            if (fiveHourRaces.length >= 3) {
+                                unlockedBadges.triple_epreuve_5h.unlocked = true;
+                                unlockedBadges.triple_epreuve_5h.races = fiveHourRaces;
+                            }
+                        }
+                        {
+                            const ultraCompleteRaces = racesList.filter(isUltraCompleteRace);
+                            if (ultraCompleteRaces.length >= 5) {
+                                unlockedBadges.arsenal_complet.unlocked = true;
+                                unlockedBadges.arsenal_complet.races = ultraCompleteRaces;
+                            }
+                        }
                         raceMetrics.forEach(m => {
                             if (m.dist >= 69.8) markBadgeUnlocked('ultra_longue_distance', m.race);
                             if (m.elev >= 3500) markBadgeUnlocked('toit_des_montagnes', m.race);
-                            if (m.dist >= 9.8 && m.seconds !== null && (m.seconds / m.dist) <= 240) markBadgeUnlocked('sous_les_40', m.race);
-                            if (m.dist >= 41.8 && m.seconds !== null && m.seconds <= 12600) markBadgeUnlocked('marathon_sub_3h30', m.race);
                         });
                         break;
 
                     case 'level_10': // Crampons (1 450 XP)
                         if (favGpxAndNoteCount >= 10) {
                             unlockedBadges.collection_de_favoris.unlocked = true;
-                            unlockedBadges.collection_de_favoris.races = racesList.filter(r => (r.favorite || r.isFavorite || r.starred) && hasRaceGpx(r) && ((r.notes && r.notes.trim().length > 0) || (r.comment && r.comment.trim().length > 0)));
+                            unlockedBadges.collection_de_favoris.races = racesList.filter(r => (r.favorite || r.isFavorite || r.starred) && hasRaceGpx(r) && hasRaceNote(r));
                         }
                         if (hasInternationalRace) {
                             unlockedBadges.hors_frontieres.unlocked = true;
-                            unlockedBadges.hors_frontieres.races = racesList.filter(r => r.country && !['france', 'fr', 'métropole'].includes(r.country.trim().toLowerCase()));
+                            unlockedBadges.hors_frontieres.races = racesList.filter(isForeignCountryRace);
                         }
                         if (gpxAndNoteCount >= 25) {
                             unlockedBadges.bibliotheque_vivante.unlocked = true;
-                            unlockedBadges.bibliotheque_vivante.races = racesList.filter(r => hasRaceGpx(r) && ((r.notes && r.notes.trim().length > 0) || (r.comment && r.comment.trim().length > 0)));
+                            unlockedBadges.bibliotheque_vivante.races = racesList.filter(r => hasRaceGpx(r) && hasRaceNote(r));
                         }
                         if (marathonRacesCount >= 5) {
                             unlockedBadges.marathonien_de_volume.unlocked = true;
@@ -2342,11 +2481,24 @@
                             unlockedBadges.format_endurance_extreme.unlocked = true;
                             unlockedBadges.format_endurance_extreme.races = raceMetrics.filter(m => (m.isTriathlon && m.dist >= 50) || m.dist >= 60 || (m.seconds && m.seconds >= 43200)).map(m => m.race);
                         }
+                        {
+                            const photoAndGpxRaces = racesList.filter(r => hasRacePhoto(r) && hasRaceGpx(r));
+                            if (photoAndGpxRaces.length >= 15) {
+                                unlockedBadges.garde_des_souvenirs.unlocked = true;
+                                unlockedBadges.garde_des_souvenirs.races = photoAndGpxRaces;
+                            }
+                        }
+                        {
+                            const foreignRaces = racesList.filter(isForeignCountryRace);
+                            const totalCountries = new Set(racesList.map(r => (r.country || 'france').trim().toLowerCase())).size;
+                            if (foreignRaces.length >= 2 || totalCountries >= 2 || uniqueDepartments.size >= 10) {
+                                unlockedBadges.grand_explorateur_mondial.unlocked = true;
+                                unlockedBadges.grand_explorateur_mondial.races = [...eligibleRaces];
+                            }
+                        }
                         raceMetrics.forEach(m => {
                             if (m.dist >= 99.8) markBadgeUnlocked('le_cap_des_100_ultra', m.race);
                             if (m.elev >= 4500) markBadgeUnlocked('reine_des_montees', m.race);
-                            if (m.dist >= 20.8 && m.seconds !== null && m.seconds <= 5100) markBadgeUnlocked('semi_elite_amateur', m.race);
-                            if (m.dist >= 41.8 && m.seconds !== null && m.seconds <= 11700) markBadgeUnlocked('marathon_sub_3h15', m.race);
                         });
                         break;
                 }
@@ -3326,7 +3478,8 @@
                         'compteur_lance', 'compteur_dplus_lance', 'carnet_soigne', 'fidele_du_bitume', 'habitue_du_carnet', 'compteur_a_dix',
                         'quinze_au_compteur', 'grand_total_courses', 'vingtieme_borne', 'quart_de_cent', 'trente_dossards', 'le_demi_cent',
                         'objectif_3000_dplus', 'le_cap_des_8000_dplus', 'grand_volume_dplus', 'sommet_de_denivele', 'mur_du_denivele', 'explorateur_local',
-                        'quotidien_actif', 'dossard_4_saisons', 'grand_voyageur', 'grand_chelem_annuel', 'explorateur_regional', 'mois_intense', 'regularite_de_fer'
+                        'quotidien_actif', 'dossard_4_saisons', 'grand_voyageur', 'grand_chelem_annuel', 'explorateur_regional', 'mois_intense', 'regularite_de_fer',
+                        'tour_de_france_des_courses', 'grand_explorateur_mondial'
                     ]);
 
                     const isCumulativeMilestone = CUMULATIVE_MILESTONE_BADGES.has(badgeId);
@@ -4127,49 +4280,41 @@
 
         const knownSet = new Set(knownIds);
 
-        // Tous les badges qui ont une date de validation antérieure au chargement de la session sont considérés comme déjà connus
+        // Tous les badges qui ont une date de validation historique antérieure au début de cette session sont considérés comme déjà connus
         Object.entries(badgesMetadata).forEach(([bId, meta]) => {
             if (meta && meta.unlockedAt) {
                 const unlockTime = new Date(meta.unlockedAt).getTime();
-                // Si la validation date d'avant le début de la session (marge de 2 secondes)
-                if (unlockTime < BADGES_SESSION_START_TIME - 2000) {
+                // Si la validation date d'une session précédente (plus de 3 secondes avant le début de session)
+                if (unlockTime < BADGES_SESSION_START_TIME - 3000) {
                     knownSet.add(bId);
                 }
             }
         });
 
-        // Premier passage sur cette page / session : initialiser la baseline sans notifier
-        if (!window.__badgesInitialBaselineSet || storedRaw === null) {
-            window.__badgesInitialBaselineSet = true;
-            if (currentUnlockedIds.length > 0) {
-                currentUnlockedIds.forEach(id => knownSet.add(id));
-                localStorage.setItem(storageKey, JSON.stringify(Array.from(knownSet)));
-            }
-            return;
-        }
-
         // Si la liste actuelle est vide (ex: courses pas encore chargées), ne pas écraser les badges connus
-        if (currentUnlockedIds.length === 0 && knownSet.size > 0) {
+        if (currentUnlockedIds.length === 0) {
             return;
         }
 
-        // Détection des missions véritablement nouvellement débloquées pendant cette session active
+        // Détection des missions véritablement nouvellement débloquées (jamais vues auparavant)
         const newBadges = currentUnlockedIds.filter(id => {
             if (knownSet.has(id)) return false;
-            // Vérifier via les métadonnées que ce badge a bien été débloqué à l'instant (pendant cette session)
+            // Vérifier via les métadonnées : si le badge a été validé bien avant cette session, c'est un historique
             const meta = badgesMetadata[id];
             if (meta && meta.unlockedAt) {
                 const unlockTime = new Date(meta.unlockedAt).getTime();
-                if (unlockTime < BADGES_SESSION_START_TIME - 2000) {
-                    return false; // Badge historique déjà validé auparavant
+                if (unlockTime < BADGES_SESSION_START_TIME - 3000) {
+                    return false; // Badge historique déjà validé lors d'une session antérieure
                 }
             }
             return true;
         });
 
-        // Mettre à jour le stockage avec l'ensemble des badges connus
+        // Mettre à jour le stockage avec l'ensemble des badges actuels pour ne plus les re-notifier
         currentUnlockedIds.forEach(id => knownSet.add(id));
-        localStorage.setItem(storageKey, JSON.stringify(Array.from(knownSet)));
+        try {
+            localStorage.setItem(storageKey, JSON.stringify(Array.from(knownSet)));
+        } catch (e) {}
 
         if (newBadges.length === 0) return;
 

@@ -18,12 +18,14 @@ var saveUserFlag = function(flagName, value = true) {
         localStorage.setItem(flagName, 'true');
     } else {
         localStorage.removeItem(flagName);
+        localStorage.removeItem(flagName + '_synced');
     }
 
     // 2. window global
     window[flagName] = value;
     if (flagName === 'userFeedbackSent') {
-        window.feedbackSent = true;
+        window.feedbackSent = !!value;
+        window.userFeedbackSent = !!value;
     }
 
     // 2.5 Déclencher la détection d'accomplissement de mission
@@ -37,12 +39,12 @@ var saveUserFlag = function(flagName, value = true) {
         }, 150);
     }
 
-    // 3. Firestore (asynchrone, en arrière-plan) - seulement si pas déjà sauvegardé
-    const alreadySynced = localStorage.getItem(flagName + '_synced') === 'true';
-    if (value && !alreadySynced) {
-        try {
-            const fbUser = (typeof firebase !== 'undefined' && firebase.auth) ? firebase.auth().currentUser : null;
-            if (fbUser && fbUser.uid && typeof db !== 'undefined') {
+    // 3. Firestore (asynchrone, en arrière-plan)
+    try {
+        const fbUser = (typeof firebase !== 'undefined' && firebase.auth) ? firebase.auth().currentUser : null;
+        if (fbUser && fbUser.uid && typeof db !== 'undefined') {
+            const alreadySynced = localStorage.getItem(flagName + '_synced') === 'true';
+            if (value && !alreadySynced) {
                 const payload = {};
                 payload['flags.' + flagName] = true;
                 db.collection('users').doc(fbUser.uid).set(payload, { merge: true })
@@ -50,10 +52,15 @@ var saveUserFlag = function(flagName, value = true) {
                         localStorage.setItem(flagName + '_synced', 'true');
                     })
                     .catch(e => console.warn('[UserFlags] Firestore sync error for', flagName, e));
+            } else if (!value) {
+                const payload = {};
+                payload['flags.' + flagName] = false;
+                db.collection('users').doc(fbUser.uid).set(payload, { merge: true })
+                    .catch(e => console.warn('[UserFlags] Firestore remove error for', flagName, e));
             }
-        } catch(e) {
-            console.warn('[UserFlags] saveUserFlag error:', e);
         }
+    } catch(e) {
+        console.warn('[UserFlags] saveUserFlag error:', e);
     }
 };
 window.saveUserFlag = saveUserFlag;
