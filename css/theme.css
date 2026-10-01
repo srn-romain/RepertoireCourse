@@ -87,3 +87,28 @@
     --color-emerald-950: #022c22;
     --color-emerald-950-rgb: 2, 44, 34;
 }
+
+/* ==========================================================================
+   GLOBAL BASE STYLES & SHARED UTILITIES
+   ========================================================================== */
+body {
+    font-family: 'Montserrat', sans-serif;
+    background-image: url('https://images.unsplash.com/photo-1476231682824-37e0d921d6b2?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');
+    background-size: cover;
+    background-attachment: fixed;
+    background-position: center;
+}
+
+.blur-bg {
+    backdrop-filter: blur(5px);
+}
+
+.card-hover {
+    transition: all 0.3s ease;
+}
+
+.card-hover:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
