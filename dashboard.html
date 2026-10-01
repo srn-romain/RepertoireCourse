@@ -15,6 +15,49 @@
         gtag('config', 'G-ZD07VSG72D');
     </script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        green: {
+                            50: 'rgba(var(--color-green-50-rgb, 240, 253, 244), <alpha-value>)',
+                            100: 'rgba(var(--color-green-100-rgb, 220, 252, 231), <alpha-value>)',
+                            200: 'rgba(var(--color-green-200-rgb, 187, 247, 208), <alpha-value>)',
+                            300: 'rgba(var(--color-green-300-rgb, 134, 239, 172), <alpha-value>)',
+                            400: 'rgba(var(--color-green-400-rgb, 74, 222, 128), <alpha-value>)',
+                            500: 'rgba(var(--color-green-500-rgb, 34, 197, 94), <alpha-value>)',
+                            600: 'rgba(var(--color-green-600-rgb, 22, 163, 74), <alpha-value>)',
+                            700: 'rgba(var(--color-green-700-rgb, 21, 128, 61), <alpha-value>)',
+                            800: 'rgba(var(--color-green-800-rgb, 22, 101, 52), <alpha-value>)',
+                            900: 'rgba(var(--color-green-900-rgb, 20, 83, 45), <alpha-value>)',
+                            950: 'rgba(var(--color-green-950-rgb, 5, 46, 22), <alpha-value>)',
+                        },
+                        emerald: {
+                            50: 'rgba(var(--color-emerald-50-rgb, 236, 253, 245), <alpha-value>)',
+                            100: 'rgba(var(--color-emerald-100-rgb, 209, 250, 229), <alpha-value>)',
+                            200: 'rgba(var(--color-emerald-200-rgb, 167, 243, 208), <alpha-value>)',
+                            300: 'rgba(var(--color-emerald-300-rgb, 110, 231, 183), <alpha-value>)',
+                            400: 'rgba(var(--color-emerald-400-rgb, 52, 211, 153), <alpha-value>)',
+                            500: 'rgba(var(--color-emerald-500-rgb, 16, 185, 129), <alpha-value>)',
+                            600: 'rgba(var(--color-emerald-600-rgb, 5, 150, 105), <alpha-value>)',
+                            700: 'rgba(var(--color-emerald-700-rgb, 4, 120, 87), <alpha-value>)',
+                            800: 'rgba(var(--color-emerald-800-rgb, 6, 95, 70), <alpha-value>)',
+                            900: 'rgba(var(--color-emerald-900-rgb, 6, 78, 59), <alpha-value>)',
+                            950: 'rgba(var(--color-emerald-950-rgb, 2, 44, 34), <alpha-value>)',
+                        },
+                        primary: {
+                            DEFAULT: 'rgba(var(--color-primary-rgb, 22, 163, 74), <alpha-value>)',
+                            hover: 'rgba(var(--color-primary-hover-rgb, 21, 128, 61), <alpha-value>)',
+                            light: 'rgba(var(--color-primary-light-rgb, 240, 253, 244), <alpha-value>)',
+                            border: 'rgba(var(--color-primary-border-rgb, 187, 247, 208), <alpha-value>)',
+                        }
+                    }
+                }
+            }
+        };
+    </script>
+    <link rel="stylesheet" href="css/theme.css">
     <link href="https://srn-romain.github.io/RepertoireCourse/img/favicon.webp" rel="icon">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#16a34a">
@@ -45,6 +88,7 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="css/theme.css">
     <link rel="stylesheet" href="css/dashboard.css">
     <link rel="stylesheet" href="css/runner-loader.css">
     <script src="js/runner-loader.js"></script>
@@ -375,12 +419,12 @@
                     <svg class="runner-svg-character" viewBox="0 0 160 115" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <linearGradient id="runnerGradDash" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" stop-color="#34d399" />
-                                <stop offset="100%" stop-color="#059669" />
+                                <stop offset="0%" stop-color="var(--color-emerald-400, #34d399)" />
+                                <stop offset="100%" stop-color="var(--color-emerald-600, #059669)" />
                             </linearGradient>
                             <linearGradient id="runnerGradDarkDash" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" stop-color="#059669" />
-                                <stop offset="100%" stop-color="#047857" />
+                                <stop offset="0%" stop-color="var(--color-emerald-600, #059669)" />
+                                <stop offset="100%" stop-color="var(--color-emerald-700, #047857)" />
                             </linearGradient>
                             <filter id="runnerGlowDash" x="-20%" y="-20%" width="140%" height="140%">
                                 <feGaussianBlur stdDeviation="1.2" result="blur" />
@@ -390,25 +434,25 @@
                         <!-- Fast Furtive Trees in the background (Parallax) -->
                         <g class="runner-trees-layer">
                             <g class="runner-tree runner-tree-1">
-                                <rect x="-1.5" y="74" width="3" height="20" fill="#047857" opacity="0.4" rx="1" />
+                                <rect x="-1.5" y="74" width="3" height="20" fill="var(--color-emerald-700, #047857)" opacity="0.4" rx="1" />
                                 <path
                                     d="M 0 36 L 9 52 L 6 52 L 12 66 L 8 66 L 14 78 L -14 78 L -8 66 L -12 66 L -6 52 L -9 52 Z"
-                                    fill="#10b981" opacity="0.35" />
+                                    fill="var(--color-emerald-500, #10b981)" opacity="0.35" />
                             </g>
                             <g class="runner-tree runner-tree-2">
-                                <rect x="-1" y="78" width="2.5" height="16" fill="#047857" opacity="0.3" rx="1" />
-                                <path d="M 0 46 L 8 60 L 5 60 L 10 72 L -10 72 L -5 60 L -8 60 Z" fill="#059669"
+                                <rect x="-1" y="78" width="2.5" height="16" fill="var(--color-emerald-700, #047857)" opacity="0.3" rx="1" />
+                                <path d="M 0 46 L 8 60 L 5 60 L 10 72 L -10 72 L -5 60 L -8 60 Z" fill="var(--color-emerald-600, #059669)"
                                     opacity="0.3" />
                             </g>
                             <g class="runner-tree runner-tree-3">
-                                <rect x="-1" y="82" width="2" height="12" fill="#047857" opacity="0.25" rx="0.5" />
-                                <path d="M 0 58 L 6 70 L 4 70 L 8 80 L -8 80 L -4 70 L -6 70 Z" fill="#34d399"
+                                <rect x="-1" y="82" width="2" height="12" fill="var(--color-emerald-700, #047857)" opacity="0.25" rx="0.5" />
+                                <path d="M 0 58 L 6 70 L 4 70 L 8 80 L -8 80 L -4 70 L -6 70 Z" fill="var(--color-emerald-400, #34d399)"
                                     opacity="0.25" />
                             </g>
                         </g>
 
                         <ellipse class="runner-shadow-anim" cx="70" cy="94" rx="20" ry="3.5"
-                            fill="rgba(16, 185, 129, 0.25)" />
+                            fill="rgba(var(--color-emerald-500-rgb, 16, 185, 129), 0.25)" />
                         <g class="runner-body-anim">
                             <g class="runner-arm-back">
                                 <path d="M 80 38 L 68 48" stroke="url(#runnerGradDarkDash)" stroke-width="4.5"
@@ -449,7 +493,7 @@
                                 </g>
                             </g>
                         </g>
-                        <line class="runner-track-line" x1="10" y1="94" x2="150" y2="94" stroke="#10b981"
+                        <line class="runner-track-line" x1="10" y1="94" x2="150" y2="94" stroke="var(--color-emerald-500, #10b981)"
                             stroke-width="2" stroke-dasharray="8 6" stroke-linecap="round" opacity="0.75" />
                     </svg>
                 </div>
@@ -1014,17 +1058,18 @@
                         </ul>
                     </div>
                     <div class="mb-4">
-                        <label for="racePhoto" class="block text-green-700 mb-2">Photo</label>
-                        <div
-                            class="border-2 border-dashed border-green-300 rounded-lg p-4 text-center hover:border-green-500 transition">
+                        <label for="racePhoto" class="block text-green-700 mb-2 font-medium">Photo</label>
+                        <div id="photoDropZone"
+                            tabindex="0"
+                            class="border-2 border-dashed border-green-300 rounded-lg p-4 text-center hover:border-green-500 focus:border-green-500 focus:ring-2 focus:ring-green-400 focus:outline-none transition cursor-pointer bg-white">
                             <input type="file" id="racePhoto" accept="image/*" class="hidden">
-                            <label for="racePhoto" class="cursor-pointer">
+                            <label for="racePhoto" class="cursor-pointer block">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-12 w-12 text-green-400"
                                     fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                 </svg>
-                                <p class="mt-1 text-sm text-green-600">Cliquez ou déposez une photo ici</p>
+                                <p class="mt-1 text-sm text-green-600 font-medium">Cliquez, déposez ou collez (<kbd class="px-1.5 py-0.5 text-xs bg-green-100 text-green-800 rounded font-semibold border border-green-200">Ctrl+V</kbd>) une photo ici</p>
                             </label>
                             <div id="photoPreview" class="mt-3">
                                 <div id="photoPlaceholder" class="flex flex-col items-center justify-center py-4">
@@ -1035,32 +1080,33 @@
                                     </svg>
                                     <p class="mt-2 text-sm text-gray-400">Aucune image sélectionnée</p>
                                 </div>
-                                <img id="previewImage" class="mx-auto max-h-40 rounded-lg hidden" src="">
+                                <img id="previewImage" class="mx-auto max-h-40 rounded-lg hidden shadow-sm border border-gray-100" src="">
                                 <button type="button" id="removePhoto"
-                                    class="mt-2 text-red-600 text-sm hover:text-red-800 hidden">
-                                    Supprimer
+                                    class="mt-2 text-red-600 text-sm hover:text-red-800 font-medium hidden">
+                                    <i class="fas fa-trash-alt mr-1"></i>Supprimer
                                 </button>
                             </div>
                         </div>
                     </div>
                     <div class="mb-4">
-                        <label for="raceParcours" class="block text-green-700 mb-2">Parcours</label>
-                        <div
-                            class="border-2 border-dashed border-green-300 rounded-lg p-4 text-center hover:border-green-500 transition">
+                        <label for="raceParcours" class="block text-green-700 mb-2 font-medium">Parcours</label>
+                        <div id="parcoursDropZone"
+                            tabindex="0"
+                            class="border-2 border-dashed border-green-300 rounded-lg p-4 text-center hover:border-green-500 focus:border-green-500 focus:ring-2 focus:ring-green-400 focus:outline-none transition cursor-pointer bg-white">
                             <input type="file" id="raceParcours" accept="image/*" class="hidden">
-                            <label for="raceParcours" class="cursor-pointer">
+                            <label for="raceParcours" class="cursor-pointer block">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-12 w-12 text-green-400"
                                     fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                 </svg>
-                                <p class="mt-1 text-sm text-green-600">Cliquez ou déposez une image du parcours ici</p>
+                                <p class="mt-1 text-sm text-green-600 font-medium">Cliquez, déposez ou collez (<kbd class="px-1.5 py-0.5 text-xs bg-green-100 text-green-800 rounded font-semibold border border-green-200">Ctrl+V</kbd>) une image du parcours ici</p>
                             </label>
                             <div id="parcoursPreview" class="mt-3 hidden">
-                                <img id="previewParcours" class="mx-auto max-h-40 rounded-lg" src="">
+                                <img id="previewParcours" class="mx-auto max-h-40 rounded-lg shadow-sm border border-gray-100" src="">
                                 <button type="button" id="removeParcours"
-                                    class="mt-2 text-red-600 text-sm hover:text-red-800">
-                                    Supprimer
+                                    class="mt-2 text-red-600 text-sm hover:text-red-800 font-medium">
+                                    <i class="fas fa-trash-alt mr-1"></i>Supprimer
                                 </button>
                             </div>
                         </div>
@@ -3252,23 +3298,98 @@
             });
         }
 
-        // Nouvelle fonction pour calculer et afficher les statistiques
+        // Helper pour calculer la distance réelle courue par l'utilisateur
+        function getRaceUserDistance(race) {
+            if (!race || race.deleted) return 0;
+            if (race.terrain === 'triathlon') {
+                if (race.raceFormat === 'team') {
+                    if (race.raceRelaySport === 'swim') {
+                        return (parseFloat(race.swimDistance) || 0) / 1000;
+                    } else if (race.raceRelaySport === 'bike') {
+                        return parseFloat(race.bikeDistance) || 0;
+                    } else {
+                        return parseFloat(race.distance) || 0;
+                    }
+                }
+                const swim = (parseFloat(race.swimDistance) || 0) / 1000;
+                const bike = parseFloat(race.bikeDistance) || 0;
+                const run = parseFloat(race.distance) || 0;
+                return (swim + bike + run) || 0;
+            }
+            if (race.terrain === 'relai' && Array.isArray(race.relayLaps) && race.relayLaps.length > 0) {
+                const userDist = race.relayLaps.reduce((sum, lap) => {
+                    if (lap.runner === 'Moi' || !lap.runner || lap.runner === 'Tous ensemble') {
+                        return sum + (parseFloat(lap.dist) || 0);
+                    }
+                    return sum;
+                }, 0);
+                return userDist > 0 ? userDist : (parseFloat(race.distance) || 0);
+            }
+            return parseFloat(String(race.distance || '').replace(',', '.')) || 0;
+        }
+
+        // Helper pour calculer le D+ réel de l'utilisateur
+        function getRaceUserElevation(race) {
+            if (!race || race.deleted) return 0;
+            if (race.terrain === 'relai' && Array.isArray(race.relayLaps) && race.relayLaps.length > 0) {
+                const userElev = race.relayLaps.reduce((sum, lap) => {
+                    if (lap.runner === 'Moi' || !lap.runner || lap.runner === 'Tous ensemble') {
+                        return sum + (parseFloat(lap.elev) || 0);
+                    }
+                    return sum;
+                }, 0);
+                return userElev > 0 ? userElev : (parseInt(race.elevation) || 0);
+            }
+            if (race.terrain === 'triathlon' && race.raceFormat !== 'team') {
+                return (parseInt(race.bikeElevation) || 0) + (parseInt(race.elevation) || 0);
+            }
+            return parseInt(race.elevation) || 0;
+        }
+
+        // Helper pour calculer le temps en secondes de l'utilisateur
+        function getRaceUserSeconds(race) {
+            if (!race || race.deleted) return 0;
+            if (race.terrain === 'relai' && Array.isArray(race.relayLaps) && race.relayLaps.length > 0) {
+                const userTimeSec = race.relayLaps.reduce((sum, lap) => {
+                    if (lap.runner === 'Moi' || !lap.runner || lap.runner === 'Tous ensemble') {
+                        const parts = String(lap.time || '').split(':');
+                        if (parts.length === 3) {
+                            return sum + (parseInt(parts[0]) || 0) * 3600 + (parseInt(parts[1]) || 0) * 60 + (parseInt(parts[2]) || 0);
+                        }
+                    }
+                    return sum;
+                }, 0);
+                if (userTimeSec > 0) return userTimeSec;
+            }
+            if (race.time) {
+                const parts = String(race.time).split(':');
+                if (parts.length === 3) {
+                    return (parseInt(parts[0]) || 0) * 3600 + (parseInt(parts[1]) || 0) * 60 + (parseInt(parts[2]) || 0);
+                }
+            }
+            return 0;
+        }
+
+        // Helper pour vérifier si une course est passée/réalisée
+        function isRaceCompletedOrPast(race) {
+            if (!race || !race.date) return false;
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const raceDate = new Date(race.date);
+            raceDate.setHours(0, 0, 0, 0);
+            const hasValidTime = race.time && race.time !== '00:00:00' && race.time.trim() !== '';
+            return raceDate < today || hasValidTime;
+        }
+
+        // Fonction pour calculer et afficher les statistiques du bandeau
         function updateStats(racesData) {
             // Synchroniser les variables globales pour le module stats-modal.js
             if (window.updateGlobalRaces) {
                 window.updateGlobalRaces(racesData);
             }
 
-            // Filtrer les courses futures (ne pas les compter dans les stats)
-            const today = new Date();
-            today.setHours(0, 0, 0, 0); // On ignore l'heure pour comparer seulement les dates
-
-            const pastRaces = racesData.filter(race => {
-                if (!race.date) return false;
-                const raceDate = new Date(race.date);
-                raceDate.setHours(0, 0, 0, 0);
-                return raceDate < today; // Seulement les courses passées
-            });
+            // Filtrer les courses passées ou ayant un temps enregistré
+            const pastRaces = (racesData || []).filter(race => isRaceCompletedOrPast(race));
 
             // Initialiser les statistiques
             let totalDistance = 0;
@@ -3277,21 +3398,12 @@
             let totalPrice = 0;
             const totalRaces = pastRaces.length;
 
-            // Calculer les totaux
+            // Calculer les totaux avec les helpers unifiés
             pastRaces.forEach(race => {
-                totalDistance += parseFloat(race.distance) || 0;
-                totalElevation += parseInt(race.elevation) || 0;
+                totalDistance += getRaceUserDistance(race);
+                totalElevation += getRaceUserElevation(race);
+                totalSeconds += getRaceUserSeconds(race);
 
-                // Convertir le temps (format hh:mm:ss) en secondes
-                if (race.time) {
-                    const timeParts = race.time.split(':');
-                    if (timeParts.length === 3) {
-                        const hours = parseInt(timeParts[0]) || 0;
-                        const minutes = parseInt(timeParts[1]) || 0;
-                        const seconds = parseInt(timeParts[2]) || 0;
-                        totalSeconds += hours * 3600 + minutes * 60 + seconds;
-                    }
-                }
                 // Additionner le prix si renseigné
                 if (race.price !== undefined && race.price !== null && race.price !== '') {
                     totalPrice += parseFloat(race.price) || 0;
@@ -3302,15 +3414,13 @@
             const totalHours = Math.floor(totalSeconds / 3600);
             const remainingMinutes = Math.floor((totalSeconds % 3600) / 60);
             const remainingSeconds = totalSeconds % 60;
-            // Formatage avec padding (ex: 08h00min00s)
             const formattedHours = String(totalHours).padStart(2, '0');
             const formattedMinutes = String(remainingMinutes).padStart(2, '0');
             const formattedSeconds = String(remainingSeconds).padStart(2, '0');
             const formattedTime = `${formattedHours}h${formattedMinutes}min${formattedSeconds}s`;
 
-            // Arrondir la distance à 1 décimale
+            // Arrondir la distance à 1 ou 2 décimales selon besoin
             totalDistance = Math.round(totalDistance * 10) / 10;
-            // Arrondir le prix à 2 décimales
             totalPrice = Math.round(totalPrice * 100) / 100;
 
             // Mettre à jour le texte des statistiques
@@ -6434,22 +6544,44 @@
                 });
         }
 
-        // --- Gestion des photos ---
+        // --- Gestion des photos et parcours (Upload, Glisser-déposer & Coller depuis le presse-papier) ---
         const racePhoto = document.getElementById('racePhoto');
+        const photoDropZone = document.getElementById('photoDropZone');
         const photoPreview = document.getElementById('photoPreview');
         const previewImage = document.getElementById('previewImage');
         const photoPlaceholder = document.getElementById('photoPlaceholder');
         const removePhoto = document.getElementById('removePhoto');
         let photoData = null;
+
+        const raceParcours = document.getElementById('raceParcours');
+        const parcoursDropZone = document.getElementById('parcoursDropZone');
+        const parcoursPreview = document.getElementById('parcoursPreview');
+        const previewParcours = document.getElementById('previewParcours');
+        const removeParcours = document.getElementById('removeParcours');
+        let parcoursData = null;
+
         const MAX_IMAGE_SIZE = 716800; // 700 KB
+        let lastActiveImageTarget = null; // 'photo' ou 'parcours'
+
+        // Tracker le dernier focus / clic pour orienter le collage Ctrl+V
+        if (photoDropZone) {
+            photoDropZone.addEventListener('click', () => { lastActiveImageTarget = 'photo'; });
+            photoDropZone.addEventListener('focus', () => { lastActiveImageTarget = 'photo'; });
+        }
+        if (parcoursDropZone) {
+            parcoursDropZone.addEventListener('click', () => { lastActiveImageTarget = 'parcours'; });
+            parcoursDropZone.addEventListener('focus', () => { lastActiveImageTarget = 'parcours'; });
+        }
 
         // Vérifier conditions pour message image automatique
         function checkAutoImageConditions() {
-            const website = document.getElementById('raceWebsite').value.trim();
-            const name = document.getElementById('raceName').value.trim();
+            const website = document.getElementById('raceWebsite')?.value.trim() || '';
+            const name = document.getElementById('raceName')?.value.trim() || '';
             const message = document.getElementById('autoImageMessage');
             const checkboxContainer = document.getElementById('autoImageCheckboxContainer');
-            const raceId = document.getElementById('raceId').value;
+            const raceId = document.getElementById('raceId')?.value;
+
+            if (!message || !checkboxContainer) return;
 
             // Masquer tout par défaut
             message.classList.add('hidden');
@@ -6468,141 +6600,224 @@
         }
 
         // Ecouter les changements sur le champ website et name
-        document.getElementById('raceWebsite').addEventListener('input', checkAutoImageConditions);
-        document.getElementById('raceName').addEventListener('input', checkAutoImageConditions);
+        document.getElementById('raceWebsite')?.addEventListener('input', checkAutoImageConditions);
+        document.getElementById('raceName')?.addEventListener('input', checkAutoImageConditions);
 
-        // Gestionnaire d'événement pour l'upload de photo
-        racePhoto.addEventListener('change', function () {
-            const file = this.files[0];
-            if (file) {
-                if (file.size > MAX_IMAGE_SIZE) {
-                    document.getElementById('imageAlertTitle').textContent = 'Image trop grande';
-                    document.getElementById('imageAlertText').textContent = 'La taille de l\'image encodée ne doit pas dépasser 1 Mo.';
-                    document.getElementById('imageAlertModal').classList.remove('hidden');
-                    this.value = '';
-                    checkAutoImageConditions(); // Vérifier l'état
-                    return;
+        // Traitement d'un fichier photo
+        function handlePhotoFile(file, fromPaste = false) {
+            if (!file) return;
+            if (!file.type.startsWith('image/')) {
+                if (typeof showToast === 'function') {
+                    showToast('Le fichier collé n\'est pas une image valide.', 'error');
                 }
-                const reader = new FileReader();
-                reader.onload = function (e) {
-                    photoData = e.target.result; // Stocker les données de l'image
-                    previewImage.src = e.target.result;
-                    previewImage.classList.remove('hidden');
-                    photoPlaceholder.classList.add('hidden');
-                    removePhoto.classList.remove('hidden');
-                    checkAutoImageConditions(); // Masquer le message car photo présente
-                };
-                reader.readAsDataURL(file);
-            } else {
-                checkAutoImageConditions();
+                return;
             }
+            if (file.size > MAX_IMAGE_SIZE) {
+                document.getElementById('imageAlertTitle').textContent = 'Image trop grande';
+                document.getElementById('imageAlertText').textContent = 'La taille de l\'image encodée ne doit pas dépasser 1 Mo.';
+                document.getElementById('imageAlertModal').classList.remove('hidden');
+                racePhoto.value = '';
+                checkAutoImageConditions();
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                photoData = e.target.result;
+                previewImage.src = e.target.result;
+                previewImage.classList.remove('hidden');
+                photoPlaceholder.classList.add('hidden');
+                removePhoto.classList.remove('hidden');
+                checkAutoImageConditions();
+                if (fromPaste && typeof showToast === 'function') {
+                    showToast('Photo collée depuis le presse-papier !', 'success');
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Traitement d'un fichier parcours
+        function handleParcoursFile(file, fromPaste = false) {
+            if (!file) return;
+            if (!file.type.startsWith('image/')) {
+                if (typeof showToast === 'function') {
+                    showToast('Le fichier collé n\'est pas une image valide.', 'error');
+                }
+                return;
+            }
+            if (file.size > MAX_IMAGE_SIZE) {
+                document.getElementById('imageAlertTitle').textContent = 'Image trop grande';
+                document.getElementById('imageAlertText').textContent = 'L\'image encodée du parcours ne doit pas dépasser 1 Mo.';
+                document.getElementById('imageAlertModal').classList.remove('hidden');
+                raceParcours.value = '';
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                parcoursData = e.target.result;
+                previewParcours.src = e.target.result;
+                parcoursPreview.classList.remove('hidden');
+                if (fromPaste && typeof showToast === 'function') {
+                    showToast('Image du parcours collée depuis le presse-papier !', 'success');
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Extraire un fichier image depuis le presse-papier
+        function extractImageFromClipboardEvent(e) {
+            const items = (e.clipboardData || window.clipboardData)?.items;
+            if (items) {
+                for (let i = 0; i < items.length; i++) {
+                    if (items[i].type && items[i].type.startsWith('image/')) {
+                        return items[i].getAsFile();
+                    }
+                }
+            }
+            const files = (e.clipboardData || window.clipboardData)?.files;
+            if (files && files.length > 0) {
+                for (let i = 0; i < files.length; i++) {
+                    if (files[i].type && files[i].type.startsWith('image/')) {
+                        return files[i];
+                    }
+                }
+            }
+            return null;
+        }
+
+        // Upload standard via input file
+        racePhoto?.addEventListener('change', function () {
+            handlePhotoFile(this.files[0], false);
         });
 
-        // Gestionnaire pour supprimer la photo
-        removePhoto.addEventListener('click', function () {
-            photoData = null; // mettre à null pour indiquer la suppression
+        raceParcours?.addEventListener('change', function () {
+            handleParcoursFile(this.files[0], false);
+        });
+
+        // Gestionnaire de suppression de photo
+        removePhoto?.addEventListener('click', function () {
+            photoData = null;
             racePhoto.value = '';
             previewImage.src = '';
             previewImage.classList.add('hidden');
 
-            const raceId = document.getElementById('raceId').value;
-
-            // Masquer le placeholder en mode édition, l'afficher seulement en mode ajout
+            const raceId = document.getElementById('raceId')?.value;
             if (!raceId) {
-                // Mode ajout : afficher le placeholder
                 photoPlaceholder.classList.remove('hidden');
             } else {
-                // Mode édition : masquer le placeholder
                 photoPlaceholder.classList.add('hidden');
-
-                // Pré-cocher la case de recherche auto en mode édition pour une meilleure UX
                 const autoCheckbox = document.getElementById('autoImageCheckbox');
-                if (autoCheckbox) {
-                    autoCheckbox.checked = true;
-                }
+                if (autoCheckbox) autoCheckbox.checked = true;
             }
             removePhoto.classList.add('hidden');
-            checkAutoImageConditions(); // Vérifier si on doit réafficher le message
+            checkAutoImageConditions();
         });
 
-        // --- Gestion du parcours (image) ---
-        const raceParcours = document.getElementById('raceParcours');
-        const parcoursPreview = document.getElementById('parcoursPreview');
-        const previewParcours = document.getElementById('previewParcours');
-        const removeParcours = document.getElementById('removeParcours');
-        let parcoursData = null;
-
-        // Ajout des fonctions manquantes pour le drag & drop
-        function preventDefaults(e) {
-            e.preventDefault();
-            e.stopPropagation();
-        }
-        function highlight(e) {
-            e.currentTarget.classList.add('border-green-500');
-        }
-        function unhighlight(e) {
-            e.currentTarget.classList.remove('border-green-500');
-        }
-
-        raceParcours.addEventListener('change', function () {
-            const file = this.files[0];
-            if (file) {
-                if (file.size > MAX_IMAGE_SIZE) {
-                    document.getElementById('imageAlertTitle').textContent = 'Image trop grande';
-                    document.getElementById('imageAlertText').textContent = "L\'image encodée du parcours ne doit pas dépasser 1 Mo.";
-                    document.getElementById('imageAlertModal').classList.remove('hidden');
-                    raceParcours.value = '';
-                    return;
-                }
-                const reader = new FileReader();
-                reader.onload = function (e) {
-                    parcoursData = e.target.result;
-                    previewParcours.src = e.target.result;
-                    parcoursPreview.classList.remove('hidden');
-                };
-                reader.readAsDataURL(file);
-            }
-        });
-        removeParcours.addEventListener('click', function () {
+        // Gestionnaire de suppression de parcours
+        removeParcours?.addEventListener('click', function () {
             parcoursData = null;
             raceParcours.value = '';
             previewParcours.src = '';
             parcoursPreview.classList.add('hidden');
         });
-        // Drag & drop parcours
-        const dropAreas = document.querySelectorAll('.border-dashed');
-        if (dropAreas.length > 1) {
-            const parcoursDropArea = dropAreas[1];
+
+        // Fonctions utilitaires drag & drop
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        function highlightDropArea(dropArea) {
+            dropArea.classList.add('border-green-500', 'bg-green-50', 'ring-2', 'ring-green-400');
+        }
+        function unhighlightDropArea(dropArea) {
+            dropArea.classList.remove('border-green-500', 'bg-green-50', 'ring-2', 'ring-green-400');
+        }
+
+        // Configuration Drag & Drop & Paste direct pour Photo
+        if (photoDropZone) {
             ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-                parcoursDropArea.addEventListener(eventName, preventDefaults, false);
+                photoDropZone.addEventListener(eventName, preventDefaults, false);
             });
             ['dragenter', 'dragover'].forEach(eventName => {
-                parcoursDropArea.addEventListener(eventName, highlight, false);
+                photoDropZone.addEventListener(eventName, () => highlightDropArea(photoDropZone), false);
             });
             ['dragleave', 'drop'].forEach(eventName => {
-                parcoursDropArea.addEventListener(eventName, unhighlight, false);
+                photoDropZone.addEventListener(eventName, () => unhighlightDropArea(photoDropZone), false);
             });
-            parcoursDropArea.addEventListener('drop', function (e) {
+            photoDropZone.addEventListener('drop', function (e) {
                 const dt = e.dataTransfer;
-                const file = dt.files[0];
-                if (file && file.type.startsWith('image/')) {
-                    if (file.size > MAX_IMAGE_SIZE) {
-                        document.getElementById('imageAlertTitle').textContent = 'Image trop grande';
-                        document.getElementById('imageAlertText').textContent = "L\'image encodée du parcours ne doit pas dépasser 1 Mo.";
-                        document.getElementById('imageAlertModal').classList.remove('hidden');
-                        return;
-                    }
-                    raceParcours.files = dt.files;
-                    const reader = new FileReader();
-                    reader.onload = function (e) {
-                        parcoursData = e.target.result;
-                        previewParcours.src = e.target.result;
-                        parcoursPreview.classList.remove('hidden');
-                    };
-                    reader.readAsDataURL(file);
+                if (dt && dt.files && dt.files[0]) {
+                    handlePhotoFile(dt.files[0], false);
                 }
             }, false);
+
+            // Collage direct sur la zone photo
+            photoDropZone.addEventListener('paste', function (e) {
+                const img = extractImageFromClipboardEvent(e);
+                if (img) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handlePhotoFile(img, true);
+                }
+            });
         }
+
+        // Configuration Drag & Drop & Paste direct pour Parcours
+        if (parcoursDropZone) {
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                parcoursDropZone.addEventListener(eventName, preventDefaults, false);
+            });
+            ['dragenter', 'dragover'].forEach(eventName => {
+                parcoursDropZone.addEventListener(eventName, () => highlightDropArea(parcoursDropZone), false);
+            });
+            ['dragleave', 'drop'].forEach(eventName => {
+                parcoursDropZone.addEventListener(eventName, () => unhighlightDropArea(parcoursDropZone), false);
+            });
+            parcoursDropZone.addEventListener('drop', function (e) {
+                const dt = e.dataTransfer;
+                if (dt && dt.files && dt.files[0]) {
+                    handleParcoursFile(dt.files[0], false);
+                }
+            }, false);
+
+            // Collage direct sur la zone parcours
+            parcoursDropZone.addEventListener('paste', function (e) {
+                const img = extractImageFromClipboardEvent(e);
+                if (img) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleParcoursFile(img, true);
+                }
+            });
+        }
+
+        // Écouteur global de collage (Ctrl+V) lorsque la modale de course est ouverte
+        window.addEventListener('paste', function (e) {
+            const raceModal = document.getElementById('raceModal');
+            if (!raceModal || raceModal.classList.contains('hidden')) return;
+
+            const imgFile = extractImageFromClipboardEvent(e);
+            if (!imgFile) {
+                // Pas d'image dans le presse-papier : laisser le comportement par défaut (ex: coller du texte dans un input)
+                return;
+            }
+
+            // Image détectée dans le presse-papier !
+            e.preventDefault();
+            e.stopPropagation();
+
+            const target = e.target;
+            const isInsideParcours = parcoursDropZone && (parcoursDropZone.contains(target) || target === parcoursDropZone);
+            const isInsidePhoto = photoDropZone && (photoDropZone.contains(target) || target === photoDropZone);
+
+            if (isInsideParcours || lastActiveImageTarget === 'parcours') {
+                handleParcoursFile(imgFile, true);
+            } else if (isInsidePhoto || lastActiveImageTarget === 'photo') {
+                handlePhotoFile(imgFile, true);
+            } else {
+                // Si aucune cible n'est explicitement sélectionnée, coller sur Photo par défaut
+                handlePhotoFile(imgFile, true);
+            }
+        });
 
         // --- Gestion des accompagnants ---
         let currentCompanions = [];

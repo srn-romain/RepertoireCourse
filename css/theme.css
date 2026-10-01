@@ -1,0 +1,89 @@
+/* css/theme.css - Variables de couleurs globales et dynamiques */
+
+:root {
+    /* ==========================================================================
+       THEME / PRIMARY PALETTE ALIASES
+       ========================================================================== */
+    --color-primary: #16a34a;
+    --color-primary-rgb: 22, 163, 74;
+    --color-primary-hover: #15803d;
+    --color-primary-hover-rgb: 21, 128, 61;
+    --color-primary-light: #f0fdf4;
+    --color-primary-light-rgb: 240, 253, 244;
+    --color-primary-border: #bbf7d0;
+    --color-primary-border-rgb: 187, 247, 208;
+    --color-primary-focus: #16a34a;
+    --color-primary-focus-rgb: 22, 163, 74;
+
+    /* ==========================================================================
+       GREEN SPECTRUM (Nuancier Vert Standard)
+       ========================================================================== */
+    --color-green-50: #f0fdf4;
+    --color-green-50-rgb: 240, 253, 244;
+
+    --color-green-100: #dcfce7;
+    --color-green-100-rgb: 220, 252, 231;
+
+    --color-green-200: #bbf7d0;
+    --color-green-200-rgb: 187, 247, 208;
+
+    --color-green-300: #86efac;
+    --color-green-300-rgb: 134, 239, 172;
+
+    --color-green-400: #4ade80;
+    --color-green-400-rgb: 74, 222, 128;
+
+    --color-green-500: #22c55e;
+    --color-green-500-rgb: 34, 197, 94;
+
+    --color-green-600: #16a34a;
+    --color-green-600-rgb: 22, 163, 74;
+
+    --color-green-700: #15803d;
+    --color-green-700-rgb: 21, 128, 61;
+
+    --color-green-800: #166534;
+    --color-green-800-rgb: 22, 101, 52;
+
+    --color-green-900: #14532d;
+    --color-green-900-rgb: 20, 83, 45;
+
+    --color-green-950: #052e16;
+    --color-green-950-rgb: 5, 46, 22;
+
+    /* ==========================================================================
+       EMERALD SPECTRUM (Nuancier Émeraude)
+       ========================================================================== */
+    --color-emerald-50: #ecfdf5;
+    --color-emerald-50-rgb: 236, 253, 245;
+
+    --color-emerald-100: #d1fae5;
+    --color-emerald-100-rgb: 209, 250, 229;
+
+    --color-emerald-200: #a7f3d0;
+    --color-emerald-200-rgb: 167, 243, 208;
+
+    --color-emerald-300: #6ee7b7;
+    --color-emerald-300-rgb: 110, 231, 183;
+
+    --color-emerald-400: #34d399;
+    --color-emerald-400-rgb: 52, 211, 153;
+
+    --color-emerald-500: #10b981;
+    --color-emerald-500-rgb: 16, 185, 129;
+
+    --color-emerald-600: #059669;
+    --color-emerald-600-rgb: 5, 150, 105;
+
+    --color-emerald-700: #047857;
+    --color-emerald-700-rgb: 4, 120, 87;
+
+    --color-emerald-800: #065f46;
+    --color-emerald-800-rgb: 6, 95, 70;
+
+    --color-emerald-900: #064e3b;
+    --color-emerald-900-rgb: 6, 78, 59;
+
+    --color-emerald-950: #022c22;
+    --color-emerald-950-rgb: 2, 44, 34;
+}

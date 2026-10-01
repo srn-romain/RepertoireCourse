@@ -142,7 +142,7 @@
         const highlight = document.createElement('div');
         highlight.id = 'tutorialHighlight';
         highlight.className = 'fixed transition-all duration-300 pointer-events-none';
-        highlight.style.cssText = 'z-index: 9999; box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.5), 0 0 0 9999px rgba(0, 0, 0, 0.7); border-radius: 8px;';
+        highlight.style.cssText = 'z-index: 9999; box-shadow: 0 0 0 4px rgba(var(--color-green-500-rgb, 34, 197, 94), 0.5), 0 0 0 9999px rgba(0, 0, 0, 0.7); border-radius: 8px;';
 
         document.body.appendChild(overlay);
         document.body.appendChild(highlight);

@@ -161,26 +161,58 @@ function checkIsRaceInWishlist(raceName, itemsList) {
     return false;
 }
 
-// Helper pour calculer la distance réelle d'une course
+// Helper pour calculer la distance réelle d'une course pour l'utilisateur
 function extractRaceDistanceKm(data) {
     if (!data || data.deleted) return 0;
     if (data.terrain === 'triathlon') {
+        if (data.raceFormat === 'team') {
+            if (data.raceRelaySport === 'swim') {
+                return (parseFloat(data.swimDistance) || 0) / 1000;
+            } else if (data.raceRelaySport === 'bike') {
+                return parseFloat(data.bikeDistance) || 0;
+            } else {
+                return parseFloat(data.distance) || 0;
+            }
+        }
         const swim = (parseFloat(data.swimDistance) || 0) / 1000;
         const bike = parseFloat(data.bikeDistance) || 0;
         const run = parseFloat(data.distance) || 0;
         return (swim + bike + run) || 0;
     }
     if (data.terrain === 'relai' && Array.isArray(data.relayLaps) && data.relayLaps.length > 0) {
-        return data.relayLaps.reduce((acc, lap) => acc + (parseFloat(lap.dist) || 0), 0);
+        const userDist = data.relayLaps.reduce((sum, lap) => {
+            if (lap.runner === 'Moi' || !lap.runner || lap.runner === 'Tous ensemble') {
+                return sum + (parseFloat(lap.dist) || 0);
+            }
+            return sum;
+        }, 0);
+        return userDist > 0 ? userDist : (parseFloat(data.distance) || 0);
     }
     return parseFloat(String(data.distance || '').replace(',', '.')) || 0;
 }
 
+// Helper pour vérifier si une course est passée/réalisée
+function isRaceCompletedOrPast(race) {
+    if (!race || !race.date) return false;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const raceDate = new Date(race.date);
+    raceDate.setHours(0, 0, 0, 0);
+    const hasValidTime = race.time && race.time !== '00:00:00' && String(race.time).trim() !== '';
+    return raceDate < today || hasValidTime;
+}
+
 // Clés et TTL de cache pour optimiser drastiquement les lectures Firebase
-const COMMUNITY_KM_STORAGE_KEY = 'repertoire_community_total_km_v1';
+const COMMUNITY_KM_STORAGE_KEY = 'repertoire_community_total_km_v2';
 const COMMUNITY_KM_TTL_MS = 60 * 60 * 1000; // 1 heure de cache pour le total communautaire
-const USER_KM_STORAGE_KEY_PREFIX = 'repertoire_user_total_km_';
+const USER_KM_STORAGE_KEY_PREFIX = 'repertoire_user_total_km_v2_';
 const USER_KM_TTL_MS = 15 * 60 * 1000; // 15 minutes de cache pour le coureur connecté
+
+// Nettoyer les anciennes clés de cache obsolètes
+try {
+    localStorage.removeItem('repertoire_community_total_km_v1');
+    sessionStorage.removeItem('repertoire_user_total_km_');
+} catch (e) {}
 
 let isCalculatingCommunityStats = false;
 
@@ -191,7 +223,8 @@ function renderCommunityKmUI(communityKm, userKm, isUserLoggedIn) {
     if (!totalKmEl) return;
 
     if (communityKm > 0) {
-        const formattedCommunityKm = Math.round(communityKm).toLocaleString('fr-FR');
+        const roundedComm = Math.round(communityKm * 10) / 10;
+        const formattedCommunityKm = (roundedComm % 1 === 0 ? Math.round(roundedComm) : roundedComm).toLocaleString('fr-FR');
         totalKmEl.textContent = `${formattedCommunityKm} km`;
     }
 
@@ -202,15 +235,23 @@ function renderCommunityKmUI(communityKm, userKm, isUserLoggedIn) {
             const userPercent = (userKm / communityKm) * 100;
             let formattedPercent = userPercent.toLocaleString('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
             if (userPercent < 0.1) formattedPercent = '< 0,1';
-            const formattedUserKm = Math.round(userKm).toLocaleString('fr-FR');
+            const roundedUser = Math.round(userKm * 10) / 10;
+            const formattedUserKm = (roundedUser % 1 === 0 ? Math.round(roundedUser) : roundedUser).toLocaleString('fr-FR');
 
             contribEl.innerHTML = `
-                <span>Vous contribuez à <strong>${formattedPercent} %</strong> de ce total avec votre profil puisque vous avez parcouru <strong>${formattedUserKm} km</strong> au total !</span>
+                <div class="flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-3">
+                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-green-200/80 text-green-900 font-semibold text-xs">
+                        <i class="fas fa-user-check text-green-700 text-[10px]"></i> Votre carnet : <strong>${formattedUserKm} km</strong>
+                    </span>
+                    <span class="text-green-800 text-xs sm:text-sm">
+                        soit <strong>${formattedPercent} %</strong> du total de la communauté !
+                    </span>
+                </div>
             `;
             contribEl.classList.remove('hidden');
         } else {
             contribEl.innerHTML = `
-                <span class="text-green-700/80">Ajoutez vos courses sur votre carnet pour contribuer au compteur kilométrique collectif !</span>
+                <span class="text-green-700/80 text-xs sm:text-sm">Ajoutez vos courses sur votre carnet pour contribuer au compteur collectif !</span>
             `;
             contribEl.classList.remove('hidden');
         }
@@ -248,8 +289,16 @@ async function loadCommunityKmStats() {
         if (currentUser) {
             if (Array.isArray(window.allUserRaces) && window.allUserRaces.length > 0) {
                 // Déjà en mémoire dans la session courante (0 lecture Firebase !)
-                userKm = window.allUserRaces.reduce((sum, r) => sum + extractRaceDistanceKm(r), 0);
+                userKm = window.allUserRaces
+                    .filter(r => isRaceCompletedOrPast(r))
+                    .reduce((sum, r) => sum + extractRaceDistanceKm(r), 0);
                 isUserCacheValid = true;
+                try {
+                    sessionStorage.setItem(USER_KM_STORAGE_KEY_PREFIX + currentUser.uid, JSON.stringify({
+                        userKm: userKm,
+                        timestamp: Date.now()
+                    }));
+                } catch (e) {}
             } else {
                 try {
                     const rawUser = sessionStorage.getItem(USER_KM_STORAGE_KEY_PREFIX + currentUser.uid);
@@ -284,8 +333,11 @@ async function loadCommunityKmStats() {
             if (!fetchedCommunityKm) {
                 const snapshot = await db.collectionGroup('races').get();
                 snapshot.forEach(doc => {
-                    const dist = extractRaceDistanceKm(doc.data());
-                    if (dist > 0) fetchedCommunityKm += dist;
+                    const rData = doc.data();
+                    if (isRaceCompletedOrPast(rData)) {
+                        const dist = extractRaceDistanceKm(rData);
+                        if (dist > 0) fetchedCommunityKm += dist;
+                    }
                 });
             }
 
@@ -306,8 +358,11 @@ async function loadCommunityKmStats() {
                 const userRacesSnap = await db.collection('users').doc(currentUser.uid).collection('races').get();
                 let computedUserKm = 0;
                 userRacesSnap.forEach(doc => {
-                    const dist = extractRaceDistanceKm(doc.data());
-                    if (dist > 0) computedUserKm += dist;
+                    const rData = doc.data();
+                    if (isRaceCompletedOrPast(rData)) {
+                        const dist = extractRaceDistanceKm(rData);
+                        if (dist > 0) computedUserKm += dist;
+                    }
                 });
                 userKm = computedUserKm;
                 try {
@@ -330,6 +385,8 @@ async function loadCommunityKmStats() {
         isCalculatingCommunityStats = false;
     }
 }
+
+window.loadCommunityKmStats = loadCommunityKmStats;
 
 document.addEventListener('DOMContentLoaded', () => {
     loadPublicRaces();

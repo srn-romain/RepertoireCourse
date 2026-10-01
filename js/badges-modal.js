@@ -4384,8 +4384,8 @@
 
             card.style.transition = 'all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)';
             card.style.transform = 'scale(1.05)';
-            card.style.boxShadow = '0 0 0 4px #10B981, 0 20px 25px -5px rgba(16, 185, 129, 0.4)';
-            card.style.borderColor = '#10B981';
+            card.style.boxShadow = '0 0 0 4px var(--color-emerald-500, #10B981), 0 20px 25px -5px rgba(var(--color-emerald-500-rgb, 16, 185, 129), 0.4)';
+            card.style.borderColor = 'var(--color-emerald-500, #10B981)';
             card.style.zIndex = '50';
 
             // Macaron animé temporaire

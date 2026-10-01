@@ -125,6 +125,31 @@
                 .map(r => parseFloat(r.price))
                 .filter(p => !isNaN(p) && p > 0);
 
+            // Helper : calcule la distance réelle d'une course pour l'utilisateur
+            function getRealDistance(r) {
+                if (r.terrain === 'relai' && r.relayLaps && r.relayLaps.length > 0) {
+                    const relaySum = r.relayLaps.reduce((sum, lap) => {
+                        if (lap.runner === 'Moi' || !lap.runner || lap.runner === 'Tous ensemble') {
+                            return sum + (parseFloat(lap.dist) || 0);
+                        }
+                        return sum;
+                    }, 0);
+                    if (relaySum > 0) return relaySum;
+                }
+                if (r.terrain === 'triathlon') {
+                    if (r.raceFormat === 'team') {
+                        if (r.raceRelaySport === 'swim') return (parseFloat(r.swimDistance) || 0) / 1000;
+                        if (r.raceRelaySport === 'bike') return parseFloat(r.bikeDistance) || 0;
+                        return parseFloat(r.distance) || 0;
+                    }
+                    const swim = (parseFloat(r.swimDistance) || 0) / 1000;
+                    const bike = parseFloat(r.bikeDistance) || 0;
+                    const run = parseFloat(r.distance) || 0;
+                    return swim + bike + run;
+                }
+                return parseFloat(r.distance) || 0;
+            }
+
             // Helper : calcule le D+ réel d'une course (relai, triathlon ou standard)
             function getRealElevation(r) {
                 if (r.terrain === 'relai' && r.relayLaps && r.relayLaps.length > 0) {
@@ -174,15 +199,7 @@
             let longestDistanceRace = null;
             let maxDistance = 0;
             pastRaces.forEach(race => {
-                // Calculer la distance totale pour chaque course (triathlon inclus)
-                let totalDist = parseFloat(race.distance) || 0;
-                if (race.terrain === 'triathlon') {
-                    const swim = (parseFloat(race.swimDistance) || 0) / 1000;
-                    const bike = parseFloat(race.bikeDistance) || 0;
-                    const run = parseFloat(race.distance) || 0;
-                    totalDist = swim + bike + run;
-                }
-
+                const totalDist = getRealDistance(race);
                 if (totalDist > maxDistance) {
                     maxDistance = totalDist;
                     longestDistanceRace = race;
@@ -217,26 +234,10 @@
                 longestTimeRace = pastRaces.find(r => timeToSeconds(r.time) === maxTime);
             }
 
-            // Calculer les distances (gérer le triathlon)
-            const distances = pastRaces.map(race => {
-                let dist = 0;
-                if (race.terrain === 'relai' && race.relayLaps && race.relayLaps.length > 0) {
-                    dist = race.relayLaps.reduce((sum, lap) => {
-                        if (lap.runner === 'Moi' || !lap.runner || lap.runner === 'Tous ensemble') {
-                            return sum + (parseFloat(lap.dist) || 0);
-                        }
-                        return sum;
-                    }, 0);
-                } else if (race.terrain === 'triathlon') {
-                    const swim = (parseFloat(race.swimDistance) || 0) / 1000;
-                    const bike = parseFloat(race.bikeDistance) || 0;
-                    const run = parseFloat(race.distance) || 0;
-                    dist = swim + bike + run;
-                } else {
-                    dist = parseFloat(race.distance) || 0;
-                }
-                return dist;
-            }).filter(d => d > 0);
+            // Calculer les distances (gérer triathlon et relai)
+            const distances = pastRaces
+                .map(race => getRealDistance(race))
+                .filter(d => !isNaN(d) && d > 0);
 
             // Calcul statistiques pour les distances
             let distanceStats = {};
@@ -377,19 +378,10 @@
 
             // Préparer les données pour le graphique des distances
             const racesWithDistance = pastRaces
-                .map(race => {
-                    let val = parseFloat(race.distance) || 0;
-                    if (race.terrain === 'triathlon') {
-                        const swim = (parseFloat(race.swimDistance) || 0) / 1000;
-                        const bike = parseFloat(race.bikeDistance) || 0;
-                        const run = parseFloat(race.distance) || 0;
-                        val = swim + bike + run;
-                    }
-                    return {
-                        race: race,
-                        value: val
-                    };
-                })
+                .map(race => ({
+                    race: race,
+                    value: getRealDistance(race)
+                }))
                 .filter(r => r.value > 0)
                 .sort((a, b) => b.value - a.value);
 
@@ -1553,7 +1545,7 @@
                     html += `    <canvas id="evolutionChartCanvas"></canvas>`;
                     html += `  </div>`;
                     html += `  <div class="flex flex-wrap justify-center gap-x-4 gap-y-2 mt-3 mb-1">`;
-                    html += `    <div class="flex items-center gap-1.5 text-[10px] md:text-xs font-medium text-blue-900"><span class="w-3 h-0.5 border-t-2 border-dashed border-[#16a34a]"></span> Meilleure perf.</div>`;
+                    html += `    <div class="flex items-center gap-1.5 text-[10px] md:text-xs font-medium text-blue-900"><span class="w-3 h-0.5 border-t-2 border-dashed border-[var(--color-green-600,#16a34a)]"></span> Meilleure perf.</div>`;
                     html += `    <div class="flex items-center gap-1.5 text-[10px] md:text-xs font-medium text-blue-900"><span class="w-3 h-0.5 border-t-2 border-dashed border-[#dc2626]"></span> Moins bonne perf.</div>`;
                     html += `  </div>`;
                     html += `  <p class="text-[10px] text-blue-400 mt-2 italic text-center">Graphique basé sur ${chronologicalRaces.length} courses.</p>`;
@@ -2109,8 +2101,13 @@
             }
 
             const metricLabel = metric === 'speed' ? 'Vitesse (km/h)' : 'Allure (min/km)';
-            const borderColor = metric === 'speed' ? '#2563eb' : '#059669';
-            const bgColor = metric === 'speed' ? 'rgba(37, 99, 235, 0.1)' : 'rgba(5, 150, 105, 0.1)';
+            const rootStyle = getComputedStyle(document.documentElement);
+            const greenPrimary = rootStyle.getPropertyValue('--color-green-600').trim() || '#16a34a';
+            const emeraldPrimary = rootStyle.getPropertyValue('--color-emerald-600').trim() || '#059669';
+            const emeraldRgb = rootStyle.getPropertyValue('--color-emerald-600-rgb').trim() || '5, 150, 105';
+
+            const borderColor = metric === 'speed' ? '#2563eb' : emeraldPrimary;
+            const bgColor = metric === 'speed' ? 'rgba(37, 99, 235, 0.1)' : `rgba(${emeraldRgb}, 0.1)`;
 
             // Plugin personnalisé pour dessiner les barres verticales Best/Worst
             const verticalLinePlugin = {
@@ -2134,7 +2131,7 @@
                     };
 
                     if (bestIndex !== -1 && bestIndex !== worstIndex) {
-                        drawVLine(bestIndex, '#16a34a');
+                        drawVLine(bestIndex, greenPrimary);
                     }
                     if (worstIndex !== -1) {
                         drawVLine(worstIndex, '#dc2626');

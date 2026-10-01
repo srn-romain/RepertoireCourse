@@ -26,12 +26,12 @@ function getRunnerLoaderHTML(colSpan = 'col-span-full') {
             <svg class="runner-svg-character" viewBox="0 0 160 115" xmlns="http://www.w3.org/2000/svg">
                 <defs>
                     <linearGradient id="runnerGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stop-color="#34d399" />
-                        <stop offset="100%" stop-color="#059669" />
+                        <stop offset="0%" stop-color="var(--color-emerald-400, #34d399)" />
+                        <stop offset="100%" stop-color="var(--color-emerald-600, #059669)" />
                     </linearGradient>
                     <linearGradient id="runnerGradDark" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stop-color="#059669" />
-                        <stop offset="100%" stop-color="#047857" />
+                        <stop offset="0%" stop-color="var(--color-emerald-600, #059669)" />
+                        <stop offset="100%" stop-color="var(--color-emerald-700, #047857)" />
                     </linearGradient>
                     <filter id="runnerGlow" x="-20%" y="-20%" width="140%" height="140%">
                         <feGaussianBlur stdDeviation="1.2" result="blur" />
@@ -43,23 +43,23 @@ function getRunnerLoaderHTML(colSpan = 'col-span-full') {
                 <g class="runner-trees-layer">
                     <!-- Tree 1 : Sapin élancé rapide -->
                     <g class="runner-tree runner-tree-1">
-                        <rect x="-1.5" y="74" width="3" height="20" fill="#047857" opacity="0.4" rx="1" />
-                        <path d="M 0 36 L 9 52 L 6 52 L 12 66 L 8 66 L 14 78 L -14 78 L -8 66 L -12 66 L -6 52 L -9 52 Z" fill="#10b981" opacity="0.35" />
+                        <rect x="-1.5" y="74" width="3" height="20" fill="var(--color-emerald-700, #047857)" opacity="0.4" rx="1" />
+                        <path d="M 0 36 L 9 52 L 6 52 L 12 66 L 8 66 L 14 78 L -14 78 L -8 66 L -12 66 L -6 52 L -9 52 Z" fill="var(--color-emerald-500, #10b981)" opacity="0.35" />
                     </g>
                     <!-- Tree 2 : Arbre moyen / conifère -->
                     <g class="runner-tree runner-tree-2">
-                        <rect x="-1" y="78" width="2.5" height="16" fill="#047857" opacity="0.3" rx="1" />
-                        <path d="M 0 46 L 8 60 L 5 60 L 10 72 L -10 72 L -5 60 L -8 60 Z" fill="#059669" opacity="0.3" />
+                        <rect x="-1" y="78" width="2.5" height="16" fill="var(--color-emerald-700, #047857)" opacity="0.3" rx="1" />
+                        <path d="M 0 46 L 8 60 L 5 60 L 10 72 L -10 72 L -5 60 L -8 60 Z" fill="var(--color-emerald-600, #059669)" opacity="0.3" />
                     </g>
                     <!-- Tree 3 : Petit sapin vif -->
                     <g class="runner-tree runner-tree-3">
-                        <rect x="-1" y="82" width="2" height="12" fill="#047857" opacity="0.25" rx="0.5" />
-                        <path d="M 0 58 L 6 70 L 4 70 L 8 80 L -8 80 L -4 70 L -6 70 Z" fill="#34d399" opacity="0.25" />
+                        <rect x="-1" y="82" width="2" height="12" fill="var(--color-emerald-700, #047857)" opacity="0.25" rx="0.5" />
+                        <path d="M 0 58 L 6 70 L 4 70 L 8 80 L -8 80 L -4 70 L -6 70 Z" fill="var(--color-emerald-400, #34d399)" opacity="0.25" />
                     </g>
                 </g>
 
                 <!-- Ground Shadow (pulsing with flight phase) -->
-                <ellipse class="runner-shadow-anim" cx="70" cy="94" rx="20" ry="3.5" fill="rgba(16, 185, 129, 0.25)" />
+                <ellipse class="runner-shadow-anim" cx="70" cy="94" rx="20" ry="3.5" fill="rgba(var(--color-emerald-500-rgb, 16, 185, 129), 0.25)" />
 
                 <!-- Main Body Group (Bobbing animation) -->
                 <g class="runner-body-anim">
@@ -106,7 +106,7 @@ function getRunnerLoaderHTML(colSpan = 'col-span-full') {
                 </g>
 
                 <!-- Animated Ground Track -->
-                <line class="runner-track-line" x1="10" y1="94" x2="150" y2="94" stroke="#10b981" stroke-width="2" stroke-dasharray="8 6" stroke-linecap="round" opacity="0.75" />
+                <line class="runner-track-line" x1="10" y1="94" x2="150" y2="94" stroke="var(--color-emerald-500, #10b981)" stroke-width="2" stroke-dasharray="8 6" stroke-linecap="round" opacity="0.75" />
             </svg>
         </div>
     </div>

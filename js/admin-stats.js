@@ -511,7 +511,7 @@ async function initAdminMap(locationData) {
     // Définir l'icône une seule fois
     const dotIcon = L.divIcon({
         className: 'bg-transparent',
-        html: `<div style="background-color: #22c55e; width: 12px; height: 12px; border-radius: 50%; border: 2px solid green;"></div>`,
+        html: `<div style="background-color: var(--color-green-500, #22c55e); width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--color-green-700, #15803d);"></div>`,
         iconSize: [12, 12],
         iconAnchor: [6, 6]
     });

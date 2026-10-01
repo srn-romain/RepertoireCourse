@@ -27,7 +27,7 @@ body {
 .feature-card:hover {
     transform: translateY(-5px);
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-    border-color: rgba(34, 197, 94, 0.3);
+    border-color: rgba(var(--color-green-500-rgb, 34, 197, 94), 0.3);
 }
 
 .blur-bg {

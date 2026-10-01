@@ -58,8 +58,8 @@ input[type="search"]::-webkit-search-results-decoration {
 
 /* Styles pour le mode sélection et mise en relief des cartes */
 .race-card-selected {
-    box-shadow: 0 0 0 3px #10b981, 0 12px 24px -4px rgba(16, 185, 129, 0.3) !important;
-    background-color: #f0fdf4 !important;
+    box-shadow: 0 0 0 3px var(--color-emerald-500, #10b981), 0 12px 24px -4px rgba(var(--color-emerald-500-rgb, 16, 185, 129), 0.3) !important;
+    background-color: var(--color-green-50, #f0fdf4) !important;
     transform: translateY(-4px) !important;
 }
 
@@ -127,7 +127,7 @@ input[type="search"]::-webkit-search-results-decoration {
 
 #detailsPhoto:hover,
 #detailsParcours:hover {
-    box-shadow: 0 0 0 1px #34d399, 0 10px 20px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 0 0 1px var(--color-emerald-400, #34d399), 0 10px 20px rgba(0, 0, 0, 0.15);
     filter: brightness(0.95) saturate(1.1);
 }
 
@@ -210,7 +210,7 @@ input[type="search"]::-webkit-search-results-decoration {
 
     .stat-price {
         padding-top: 8px;
-        border-top: 1px dashed #d1fae5;
+        border-top: 1px dashed var(--color-green-100, #d1fae5);
         margin-top: 4px;
     }
 
@@ -218,7 +218,7 @@ input[type="search"]::-webkit-search-results-decoration {
         display: flex;
         flex-direction: column;
         font-size: 0.75rem;
-        color: #065f46;
+        color: var(--color-emerald-800, #065f46);
     }
 
     .stat-item span:first-child {
@@ -249,11 +249,11 @@ input[type="search"]::-webkit-search-results-decoration {
 
 .btn-race-gpx,
 .bg-green-600.btn-race-gpx {
-    background-color: #16a34a !important;
+    background-color: var(--color-green-600, #16a34a) !important;
 }
 .btn-race-gpx:hover,
 .hover\:bg-green-700.btn-race-gpx:hover {
-    background-color: #15803d !important;
+    background-color: var(--color-green-700, #15803d) !important;
 }
 
 .w-fit {
@@ -277,8 +277,8 @@ input[type="search"]::-webkit-search-results-decoration {
 
 .drive-header {
     padding: 1rem 1.5rem;
-    background: #f0fdf4;
-    border-bottom: 1px solid #dcfce7;
+    background: var(--color-green-50, #f0fdf4);
+    border-bottom: 1px solid var(--color-green-100, #dcfce7);
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -353,8 +353,8 @@ input[type="search"]::-webkit-search-results-decoration {
 }
 
 .config-slot.drag-over {
-    border-color: #10b981 !important; /* emerald-500 */
-    background-color: #ecfdf5 !important; /* emerald-50 */
+    border-color: var(--color-emerald-500, #10b981) !important; /* emerald-500 */
+    background-color: var(--color-emerald-50, #ecfdf5) !important; /* emerald-50 */
     transform: scale(1.05);
 }
 
@@ -422,9 +422,9 @@ input[type="search"]::-webkit-search-results-decoration {
 
 /* État sélectionné (glowing green) pour mobile */
 .available-btn-item.selected {
-    border-color: #10b981 !important;
-    background-color: #f0fdf4 !important; /* green-50 */
-    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.25) !important;
+    border-color: var(--color-emerald-500, #10b981) !important;
+    background-color: var(--color-green-50, #f0fdf4) !important; /* green-50 */
+    box-shadow: 0 0 0 2px rgba(var(--color-emerald-500-rgb, 16, 185, 129), 0.25) !important;
     transform: translateY(-2px) scale(1.03);
 }
 
@@ -485,10 +485,10 @@ input[type="search"]::-webkit-search-results-decoration {
 
 /* Mise en relief de la carte sélectionnée */
 .race-card-selected {
-    outline: 3px solid #10b981 !important;
+    outline: 3px solid var(--color-emerald-500, #10b981) !important;
     outline-offset: -1px;
-    background-color: #f0fdf4 !important;
-    box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.2) !important;
+    background-color: var(--color-green-50, #f0fdf4) !important;
+    box-shadow: 0 10px 25px -5px rgba(var(--color-emerald-500-rgb, 16, 185, 129), 0.2) !important;
     transform: translateY(-2px);
 }
 
@@ -517,7 +517,7 @@ input[type="search"]::-webkit-search-results-decoration {
     word-break: break-all !important;
     overflow-wrap: anywhere !important;
     max-width: 100% !important;
-    color: #059669;
+    color: var(--color-emerald-600, #059669);
     text-decoration: underline;
     text-underline-offset: 2px;
     transition: color 0.15s ease;
@@ -528,6 +528,6 @@ input[type="search"]::-webkit-search-results-decoration {
 .notes-content a:hover,
 .race-notes-container a:hover,
 .race-note-text a:hover {
-    color: #047857;
+    color: var(--color-emerald-700, #047857);
 }
 
