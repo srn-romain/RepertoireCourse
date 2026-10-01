@@ -161,9 +161,82 @@ function checkIsRaceInWishlist(raceName, itemsList) {
     return false;
 }
 
+// Fonction pour charger et afficher le total des kilomètres de la communauté et la contribution de l'utilisateur
+async function loadCommunityKmStats() {
+    const totalKmEl = document.getElementById('communityTotalKmText');
+    const contribEl = document.getElementById('userCommunityContribution');
+    if (!totalKmEl) return;
+
+    try {
+        const currentUser = (typeof firebase !== 'undefined' && firebase.auth) ? firebase.auth().currentUser : null;
+        const snapshot = await db.collectionGroup('races').get();
+
+        let communityKm = 0;
+        let userKm = 0;
+
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            if (data.deleted) return;
+
+            let dist = 0;
+            if (data.terrain === 'triathlon') {
+                const swim = (parseFloat(data.swimDistance) || 0) / 1000;
+                const bike = parseFloat(data.bikeDistance) || 0;
+                const run = parseFloat(data.distance) || 0;
+                dist = swim + bike + run;
+            } else if (data.terrain === 'relai' && Array.isArray(data.relayLaps) && data.relayLaps.length > 0) {
+                dist = data.relayLaps.reduce((acc, lap) => acc + (parseFloat(lap.dist) || 0), 0);
+            } else {
+                dist = parseFloat(String(data.distance || '').replace(',', '.')) || 0;
+            }
+
+            if (!isNaN(dist) && dist > 0) {
+                communityKm += dist;
+                const uid = doc.ref.parent?.parent ? doc.ref.parent.parent.id : null;
+                if (currentUser && uid === currentUser.uid) {
+                    userKm += dist;
+                }
+            }
+        });
+
+        const formattedCommunityKm = Math.round(communityKm).toLocaleString('fr-FR');
+        totalKmEl.textContent = `${formattedCommunityKm} km`;
+
+        if (contribEl) {
+            if (currentUser && userKm > 0 && communityKm > 0) {
+                const userPercent = (userKm / communityKm) * 100;
+                let formattedPercent = userPercent.toLocaleString('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+                if (userPercent < 0.1) formattedPercent = '< 0,1';
+                const formattedUserKm = Math.round(userKm).toLocaleString('fr-FR');
+
+                contribEl.innerHTML = `
+                    <span>Vous contribuez à <strong>${formattedPercent} %</strong> de ce total avec votre profil puisque vous avez parcouru <strong>${formattedUserKm} km</strong> au total !</span>
+                `;
+                contribEl.classList.remove('hidden');
+            } else if (currentUser) {
+                contribEl.innerHTML = `
+                    <span class="text-green-700/80">Ajoutez vos courses sur votre carnet pour contribuer au compteur kilométrique collectif !</span>
+                `;
+                contribEl.classList.remove('hidden');
+            } else {
+                contribEl.classList.add('hidden');
+            }
+        }
+    } catch (e) {
+        console.warn("[public-races] Erreur calcul km communauté:", e);
+    }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     loadPublicRaces();
+    loadCommunityKmStats();
 });
+
+if (typeof firebase !== 'undefined' && firebase.auth) {
+    firebase.auth().onAuthStateChanged(() => {
+        loadCommunityKmStats();
+    });
+}
 
 async function loadPublicRaces() {
     // Prevent concurrent executions
