@@ -161,69 +161,173 @@ function checkIsRaceInWishlist(raceName, itemsList) {
     return false;
 }
 
-// Fonction pour charger et afficher le total des kilomètres de la communauté et la contribution de l'utilisateur
-async function loadCommunityKmStats() {
+// Helper pour calculer la distance réelle d'une course
+function extractRaceDistanceKm(data) {
+    if (!data || data.deleted) return 0;
+    if (data.terrain === 'triathlon') {
+        const swim = (parseFloat(data.swimDistance) || 0) / 1000;
+        const bike = parseFloat(data.bikeDistance) || 0;
+        const run = parseFloat(data.distance) || 0;
+        return (swim + bike + run) || 0;
+    }
+    if (data.terrain === 'relai' && Array.isArray(data.relayLaps) && data.relayLaps.length > 0) {
+        return data.relayLaps.reduce((acc, lap) => acc + (parseFloat(lap.dist) || 0), 0);
+    }
+    return parseFloat(String(data.distance || '').replace(',', '.')) || 0;
+}
+
+// Clés et TTL de cache pour optimiser drastiquement les lectures Firebase
+const COMMUNITY_KM_STORAGE_KEY = 'repertoire_community_total_km_v1';
+const COMMUNITY_KM_TTL_MS = 60 * 60 * 1000; // 1 heure de cache pour le total communautaire
+const USER_KM_STORAGE_KEY_PREFIX = 'repertoire_user_total_km_';
+const USER_KM_TTL_MS = 15 * 60 * 1000; // 15 minutes de cache pour le coureur connecté
+
+let isCalculatingCommunityStats = false;
+
+// Fonction de rendu UI du compteur communautaire et contribution
+function renderCommunityKmUI(communityKm, userKm, isUserLoggedIn) {
     const totalKmEl = document.getElementById('communityTotalKmText');
     const contribEl = document.getElementById('userCommunityContribution');
     if (!totalKmEl) return;
 
-    try {
-        const currentUser = (typeof firebase !== 'undefined' && firebase.auth) ? firebase.auth().currentUser : null;
-        const snapshot = await db.collectionGroup('races').get();
-
-        let communityKm = 0;
-        let userKm = 0;
-
-        snapshot.forEach(doc => {
-            const data = doc.data();
-            if (data.deleted) return;
-
-            let dist = 0;
-            if (data.terrain === 'triathlon') {
-                const swim = (parseFloat(data.swimDistance) || 0) / 1000;
-                const bike = parseFloat(data.bikeDistance) || 0;
-                const run = parseFloat(data.distance) || 0;
-                dist = swim + bike + run;
-            } else if (data.terrain === 'relai' && Array.isArray(data.relayLaps) && data.relayLaps.length > 0) {
-                dist = data.relayLaps.reduce((acc, lap) => acc + (parseFloat(lap.dist) || 0), 0);
-            } else {
-                dist = parseFloat(String(data.distance || '').replace(',', '.')) || 0;
-            }
-
-            if (!isNaN(dist) && dist > 0) {
-                communityKm += dist;
-                const uid = doc.ref.parent?.parent ? doc.ref.parent.parent.id : null;
-                if (currentUser && uid === currentUser.uid) {
-                    userKm += dist;
-                }
-            }
-        });
-
+    if (communityKm > 0) {
         const formattedCommunityKm = Math.round(communityKm).toLocaleString('fr-FR');
         totalKmEl.textContent = `${formattedCommunityKm} km`;
+    }
 
-        if (contribEl) {
-            if (currentUser && userKm > 0 && communityKm > 0) {
-                const userPercent = (userKm / communityKm) * 100;
-                let formattedPercent = userPercent.toLocaleString('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
-                if (userPercent < 0.1) formattedPercent = '< 0,1';
-                const formattedUserKm = Math.round(userKm).toLocaleString('fr-FR');
+    if (!contribEl) return;
 
-                contribEl.innerHTML = `
-                    <span>Vous contribuez à <strong>${formattedPercent} %</strong> de ce total avec votre profil puisque vous avez parcouru <strong>${formattedUserKm} km</strong> au total !</span>
-                `;
-                contribEl.classList.remove('hidden');
-            } else if (currentUser) {
-                contribEl.innerHTML = `
-                    <span class="text-green-700/80">Ajoutez vos courses sur votre carnet pour contribuer au compteur kilométrique collectif !</span>
-                `;
-                contribEl.classList.remove('hidden');
+    if (isUserLoggedIn) {
+        if (userKm > 0 && communityKm > 0) {
+            const userPercent = (userKm / communityKm) * 100;
+            let formattedPercent = userPercent.toLocaleString('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+            if (userPercent < 0.1) formattedPercent = '< 0,1';
+            const formattedUserKm = Math.round(userKm).toLocaleString('fr-FR');
+
+            contribEl.innerHTML = `
+                <span>Vous contribuez à <strong>${formattedPercent} %</strong> de ce total avec votre profil puisque vous avez parcouru <strong>${formattedUserKm} km</strong> au total !</span>
+            `;
+            contribEl.classList.remove('hidden');
+        } else {
+            contribEl.innerHTML = `
+                <span class="text-green-700/80">Ajoutez vos courses sur votre carnet pour contribuer au compteur kilométrique collectif !</span>
+            `;
+            contribEl.classList.remove('hidden');
+        }
+    } else {
+        contribEl.classList.add('hidden');
+    }
+}
+
+// Fonction optimisée pour charger et afficher le total des kilomètres de la communauté et la contribution
+async function loadCommunityKmStats() {
+    const totalKmEl = document.getElementById('communityTotalKmText');
+    if (!totalKmEl) return;
+
+    if (isCalculatingCommunityStats) return;
+    isCalculatingCommunityStats = true;
+
+    try {
+        const currentUser = (typeof firebase !== 'undefined' && firebase.auth) ? firebase.auth().currentUser : null;
+        
+        // 1. Lire le cache local communautaire
+        let cachedCommunity = null;
+        try {
+            const rawComm = localStorage.getItem(COMMUNITY_KM_STORAGE_KEY);
+            if (rawComm) cachedCommunity = JSON.parse(rawComm);
+        } catch (e) {}
+
+        const now = Date.now();
+        let communityKm = (cachedCommunity && cachedCommunity.totalKm) ? cachedCommunity.totalKm : 0;
+        const isCommCacheValid = cachedCommunity && (now - cachedCommunity.timestamp < COMMUNITY_KM_TTL_MS) && communityKm > 0;
+
+        // 2. Récupérer les km de l'utilisateur (depuis la mémoire ou cache session)
+        let userKm = 0;
+        let isUserCacheValid = false;
+
+        if (currentUser) {
+            if (Array.isArray(window.allUserRaces) && window.allUserRaces.length > 0) {
+                // Déjà en mémoire dans la session courante (0 lecture Firebase !)
+                userKm = window.allUserRaces.reduce((sum, r) => sum + extractRaceDistanceKm(r), 0);
+                isUserCacheValid = true;
             } else {
-                contribEl.classList.add('hidden');
+                try {
+                    const rawUser = sessionStorage.getItem(USER_KM_STORAGE_KEY_PREFIX + currentUser.uid);
+                    if (rawUser) {
+                        const parsedUser = JSON.parse(rawUser);
+                        if (now - parsedUser.timestamp < USER_KM_TTL_MS) {
+                            userKm = parsedUser.userKm || 0;
+                            isUserCacheValid = true;
+                        }
+                    }
+                } catch (e) {}
             }
         }
+
+        // 3. Affichage immédiat dès la première frame si disponible en cache (Zéro latence UI, zéro read)
+        if (communityKm > 0) {
+            renderCommunityKmUI(communityKm, userKm, !!currentUser);
+        }
+
+        // 4. Si le cache communautaire a expiré ou est absent, on rafraîchit
+        if (!isCommCacheValid) {
+            let fetchedCommunityKm = 0;
+            // Tentative 1: Document de stats agrégées (1 seule lecture au lieu de tout scanner)
+            try {
+                const statsDoc = await db.collection('config').doc('publicStats').get();
+                if (statsDoc.exists && typeof statsDoc.data().totalCommunityKm === 'number') {
+                    fetchedCommunityKm = statsDoc.data().totalCommunityKm;
+                }
+            } catch (e) {}
+
+            // Tentative 2: Si pas de doc agrégé, scanner le collectionGroup et mettre en cache pour 1h
+            if (!fetchedCommunityKm) {
+                const snapshot = await db.collectionGroup('races').get();
+                snapshot.forEach(doc => {
+                    const dist = extractRaceDistanceKm(doc.data());
+                    if (dist > 0) fetchedCommunityKm += dist;
+                });
+            }
+
+            if (fetchedCommunityKm > 0) {
+                communityKm = fetchedCommunityKm;
+                try {
+                    localStorage.setItem(COMMUNITY_KM_STORAGE_KEY, JSON.stringify({
+                        totalKm: communityKm,
+                        timestamp: Date.now()
+                    }));
+                } catch (e) {}
+            }
+        }
+
+        // 5. Si l'utilisateur est connecté et que ses km ne sont pas en cache, interroger UNIQUEMENT ses courses (pas toute la base !)
+        if (currentUser && !isUserCacheValid) {
+            try {
+                const userRacesSnap = await db.collection('users').doc(currentUser.uid).collection('races').get();
+                let computedUserKm = 0;
+                userRacesSnap.forEach(doc => {
+                    const dist = extractRaceDistanceKm(doc.data());
+                    if (dist > 0) computedUserKm += dist;
+                });
+                userKm = computedUserKm;
+                try {
+                    sessionStorage.setItem(USER_KM_STORAGE_KEY_PREFIX + currentUser.uid, JSON.stringify({
+                        userKm: userKm,
+                        timestamp: Date.now()
+                    }));
+                } catch (e) {}
+            } catch (e) {
+                console.warn("[public-races] Impossible de charger les km de l'utilisateur:", e);
+            }
+        }
+
+        // 6. Rendu final avec les données fraîches
+        renderCommunityKmUI(communityKm, userKm, !!currentUser);
+
     } catch (e) {
         console.warn("[public-races] Erreur calcul km communauté:", e);
+    } finally {
+        isCalculatingCommunityStats = false;
     }
 }
 
