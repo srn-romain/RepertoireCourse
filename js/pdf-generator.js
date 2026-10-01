@@ -1375,9 +1375,6 @@ async function generateRacePdf(raceId) {
     doc.setProperties({ title: fileName });
     doc.save(fileName);
     saveUserFlag('pdfDownloaded');
-    if (race.terrain === 'relai' || race.raceFormat === 'team' || (race.relayLaps && race.relayLaps.length > 0)) {
-        saveUserFlag('relayPdfExported');
-    }
 }
 
 // Exposer la fonction globalement
@@ -1859,7 +1856,6 @@ async function generateRelayTableOnlyPdf(raceId) {
     doc.setProperties({ title: fileName });
     doc.save(fileName);
     saveUserFlag('relayPdfExported');
-    saveUserFlag('pdfDownloaded');
 }
 
 window.generateRelayTableOnlyPdf = generateRelayTableOnlyPdf;
