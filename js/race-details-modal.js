@@ -1000,7 +1000,9 @@
                 totalRelayElevNeg += en;
                 totalRelayTimeS += s;
 
-                if (lap.runner === 'Moi' || !lap.runner || lap.runner === 'Tous ensemble') {
+                const runnerLower = String(lap.runner || '').trim().toLowerCase();
+                const isUser = !runnerLower || runnerLower === 'moi' || runnerLower === 'tous ensemble' || runnerLower === 'all' || (currentUserPseudo && runnerLower === currentUserPseudo.toLowerCase());
+                if (isUser) {
                     userRelayDist += d;
                     userRelayElev += e;
                     userRelayElevNeg += en;
@@ -1063,8 +1065,9 @@
 
             let cumulativeSeconds = 0;
             const relayLapsRowsHtml = race.relayLaps.map((lap, idx) => {
-                const isMoi = lap.runner === 'Moi' || !lap.runner;
-                const isTousEnsemble = lap.runner === 'Tous ensemble';
+                const runnerLower = String(lap.runner || '').trim().toLowerCase();
+                const isMoi = !runnerLower || runnerLower === 'moi' || (currentUserPseudo && runnerLower === currentUserPseudo.toLowerCase());
+                const isTousEnsemble = runnerLower === 'tous ensemble' || runnerLower === 'all';
                 const lapSeconds = timeToSeconds(lap.time);
                 const departureTime = hasStartHour ? addTimeToHour(race.hour, cumulativeSeconds) : null;
                 cumulativeSeconds += lapSeconds;
@@ -1272,18 +1275,34 @@
             detailsRelayContainer.innerHTML = relayHtml;
             detailsRelayContainer.classList.remove('hidden');
 
+            // Mise à jour des carrés principaux du haut avec les valeurs personnelles de l'utilisateur
             const relayElevElement = document.getElementById('detailsElevation');
             if (relayElevElement) {
                 relayElevElement.className = 'font-semibold text-green-800 text-sm';
-                const hasD = totalRelayElev > 0;
-                const hasDNeg = totalRelayElevNeg > 0;
+                const hasD = userRelayElev > 0;
+                const hasDNeg = userRelayElevNeg > 0;
                 if (hasD || hasDNeg) {
-                    let elevStr = hasD ? `D+ ${totalRelayElev}m` : '';
-                    if (hasDNeg) elevStr += (elevStr ? ' / ' : '') + `D- ${totalRelayElevNeg}m`;
+                    let elevStr = hasD ? `D+ ${userRelayElev}m` : '';
+                    if (hasDNeg) elevStr += (elevStr ? ' / ' : '') + `D- ${userRelayElevNeg}m`;
+                    relayElevElement.textContent = elevStr;
+                } else if (race.elevation && !isNaN(race.elevation)) {
+                    let elevStr = `D+ ${race.elevation}m`;
+                    if (race.elevationNeg) elevStr += ` / D- ${race.elevationNeg}m`;
                     relayElevElement.textContent = elevStr;
                 } else {
                     relayElevElement.textContent = '/';
                 }
+            }
+
+            const relayDistElement = document.getElementById('detailsDistance');
+            if (relayDistElement && userRelayDist > 0) {
+                relayDistElement.textContent = `${formatDist(userRelayDist)} km`;
+            }
+
+            const relayTimeElement = document.getElementById('detailsTime');
+            if (relayTimeElement && userRelayTimeS > 0) {
+                relayTimeElement.textContent = secondsToTime(userRelayTimeS);
+                relayTimeElement.className = 'font-semibold text-green-800';
             }
 
         } else if (race.terrain === 'hyrox' && race.hyroxLaps && race.hyroxLaps.length > 0) {

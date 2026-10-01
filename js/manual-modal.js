@@ -66,11 +66,13 @@ const manualModalHTML = `
                     </h4>
                     <div class="bg-white border border-green-100 rounded-lg overflow-hidden shadow-sm">
                         <img src="img/app_generale.png" alt="Interface générale" class="w-full h-auto">
-                        <div class="p-4 bg-gray-50">
+                        <div class="p-4 bg-gray-50 space-y-2">
                             <p class="text-sm text-gray-600">
-                                <strong>Vue d'ensemble :</strong> L'interface principale affiche votre tableau de
-                                bord
-                                avec statistiques, graphiques et liste de courses.
+                                <strong>Vue d'ensemble :</strong> L'interface principale affiche votre tableau de bord avec statistiques récapitulatives, graphiques et liste de courses.
+                            </p>
+                            <p class="text-xs text-green-800 bg-green-50 p-2.5 rounded-lg border border-green-200">
+                                <i class="fas fa-calculator text-green-600 mr-1.5"></i>
+                                <strong>Détail des calculs interactifs :</strong> Cliquez directement sur n'importe quelle statistique du bandeau (nombre de courses, kilomètres, D+, chrono) pour ouvrir une modale détaillée affichant l'addition exacte de chaque course avec vos parts de relais et triathlons.
                             </p>
                         </div>
                     </div>
