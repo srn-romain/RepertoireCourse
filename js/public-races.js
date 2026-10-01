@@ -180,13 +180,15 @@ function extractRaceDistanceKm(data) {
         return (swim + bike + run) || 0;
     }
     if (data.terrain === 'relai' && Array.isArray(data.relayLaps) && data.relayLaps.length > 0) {
-        const userDist = data.relayLaps.reduce((sum, lap) => {
-            if (lap.runner === 'Moi' || !lap.runner || lap.runner === 'Tous ensemble') {
+        return data.relayLaps.reduce((sum, lap) => {
+            const runner = String(lap.runner || '').trim().toLowerCase();
+            const pseudo = (typeof window !== 'undefined' && window.currentUserPseudo) ? String(window.currentUserPseudo).trim().toLowerCase() : '';
+            const isUserLap = !runner || runner === 'moi' || runner === 'tous ensemble' || runner === 'all' || (pseudo && runner === pseudo);
+            if (isUserLap) {
                 return sum + (parseFloat(lap.dist) || 0);
             }
             return sum;
         }, 0);
-        return userDist > 0 ? userDist : (parseFloat(data.distance) || 0);
     }
     return parseFloat(String(data.distance || '').replace(',', '.')) || 0;
 }

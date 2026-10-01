@@ -125,16 +125,25 @@
                 .map(r => parseFloat(r.price))
                 .filter(p => !isNaN(p) && p > 0);
 
+            // Helper : vérifie si un tour de relais appartient à l'utilisateur
+            function isUserRelayLap(lap) {
+                if (!lap) return false;
+                const runner = String(lap.runner || '').trim().toLowerCase();
+                if (!runner || runner === 'moi' || runner === 'tous ensemble' || runner === 'all') return true;
+                const pseudo = (typeof window !== 'undefined' && window.currentUserPseudo) ? String(window.currentUserPseudo).trim().toLowerCase() : '';
+                if (pseudo && runner === pseudo) return true;
+                return false;
+            }
+
             // Helper : calcule la distance réelle d'une course pour l'utilisateur
             function getRealDistance(r) {
                 if (r.terrain === 'relai' && r.relayLaps && r.relayLaps.length > 0) {
-                    const relaySum = r.relayLaps.reduce((sum, lap) => {
-                        if (lap.runner === 'Moi' || !lap.runner || lap.runner === 'Tous ensemble') {
+                    return r.relayLaps.reduce((sum, lap) => {
+                        if (isUserRelayLap(lap)) {
                             return sum + (parseFloat(lap.dist) || 0);
                         }
                         return sum;
                     }, 0);
-                    if (relaySum > 0) return relaySum;
                 }
                 if (r.terrain === 'triathlon') {
                     if (r.raceFormat === 'team') {
@@ -154,7 +163,7 @@
             function getRealElevation(r) {
                 if (r.terrain === 'relai' && r.relayLaps && r.relayLaps.length > 0) {
                     return r.relayLaps.reduce((sum, lap) => {
-                        if (lap.runner === 'Moi' || !lap.runner || lap.runner === 'Tous ensemble') {
+                        if (isUserRelayLap(lap)) {
                             return sum + (parseFloat(lap.elev) || 0);
                         }
                         return sum;
@@ -170,7 +179,7 @@
             function getRealElevationNeg(r) {
                 if (r.terrain === 'relai' && r.relayLaps && r.relayLaps.length > 0) {
                     return r.relayLaps.reduce((sum, lap) => {
-                        if (lap.runner === 'Moi' || !lap.runner || lap.runner === 'Tous ensemble') {
+                        if (isUserRelayLap(lap)) {
                             return sum + (parseFloat(lap.elevNeg) || 0);
                         }
                         return sum;
@@ -401,7 +410,7 @@
                     let time = 0;
                     if (isRelay) {
                         const totalS = race.relayLaps.reduce((sum, lap) => {
-                            if (lap.runner === 'Moi' || !lap.runner || lap.runner === 'Tous ensemble') {
+                            if (isUserRelayLap(lap)) {
                                 return sum + (timeToSeconds(lap.time) || 0);
                             }
                             return sum;

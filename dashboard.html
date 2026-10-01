@@ -147,7 +147,7 @@
     </div>
 
     <!-- Barre d'information de connexion -->
-    <div id="authStatusBar" class="bg-green-50 border-b border-green-200 py-2 px-4 sticky top-0 z-50 hidden">
+    <div id="authStatusBar" class="bg-green-50 border-b border-green-200 py-2 px-4 sticky top-0 z-30 hidden">
         <div class="container mx-auto flex flex-col md:flex-row justify-between items-center gap-4 md:gap-0">
             <!-- Zone Information -->
             <div class="flex items-center justify-between w-full md:w-auto gap-4">
@@ -2497,6 +2497,57 @@
         </div>
     </div>
 
+    <!-- Modale Détail du Calcul des Kilomètres -->
+    <div id="distanceDetailsModal"
+        class="modal hidden fixed inset-0 z-[55] flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm p-3 sm:p-4 transition-opacity duration-300">
+        <div class="modal-content bg-white w-full max-w-xl rounded-xl shadow-2xl flex flex-col max-h-[85vh] overflow-hidden">
+            
+            <!-- Header sobre -->
+            <div class="p-4 sm:p-5 border-b border-gray-100 flex items-center justify-between">
+                <div>
+                    <h3 class="text-base sm:text-lg font-bold text-gray-800 flex items-center gap-2" id="distanceDetailsModalTitle">
+                        <i class="fas fa-calculator text-green-600" id="distanceDetailsModalIcon"></i>
+                        <span id="distanceDetailsModalTitleText">Détail du calcul des kilomètres</span>
+                    </h3>
+                    <p class="text-xs text-gray-500 mt-0.5" id="distanceDetailsModalSubtitle">Addition des kilomètres de votre carnet</p>
+                </div>
+                <button type="button" onclick="closeDistanceDetailsModal()"
+                    class="text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg w-8 h-8 flex items-center justify-center transition focus:outline-none"
+                    title="Fermer">
+                    <i class="fas fa-times text-sm"></i>
+                </button>
+            </div>
+
+            <!-- Barre de filtre rapide -->
+            <div class="px-4 py-2 bg-gray-50/80 border-b border-gray-100 flex items-center justify-between gap-3">
+                <div class="relative flex-1">
+                    <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
+                    <input type="text" id="detailRaceSearchInput" placeholder="Filtrer par nom de course..."
+                        class="w-full pl-8 pr-3 py-1 text-xs bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-green-500">
+                </div>
+                <span class="text-xs text-gray-500 font-medium whitespace-nowrap" id="detailListCountText">
+                    0 course
+                </span>
+            </div>
+
+            <!-- Liste des courses pour l'addition -->
+            <div class="flex-1 overflow-y-auto p-3 sm:p-4 divide-y divide-gray-100" id="distanceDetailsList">
+                <!-- Lignes injectées dynamiquement -->
+            </div>
+
+            <!-- Footer avec résultat de l'addition -->
+            <div class="p-3.5 sm:p-4 bg-gray-50 border-t border-gray-200 flex items-center justify-between">
+                <div class="text-xs sm:text-sm text-gray-700">
+                    Total additionné : <span class="font-bold text-green-700 text-sm sm:text-base ml-1" id="detailTotalDistance">0 km</span>
+                </div>
+                <button type="button" onclick="closeDistanceDetailsModal()"
+                    class="px-4 py-1.5 bg-gray-200 hover:bg-gray-300 text-gray-700 text-xs font-semibold rounded-lg transition">
+                    Fermer
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Footer Signature -->
     <footer class="text-center py-6 text-green-900 opacity-50 text-sm mt-8">
         <p style="margin:0;">
@@ -3298,6 +3349,16 @@
             });
         }
 
+        // Helper pour vérifier si un tour de relais appartient à l'utilisateur (identique à race-details-modal.js)
+        function isUserRelayLap(lap) {
+            if (!lap) return false;
+            const runner = String(lap.runner || '').trim().toLowerCase();
+            if (!runner || runner === 'moi' || runner === 'tous ensemble' || runner === 'all') return true;
+            const pseudo = (typeof window !== 'undefined' && window.currentUserPseudo) ? String(window.currentUserPseudo).trim().toLowerCase() : '';
+            if (pseudo && runner === pseudo) return true;
+            return false;
+        }
+
         // Helper pour calculer la distance réelle courue par l'utilisateur
         function getRaceUserDistance(race) {
             if (!race || race.deleted) return 0;
@@ -3317,13 +3378,12 @@
                 return (swim + bike + run) || 0;
             }
             if (race.terrain === 'relai' && Array.isArray(race.relayLaps) && race.relayLaps.length > 0) {
-                const userDist = race.relayLaps.reduce((sum, lap) => {
-                    if (lap.runner === 'Moi' || !lap.runner || lap.runner === 'Tous ensemble') {
+                return race.relayLaps.reduce((sum, lap) => {
+                    if (isUserRelayLap(lap)) {
                         return sum + (parseFloat(lap.dist) || 0);
                     }
                     return sum;
                 }, 0);
-                return userDist > 0 ? userDist : (parseFloat(race.distance) || 0);
             }
             return parseFloat(String(race.distance || '').replace(',', '.')) || 0;
         }
@@ -3332,13 +3392,12 @@
         function getRaceUserElevation(race) {
             if (!race || race.deleted) return 0;
             if (race.terrain === 'relai' && Array.isArray(race.relayLaps) && race.relayLaps.length > 0) {
-                const userElev = race.relayLaps.reduce((sum, lap) => {
-                    if (lap.runner === 'Moi' || !lap.runner || lap.runner === 'Tous ensemble') {
+                return race.relayLaps.reduce((sum, lap) => {
+                    if (isUserRelayLap(lap)) {
                         return sum + (parseFloat(lap.elev) || 0);
                     }
                     return sum;
                 }, 0);
-                return userElev > 0 ? userElev : (parseInt(race.elevation) || 0);
             }
             if (race.terrain === 'triathlon' && race.raceFormat !== 'team') {
                 return (parseInt(race.bikeElevation) || 0) + (parseInt(race.elevation) || 0);
@@ -3350,8 +3409,8 @@
         function getRaceUserSeconds(race) {
             if (!race || race.deleted) return 0;
             if (race.terrain === 'relai' && Array.isArray(race.relayLaps) && race.relayLaps.length > 0) {
-                const userTimeSec = race.relayLaps.reduce((sum, lap) => {
-                    if (lap.runner === 'Moi' || !lap.runner || lap.runner === 'Tous ensemble') {
+                return race.relayLaps.reduce((sum, lap) => {
+                    if (isUserRelayLap(lap)) {
                         const parts = String(lap.time || '').split(':');
                         if (parts.length === 3) {
                             return sum + (parseInt(parts[0]) || 0) * 3600 + (parseInt(parts[1]) || 0) * 60 + (parseInt(parts[2]) || 0);
@@ -3359,7 +3418,6 @@
                     }
                     return sum;
                 }, 0);
-                if (userTimeSec > 0) return userTimeSec;
             }
             if (race.time) {
                 const parts = String(race.time).split(':');
@@ -3434,10 +3492,18 @@
             }
 
             statsHtml += `
-                <div class="stat-item"><span class="font-semibold">${totalRaces}</span> <span>course${totalRaces > 1 ? 's' : ''}</span></div>
-                <div class="stat-item md:before:content-['|'] md:before:mr-3 md:before:opacity-30"><span class="font-semibold">${totalDistance}</span> <span>km parcourus</span></div>
-                <div class="stat-item md:before:content-['|'] md:before:mr-3 md:before:opacity-30"><span class="font-semibold">${totalElevation}</span> <span>m de dénivelé</span></div>
-                <div class="stat-item md:before:content-['|'] md:before:mr-3 md:before:opacity-30"><span class="font-semibold">${formattedTime}</span> <span>de course</span></div>
+                <div class="stat-item cursor-pointer hover:text-green-800 transition group" onclick="openStatDetailsModal('count')" title="Cliquer pour voir le détail des courses">
+                    <span class="font-semibold group-hover:underline underline-offset-2 decoration-green-500">${totalRaces}</span> <span>course${totalRaces > 1 ? 's' : ''}</span>
+                </div>
+                <div class="stat-item md:before:content-['|'] md:before:mr-3 md:before:opacity-30 cursor-pointer hover:text-green-800 transition group" onclick="openStatDetailsModal('distance')" title="Cliquer pour voir le détail des kilomètres">
+                    <span class="font-semibold group-hover:underline underline-offset-2 decoration-green-500">${totalDistance}</span> <span>km parcourus</span>
+                </div>
+                <div class="stat-item md:before:content-['|'] md:before:mr-3 md:before:opacity-30 cursor-pointer hover:text-green-800 transition group" onclick="openStatDetailsModal('elevation')" title="Cliquer pour voir le détail du dénivelé">
+                    <span class="font-semibold group-hover:underline underline-offset-2 decoration-green-500">${totalElevation}</span> <span>m de dénivelé</span>
+                </div>
+                <div class="stat-item md:before:content-['|'] md:before:mr-3 md:before:opacity-30 cursor-pointer hover:text-green-800 transition group" onclick="openStatDetailsModal('time')" title="Cliquer pour voir le détail du temps de course">
+                    <span class="font-semibold group-hover:underline underline-offset-2 decoration-green-500">${formattedTime}</span> <span>de course</span>
+                </div>
             `;
 
             // Affichage du prix
@@ -3468,6 +3534,219 @@
                 });
             }
         }
+
+        // --- Modale Détail du calcul des statistiques ---
+        let currentDetailRaces = [];
+        let currentDetailStatType = 'distance';
+
+        function openStatDetailsModal(statType = 'distance') {
+            const modal = document.getElementById('distanceDetailsModal');
+            if (!modal) return;
+
+            currentDetailStatType = statType;
+
+            const allRaces = (typeof races !== 'undefined' && Array.isArray(races)) ? races : [];
+            // Filtrer selon l'année en cours si un filtre est actif
+            const isYearFilter = typeof currentYearFilter !== 'undefined' && currentYearFilter !== 'all' && currentYearFilter !== null;
+            let targetRaces = allRaces;
+            if (isYearFilter) {
+                targetRaces = allRaces.filter(race => {
+                    if (!race.date) return false;
+                    return new Date(race.date).getFullYear().toString() === currentYearFilter.toString();
+                });
+            }
+
+            // Courses passées ou avec chrono (incluses dans le calcul)
+            const pastRaces = targetRaces.filter(r => isRaceCompletedOrPast(r));
+            // Tri par date décroissante (plus récentes d'abord)
+            pastRaces.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
+
+            currentDetailRaces = pastRaces;
+
+            // Calculer les totaux
+            let totalDist = 0;
+            let totalElev = 0;
+            let totalSec = 0;
+            pastRaces.forEach(r => {
+                totalDist += getRaceUserDistance(r);
+                totalElev += getRaceUserElevation(r);
+                totalSec += getRaceUserSeconds(r);
+            });
+            totalDist = Math.round(totalDist * 10) / 10;
+
+            const totalHours = Math.floor(totalSec / 3600);
+            const remainingMinutes = Math.floor((totalSec % 3600) / 60);
+            const remainingSeconds = totalSec % 60;
+            const formattedTime = `${String(totalHours).padStart(2, '0')}h${String(remainingMinutes).padStart(2, '0')}min${String(remainingSeconds).padStart(2, '0')}s`;
+
+            // Mettre à jour titre, icône et sous-titre selon le type
+            const titleTextEl = document.getElementById('distanceDetailsModalTitleText');
+            const iconEl = document.getElementById('distanceDetailsModalIcon');
+            const subtitleEl = document.getElementById('distanceDetailsModalSubtitle');
+            const totalEl = document.getElementById('detailTotalDistance');
+            const yearPrefix = isYearFilter ? `année ${currentYearFilter}` : 'carnet';
+
+            if (statType === 'elevation') {
+                if (titleTextEl) titleTextEl.textContent = 'Détail du calcul du dénivelé (D+)';
+                if (iconEl) iconEl.className = 'fas fa-mountain text-orange-500';
+                if (subtitleEl) subtitleEl.textContent = `Total ${yearPrefix} : +${totalElev.toLocaleString('fr-FR')} m (${pastRaces.length} course${pastRaces.length > 1 ? 's' : ''})`;
+                if (totalEl) totalEl.textContent = `+${totalElev.toLocaleString('fr-FR')} m`;
+            } else if (statType === 'time') {
+                if (titleTextEl) titleTextEl.textContent = 'Détail du calcul du temps de course';
+                if (iconEl) iconEl.className = 'far fa-clock text-blue-500';
+                if (subtitleEl) subtitleEl.textContent = `Total ${yearPrefix} : ${formattedTime} (${pastRaces.length} course${pastRaces.length > 1 ? 's' : ''})`;
+                if (totalEl) totalEl.textContent = formattedTime;
+            } else if (statType === 'count') {
+                if (titleTextEl) titleTextEl.textContent = 'Détail des courses comptabilisées';
+                if (iconEl) iconEl.className = 'fas fa-running text-green-600';
+                if (subtitleEl) subtitleEl.textContent = `Total ${yearPrefix} : ${pastRaces.length} course${pastRaces.length > 1 ? 's' : ''}`;
+                if (totalEl) totalEl.textContent = `${pastRaces.length} course${pastRaces.length > 1 ? 's' : ''}`;
+            } else {
+                if (titleTextEl) titleTextEl.textContent = 'Détail du calcul des kilomètres';
+                if (iconEl) iconEl.className = 'fas fa-calculator text-green-600';
+                if (subtitleEl) subtitleEl.textContent = `Total ${yearPrefix} : ${totalDist.toLocaleString('fr-FR')} km (${pastRaces.length} course${pastRaces.length > 1 ? 's' : ''})`;
+                if (totalEl) totalEl.textContent = `${totalDist.toLocaleString('fr-FR')} km`;
+            }
+
+            // Reset search input
+            const searchInput = document.getElementById('detailRaceSearchInput');
+            if (searchInput) searchInput.value = '';
+
+            renderDistanceDetailsList(pastRaces);
+
+            modal.classList.remove('hidden');
+        }
+
+        function openDistanceDetailsModal() {
+            openStatDetailsModal('distance');
+        }
+
+        function closeDistanceDetailsModal() {
+            const modal = document.getElementById('distanceDetailsModal');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        function renderDistanceDetailsList(racesToRender) {
+            const container = document.getElementById('distanceDetailsList');
+            const countText = document.getElementById('detailListCountText');
+            if (!container) return;
+
+            if (countText) {
+                countText.textContent = `${racesToRender.length} course${racesToRender.length > 1 ? 's' : ''}`;
+            }
+
+            if (!racesToRender || racesToRender.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-6 text-gray-400 text-xs">
+                        Aucune course trouvée.
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = racesToRender.map((race, idx) => {
+                const userDist = getRaceUserDistance(race);
+                const roundedDist = Math.round(userDist * 100) / 100;
+                const userElev = getRaceUserElevation(race);
+                const userSec = getRaceUserSeconds(race);
+
+                const raceDate = race.date ? new Date(race.date) : null;
+                const formattedDate = raceDate ? raceDate.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '-';
+
+                const terrainKey = (race.terrain || 'route').toLowerCase();
+                let extraNote = '';
+
+                if (terrainKey === 'triathlon') {
+                    if (race.raceFormat === 'team') {
+                        const sport = race.raceRelaySport === 'swim' ? 'Natation' : (race.raceRelaySport === 'bike' ? 'Vélo' : 'CàP');
+                        extraNote = `<span class="text-[11px] text-cyan-700 bg-cyan-50 px-1.5 py-0.5 rounded border border-cyan-100">Triathlon relais (${sport})</span>`;
+                    } else {
+                        extraNote = `<span class="text-[11px] text-cyan-700 bg-cyan-50 px-1.5 py-0.5 rounded border border-cyan-100">Triathlon</span>`;
+                    }
+                } else if (terrainKey === 'relai' && Array.isArray(race.relayLaps) && race.relayLaps.length > 0) {
+                    const userLaps = [];
+                    race.relayLaps.forEach((l, i) => {
+                        if (isUserRelayLap(l)) userLaps.push(i + 1);
+                    });
+                    extraNote = `<span class="text-[11px] text-indigo-700 bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-100">Relais : tour${userLaps.length > 1 ? 's' : ''} ${userLaps.join(', ')}</span>`;
+                }
+
+                // Valeur affichée à droite selon le type de statistique
+                let rightStatHtml = '';
+                if (currentDetailStatType === 'elevation') {
+                    rightStatHtml = `<span class="text-xs sm:text-sm font-bold text-green-700">+ ${userElev} m</span>`;
+                } else if (currentDetailStatType === 'time') {
+                    let timeStr = race.time && race.time !== '00:00:00' ? race.time : '';
+                    if (!timeStr && userSec > 0) {
+                        const th = Math.floor(userSec / 3600);
+                        const tm = Math.floor((userSec % 3600) / 60);
+                        const ts = userSec % 60;
+                        timeStr = `${String(th).padStart(2, '0')}:${String(tm).padStart(2, '0')}:${String(ts).padStart(2, '0')}`;
+                    }
+                    rightStatHtml = `<span class="text-xs sm:text-sm font-bold text-green-700 font-mono">${timeStr ? '+ ' + timeStr : '-'}</span>`;
+                } else if (currentDetailStatType === 'count') {
+                    rightStatHtml = `<span class="text-xs sm:text-sm font-bold text-green-700">${roundedDist} km</span>`;
+                } else {
+                    rightStatHtml = `<span class="text-xs sm:text-sm font-bold text-green-700">+ ${roundedDist} km</span>`;
+                }
+
+                return `
+                    <div onclick="showRaceDetails('${race.id}')"
+                        class="py-2.5 px-2 hover:bg-gray-50 rounded-lg transition-colors cursor-pointer flex items-center justify-between gap-3 group">
+                        
+                        <!-- Gauche : Date, Nom et Note -->
+                        <div class="min-w-0 flex-1">
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <span class="text-xs text-gray-400 font-mono">${formattedDate}</span>
+                                <span class="text-xs sm:text-sm font-semibold text-gray-800 group-hover:text-green-600 transition-colors truncate">
+                                    ${race.name || 'Course sans nom'}
+                                </span>
+                                ${extraNote}
+                            </div>
+                        </div>
+
+                        <!-- Droite : Valeur ajoutée -->
+                        <div class="shrink-0 text-right">
+                            ${rightStatHtml}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        window.openStatDetailsModal = openStatDetailsModal;
+        window.openDistanceDetailsModal = openDistanceDetailsModal;
+        window.closeDistanceDetailsModal = closeDistanceDetailsModal;
+
+        // Listeners pour la recherche interne et la fermeture
+        document.addEventListener('DOMContentLoaded', () => {
+            const searchInput = document.getElementById('detailRaceSearchInput');
+            if (searchInput) {
+                searchInput.addEventListener('input', (e) => {
+                    const query = e.target.value.toLowerCase().trim();
+                    if (!query) {
+                        renderDistanceDetailsList(currentDetailRaces);
+                        return;
+                    }
+                    const filtered = currentDetailRaces.filter(r => {
+                        const name = (r.name || '').toLowerCase();
+                        const location = (r.location || '').toLowerCase();
+                        const terrain = (r.terrain || '').toLowerCase();
+                        return name.includes(query) || location.includes(query) || terrain.includes(query);
+                    });
+                    renderDistanceDetailsList(filtered);
+                });
+            }
+
+            const distanceDetailsModal = document.getElementById('distanceDetailsModal');
+            if (distanceDetailsModal) {
+                distanceDetailsModal.addEventListener('click', (e) => {
+                    if (e.target === distanceDetailsModal) {
+                        closeDistanceDetailsModal();
+                    }
+                });
+            }
+        });
 
         // Correction : garder la référence du filtre actif et appliquer updateStats sur le bon tableau
         let currentYearFilter = 'all';
