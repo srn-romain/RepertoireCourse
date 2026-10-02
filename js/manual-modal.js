@@ -615,6 +615,18 @@ const manualModalHTML = `
                                 </ul>
                             </div>
 
+                            <!-- Couleur de fond & Thème -->
+                            <div class="bg-gray-50 p-3 rounded border border-gray-100">
+                                <p class="font-semibold text-gray-800 text-sm mb-1 flex items-center gap-2"><i
+                                        class="fas fa-palette text-green-600"></i> Couleur de fond & Thème</p>
+                                <p class="text-xs text-gray-600 mb-2">Personnalisez l'ambiance visuelle de l'application selon vos goûts.</p>
+                                <ul class="text-[10px] text-gray-500 list-disc ml-4 space-y-1">
+                                    <li><strong>8 teintes sobres et modernes :</strong> Vert Émeraude (défaut), Bleu Océan, Indigo Nuit, Sarcelle Lagon, Ambre Chaud, Rose Boisé, Pourpre Royal et Ardoise Zinc.</li>
+                                    <li><strong>Harmonisation instantanée :</strong> La couleur s'applique en temps réel au fond du site, aux boutons, aux bordures, aux badges et aux confettis de célébration.</li>
+                                    <li><strong>Sauvegarde automatique :</strong> Votre thème est synchronisé avec votre profil et conservé sur tous vos appareils.</li>
+                                </ul>
+                            </div>
+
                             <!-- Confidentialité -->
                             <div class="bg-gray-50 p-3 rounded border border-gray-100">
                                 <p class="font-semibold text-gray-800 text-sm mb-1 flex items-center gap-2"><i
