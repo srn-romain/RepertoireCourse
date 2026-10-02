@@ -3467,30 +3467,13 @@
             // Affichage du prix
             const priceFormatted = totalPrice.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
             statsHtml += `
-                <div class="stat-price md:before:content-['|'] md:before:mr-3 md:before:opacity-30">
-                    <span id="totalPriceStat" class="font-semibold group relative cursor-pointer inline-block">
-                        <span class="opacity-40">Prix total</span>
-                        <span class="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-2 py-1 bg-green-700 text-white text-xs rounded shadow-lg hidden group-hover:block z-50 whitespace-nowrap">
-                            ${priceFormatted} € dépensés
-                        </span>
-                    </span>
+                <div class="stat-item md:before:content-['|'] md:before:mr-3 md:before:opacity-30 cursor-pointer hover:text-green-800 transition group" onclick="openStatDetailsModal('price')" title="Cliquer pour voir le détail des dépenses">
+                    <span class="font-semibold group-hover:underline underline-offset-2 decoration-green-500">${priceFormatted} €</span> <span>dépensés</span>
                 </div>
             `;
 
             statsElement.innerHTML = statsHtml;
             statsElement.className = "stats-loaded text-green-600 text-sm md:text-base flex flex-wrap items-center justify-center min-[1650px]:justify-start gap-x-3 gap-y-1";
-            // Ajout du hover JS si besoin (pour compatibilité)
-            const priceStat = document.getElementById('totalPriceStat');
-            if (priceStat) {
-                priceStat.addEventListener('mouseenter', function () {
-                    const tooltip = priceStat.querySelector('span.absolute');
-                    if (tooltip) tooltip.classList.remove('hidden');
-                });
-                priceStat.addEventListener('mouseleave', function () {
-                    const tooltip = priceStat.querySelector('span.absolute');
-                    if (tooltip) tooltip.classList.add('hidden');
-                });
-            }
         }
 
         // --- Modale Détail du calcul des statistiques ---
@@ -3525,12 +3508,18 @@
             let totalDist = 0;
             let totalElev = 0;
             let totalSec = 0;
+            let totalPrice = 0;
             pastRaces.forEach(r => {
                 totalDist += getRaceUserDistance(r);
                 totalElev += getRaceUserElevation(r);
                 totalSec += getRaceUserSeconds(r);
+                if (r.price !== undefined && r.price !== null && r.price !== '') {
+                    totalPrice += parseFloat(r.price) || 0;
+                }
             });
             totalDist = Math.round(totalDist * 10) / 10;
+            totalPrice = Math.round(totalPrice * 100) / 100;
+            const priceFormatted = totalPrice.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
             const totalHours = Math.floor(totalSec / 3600);
             const remainingMinutes = Math.floor((totalSec % 3600) / 60);
@@ -3559,6 +3548,11 @@
                 if (iconEl) iconEl.className = 'fas fa-running text-green-600';
                 if (subtitleEl) subtitleEl.textContent = `Total ${yearPrefix} : ${pastRaces.length} course${pastRaces.length > 1 ? 's' : ''}`;
                 if (totalEl) totalEl.textContent = `${pastRaces.length} course${pastRaces.length > 1 ? 's' : ''}`;
+            } else if (statType === 'price') {
+                if (titleTextEl) titleTextEl.textContent = 'Détail du calcul des dépenses';
+                if (iconEl) iconEl.className = 'fas fa-euro-sign text-emerald-600';
+                if (subtitleEl) subtitleEl.textContent = `Total ${yearPrefix} : ${priceFormatted} € (${pastRaces.length} course${pastRaces.length > 1 ? 's' : ''})`;
+                if (totalEl) totalEl.textContent = `${priceFormatted} €`;
             } else {
                 if (titleTextEl) titleTextEl.textContent = 'Détail du calcul des kilomètres';
                 if (iconEl) iconEl.className = 'fas fa-calculator text-green-600';
@@ -3644,6 +3638,10 @@
                     rightStatHtml = `<span class="text-xs sm:text-sm font-bold text-green-700 font-mono">${timeStr ? '+ ' + timeStr : '-'}</span>`;
                 } else if (currentDetailStatType === 'count') {
                     rightStatHtml = `<span class="text-xs sm:text-sm font-bold text-green-700">${roundedDist} km</span>`;
+                } else if (currentDetailStatType === 'price') {
+                    const p = (race.price !== undefined && race.price !== null && race.price !== '') ? parseFloat(race.price) : 0;
+                    const pFormatted = p > 0 ? p.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €' : '-';
+                    rightStatHtml = `<span class="text-xs sm:text-sm font-bold ${p > 0 ? 'text-green-700' : 'text-gray-400'}">${p > 0 ? '+ ' + pFormatted : '0,00 €'}</span>`;
                 } else {
                     rightStatHtml = `<span class="text-xs sm:text-sm font-bold text-green-700">+ ${roundedDist} km</span>`;
                 }
