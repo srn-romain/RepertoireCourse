@@ -218,7 +218,7 @@
                 accentText: 'text-amber-800'
             },
             badgeIds: [
-                'collection_de_favoris', 'hors_frontieres', 'bibliotheque_vivante', 'marathonien_de_volume', 'sommet_de_denivele', 'le_demi_cent',
+                'collection_de_favoris', 'conquerant_des_departements', 'bibliotheque_vivante', 'marathonien_de_volume', 'sommet_de_denivele', 'le_demi_cent',
                 'le_grand_millier', 'format_endurance_extreme', 'le_cap_des_100_ultra', 'reine_des_montees', 'garde_des_souvenirs', 'grand_explorateur_mondial'
             ]
         }
@@ -1119,13 +1119,13 @@
             icon: 'fa-star-and-crescent',
             description: 'Avoir 10 courses favorites avec note détaillée et tracé GPX.'
         },
-        hors_frontieres: {
-            id: 'hors_frontieres',
+        conquerant_des_departements: {
+            id: 'conquerant_des_departements',
             level: 10,
             xp: 80,
-            name: 'Hors frontières',
-            icon: 'fa-earth-americas',
-            description: 'Enregistrer au moins 1 course officielle terminée hors de France.'
+            name: 'Cap des 8 départements',
+            icon: 'fa-map-location-dot',
+            description: 'Avoir couru dans au moins 8 départements français distincts.'
         },
         bibliotheque_vivante: {
             id: 'bibliotheque_vivante',
@@ -1203,9 +1203,9 @@
             id: 'grand_explorateur_mondial',
             level: 10,
             xp: 160,
-            name: 'Globe-trotteur',
-            icon: 'fa-globe',
-            description: 'Avoir couru dans au moins 2 pays différents ou dans 10 départements distincts.'
+            name: 'Grand explorateur',
+            icon: 'fa-map-location-dot',
+            description: 'Avoir couru dans au moins 10 départements français distincts.'
         }
     };
 
@@ -2058,25 +2058,6 @@
             return parseTimeToSeconds(race.time || race.duration || race.chrono) || 0;
         }
 
-        function isForeignCountryRace(race) {
-            if (!race) return false;
-            if (race.isInternational === true) return true;
-            if (race.country && typeof race.country === 'string') {
-                const c = race.country.trim().toLowerCase();
-                if (c !== '' && !['france', 'fr', 'métropole', 'metropole', 'hexagone', 'française', 'dom-tom', 'guadeloupe', 'martinique', 'réunion', 'reunion', 'mayotte', 'guyane'].includes(c)) {
-                    return true;
-                }
-            }
-            const loc = ((race.location || '') + ' ' + (race.city || '') + ' ' + (race.country || '')).toLowerCase();
-            const foreignKeywords = [
-                'suisse', 'switzerland', 'belgique', 'belgium', 'espagne', 'spain', 'italie', 'italy', 'allemagne', 'germany',
-                'portugal', 'royaume-uni', 'angleterre', 'uk', 'united kingdom', 'london', 'londres', 'maroc', 'morocco',
-                'etats-unis', 'usa', 'united states', 'new york', 'boston', 'chicago', 'canada', 'quebec', 'montreal',
-                'luxembourg', 'pays-bas', 'netherlands', 'amsterdam', 'autriche', 'austria', 'monaco', 'andorre', 'andorra', 'japon', 'tokyo'
-            ];
-            return foreignKeywords.some(k => loc.includes(k));
-        }
-
         function isUltraCompleteRace(r) {
             return hasRacePhoto(r) && hasRaceGpx(r) && hasRaceNote(r) && hasAnyRaceRanking(r) && hasRaceDrive(r);
         }
@@ -2093,7 +2074,6 @@
         const perfectRacesCount = racesList.filter(isPerfectRace).length;
         const gpxAndNoteCount = racesList.filter(r => hasRaceGpx(r) && hasRaceNote(r)).length;
         const favGpxAndNoteCount = racesList.filter(r => (r.favorite || r.isFavorite || r.starred) && hasRaceGpx(r) && hasRaceNote(r)).length;
-        const hasInternationalRace = racesList.some(isForeignCountryRace);
         const marathonRacesCount = raceMetrics.filter(m => m.dist >= 41.8).length;
         const thirtyKmRacesCount = raceMetrics.filter(m => m.dist >= 29.8).length;
 
@@ -2453,9 +2433,9 @@
                             unlockedBadges.collection_de_favoris.unlocked = true;
                             unlockedBadges.collection_de_favoris.races = racesList.filter(r => (r.favorite || r.isFavorite || r.starred) && hasRaceGpx(r) && hasRaceNote(r));
                         }
-                        if (hasInternationalRace) {
-                            unlockedBadges.hors_frontieres.unlocked = true;
-                            unlockedBadges.hors_frontieres.races = racesList.filter(isForeignCountryRace);
+                        if (uniqueDepartments.size >= 8) {
+                            unlockedBadges.conquerant_des_departements.unlocked = true;
+                            unlockedBadges.conquerant_des_departements.races = [...eligibleRaces];
                         }
                         if (gpxAndNoteCount >= 25) {
                             unlockedBadges.bibliotheque_vivante.unlocked = true;
@@ -2488,13 +2468,9 @@
                                 unlockedBadges.garde_des_souvenirs.races = photoAndGpxRaces;
                             }
                         }
-                        {
-                            const foreignRaces = racesList.filter(isForeignCountryRace);
-                            const totalCountries = new Set(racesList.map(r => (r.country || 'france').trim().toLowerCase())).size;
-                            if (foreignRaces.length >= 2 || totalCountries >= 2 || uniqueDepartments.size >= 10) {
-                                unlockedBadges.grand_explorateur_mondial.unlocked = true;
-                                unlockedBadges.grand_explorateur_mondial.races = [...eligibleRaces];
-                            }
+                        if (uniqueDepartments.size >= 10) {
+                            unlockedBadges.grand_explorateur_mondial.unlocked = true;
+                            unlockedBadges.grand_explorateur_mondial.races = [...eligibleRaces];
                         }
                         raceMetrics.forEach(m => {
                             if (m.dist >= 99.8) markBadgeUnlocked('le_cap_des_100_ultra', m.race);

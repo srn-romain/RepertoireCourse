@@ -151,7 +151,7 @@ function evaluateWithBaseUnlock(extraRaces = [], extraStorage = {}) {
                 categoryRank: '1',
                 participants: '50',
                 isPublic: true,
-                country: (idx % 3 === 0 ? 'Italie' : 'France'),
+                country: 'France',
                 location: 'Ville_' + (idx % 8) + ' (' + (69 + (idx % 8)) + ')',
                 terrain: terrain,
                 raceFormat: (r === 3 || r === 5 ? 'team' : 'single'),
