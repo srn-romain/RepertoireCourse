@@ -1097,9 +1097,9 @@
             id: 'triple_epreuve_5h',
             level: 9,
             xp: 210,
-            name: 'Maître de l\'endurance 5h',
+            name: 'Triple épreuve 5h',
             icon: 'fa-stopwatch-20',
-            description: 'Avoir terminé au moins 2 épreuves d\'une durée supérieure à 5 heures.'
+            description: 'Avoir terminé au moins 3 épreuves d\'une durée supérieure à 5 heures.'
         },
         arsenal_complet: {
             id: 'arsenal_complet',
