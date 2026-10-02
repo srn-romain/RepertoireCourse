@@ -30,7 +30,9 @@
         };
         window.addEventListener('resize', onResize);
 
-        const colors = ['#10B981', '#059669', '#34D399', '#F59E0B', '#FBBF24', '#3B82F6', '#6366F1', '#EC4899', '#8B5CF6'];
+        const colors = (typeof window.getThemeConfettiColors === 'function') 
+            ? window.getThemeConfettiColors() 
+            : ['#10B981', '#059669', '#34D399', '#F59E0B', '#FBBF24', '#3B82F6', '#6366F1', '#EC4899', '#8B5CF6'];
         const particles = [];
         const endTime = Date.now() + (durationSeconds * 1000);
         let animationFrameId = null;
@@ -130,7 +132,9 @@
         // Si canvas-confetti est disponible
         if (typeof window.confetti === 'function') {
             const end = Date.now() + (safeDuration * 1000);
-            const colors = ['#10B981', '#059669', '#34D399', '#F59E0B', '#FBBF24', '#3B82F6', '#6366F1', '#EC4899', '#8B5CF6'];
+            const colors = (typeof window.getThemeConfettiColors === 'function')
+                ? window.getThemeConfettiColors()
+                : ['#10B981', '#059669', '#34D399', '#F59E0B', '#FBBF24', '#3B82F6', '#6366F1', '#EC4899', '#8B5CF6'];
 
             (function frame() {
                 // Jet depuis la gauche traversant vers la droite

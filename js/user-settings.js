@@ -61,6 +61,104 @@ const userSettingsModalHTML = `
 
             <hr class="border-gray-100">
 
+            <!-- Couleur de fond & Thème -->
+            <div>
+                <div class="flex items-center justify-between mb-1.5">
+                    <h3 class="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                        <i class="fas fa-palette text-green-600"></i>
+                        <span>Couleur de fond</span>
+                    </h3>
+                    <span id="activeThemeBadge" class="text-xs px-2.5 py-0.5 rounded-full font-semibold bg-green-100 text-green-800 border border-green-200 transition-all">
+                        Vert Émeraude
+                    </span>
+                </div>
+                <p class="text-xs text-gray-500 mb-3">Sélectionnez une ambiance sobre pour adapter le fond, les boutons, les labels et les confettis.</p>
+                
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 bg-gray-50 p-3 rounded-xl border border-gray-200">
+                    <button type="button" onclick="window.selectUserTheme('green')" data-theme="green" class="theme-select-btn p-2 rounded-lg border-2 border-transparent bg-white hover:border-gray-300 transition-all flex items-center gap-2 shadow-xs cursor-pointer text-left group">
+                        <span class="w-5 h-5 rounded-full shrink-0 shadow-inner flex items-center justify-center text-[10px] text-white" style="background-color: #16a34a;">
+                            <i class="fas fa-check opacity-0 theme-check"></i>
+                        </span>
+                        <div class="min-w-0 flex-1">
+                            <span class="block text-xs font-semibold text-gray-800 truncate">Vert</span>
+                            <span class="block text-[10px] text-gray-400 truncate">Émeraude</span>
+                        </div>
+                    </button>
+
+                    <button type="button" onclick="window.selectUserTheme('blue')" data-theme="blue" class="theme-select-btn p-2 rounded-lg border-2 border-transparent bg-white hover:border-gray-300 transition-all flex items-center gap-2 shadow-xs cursor-pointer text-left group">
+                        <span class="w-5 h-5 rounded-full shrink-0 shadow-inner flex items-center justify-center text-[10px] text-white" style="background-color: #2563eb;">
+                            <i class="fas fa-check opacity-0 theme-check"></i>
+                        </span>
+                        <div class="min-w-0 flex-1">
+                            <span class="block text-xs font-semibold text-gray-800 truncate">Bleu</span>
+                            <span class="block text-[10px] text-gray-400 truncate">Océan</span>
+                        </div>
+                    </button>
+
+                    <button type="button" onclick="window.selectUserTheme('indigo')" data-theme="indigo" class="theme-select-btn p-2 rounded-lg border-2 border-transparent bg-white hover:border-gray-300 transition-all flex items-center gap-2 shadow-xs cursor-pointer text-left group">
+                        <span class="w-5 h-5 rounded-full shrink-0 shadow-inner flex items-center justify-center text-[10px] text-white" style="background-color: #4f46e5;">
+                            <i class="fas fa-check opacity-0 theme-check"></i>
+                        </span>
+                        <div class="min-w-0 flex-1">
+                            <span class="block text-xs font-semibold text-gray-800 truncate">Indigo</span>
+                            <span class="block text-[10px] text-gray-400 truncate">Nuit</span>
+                        </div>
+                    </button>
+
+                    <button type="button" onclick="window.selectUserTheme('teal')" data-theme="teal" class="theme-select-btn p-2 rounded-lg border-2 border-transparent bg-white hover:border-gray-300 transition-all flex items-center gap-2 shadow-xs cursor-pointer text-left group">
+                        <span class="w-5 h-5 rounded-full shrink-0 shadow-inner flex items-center justify-center text-[10px] text-white" style="background-color: #0d9488;">
+                            <i class="fas fa-check opacity-0 theme-check"></i>
+                        </span>
+                        <div class="min-w-0 flex-1">
+                            <span class="block text-xs font-semibold text-gray-800 truncate">Sarcelle</span>
+                            <span class="block text-[10px] text-gray-400 truncate">Lagon</span>
+                        </div>
+                    </button>
+
+                    <button type="button" onclick="window.selectUserTheme('amber')" data-theme="amber" class="theme-select-btn p-2 rounded-lg border-2 border-transparent bg-white hover:border-gray-300 transition-all flex items-center gap-2 shadow-xs cursor-pointer text-left group">
+                        <span class="w-5 h-5 rounded-full shrink-0 shadow-inner flex items-center justify-center text-[10px] text-white" style="background-color: #d97706;">
+                            <i class="fas fa-check opacity-0 theme-check"></i>
+                        </span>
+                        <div class="min-w-0 flex-1">
+                            <span class="block text-xs font-semibold text-gray-800 truncate">Ambre</span>
+                            <span class="block text-[10px] text-gray-400 truncate">Chaud</span>
+                        </div>
+                    </button>
+
+                    <button type="button" onclick="window.selectUserTheme('rose')" data-theme="rose" class="theme-select-btn p-2 rounded-lg border-2 border-transparent bg-white hover:border-gray-300 transition-all flex items-center gap-2 shadow-xs cursor-pointer text-left group">
+                        <span class="w-5 h-5 rounded-full shrink-0 shadow-inner flex items-center justify-center text-[10px] text-white" style="background-color: #e11d48;">
+                            <i class="fas fa-check opacity-0 theme-check"></i>
+                        </span>
+                        <div class="min-w-0 flex-1">
+                            <span class="block text-xs font-semibold text-gray-800 truncate">Rose</span>
+                            <span class="block text-[10px] text-gray-400 truncate">Boisé</span>
+                        </div>
+                    </button>
+
+                    <button type="button" onclick="window.selectUserTheme('purple')" data-theme="purple" class="theme-select-btn p-2 rounded-lg border-2 border-transparent bg-white hover:border-gray-300 transition-all flex items-center gap-2 shadow-xs cursor-pointer text-left group">
+                        <span class="w-5 h-5 rounded-full shrink-0 shadow-inner flex items-center justify-center text-[10px] text-white" style="background-color: #9333ea;">
+                            <i class="fas fa-check opacity-0 theme-check"></i>
+                        </span>
+                        <div class="min-w-0 flex-1">
+                            <span class="block text-xs font-semibold text-gray-800 truncate">Pourpre</span>
+                            <span class="block text-[10px] text-gray-400 truncate">Royal</span>
+                        </div>
+                    </button>
+
+                    <button type="button" onclick="window.selectUserTheme('slate')" data-theme="slate" class="theme-select-btn p-2 rounded-lg border-2 border-transparent bg-white hover:border-gray-300 transition-all flex items-center gap-2 shadow-xs cursor-pointer text-left group">
+                        <span class="w-5 h-5 rounded-full shrink-0 shadow-inner flex items-center justify-center text-[10px] text-white" style="background-color: #475569;">
+                            <i class="fas fa-check opacity-0 theme-check"></i>
+                        </span>
+                        <div class="min-w-0 flex-1">
+                            <span class="block text-xs font-semibold text-gray-800 truncate">Ardoise</span>
+                            <span class="block text-[10px] text-gray-400 truncate">Zinc</span>
+                        </div>
+                    </button>
+                </div>
+            </div>
+
+            <hr class="border-gray-100">
+
             <!-- Confidentialité et visibilité du carnet -->
             <div>
                 <h3 class="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
@@ -437,6 +535,46 @@ async function initSettingsLogic() {
     const prefHideWishlistBtn = document.getElementById('prefHideWishlistBtn');
 
     let currentSelectedPrivacyLevel = 2;
+
+    // Gestion du sélecteur de couleur / thème
+    function updateThemeSelectorUI(activeThemeKey) {
+        const key = activeThemeKey || window.currentThemeColor || localStorage.getItem('userThemeColor') || 'green';
+        const badge = document.getElementById('activeThemeBadge');
+        const palettes = window.THEME_PALETTES || {};
+        const palette = palettes[key] || palettes.green;
+
+        if (badge && palette) {
+            badge.textContent = palette.name;
+        }
+
+        const buttons = document.querySelectorAll('.theme-select-btn');
+        buttons.forEach(btn => {
+            const btnTheme = btn.getAttribute('data-theme');
+            const check = btn.querySelector('.theme-check');
+            if (btnTheme === key) {
+                btn.className = "theme-select-btn p-2 rounded-lg border-2 border-green-600 ring-2 ring-green-500/20 bg-green-50/50 transition-all flex items-center gap-2 shadow-xs cursor-pointer text-left group";
+                if (check) check.classList.remove('opacity-0');
+            } else {
+                btn.className = "theme-select-btn p-2 rounded-lg border-2 border-transparent bg-white hover:border-gray-300 transition-all flex items-center gap-2 shadow-xs cursor-pointer text-left group";
+                if (check) check.classList.add('opacity-0');
+            }
+        });
+    }
+
+    window.updateThemeSelectorUI = updateThemeSelectorUI;
+
+    window.selectUserTheme = function (themeKey) {
+        if (typeof window.applyThemeColor === 'function') {
+            window.applyThemeColor(themeKey, true);
+        }
+        updateThemeSelectorUI(themeKey);
+    };
+
+    window.addEventListener('themeChanged', (e) => {
+        if (e.detail && e.detail.themeKey) {
+            updateThemeSelectorUI(e.detail.themeKey);
+        }
+    });
 
     // Mise à jour de l'affichage UI selon le niveau de confidentialité
     function updatePrivacyUI(level) {
@@ -1059,6 +1197,15 @@ async function initSettingsLogic() {
                     pseudoInput.value = data.pseudo;
                 }
 
+                // Theme color preference
+                if (data.themeColor) {
+                    if (typeof window.applyThemeColor === 'function') {
+                        window.applyThemeColor(data.themeColor, false);
+                    }
+                    localStorage.setItem('userThemeColor', data.themeColor);
+                }
+                updateThemeSelectorUI(data.themeColor || localStorage.getItem('userThemeColor') || 'green');
+
                 checkAllDetailsHiddenSuggestion();
             }
         } catch (e) {
@@ -1421,14 +1568,29 @@ window.openUserSettings = async function () {
 
             if (prefHideStatsBtn) prefHideStatsBtn.checked = (ui.hideStatsBtn === true) || (ui.showStatsBtn === false);
             if (prefHideBadgesBtn) prefHideBadgesBtn.checked = (ui.hideBadgesBtn === true) || (ui.showBadgesBtn === false);
-            if (prefHideWishlistBtn) prefHideWishlistBtn.checked = (ui.hideWishlistBtn === true) || (ui.showWishlistBtn === false);
+            // Theme color preference
+            if (data && data.themeColor) {
+                if (typeof window.applyThemeColor === 'function') {
+                    window.applyThemeColor(data.themeColor, false);
+                }
+                localStorage.setItem('userThemeColor', data.themeColor);
+            }
+            if (typeof updateThemeSelectorUI === 'function') {
+                updateThemeSelectorUI(data?.themeColor || localStorage.getItem('userThemeColor') || 'green');
+            }
 
         } else {
             if (pseudoInput) pseudoInput.value = "";
+            if (typeof updateThemeSelectorUI === 'function') {
+                updateThemeSelectorUI(localStorage.getItem('userThemeColor') || 'green');
+            }
         }
     } catch (e) {
         console.error(e);
         if (pseudoInput) pseudoInput.value = "";
+        if (typeof updateThemeSelectorUI === 'function') {
+            updateThemeSelectorUI(localStorage.getItem('userThemeColor') || 'green');
+        }
     }
 
     // Injecter le formulaire d'avis si disponible
