@@ -146,21 +146,21 @@
     </div>
     <div class="container mx-auto px-4 py-8">
         <!-- Header -->
-        <header class="flex flex-col 2xl:flex-row justify-between items-center mb-8 gap-4">
-            <div class="w-full 2xl:w-auto text-center 2xl:text-left">
+        <header class="flex flex-col min-[1650px]:flex-row justify-between items-center mb-8 gap-4">
+            <div class="w-full min-[1650px]:w-auto text-center min-[1650px]:text-left">
                 <a href="index.html" class="inline-block hover:opacity-80 transition">
                     <h1 class="text-3xl md:text-4xl font-bold text-green-800">📊 Carnet de courses</h1>
                 </a>
                 <div id="statsText"
-                    class="text-green-600 text-sm flex items-center justify-center 2xl:justify-start gap-2 py-1">
+                    class="text-green-600 text-sm flex items-center justify-center min-[1650px]:justify-start gap-2 py-1">
                     <i class="fas fa-spinner fa-spin text-green-600"></i>
                     <span>Chargement des statistiques...</span>
                 </div>
             </div>
-            <div class="w-full 2xl:w-auto">
-                <div class="flex flex-col sm:flex-row sm:flex-wrap items-center justify-center 2xl:justify-end gap-2 sm:gap-2.5 w-full 2xl:w-auto">
+            <div class="w-full min-[1650px]:w-auto">
+                <div class="flex flex-col sm:flex-row sm:flex-nowrap items-center justify-center min-[1650px]:justify-end gap-2 sm:gap-2.5 w-full min-[1650px]:w-auto">
                     <button id="wishlistBtn"
-                        class="h-10 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-full transition shadow-sm hover:shadow flex items-center justify-center w-full sm:w-auto shrink-0">
+                        class="h-10 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-full transition shadow-sm hover:shadow flex items-center justify-center w-full sm:w-auto whitespace-nowrap shrink-0">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1.5 shrink-0" viewBox="0 0 20 20"
                             fill="currentColor">
                             <path fill-rule="evenodd"
@@ -179,7 +179,7 @@
                         <i class="fas fa-award mr-2 text-xs shrink-0"></i> <span>Badges</span>
                     </button>
                     <button id="addRaceBtn"
-                        class="h-10 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-full transition shadow-sm hover:shadow flex items-center justify-center w-full sm:w-auto shrink-0">
+                        class="h-10 px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-full transition shadow-sm hover:shadow flex items-center justify-center w-full sm:w-auto whitespace-nowrap shrink-0">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1.5 shrink-0" viewBox="0 0 20 20"
                             fill="currentColor">
                             <path fill-rule="evenodd"
@@ -3478,7 +3478,7 @@
             `;
 
             statsElement.innerHTML = statsHtml;
-            statsElement.className = "stats-loaded text-green-600 text-sm md:text-base flex flex-wrap items-center justify-center 2xl:justify-start gap-x-3 gap-y-1";
+            statsElement.className = "stats-loaded text-green-600 text-sm md:text-base flex flex-wrap items-center justify-center min-[1650px]:justify-start gap-x-3 gap-y-1";
             // Ajout du hover JS si besoin (pour compatibilité)
             const priceStat = document.getElementById('totalPriceStat');
             if (priceStat) {
