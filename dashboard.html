@@ -3830,6 +3830,13 @@
             });
         }
 
+        // Helper : formater le titre d'une course (majuscule au début et après chaque espace)
+        function formatRaceTitle(str) {
+            if (!str || typeof str !== 'string') return '';
+            return str.replace(/(?:^|\s)\S/g, char => char.toUpperCase());
+        }
+        window.formatRaceTitle = formatRaceTitle;
+
         // DOM Elements
         const racesContainer = document.getElementById('racesContainer');
         const searchInput = document.getElementById('searchInput');
@@ -4143,7 +4150,7 @@
             // Pré-remplissage si données fournies
             if (prefillData) {
                 const nameInput = document.getElementById('raceName');
-                nameInput.value = prefillData.name || '';
+                nameInput.value = prefillData.name ? formatRaceTitle(prefillData.name) : '';
                 // Déclencher l'input event pour masquer les erreurs
                 nameInput.dispatchEvent(new Event('input'));
 
@@ -6108,7 +6115,7 @@
             });
 
             document.getElementById('raceId').value = race.id || '';
-            document.getElementById('raceName').value = race.name || '';
+            document.getElementById('raceName').value = race.name ? formatRaceTitle(race.name) : '';
             document.getElementById('raceDate').value = race.date || '';
             document.getElementById('raceHour').value = race.hour || '';
             document.getElementById('raceDistance').value = (race.distance !== undefined && race.distance !== null) ? race.distance : '';
@@ -6374,7 +6381,8 @@
             }
 
             const id = document.getElementById('raceId').value;
-            const name = document.getElementById('raceName').value;
+            const name = formatRaceTitle(document.getElementById('raceName').value.trim());
+            document.getElementById('raceName').value = name;
             const date = document.getElementById('raceDate').value;
             const hour = document.getElementById('raceHour').value;
             const distance = parseFloat(document.getElementById('raceDistance').value);
@@ -9293,7 +9301,7 @@
         // Note: La fonction updateTimeFieldState est définie plus haut (vers ligne 4230)
         // et l'écouteur d'événement sur raceDate est également configuré là-bas.
 
-        // Masquer les messages d'erreur quand l'utilisateur commence à remplir les champs
+        // Masquer les messages d'erreur et formater le titre (majuscule après chaque espace)
         const raceNameInput = document.getElementById('raceName');
         const raceNameError = document.getElementById('raceNameError');
         const raceDateError = document.getElementById('raceDateError');
@@ -9302,6 +9310,19 @@
             if (this.value.trim() !== '') {
                 raceNameError.classList.add('hidden');
             }
+            const start = this.selectionStart;
+            const end = this.selectionEnd;
+            const formatted = formatRaceTitle(this.value);
+            if (formatted !== this.value) {
+                this.value = formatted;
+                if (start !== null && end !== null) {
+                    this.setSelectionRange(start, end);
+                }
+            }
+        });
+
+        raceNameInput.addEventListener('blur', function () {
+            this.value = formatRaceTitle(this.value.trim());
         });
 
         raceDateInput.addEventListener('input', function () {

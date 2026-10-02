@@ -77,8 +77,12 @@
                     class="px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-sm rounded-full transition hidden">
                     S'inscrire
                 </button>
+                <a href="dashboard.html" id="goToDashboardBtn"
+                    class="px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-sm rounded-full transition hidden items-center gap-1">
+                    <i class="fas fa-chart-line mr-1"></i> Accéder au carnet
+                </a>
                 <button id="disconnectBtn"
-                    class="px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-sm rounded-full transition hidden">
+                    class="px-3 py-1 bg-green-800 hover:bg-green-900 text-white text-sm rounded-full transition hidden">
                     Se déconnecter
                 </button>
             </div>
@@ -1682,6 +1686,7 @@
 
                 // Boutons de la barre de statut
                 const disconnectBtn = document.getElementById('disconnectBtn');
+                const goToDashboardBtn = document.getElementById('goToDashboardBtn');
                 const connectBtn = document.getElementById('connectBtn');
                 const barSignupBtn = document.getElementById('barSignupBtn');
 
@@ -1762,6 +1767,10 @@
                     }
 
                     // Gestion boutons barre
+                    if (goToDashboardBtn) {
+                        goToDashboardBtn.classList.remove('hidden');
+                        goToDashboardBtn.classList.add('inline-flex');
+                    }
                     if (disconnectBtn) {
                         disconnectBtn.classList.remove('hidden');
                         disconnectBtn.onclick = async () => {
@@ -1804,6 +1813,10 @@
                     if (authStatusText) authStatusText.innerHTML = `<span class="italic font-normal text-gray-600 mr-2">Vous n'êtes pas connecté</span>`;
 
                     // Gestion boutons barre
+                    if (goToDashboardBtn) {
+                        goToDashboardBtn.classList.add('hidden');
+                        goToDashboardBtn.classList.remove('inline-flex');
+                    }
                     if (disconnectBtn) disconnectBtn.classList.add('hidden');
                     if (connectBtn) connectBtn.classList.remove('hidden');
                     if (barSignupBtn) barSignupBtn.classList.remove('hidden');
