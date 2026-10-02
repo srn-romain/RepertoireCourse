@@ -3710,6 +3710,21 @@
         window.currentYearFilter = 'all';
         window.currentFavoritesFilter = false;
 
+        function updateFavoritesFilterUI() {
+            const isFav = !!(window.currentFavoritesFilter || currentFavoritesFilter);
+            const btn = document.getElementById('favoritesFilterBtn');
+            if (btn) {
+                if (isFav) {
+                    btn.classList.add('bg-yellow-600', 'text-white');
+                    btn.classList.remove('bg-yellow-100', 'text-yellow-800');
+                } else {
+                    btn.classList.remove('bg-yellow-600', 'text-white');
+                    btn.classList.add('bg-yellow-100', 'text-yellow-800');
+                }
+            }
+        }
+        window.updateFavoritesFilterUI = updateFavoritesFilterUI;
+
         // Filtrer par année, mettre à jour currentYearFilter, stats et affichage
         function filterRacesByYear(year) {
             currentYearFilter = year;
@@ -3724,8 +3739,10 @@
         }
 
         function filterRacesByFavorites(showFavorites) {
-            currentFavoritesFilter = showFavorites;
-            window.currentFavoritesFilter = showFavorites;
+            const isFav = !!showFavorites;
+            currentFavoritesFilter = isFav;
+            window.currentFavoritesFilter = isFav;
+            updateFavoritesFilterUI();
             if (typeof applyAdvancedFilters === 'function') {
                 applyAdvancedFilters();
             } else if (typeof window.applyAdvancedFilters === 'function') {
@@ -3756,16 +3773,18 @@
             }
 
             // Filtre par année
-            if (currentYearFilter !== 'all') {
+            const activeYear = window.currentYearFilter || currentYearFilter || 'all';
+            if (activeYear !== 'all') {
                 filteredRaces = filteredRaces.filter(race => {
+                    if (!race || !race.date) return false;
                     const raceDate = new Date(race.date);
-                    return raceDate.getFullYear().toString() === currentYearFilter;
+                    return raceDate.getFullYear().toString() === activeYear.toString();
                 });
             }
 
             // Filtre par favoris
-            if (currentFavoritesFilter) {
-                filteredRaces = filteredRaces.filter(race => race.favorite === true);
+            if (currentFavoritesFilter || window.currentFavoritesFilter) {
+                filteredRaces = filteredRaces.filter(race => race.favorite === true || race.favorite === 'true');
             }
 
             updateStats(filteredRaces);
@@ -3775,31 +3794,48 @@
 
         function generateYearFilters(races) {
             const yearFiltersContainer = document.getElementById('yearFilters');
+            if (!yearFiltersContainer) return;
             yearFiltersContainer.innerHTML = '';
+
+            const currentActiveYear = (window.currentYearFilter || currentYearFilter || 'all').toString();
+
+            // Extraire les années uniques des courses
+            const years = [...new Set(races.map(race => {
+                if (!race || !race.date) return null;
+                const date = new Date(race.date);
+                const y = date.getFullYear();
+                return isNaN(y) ? null : y;
+            }).filter(Boolean))];
+
+            // Trier les années par ordre décroissant (plus récentes d'abord)
+            years.sort((a, b) => b - a);
+
+            // Si l'année active n'existe plus dans la liste et n'est pas 'all', revenir à 'all'
+            const activeYearExists = currentActiveYear === 'all' || years.includes(parseInt(currentActiveYear, 10));
+            const finalActiveYear = activeYearExists ? currentActiveYear : 'all';
+            currentYearFilter = finalActiveYear;
+            window.currentYearFilter = finalActiveYear;
 
             // Toujours ajouter le filtre "Toutes"
             const allFilter = document.createElement('button');
             allFilter.className = 'year-filter px-3 py-1 rounded-full bg-green-100 text-green-800 hover:bg-green-200 transition';
             allFilter.dataset.year = 'all';
             allFilter.textContent = 'Toutes';
-            allFilter.classList.add('bg-green-600', 'text-white');
+            if (finalActiveYear === 'all') {
+                allFilter.classList.add('bg-green-600', 'text-white');
+            }
             yearFiltersContainer.appendChild(allFilter);
-
-            // Extraire les années uniques des courses
-            const years = [...new Set(races.map(race => {
-                const date = new Date(race.date);
-                return date.getFullYear();
-            }))];
-
-            // Trier les années par ordre décroissant (plus récentes d'abord)
-            years.sort((a, b) => b - a);
 
             // Créer un bouton pour chaque année
             years.forEach(year => {
+                const yearStr = year.toString();
                 const yearFilter = document.createElement('button');
                 yearFilter.className = 'year-filter px-3 py-1 rounded-full bg-green-100 text-green-800 hover:bg-green-200 transition';
-                yearFilter.dataset.year = year.toString();
-                yearFilter.textContent = year.toString();
+                yearFilter.dataset.year = yearStr;
+                yearFilter.textContent = yearStr;
+                if (finalActiveYear === yearStr) {
+                    yearFilter.classList.add('bg-green-600', 'text-white');
+                }
                 yearFiltersContainer.appendChild(yearFilter);
             });
 
@@ -3812,20 +3848,19 @@
                     filterRacesByYear(button.dataset.year);
                 });
             });
+
+            // Synchroniser l'état visuel du bouton favoris
+            updateFavoritesFilterUI();
         }
 
         // Event listener pour le filtre favoris
         const favoritesFilterBtn = document.getElementById('favoritesFilterBtn');
         if (favoritesFilterBtn) {
             favoritesFilterBtn.addEventListener('click', () => {
-                currentFavoritesFilter = !currentFavoritesFilter;
-                if (currentFavoritesFilter) {
-                    favoritesFilterBtn.classList.add('bg-yellow-600', 'text-white');
-                    favoritesFilterBtn.classList.remove('bg-yellow-100', 'text-yellow-800');
-                } else {
-                    favoritesFilterBtn.classList.remove('bg-yellow-600', 'text-white');
-                    favoritesFilterBtn.classList.add('bg-yellow-100', 'text-yellow-800');
-                }
+                const newState = !(window.currentFavoritesFilter || currentFavoritesFilter);
+                currentFavoritesFilter = newState;
+                window.currentFavoritesFilter = newState;
+                updateFavoritesFilterUI();
                 applyFilters();
             });
         }

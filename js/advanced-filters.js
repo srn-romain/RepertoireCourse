@@ -287,16 +287,19 @@
             }
 
             // Appliquer le filtre d'année si nécessaire
-            if (typeof window.currentYearFilter !== 'undefined' && window.currentYearFilter !== 'all') {
+            const activeYearFilter = window.currentYearFilter || (typeof currentYearFilter !== 'undefined' ? currentYearFilter : 'all');
+            if (activeYearFilter && activeYearFilter !== 'all') {
                 filteredRaces = filteredRaces.filter(race => {
+                    if (!race || !race.date) return false;
                     const raceDate = new Date(race.date);
-                    return raceDate.getFullYear().toString() === window.currentYearFilter;
+                    return raceDate.getFullYear().toString() === activeYearFilter.toString();
                 });
             }
 
             // Appliquer le filtre de favoris si nécessaire
-            if (typeof window.currentFavoritesFilter !== 'undefined' && window.currentFavoritesFilter) {
-                filteredRaces = filteredRaces.filter(race => race.favorite === true);
+            const isFavFilterActive = !!(window.currentFavoritesFilter || (typeof currentFavoritesFilter !== 'undefined' && currentFavoritesFilter));
+            if (isFavFilterActive) {
+                filteredRaces = filteredRaces.filter(race => race.favorite === true || race.favorite === 'true');
             }
 
             console.log(`[advanced-filters] Total: ${window.races.length} → ${filteredRaces.length} courses`);
