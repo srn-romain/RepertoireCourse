@@ -92,7 +92,7 @@ levels.forEach(lvl => {
                     categoryRank: '1',
                     terrain: terrain,
                     raceFormat: (r === 3 || r === 5 ? 'team' : 'single'),
-                    relayLaps: (r === 3 || r === 5 ? Array.from({ length: 20 }, (_, i) => ({ distance: '5 km', time: '00:25:00', runner: 'Coureur ' + (i + 1) })) : []),
+                    relayLaps: (r === 3 || r === 5 ? Array.from({ length: 25 }, (_, i) => ({ distance: '5 km', time: '00:25:00', runner: 'Coureur ' + (i + 1) })) : []),
                     bibNumber: '999',
                     price: '12',
                     gpx: 'track.gpx',

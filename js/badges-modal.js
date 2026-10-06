@@ -177,7 +177,7 @@
             },
             badgeIds: [
                 'grand_chelem_annuel', 'explorateur_regional', 'traceur_regulier', 'pilier_dequipe', 'mois_intense', 'quart_de_cent',
-                'le_cap_des_400', 'tete_de_peloton', 'entree_dans_lultra', 'haute_altitude', 'relais_20_etapes', 'tour_de_france_des_courses'
+                'le_cap_des_400', 'tete_de_peloton', 'entree_dans_lultra', 'haute_altitude', 'relais_25_etapes', 'tour_de_france_des_courses'
             ]
         },
         {
@@ -995,13 +995,13 @@
             icon: 'fa-mountain-sun',
             description: 'Terminer une course avec au moins 2 500 m de D+.'
         },
-        relais_20_etapes: {
-            id: 'relais_20_etapes',
+        relais_25_etapes: {
+            id: 'relais_25_etapes',
             level: 8,
             xp: 180,
             name: 'Relais XXL',
             icon: 'fa-people-group',
-            description: 'Enregistrer une course en relais avec au moins 20 étapes de relais.'
+            description: 'Enregistrer une course en relais avec au moins 25 étapes de relais.'
         },
         tour_de_france_des_courses: {
             id: 'tour_de_france_des_courses',
@@ -2371,7 +2371,7 @@
                             if (m.dist >= 49.8) markBadgeUnlocked('entree_dans_lultra', m.race);
                             if (m.elev >= 2500) markBadgeUnlocked('haute_altitude', m.race);
                             const relayLapsCount = (Array.isArray(m.race.relayLaps) ? m.race.relayLaps.length : (Array.isArray(m.race.relaySegments) ? m.race.relaySegments.length : 0));
-                            if (relayLapsCount >= 20) markBadgeUnlocked('relais_20_etapes', m.race);
+                            if (relayLapsCount >= 25) markBadgeUnlocked('relais_25_etapes', m.race);
                         });
                         break;
 

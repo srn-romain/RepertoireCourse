@@ -275,7 +275,7 @@ function evaluateWithBaseUnlock(extraRaces = [], extraStorage = {}) {
     assert(res.unlockedBadges.peloton_dami.unlocked, "peloton_dami doit être DÉBLOQUÉ avec 5 amis");
 }
 
-// Test : relais_20_etapes (relais avec ≥ 20 étapes de relais)
+// Test : relais_25_etapes (relais avec ≥ 25 étapes de relais)
 {
     // 1. Sans étapes de relais
     let extra = [{
@@ -288,44 +288,41 @@ function evaluateWithBaseUnlock(extraRaces = [], extraStorage = {}) {
         relayLaps: []
     }];
     let res = evaluateWithBaseUnlock(extra);
-    assert(!res.unlockedBadges.relais_20_etapes.unlocked, "relais_20_etapes doit être VERROUILLÉ avec 0 étape de relais");
+    assert(!res.unlockedBadges.relais_25_etapes.unlocked, "relais_25_etapes doit être VERROUILLÉ avec 0 étape de relais");
 
-    // 2. Avec 19 étapes (strictement inférieur au seuil de 20)
-    extra[0].relayLaps = Array.from({ length: 19 }, (_, i) => ({
+    // 2. Avec 24 étapes (strictement inférieur au seuil de 25)
+    extra[0].relayLaps = Array.from({ length: 24 }, (_, i) => ({
         distance: '2 km',
         time: '00:10:00',
         runner: 'Coureur ' + (i + 1)
     }));
     res = evaluateWithBaseUnlock(extra);
-    assert(!res.unlockedBadges.relais_20_etapes.unlocked, "relais_20_etapes doit être VERROUILLÉ avec 19 étapes de relais");
+    assert(!res.unlockedBadges.relais_25_etapes.unlocked, "relais_25_etapes doit être VERROUILLÉ avec 24 étapes de relais");
 
-    // 3. Avec exactement 20 étapes (seuil atteint)
-    extra[0].relayLaps.push({ distance: '2 km', time: '00:10:00', runner: 'Coureur 20' });
+    // 3. Avec exactement 25 étapes (seuil atteint)
+    extra[0].relayLaps.push({ distance: '2 km', time: '00:10:00', runner: 'Coureur 25' });
     res = evaluateWithBaseUnlock(extra);
-    assert(res.unlockedBadges.relais_20_etapes.unlocked, "relais_20_etapes doit être DÉBLOQUÉ avec exactement 20 étapes de relais");
-    assert(res.unlockedBadges.relais_20_etapes.races.some(r => r.id === 'relay_0_laps'), "relais_20_etapes doit référencer la course correspondante");
+    assert(res.unlockedBadges.relais_25_etapes.unlocked, "relais_25_etapes doit être DÉBLOQUÉ avec exactement 25 étapes de relais");
+    assert(res.unlockedBadges.relais_25_etapes.races.some(r => r.id === 'relay_0_laps'), "relais_25_etapes doit référencer la course correspondante");
 
-    // 4. Avec plus de 20 étapes (ex: 24 étapes)
-    extra[0].relayLaps.push(
-        { distance: '2 km', time: '00:10:00', runner: 'Coureur 21' },
-        { distance: '2 km', time: '00:10:00', runner: 'Coureur 22' },
-        { distance: '2 km', time: '00:10:00', runner: 'Coureur 23' },
-        { distance: '2 km', time: '00:10:00', runner: 'Coureur 24' }
-    );
+    // 4. Avec plus de 25 étapes (ex: 30 étapes)
+    for (let i = 26; i <= 30; i++) {
+        extra[0].relayLaps.push({ distance: '2 km', time: '00:10:00', runner: 'Coureur ' + i });
+    }
     res = evaluateWithBaseUnlock(extra);
-    assert(res.unlockedBadges.relais_20_etapes.unlocked, "relais_20_etapes doit rester DÉBLOQUÉ avec 24 étapes de relais");
+    assert(res.unlockedBadges.relais_25_etapes.unlocked, "relais_25_etapes doit rester DÉBLOQUÉ avec 30 étapes de relais");
 
-    // 5. Avec relaySegments (format alternatif) de 20 segments
+    // 5. Avec relaySegments (format alternatif) de 25 segments
     let extraSegments = [{
         id: 'relay_segments_test',
         date: '2024-01-01',
         distance: '42 km',
         time: '03:30:00',
         terrain: 'relai',
-        relaySegments: Array.from({ length: 20 }, (_, i) => ({ distance: '2 km', time: '00:10:00' }))
+        relaySegments: Array.from({ length: 25 }, (_, i) => ({ distance: '2 km', time: '00:10:00' }))
     }];
     let resSegments = evaluateWithBaseUnlock(extraSegments);
-    assert(resSegments.unlockedBadges.relais_20_etapes.unlocked, "relais_20_etapes doit être DÉBLOQUÉ avec relaySegments >= 20");
+    assert(resSegments.unlockedBadges.relais_25_etapes.unlocked, "relais_25_etapes doit être DÉBLOQUÉ avec relaySegments >= 25");
 }
 
 console.log('   ✅ Tests métiers & négatifs passés avec succès.\n');
@@ -375,7 +372,7 @@ for (let m = 1; m <= 12; m++) {
         if (r === 5) terrain = 'trail relai';
 
         const isRelay = (r === 3 || r === 5);
-        const relayLapsList = isRelay ? Array.from({ length: 20 }, (_, i) => ({
+        const relayLapsList = isRelay ? Array.from({ length: 25 }, (_, i) => ({
             distance: '5 km',
             time: '00:25:00',
             runner: 'Coureur ' + (i + 1)
