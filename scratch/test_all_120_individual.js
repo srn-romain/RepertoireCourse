@@ -56,6 +56,7 @@ for (let i = 0; i < 55; i++) {
         categoryRank: '1',
         terrain: (i % 2 === 0 ? 'trail' : 'route') + (i % 5 === 0 ? ' relai' : '') + (i % 7 === 0 ? ' triathlon' : ''),
         raceFormat: (i % 5 === 0 ? 'team' : 'single'),
+        relayLaps: (i % 5 === 0 ? Array.from({ length: 20 }, (_, idx) => ({ distance: '5 km', time: '00:25:00', runner: 'Coureur ' + (idx + 1) })) : []),
         bibNumber: '100' + i,
         price: '10',
         gpx: 'track_' + i + '.gpx',

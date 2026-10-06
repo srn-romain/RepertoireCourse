@@ -258,10 +258,10 @@ function evaluateWithBaseUnlock(extraRaces = [], extraStorage = {}) {
     assert(res.unlockedBadges.defi_longue_duree.unlocked, "defi_longue_duree doit être DÉBLOQUÉ avec chrono de 05:15:30");
 }
 
-// Test : peloton_dami (≥ 5 accompagnants) & tribu_en_course (≥ 10 accompagnants)
+// Test : peloton_dami (≥ 5 accompagnants)
 {
     let extra = [{
-        id: 'tribe_test',
+        id: 'peloton_test',
         date: '2024-01-01',
         distance: '10 km',
         time: '00:50:00',
@@ -273,11 +273,59 @@ function evaluateWithBaseUnlock(extraRaces = [], extraStorage = {}) {
     extra[0].companions.push('Ami 5'); // 5 amis
     res = evaluateWithBaseUnlock(extra);
     assert(res.unlockedBadges.peloton_dami.unlocked, "peloton_dami doit être DÉBLOQUÉ avec 5 amis");
-    assert(!res.unlockedBadges.tribu_en_course.unlocked, "tribu_en_course doit être VERROUILLÉ avec 5 amis");
+}
 
-    for (let i = 6; i <= 10; i++) extra[0].companions.push('Ami ' + i); // 10 amis
+// Test : relais_20_etapes (relais avec ≥ 20 étapes de relais)
+{
+    // 1. Sans étapes de relais
+    let extra = [{
+        id: 'relay_0_laps',
+        date: '2024-01-01',
+        distance: '42 km',
+        time: '03:30:00',
+        terrain: 'relai',
+        raceFormat: 'team',
+        relayLaps: []
+    }];
+    let res = evaluateWithBaseUnlock(extra);
+    assert(!res.unlockedBadges.relais_20_etapes.unlocked, "relais_20_etapes doit être VERROUILLÉ avec 0 étape de relais");
+
+    // 2. Avec 19 étapes (strictement inférieur au seuil de 20)
+    extra[0].relayLaps = Array.from({ length: 19 }, (_, i) => ({
+        distance: '2 km',
+        time: '00:10:00',
+        runner: 'Coureur ' + (i + 1)
+    }));
     res = evaluateWithBaseUnlock(extra);
-    assert(res.unlockedBadges.tribu_en_course.unlocked, "tribu_en_course doit être DÉBLOQUÉ avec 10 amis");
+    assert(!res.unlockedBadges.relais_20_etapes.unlocked, "relais_20_etapes doit être VERROUILLÉ avec 19 étapes de relais");
+
+    // 3. Avec exactement 20 étapes (seuil atteint)
+    extra[0].relayLaps.push({ distance: '2 km', time: '00:10:00', runner: 'Coureur 20' });
+    res = evaluateWithBaseUnlock(extra);
+    assert(res.unlockedBadges.relais_20_etapes.unlocked, "relais_20_etapes doit être DÉBLOQUÉ avec exactement 20 étapes de relais");
+    assert(res.unlockedBadges.relais_20_etapes.races.some(r => r.id === 'relay_0_laps'), "relais_20_etapes doit référencer la course correspondante");
+
+    // 4. Avec plus de 20 étapes (ex: 24 étapes)
+    extra[0].relayLaps.push(
+        { distance: '2 km', time: '00:10:00', runner: 'Coureur 21' },
+        { distance: '2 km', time: '00:10:00', runner: 'Coureur 22' },
+        { distance: '2 km', time: '00:10:00', runner: 'Coureur 23' },
+        { distance: '2 km', time: '00:10:00', runner: 'Coureur 24' }
+    );
+    res = evaluateWithBaseUnlock(extra);
+    assert(res.unlockedBadges.relais_20_etapes.unlocked, "relais_20_etapes doit rester DÉBLOQUÉ avec 24 étapes de relais");
+
+    // 5. Avec relaySegments (format alternatif) de 20 segments
+    let extraSegments = [{
+        id: 'relay_segments_test',
+        date: '2024-01-01',
+        distance: '42 km',
+        time: '03:30:00',
+        terrain: 'relai',
+        relaySegments: Array.from({ length: 20 }, (_, i) => ({ distance: '2 km', time: '00:10:00' }))
+    }];
+    let resSegments = evaluateWithBaseUnlock(extraSegments);
+    assert(resSegments.unlockedBadges.relais_20_etapes.unlocked, "relais_20_etapes doit être DÉBLOQUÉ avec relaySegments >= 20");
 }
 
 console.log('   ✅ Tests métiers & négatifs passés avec succès.\n');
@@ -326,6 +374,13 @@ for (let m = 1; m <= 12; m++) {
         if (r === 4) terrain = 'triathlon';
         if (r === 5) terrain = 'trail relai';
 
+        const isRelay = (r === 3 || r === 5);
+        const relayLapsList = isRelay ? Array.from({ length: 20 }, (_, i) => ({
+            distance: '5 km',
+            time: '00:25:00',
+            runner: 'Coureur ' + (i + 1)
+        })) : [];
+
         const comps = [
             { name: 'Ami coureur 1', type: 'runner' },
             { name: 'Ami coureur 2', type: 'runner' },
@@ -352,7 +407,8 @@ for (let m = 1; m <= 12; m++) {
             participants: '100',
             categoryRank: '1',
             terrain: terrain,
-            raceFormat: (r === 3 || r === 5 ? 'team' : 'single'),
+            raceFormat: (isRelay ? 'team' : 'single'),
+            relayLaps: relayLapsList,
             bibNumber: '999',
             price: '12',
             gpx: 'track.gpx',
