@@ -23,10 +23,17 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="CarnetCourses">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
+    <link rel="dns-prefetch" href="https://firestore.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://unpkg.com/heroicons@2.0.18/dist/24/outline/index.js"></script>
-    <!-- Firebase SDK -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <link rel="stylesheet" href="css/dashboard.css?v=20261009_2">
+    <link rel="stylesheet" href="css/runner-loader.css">
     <script>
         // Initialisation des globales pour les modules externes
         window.races = window.races || [];
@@ -38,24 +45,6 @@
             window.racesLoaded = true;
         };
     </script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="stylesheet" href="css/dashboard.css?v=20261009_2">
-    <link rel="stylesheet" href="css/runner-loader.css">
-    <script src="js/runner-loader.js"></script>
-    <script src="js/user-flags.js?v=20260930_2"></script>
-    <script src="js/badges-modal.js?v=20261001_5"></script>
-    <script src="js/toast.js?v=20260929_2"></script>
-    <script src="js/city-autocomplete.js?v=20260929_2"></script>
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
-    <script src="js/confetti.js?v=20260929_1"></script>
 </head>
 
 <body class="min-h-screen bg-green-50 bg-opacity-90">
@@ -2537,7 +2526,22 @@
         <p>&copy; 2026 Carnet de Courses. Tous droits réservés.</p>
     </footer>
 
+    <script src="https://unpkg.com/heroicons@2.0.18/dist/24/outline/index.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     <script src="js/firebase-config.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="js/runner-loader.js"></script>
+    <script src="js/user-flags.js?v=20260930_2"></script>
+    <script src="js/badges-modal.js?v=20261001_5"></script>
+    <script src="js/toast.js?v=20260929_2"></script>
+    <script src="js/city-autocomplete.js?v=20260929_2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+    <script src="js/confetti.js?v=20260929_1"></script>
     <script src="js/isInvite.js"></script>
     <script src="js/tutorial.js?v=20261001_1"></script>
     <script src="js/pdf-generator.js"></script>
@@ -2553,6 +2557,16 @@
         window.customCardButtons = ['edit', 'delete', 'pdf'];
         window.defaultCardImage = 'photo';
         window.customCardTags = ['distance', 'elevation', 'location', 'terrain'];
+
+        // Initialisation immédiate depuis le cache local pour éviter les décalages visuels
+        try {
+            const cachedButtons = localStorage.getItem('customCardButtons');
+            if (cachedButtons) window.customCardButtons = JSON.parse(cachedButtons);
+            const cachedTags = localStorage.getItem('customCardTags');
+            if (cachedTags) window.customCardTags = JSON.parse(cachedTags);
+            const cachedImg = localStorage.getItem('defaultCardImage');
+            if (cachedImg) window.defaultCardImage = cachedImg;
+        } catch(e) {}
 
         const AVAILABLE_CARD_BUTTONS = {
             edit: {
@@ -2877,6 +2891,11 @@
                     racesCollection = db.collection('users').doc(user.uid).collection('races');
                     wishlistCollection = db.collection('users').doc(user.uid).collection('wishlist');
 
+                    // Lancer immédiatement le chargement des courses (parallèle)
+                    if (typeof loadRaces === 'function') {
+                        loadRaces();
+                    }
+
                     if (wishlistCollection) {
                         wishlistCollection.get().then((snap) => {
                             let items = [];
@@ -2911,25 +2930,57 @@
                     authStatusBar.classList.remove('hidden');
 
                     if (authStatusText) {
-                        // Récupération des données utilisateur complètes
-                        let userPseudo = "Utilisateur";
+                        // Récupération immédiate des données en cache pour affichage instantané
+                        let userPseudo = localStorage.getItem('userPseudo') || user.displayName || (user.email ? user.email.split('@')[0] : "Utilisateur");
                         window.currentUserPseudo = userPseudo;
-                        let userPhotoURL = null;
-                        try {
-                            const uDoc = await db.collection('users').doc(user.uid).get();
+                        let userPhotoURL = localStorage.getItem('userCustomPhoto') || user.photoURL || null;
+                        window.currentUserPhoto = userPhotoURL;
+
+                        const renderAuthBar = (pseudo, photo) => {
+                            const avatarSrc = photo || `https://ui-avatars.com/api/?name=${encodeURIComponent(pseudo)}&background=random`;
+                            authStatusText.innerHTML = `
+                                <div class="flex items-center gap-2 min-w-0">
+                                    <img src="${avatarSrc}" onclick="zoomImage('${avatarSrc}')" class="w-8 h-8 rounded-full object-cover border border-green-200 shadow-sm cursor-zoom-in hover:scale-110 transition-transform shrink-0" alt="Avatar">
+                                    <span class="font-bold text-green-800 text-xs sm:text-sm truncate max-w-[280px] xs:max-w-[320px] sm:max-w-md md:max-w-lg lg:max-w-none" title="${user.email}">${user.email}</span>
+                                    <div class="flex items-center gap-1 shrink-0">
+                                        <button id="adminPortalBtn" onclick="openAdminModal()" class="hidden text-red-400 hover:text-red-600 transition p-1" title="Portail Administrateur">
+                                            <i class="fas fa-user-shield"></i>
+                                        </button>
+                                        <button id="userSettingsBtn" onclick="openUserSettings()" class="text-gray-400 hover:text-green-600 transition p-1" title="Paramètres du compte">
+                                            <i class="fas fa-cog"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            `;
+                            // Vérifier si Admin pour afficher le bouton Portal
+                            const adminBtn = document.getElementById('adminPortalBtn');
+                            if (adminBtn && typeof window.isAdminUser === 'function') {
+                                window.isAdminUser().then(isAdmin => {
+                                    if (isAdmin) adminBtn.classList.remove('hidden');
+                                });
+                            }
+                        };
+
+                        // Affichage initial immédiat
+                        renderAuthBar(userPseudo, userPhotoURL);
+
+                        // Récupération asynchrone des préférences utilisateur en arrière-plan
+                        db.collection('users').doc(user.uid).get().then(uDoc => {
                             if (uDoc.exists) {
-                                userPseudo = uDoc.data().pseudo || user.displayName || user.email.split('@')[0] || "Utilisateur";
-                                window.currentUserPseudo = userPseudo;
-                                localStorage.setItem('userPseudo', userPseudo);
-                                userPhotoURL = uDoc.data().photoURL || null;
-                                window.currentUserPhoto = userPhotoURL;
-                                if (userPhotoURL) {
-                                    localStorage.setItem('userCustomPhoto', userPhotoURL);
+                                const uData = uDoc.data();
+                                const newPseudo = uData.pseudo || user.displayName || (user.email ? user.email.split('@')[0] : "Utilisateur");
+                                const newPhoto = uData.photoURL || null;
+
+                                window.currentUserPseudo = newPseudo;
+                                localStorage.setItem('userPseudo', newPseudo);
+                                window.currentUserPhoto = newPhoto;
+                                if (newPhoto) {
+                                    localStorage.setItem('userCustomPhoto', newPhoto);
                                 } else {
                                     localStorage.removeItem('userCustomPhoto');
                                 }
 
-                                if (uDoc.data().tutorialCompleted === true) {
+                                if (uData.tutorialCompleted === true) {
                                     window.tutorialCompleted = true;
                                     localStorage.setItem('tutorialCompleted', 'true');
                                 } else {
@@ -2937,7 +2988,7 @@
                                     localStorage.removeItem('tutorialCompleted');
                                 }
 
-                                const hasCustomCards = (uDoc.data().cardButtonsConfigured === true) || !!(uDoc.data().cardButtons || uDoc.data().cardTags);
+                                const hasCustomCards = (uData.cardButtonsConfigured === true) || !!(uData.cardButtons || uData.cardTags);
                                 if (hasCustomCards) {
                                     window.hasConfiguredCards = true;
                                     localStorage.setItem('hasConfiguredCards', 'true');
@@ -2946,49 +2997,34 @@
                                     localStorage.removeItem('hasConfiguredCards');
                                 }
 
-                                if (uDoc.data().cardButtons && Array.isArray(uDoc.data().cardButtons)) {
-                                    window.customCardButtons = uDoc.data().cardButtons;
-                                } else {
-                                    window.customCardButtons = ['edit', 'delete', 'pdf'];
+                                let configChanged = false;
+                                if (uData.cardButtons && Array.isArray(uData.cardButtons)) {
+                                    window.customCardButtons = uData.cardButtons;
+                                    localStorage.setItem('customCardButtons', JSON.stringify(uData.cardButtons));
+                                    configChanged = true;
+                                }
+                                if (uData.defaultCardImage) {
+                                    window.defaultCardImage = uData.defaultCardImage;
+                                    localStorage.setItem('defaultCardImage', uData.defaultCardImage);
+                                    configChanged = true;
+                                }
+                                if (uData.cardTags && Array.isArray(uData.cardTags)) {
+                                    window.customCardTags = uData.cardTags;
+                                    localStorage.setItem('customCardTags', JSON.stringify(uData.cardTags));
+                                    configChanged = true;
                                 }
 
-                                if (uDoc.data().defaultCardImage) {
-                                    window.defaultCardImage = uDoc.data().defaultCardImage;
-                                } else {
-                                    window.defaultCardImage = 'photo';
-                                }
+                                // Mettre à jour la barre d'authentification si profil modifié
+                                renderAuthBar(newPseudo, newPhoto);
 
-                                if (uDoc.data().cardTags && Array.isArray(uDoc.data().cardTags)) {
-                                    window.customCardTags = uDoc.data().cardTags;
-                                } else {
-                                    window.customCardTags = ['distance', 'elevation', 'location', 'terrain'];
+                                // Si les courses sont déjà chargées et que la config a changé, rafraîchir l'affichage des cartes
+                                if (configChanged && window.racesLoaded && typeof applyFilters === 'function') {
+                                    applyFilters();
                                 }
                             }
-                            // Charger les courses APRÈS avoir récupéré la config cardButtons
-                            if (typeof loadRaces === 'function') loadRaces();
-                        } catch (e) {
-                            console.error("Erreur récup pseudo/photo/cardButtons/defaultCardImage", e);
-                            window.defaultCardImage = 'photo';
-                            // Charger les courses même en cas d'erreur (avec config par défaut)
-                            if (typeof loadRaces === 'function') loadRaces();
-                        }
-
-                        const avatarSrc = userPhotoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(userPseudo)}&background=random`;
-
-                        authStatusText.innerHTML = `
-                            <div class="flex items-center gap-2 min-w-0">
-                                <img src="${avatarSrc}" onclick="zoomImage('${avatarSrc}')" class="w-8 h-8 rounded-full object-cover border border-green-200 shadow-sm cursor-zoom-in hover:scale-110 transition-transform shrink-0" alt="Avatar">
-                                <span class="font-bold text-green-800 text-xs sm:text-sm truncate max-w-[280px] xs:max-w-[320px] sm:max-w-md md:max-w-lg lg:max-w-none" title="${user.email}">${user.email}</span>
-                                <div class="flex items-center gap-1 shrink-0">
-                                    <button id="adminPortalBtn" onclick="openAdminModal()" class="hidden text-red-400 hover:text-red-600 transition p-1" title="Portail Administrateur">
-                                        <i class="fas fa-user-shield"></i>
-                                    </button>
-                                    <button id="userSettingsBtn" onclick="openUserSettings()" class="text-gray-400 hover:text-green-600 transition p-1" title="Paramètres du compte">
-                                        <i class="fas fa-cog"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        `;
+                        }).catch(e => {
+                            console.error("Erreur récup background profil/cardButtons:", e);
+                        });
                     }
 
                     if (disconnectBtn) {
@@ -2997,14 +3033,6 @@
                     }
                     const connectBtn = document.getElementById('connectBtn');
                     if (connectBtn) connectBtn.classList.add('hidden');
-
-                    // Vérifier si Admin pour afficher le bouton Portal
-                    const adminBtn = document.getElementById('adminPortalBtn');
-                    if (adminBtn && typeof window.isAdminUser === 'function') {
-                        window.isAdminUser().then(isAdmin => {
-                            if (isAdmin) adminBtn.classList.remove('hidden');
-                        });
-                    }
                 }
             }
         });

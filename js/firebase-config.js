@@ -14,3 +14,14 @@ if (!firebase.apps.length) {
 
 const auth = firebase.auth();
 const db = firebase.firestore();
+
+// Enable offline persistence for instantaneous local loads on mobile and desktop
+if (typeof db.enablePersistence === 'function') {
+    db.enablePersistence({ synchronizeTabs: true }).catch((err) => {
+        if (err.code === 'failed-precondition') {
+            console.warn('Firestore persistence warning: Multiple tabs open');
+        } else if (err.code === 'unimplemented') {
+            console.warn('Firestore persistence warning: Browser unsupported');
+        }
+    });
+}

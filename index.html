@@ -22,6 +22,11 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="CarnetCourses">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
+    <link rel="dns-prefetch" href="https://firestore.googleapis.com">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="js/theme.js?v=20261002_1"></script>
     <link rel="stylesheet" href="css/theme.css?v=20261002_1">
@@ -29,8 +34,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
         integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
     <script type="application/ld+json">
         {
             "@context": "https://schema.org",
@@ -1624,6 +1628,8 @@
     <script src="js/badges-modal.js?v=20261001_5"></script>
 
     <!-- Auth Modals & Logic (Injects Login/Signup Modals) -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script src="js/runner-loader.js"></script>
     <script src="js/modal-auth.js?v=20260930_1"></script>
     <script src="js/public-races.js?v=20261002_1"></script>
@@ -1725,77 +1731,23 @@
                 const barSignupBtn = document.getElementById('barSignupBtn');
 
                 if (user) {
-                    // Update Last Login
+                    // Update Last Login en tâche de fond non-bloquante
                     try {
                         db.collection('users').doc(user.uid).set({
                             lastLogin: firebase.firestore.FieldValue.serverTimestamp()
-                        }, { merge: true });
+                        }, { merge: true }).catch(() => {});
                     } catch (e) { console.error("Update lastLogin failed", e); }
 
-                    // Utilisateur connecté
-                    // État de chargement immédiat - Centré Absolument
-                    if (authStatusText) {
-                        if (authStatusBar) authStatusBar.classList.replace('py-2', 'py-6');
-                        authStatusText.className = "absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 text-sm text-green-800 flex items-center";
-                        authStatusText.innerHTML = `
-                            <div class="flex items-center text-green-600 animate-pulse">
-                                <i class="fas fa-circle-notch fa-spin mr-2"></i>
-                                <span class="font-medium">Chargement profil...</span>
-                            </div>
-                         `;
-                        // Désactiver le bouton CTA pendant le chargement
-                        if (heroCtaButton) {
-                            heroCtaButton.disabled = true;
-                            heroCtaButton.classList.add('opacity-50', 'cursor-not-allowed');
-                            heroCtaButton.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Chargement...';
-                        }
-                    }
+                    // Utilisateur connecté : affichage immédiat avec les données en cache local
+                    let userPseudo = localStorage.getItem('userPseudo') || user.displayName || (user.email ? user.email.split('@')[0] : "Utilisateur");
+                    let userPhotoURL = localStorage.getItem('userCustomPhoto') || user.photoURL || null;
+                    window.currentUserPseudo = userPseudo;
+                    window.currentUserPhoto = userPhotoURL;
 
-                    // Récupération pseudo et photo
-                    let userPseudo = "Utilisateur";
-                    let userPhotoURL = user.photoURL || null;
-                    try {
-                        const uDoc = await db.collection('users').doc(user.uid).get();
-                        if (uDoc.exists) {
-                            const uData = uDoc.data();
-                            if (uData.pseudo) userPseudo = uData.pseudo;
-                            if (uData.photoURL) userPhotoURL = uData.photoURL;
-                        } else if (user.displayName) {
-                            userPseudo = user.displayName;
-                        }
-                        window.currentUserPseudo = userPseudo;
-                        window.currentUserPhoto = userPhotoURL;
-                        localStorage.setItem('userPseudo', userPseudo);
-                        if (userPhotoURL) localStorage.setItem('userCustomPhoto', userPhotoURL);
-                    } catch (e) { console.error(e); }
-
-                    // Charger les flags de gamification et courses de l'utilisateur
-                    try {
-                        if (typeof window.loadUserFlagsFromFirestore === 'function') {
-                            await window.loadUserFlagsFromFirestore();
-                        }
-                        const racesSnap = await db.collection('users').doc(user.uid).collection('races').get();
-                        const userRaces = [];
-                        racesSnap.forEach(doc => {
-                            userRaces.push({ id: doc.id, ...doc.data() });
-                        });
-                        window.allUserRaces = userRaces;
-                        window.races = userRaces;
-                        if (typeof window.checkBadgesForNewUnlocks === 'function') {
-                            window.checkBadgesForNewUnlocks();
-                        }
-                        if (typeof window.loadCommunityKmStats === 'function') {
-                            window.loadCommunityKmStats();
-                        }
-                    } catch (e) {
-                        console.warn('Erreur chargement flags/courses gamification:', e);
-                    }
-
-                    // Affichage Final
-                    if (authStatusText) {
-                        if (authStatusBar) authStatusBar.classList.replace('py-6', 'py-2'); // Rétablir hauteur normale
-                        const avatarSrc = userPhotoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(userPseudo || user.email || 'U')}&background=random`;
-
+                    const renderAuthBar = (pseudo, photo) => {
+                        if (!authStatusText) return;
+                        if (authStatusBar) authStatusBar.classList.replace('py-6', 'py-2');
+                        const avatarSrc = photo || `https://ui-avatars.com/api/?name=${encodeURIComponent(pseudo || user.email || 'U')}&background=random`;
                         authStatusText.className = "text-xs sm:text-sm text-green-800 flex items-center min-w-0";
                         authStatusText.innerHTML = `
                             <div class="flex items-center gap-2 min-w-0">
@@ -1806,9 +1758,11 @@
                                 </button>
                             </div>
                         `;
-                    }
+                    };
 
-                    // Gestion boutons barre
+                    // Affichage immédiat du statut et activation du bouton CTA
+                    renderAuthBar(userPseudo, userPhotoURL);
+
                     if (goToDashboardBtn) {
                         goToDashboardBtn.classList.remove('hidden');
                         goToDashboardBtn.classList.add('inline-flex');
@@ -1821,10 +1775,8 @@
                     }
                     if (connectBtn) connectBtn.classList.add('hidden');
                     if (barSignupBtn) barSignupBtn.classList.add('hidden');
-
                     if (titleLink) titleLink.href = 'dashboard.html';
 
-                    // Mettre à jour le bouton Hero CTA
                     if (heroCtaButton) {
                         heroCtaButton.innerHTML = '<i class="fas fa-chart-line"></i> Accéder à mon carnet';
                         heroCtaButton.onclick = () => window.location.href = 'dashboard.html';
@@ -1834,6 +1786,48 @@
                         heroCtaButton.disabled = false;
                     }
                     if (accountSettingsBtn) accountSettingsBtn.classList.remove('hidden');
+
+                    // Chargement en parallèle de profil, flags et courses pour diviser le temps par 3
+                    Promise.allSettled([
+                        db.collection('users').doc(user.uid).get(),
+                        typeof window.loadUserFlagsFromFirestore === 'function' ? window.loadUserFlagsFromFirestore() : Promise.resolve(),
+                        db.collection('users').doc(user.uid).collection('races').get()
+                    ]).then(([uDocResult, flagsResult, racesResult]) => {
+                        // Traitement du profil utilisateur
+                        if (uDocResult.status === 'fulfilled' && uDocResult.value && uDocResult.value.exists) {
+                            const uData = uDocResult.value.data();
+                            const newPseudo = uData.pseudo || user.displayName || (user.email ? user.email.split('@')[0] : "Utilisateur");
+                            const newPhoto = uData.photoURL || null;
+
+                            window.currentUserPseudo = newPseudo;
+                            window.currentUserPhoto = newPhoto;
+                            localStorage.setItem('userPseudo', newPseudo);
+                            if (newPhoto) {
+                                localStorage.setItem('userCustomPhoto', newPhoto);
+                            } else {
+                                localStorage.removeItem('userCustomPhoto');
+                            }
+                            renderAuthBar(newPseudo, newPhoto);
+                        }
+
+                        // Traitement des courses pour gamification / badges
+                        if (racesResult.status === 'fulfilled' && racesResult.value) {
+                            const userRaces = [];
+                            racesResult.value.forEach(doc => {
+                                userRaces.push({ id: doc.id, ...doc.data() });
+                            });
+                            window.allUserRaces = userRaces;
+                            window.races = userRaces;
+                            if (typeof window.checkBadgesForNewUnlocks === 'function') {
+                                window.checkBadgesForNewUnlocks();
+                            }
+                            if (typeof window.loadCommunityKmStats === 'function') {
+                                window.loadCommunityKmStats();
+                            }
+                        }
+                    }).catch(e => {
+                        console.warn('Erreur chargement background Firestore:', e);
+                    });
 
                     // Vérifier si Admin pour afficher le bouton Portal et les filtres restreints
                     const adminBtn = document.getElementById('adminPortalBtn');
