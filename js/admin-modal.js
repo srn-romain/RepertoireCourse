@@ -5,38 +5,48 @@
 
 const adminModalHTML = `
 <div id="adminModal" class="modal hidden fixed inset-0 z-[60] flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm transition-opacity duration-300">
-    <div class="modal-content bg-white p-6 w-full max-w-5xl m-4 rounded-2xl shadow-2xl relative transform scale-100 transition-transform duration-300 max-h-[90vh] overflow-y-auto">
+    <div class="modal-content bg-white p-4 sm:p-6 w-full max-w-5xl m-2 sm:m-4 rounded-2xl shadow-2xl relative transform scale-100 transition-transform duration-300 max-h-[90vh] overflow-y-auto">
         
         <!-- Header -->
-        <div class="flex items-center justify-between mb-6 border-b pb-4">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center text-red-600 shrink-0">
-                    <i class="fas fa-user-shield text-xl"></i>
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 border-b pb-4">
+            <div class="flex items-center justify-between sm:justify-start gap-3 w-full sm:w-auto">
+                <div class="flex items-center gap-2.5 sm:gap-3 min-w-0">
+                    <div class="w-9 h-9 sm:w-10 sm:h-10 bg-red-100 rounded-full flex items-center justify-center text-red-600 shrink-0">
+                        <i class="fas fa-user-shield text-lg sm:text-xl"></i>
+                    </div>
+                    <div class="min-w-0">
+                        <h2 class="text-lg sm:text-xl md:text-2xl font-bold text-gray-800 truncate">Portail Administrateur</h2>
+                        <p class="text-[10px] md:text-xs text-gray-500 truncate">Statistiques globales et cartographie</p>
+                    </div>
                 </div>
-                <div class="min-w-0">
-                    <h2 class="text-xl md:text-2xl font-bold text-gray-800 truncate">Portail Administrateur</h2>
-                    <p class="text-[10px] md:text-xs text-gray-500">Statistiques globales et cartographie</p>
-                </div>
+
+                <!-- Bouton fermer (Mobile) -->
+                <button onclick="closeAdminModal()" class="sm:hidden text-gray-400 hover:text-gray-600 transition p-1.5 shrink-0" title="Fermer la modale">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
             </div>
             
-            <div class="flex items-center gap-2 md:gap-4">
-                <!-- Roadmap Button -->
-                <button type="button" onclick="window.openUpcomingFeaturesModal()" class="flex items-center gap-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-[10px] md:text-xs font-bold px-3 py-1.5 rounded-full border border-emerald-200 transition shrink-0" title="Gérer la feuille de route / fonctionnalités à venir">
-                    <i class="fas fa-rocket text-emerald-600"></i>
-                    <span class="hidden sm:inline">Nouveautés</span>
-                </button>
+            <div class="flex items-center justify-between sm:justify-end gap-2 md:gap-4 w-full sm:w-auto">
+                <div class="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+                    <!-- Roadmap Button -->
+                    <button type="button" onclick="window.openUpcomingFeaturesModal()" class="flex items-center gap-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-[10px] md:text-xs font-bold px-3 py-1.5 rounded-full border border-emerald-200 transition shrink-0" title="Gérer la feuille de route / fonctionnalités à venir">
+                        <i class="fas fa-rocket text-emerald-600"></i>
+                        <span>Nouveautés</span>
+                    </button>
 
-                <!-- UI Switch -->
-                <div class="flex items-center gap-2 bg-gray-50 px-2 py-1 md:px-3 md:py-1.5 rounded-full border border-gray-100 shrink-0">
-                    <span class="text-[9px] md:text-xs font-bold text-blue-600 uppercase tracking-tight hidden sm:inline" id="toggleLabel">Toutes</span>
-                    <label class="relative inline-flex items-center cursor-pointer scale-90 md:scale-100">
-                        <input type="checkbox" id="adminPastRacesToggle" class="sr-only peer" onchange="toggleAdminPastRaces(this.checked)">
-                        <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-red-600"></div>
-                    </label>
-                    <span class="text-[9px] md:text-xs font-bold text-red-600 uppercase tracking-tight">Passées</span>
+                    <!-- UI Switch -->
+                    <div class="flex items-center gap-2 bg-gray-50 px-2 py-1 md:px-3 md:py-1.5 rounded-full border border-gray-100 shrink-0">
+                        <span class="text-[9px] md:text-xs font-bold text-blue-600 uppercase tracking-tight" id="toggleLabel">Toutes</span>
+                        <label class="relative inline-flex items-center cursor-pointer scale-90 md:scale-100">
+                            <input type="checkbox" id="adminPastRacesToggle" class="sr-only peer" onchange="toggleAdminPastRaces(this.checked)">
+                            <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-red-600"></div>
+                        </label>
+                        <span class="text-[9px] md:text-xs font-bold text-red-600 uppercase tracking-tight">Passées</span>
+                    </div>
                 </div>
 
-                <button onclick="closeAdminModal()" class="text-gray-400 hover:text-gray-600 transition p-2">
+                <!-- Bouton fermer (Desktop) -->
+                <button onclick="closeAdminModal()" class="hidden sm:flex text-gray-400 hover:text-gray-600 transition p-2 shrink-0" title="Fermer la modale">
                     <i class="fas fa-times text-xl"></i>
                 </button>
             </div>
