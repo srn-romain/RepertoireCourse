@@ -157,8 +157,8 @@ input[type="search"]::-webkit-search-results-decoration {
     z-index: 10 !important;
 }
 
-/* Stats Dashboard Responsive < 770px */
-@media (max-width: 770px) {
+/* Stats Dashboard Responsive < 768px (Mobile) */
+@media (max-width: 767.98px) {
     #statsText.stats-loaded,
     #statsText:has(.stat-item) {
         display: grid !important;
