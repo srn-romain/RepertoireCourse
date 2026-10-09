@@ -183,19 +183,25 @@ input[type="search"]::-webkit-search-results-decoration {
     }
 
     .stat-year,
-    .stat-price {
+    .stat-price,
+    .stat-item:last-child {
         grid-column: span 2;
     }
 
-    .stat-price {
+    .stat-price,
+    .stat-item:last-child {
         padding-top: 8px;
         border-top: 1px dashed var(--color-green-100, #d1fae5);
         margin-top: 4px;
+        width: 100%;
     }
 
     .stat-item {
         display: flex;
         flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
         font-size: 0.75rem;
         color: var(--color-emerald-800, #065f46);
     }

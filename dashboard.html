@@ -47,7 +47,7 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="stylesheet" href="css/dashboard.css?v=20261002_1">
+    <link rel="stylesheet" href="css/dashboard.css?v=20261009_1">
     <link rel="stylesheet" href="css/runner-loader.css">
     <script src="js/runner-loader.js"></script>
     <script src="js/user-flags.js?v=20260930_2"></script>
@@ -3467,7 +3467,7 @@
             // Affichage du prix
             const priceFormatted = totalPrice.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
             statsHtml += `
-                <div class="stat-item md:before:content-['|'] md:before:mr-3 md:before:opacity-30 cursor-pointer hover:text-green-800 transition group" onclick="openStatDetailsModal('price')" title="Cliquer pour voir le détail des dépenses">
+                <div class="stat-item stat-price md:before:content-['|'] md:before:mr-3 md:before:opacity-30 cursor-pointer hover:text-green-800 transition group" onclick="openStatDetailsModal('price')" title="Cliquer pour voir le détail des dépenses">
                     <span class="font-semibold group-hover:underline underline-offset-2 decoration-green-500">${priceFormatted} €</span> <span>dépensés</span>
                 </div>
             `;
