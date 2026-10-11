@@ -1092,7 +1092,7 @@
                                 <i class="fas fa-route text-green-600"></i>
                                 <span>Statistiques sur les distances</span>
                             </h4>
-                            <button type="button" class="metric-calc-info-btn inline-flex items-center justify-center w-5 h-5 rounded-full bg-white hover:bg-green-200 border border-green-300 text-green-800 text-[11px] shadow-2xs cursor-pointer transition-all active:scale-95 hover:scale-110" data-metric="distance" title="Comment ces statistiques sont calculées ?">
+                            <button type="button" class="metric-calc-info-btn inline-flex items-center justify-center w-5 h-5 rounded-full bg-white hover:bg-green-200 border border-green-300 text-green-800 text-[11px] shadow-2xs cursor-pointer transition-colors" data-metric="distance" title="Comment ces statistiques sont calculées ?">
                                 <i class="fas fa-info text-green-700"></i>
                             </button>
                         </div>`;
@@ -1114,7 +1114,7 @@
                                 <i class="fas fa-euro-sign text-green-600"></i>
                                 <span>Statistiques sur les prix</span>
                             </h4>
-                            <button type="button" class="metric-calc-info-btn inline-flex items-center justify-center w-5 h-5 rounded-full bg-white hover:bg-green-200 border border-green-300 text-green-800 text-[11px] shadow-2xs cursor-pointer transition-all active:scale-95 hover:scale-110" data-metric="price" title="Comment ces statistiques sont calculées ?">
+                            <button type="button" class="metric-calc-info-btn inline-flex items-center justify-center w-5 h-5 rounded-full bg-white hover:bg-green-200 border border-green-300 text-green-800 text-[11px] shadow-2xs cursor-pointer transition-colors" data-metric="price" title="Comment ces statistiques sont calculées ?">
                                 <i class="fas fa-info text-green-700"></i>
                             </button>
                         </div>`;
@@ -1171,7 +1171,7 @@
                                     <span>D-</span>
                                   </button>
                                 </div>
-                                <button type="button" class="metric-calc-info-btn inline-flex items-center justify-center w-5 h-5 rounded-full bg-white hover:bg-green-200 border border-green-300 text-green-800 text-[11px] shadow-2xs cursor-pointer transition-all active:scale-95 hover:scale-110" data-metric="elevation" title="Comment ces statistiques de D+ sont calculées ?">
+                                <button type="button" class="metric-calc-info-btn inline-flex items-center justify-center w-5 h-5 rounded-full bg-white hover:bg-green-200 border border-green-300 text-green-800 text-[11px] shadow-2xs cursor-pointer transition-colors" data-metric="elevation" title="Comment ces statistiques de D+ sont calculées ?">
                                   <i class="fas fa-info text-green-700"></i>
                                 </button>
                               </div>
@@ -1198,7 +1198,7 @@
                                     <span>D+</span>
                                   </button>
                                 </div>
-                                <button type="button" class="metric-calc-info-btn inline-flex items-center justify-center w-5 h-5 rounded-full bg-white hover:bg-blue-100 border border-blue-300 text-blue-800 text-[11px] shadow-2xs cursor-pointer transition-all active:scale-95 hover:scale-110" data-metric="elevationNeg" title="Comment ces statistiques de D- sont calculées ?">
+                                <button type="button" class="metric-calc-info-btn inline-flex items-center justify-center w-5 h-5 rounded-full bg-white hover:bg-blue-100 border border-blue-300 text-blue-800 text-[11px] shadow-2xs cursor-pointer transition-colors" data-metric="elevationNeg" title="Comment ces statistiques de D- sont calculées ?">
                                   <i class="fas fa-info text-blue-700"></i>
                                 </button>
                               </div>
@@ -1221,7 +1221,7 @@
                             <h4 class="font-bold text-green-800 flex items-center gap-2">
                               <i class="fas fa-mountain text-green-600"></i> Dénivelé positif (D+)
                             </h4>
-                            <button type="button" class="metric-calc-info-btn inline-flex items-center justify-center w-5 h-5 rounded-full bg-white hover:bg-green-200 border border-green-300 text-green-800 text-[11px] shadow-2xs cursor-pointer transition-all active:scale-95 hover:scale-110" data-metric="elevation" title="Comment ces statistiques de D+ sont calculées ?">
+                            <button type="button" class="metric-calc-info-btn inline-flex items-center justify-center w-5 h-5 rounded-full bg-white hover:bg-green-200 border border-green-300 text-green-800 text-[11px] shadow-2xs cursor-pointer transition-colors" data-metric="elevation" title="Comment ces statistiques de D+ sont calculées ?">
                               <i class="fas fa-info text-green-700"></i>
                             </button>
                           </div>
@@ -1245,7 +1245,7 @@
                                 <i class="fas fa-clock text-green-600"></i>
                                 <span>Statistiques sur les temps</span>
                             </h4>
-                            <button type="button" class="metric-calc-info-btn inline-flex items-center justify-center w-5 h-5 rounded-full bg-white hover:bg-green-200 border border-green-300 text-green-800 text-[11px] shadow-2xs cursor-pointer transition-all active:scale-95 hover:scale-110" data-metric="time" title="Comment ces statistiques sont calculées ?">
+                            <button type="button" class="metric-calc-info-btn inline-flex items-center justify-center w-5 h-5 rounded-full bg-white hover:bg-green-200 border border-green-300 text-green-800 text-[11px] shadow-2xs cursor-pointer transition-colors" data-metric="time" title="Comment ces statistiques sont calculées ?">
                                 <i class="fas fa-info text-green-700"></i>
                             </button>
                         </div>`;
@@ -1298,7 +1298,7 @@
                                         <i class="fas fa-stopwatch text-green-600"></i>
                                         <span>Temps & Allures Moyens</span>
                                     </h4>
-                                    <button type="button" class="paces-calc-info-btn inline-flex items-center justify-center w-5 h-5 rounded-full bg-white hover:bg-green-100 border border-green-300 text-green-800 text-[11px] shadow-2xs cursor-pointer transition-all active:scale-95 hover:scale-110" title="Comment ces temps et records sont calculés ?">
+                                    <button type="button" class="paces-calc-info-btn inline-flex items-center justify-center w-5 h-5 rounded-full bg-white hover:bg-green-100 border border-green-300 text-green-800 text-[11px] shadow-2xs cursor-pointer transition-colors" title="Comment ces temps et records sont calculés ?">
                                         <i class="fas fa-info text-green-700"></i>
                                     </button>
                                 </div>
