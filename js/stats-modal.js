@@ -2154,35 +2154,35 @@
 
             if (metricType === 'distance') {
                 title = 'Statistiques sur les distances';
-                iconClass = 'fa-route text-green-600';
+                iconClass = 'fa-route';
                 statsObj = stats.distanceStats;
                 racesList = stats.racesWithDistance || [];
                 unitName = 'km';
                 formatVal = v => (typeof v === 'number' ? (Math.round(v * 100) / 100).toLocaleString('fr-FR') : v) + ' km';
             } else if (metricType === 'price') {
                 title = 'Statistiques sur les prix';
-                iconClass = 'fa-euro-sign text-green-600';
+                iconClass = 'fa-euro-sign';
                 statsObj = stats.priceStats;
                 racesList = stats.racesWithPrice || [];
                 unitName = '€';
                 formatVal = v => (typeof v === 'number' ? (Math.round(v * 100) / 100).toLocaleString('fr-FR') : v) + ' €';
             } else if (metricType === 'elevation') {
                 title = 'Statistiques sur le dénivelé positif (D+)';
-                iconClass = 'fa-mountain text-green-600';
+                iconClass = 'fa-mountain';
                 statsObj = stats.elevationStats;
                 racesList = stats.racesWithElevation || [];
                 unitName = 'm';
                 formatVal = v => (typeof v === 'number' ? Math.round(v).toLocaleString('fr-FR') : v) + ' m';
             } else if (metricType === 'elevationNeg') {
                 title = 'Statistiques sur le dénivelé négatif (D-)';
-                iconClass = 'fa-mountain text-blue-500';
+                iconClass = 'fa-mountain';
                 statsObj = stats.elevationNegStats;
                 racesList = stats.racesWithElevationNeg || [];
                 unitName = 'm';
                 formatVal = v => (typeof v === 'number' ? Math.round(v).toLocaleString('fr-FR') : v) + ' m';
             } else if (metricType === 'time') {
                 title = 'Statistiques sur les temps';
-                iconClass = 'fa-clock text-green-600';
+                iconClass = 'fa-clock';
                 statsObj = stats.timeStats;
                 racesList = stats.racesWithTime || [];
                 unitName = '';
@@ -2258,7 +2258,7 @@
                     <div class="flex items-center justify-between p-4 sm:p-5 border-b border-gray-100 bg-gradient-to-r from-green-50 to-emerald-50">
                         <div class="flex items-center gap-2.5">
                             <div class="w-8 h-8 rounded-full bg-green-600 text-white flex items-center justify-center shadow-xs text-sm">
-                                <i class="fas ${iconClass}"></i>
+                                <i class="fas ${iconClass} text-white"></i>
                             </div>
                             <div>
                                 <h3 class="text-base sm:text-lg font-bold text-green-900 leading-tight">
