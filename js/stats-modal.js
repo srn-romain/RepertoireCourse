@@ -1241,14 +1241,28 @@
                         return `<div class="text-[11px] text-gray-500 truncate mt-1" title="${rpObj.raceName}"><span class="text-gray-400">Course :</span> ${rpObj.raceName}</div>`;
                     }
 
+                    // Helper pour afficher le badge Réel / Estimé avec un tooltip explicatif très bref
+                    function renderRpBadge(isReal) {
+                        const label = isReal ? 'Réel' : 'Estimé';
+                        const tip = isReal 
+                            ? 'Chrono direct issu d\'une vraie course courue sur cette distance.' 
+                            : 'Chrono théorique calculé à partir de vos autres courses.';
+                        return `<span class="text-[10px] text-amber-800 font-semibold bg-amber-100 px-1.5 py-0.5 rounded cursor-help" title="${tip}">${label}</span>`;
+                    }
+
                     html += `
                     <div class="bg-green-50 p-4 rounded-lg mb-6 border border-green-200">
                         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
                             <div>
-                                <h4 class="font-bold text-green-800 flex items-center gap-2 text-base">
-                                    <i class="fas fa-stopwatch text-green-600"></i>
-                                    <span>Temps & Allures Moyens</span>
-                                </h4>
+                                <div class="flex items-center gap-2">
+                                    <h4 class="font-bold text-green-800 flex items-center gap-2 text-base">
+                                        <i class="fas fa-stopwatch text-green-600"></i>
+                                        <span>Temps & Allures Moyens</span>
+                                    </h4>
+                                    <button type="button" class="paces-calc-info-btn inline-flex items-center justify-center w-5 h-5 rounded-full bg-white hover:bg-green-100 border border-green-300 text-green-800 text-[11px] shadow-2xs cursor-pointer transition-all active:scale-95 hover:scale-110" title="Comment ces temps et records sont calculés ?">
+                                        <i class="fas fa-info text-green-700"></i>
+                                    </button>
+                                </div>
                                 <p class="text-xs text-green-700 mt-0.5">
                                     Calculé selon vos données de courses (ajusté au dénivelé D+ et à la fatigue d'endurance).
                                 </p>
@@ -1288,7 +1302,7 @@
                                         <span class="text-xs font-bold text-amber-900 flex items-center gap-1">
                                             <i class="fas fa-trophy text-amber-500"></i> RP (Record Personnel)
                                         </span>
-                                        <span class="text-[10px] text-amber-800 font-semibold bg-amber-100 px-1.5 py-0.5 rounded">${ep.k1.rp.isReal ? 'Réel' : 'Estimé'}</span>
+                                        ${renderRpBadge(ep.k1.rp.isReal)}
                                     </div>
                                     <div class="flex items-baseline justify-between gap-2">
                                         <span class="text-base font-extrabold text-amber-900">${ep.k1.rp.timeFormatted}</span>
@@ -1325,7 +1339,7 @@
                                         <span class="text-xs font-bold text-amber-900 flex items-center gap-1">
                                             <i class="fas fa-trophy text-amber-500"></i> RP (Record Personnel)
                                         </span>
-                                        <span class="text-[10px] text-amber-800 font-semibold bg-amber-100 px-1.5 py-0.5 rounded">${ep.k10.rp.isReal ? 'Réel' : 'Estimé'}</span>
+                                        ${renderRpBadge(ep.k10.rp.isReal)}
                                     </div>
                                     <div class="flex items-baseline justify-between gap-2">
                                         <span class="text-base font-extrabold text-amber-900">${ep.k10.rp.timeFormatted}</span>
@@ -1362,7 +1376,7 @@
                                         <span class="text-xs font-bold text-amber-900 flex items-center gap-1">
                                             <i class="fas fa-trophy text-amber-500"></i> RP (Record Personnel)
                                         </span>
-                                        <span class="text-[10px] text-amber-800 font-semibold bg-amber-100 px-1.5 py-0.5 rounded">${ep.semi.rp.isReal ? 'Réel' : 'Estimé'}</span>
+                                        ${renderRpBadge(ep.semi.rp.isReal)}
                                     </div>
                                     <div class="flex items-baseline justify-between gap-2">
                                         <span class="text-base font-extrabold text-amber-900">${ep.semi.rp.timeFormatted}</span>
@@ -1730,6 +1744,15 @@
                     });
                 });
 
+                // Attacher l'écouteur sur les boutons d'explication du calcul des temps & RP
+                statsContent.querySelectorAll('.paces-calc-info-btn').forEach(btn => {
+                    btn.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        openPacesCalcInfoModal();
+                    });
+                });
+
                 // Attacher l'écouteur sur le bouton Indice de fatigue
                 const fatigueBadgeBtn = statsContent.querySelector('#fatigueIndexBadgeBtn');
                 if (fatigueBadgeBtn && stats.estimatedPaces) {
@@ -1854,6 +1877,199 @@
             const modalEl = document.getElementById('fatigueInfoModal');
             const closeBtn = document.getElementById('closeFatigueInfoModal');
             const okBtn = document.getElementById('okFatigueInfoModal');
+
+            function closeModal() {
+                if (modalEl) modalEl.remove();
+                document.removeEventListener('keydown', handleEsc);
+            }
+
+            function handleEsc(e) {
+                if (e.key === 'Escape') closeModal();
+            }
+
+            if (closeBtn) closeBtn.addEventListener('click', closeModal);
+            if (okBtn) okBtn.addEventListener('click', closeModal);
+            if (modalEl) {
+                modalEl.addEventListener('click', function (e) {
+                    if (e.target === modalEl) closeModal();
+                });
+            }
+            document.addEventListener('keydown', handleEsc);
+        }
+
+        // Fonction pour ouvrir la modale d'explication du calcul des temps & records (1km, 10km, semi)
+        function openPacesCalcInfoModal() {
+            const existing = document.getElementById('pacesCalcInfoModal');
+            if (existing) existing.remove();
+
+            const modalHtml = `
+            <div id="pacesCalcInfoModal" class="fixed inset-0 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm transition-opacity duration-200" style="z-index: 10010;">
+                <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] flex flex-col border border-green-200 overflow-hidden">
+                    <!-- Header -->
+                    <div class="flex items-center justify-between p-4 sm:p-5 border-b border-gray-100 bg-gradient-to-r from-green-50 to-emerald-50">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-8 h-8 rounded-full bg-green-600 text-white flex items-center justify-center shadow-xs text-sm">
+                                <i class="fas fa-calculator"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-base sm:text-lg font-bold text-green-900 leading-tight">
+                                    Comment sont calculés vos temps & records ?
+                                </h3>
+                                <p class="text-[11px] sm:text-xs text-green-700 mt-0.5">
+                                    Comprendre le rôle du dénivelé et le calcul du 1 km, 10 km et Semi-Marathon
+                                </p>
+                            </div>
+                        </div>
+                        <button type="button" id="closePacesCalcInfoModal" class="w-8 h-8 rounded-full text-gray-400 hover:text-gray-700 hover:bg-white/80 flex items-center justify-center transition cursor-pointer text-lg" title="Fermer">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+
+                    <!-- Body scrollable -->
+                    <div class="p-4 sm:p-6 space-y-4 overflow-y-auto text-sm text-gray-700 flex-1 leading-relaxed">
+                        
+                        <!-- Règle d'or du Dénivelé -->
+                        <div class="bg-emerald-50/90 border border-emerald-200 rounded-lg p-3.5 sm:p-4">
+                            <div class="flex items-start gap-2.5">
+                                <i class="fas fa-mountain text-emerald-600 text-base mt-0.5"></i>
+                                <div>
+                                    <h4 class="font-bold text-emerald-950 text-sm mb-1">
+                                        1. La règle d'or du Dénivelé (100 m D+ = 1 km à plat)
+                                    </h4>
+                                    <p class="text-xs text-emerald-900 leading-relaxed">
+                                        Courir en montée demande un effort physique bien plus important qu'à plat. Pour comparer équitablement toutes vos courses, l'application utilise la règle officielle du <strong>kilomètre-effort</strong> :
+                                    </p>
+                                    <div class="bg-white/95 border border-emerald-300 rounded p-2.5 mt-2 text-xs text-emerald-950 font-medium">
+                                        📌 <strong>Distance d'effort</strong> = Distance réelle + (Dénivelé positif D+ / 100)
+                                        <div class="text-[11px] text-emerald-800 font-normal mt-1">
+                                            Exemple : un 10 km avec 300 m D+ représente un effort équivalent à <strong>13 km à plat</strong> (10 + 3).
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Différence Réel vs Estimé -->
+                        <div class="bg-amber-50/90 border border-amber-200 rounded-lg p-3.5 sm:p-4">
+                            <div class="flex items-start gap-2.5">
+                                <i class="fas fa-tags text-amber-600 text-base mt-0.5"></i>
+                                <div>
+                                    <h4 class="font-bold text-amber-950 text-sm mb-1">
+                                        2. La différence entre « Réel » et « Estimé »
+                                    </h4>
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2 text-xs">
+                                        <div class="bg-white p-2.5 rounded border border-amber-200">
+                                            <span class="inline-block px-1.5 py-0.5 rounded font-bold text-[10px] bg-amber-100 text-amber-900 mb-1">Badge Réel</span>
+                                            <p class="text-gray-600 text-[11px]">
+                                                Vous avez couru une course (ou un tour de relais/Hyrox) qui correspond à cette distance. C'est votre meilleur chrono direct.
+                                            </p>
+                                        </div>
+                                        <div class="bg-white p-2.5 rounded border border-amber-200">
+                                            <span class="inline-block px-1.5 py-0.5 rounded font-bold text-[10px] bg-gray-100 text-gray-800 mb-1">Badge Estimé</span>
+                                            <p class="text-gray-600 text-[11px]">
+                                                Vous n'avez pas de course directe sur cette distance. Le système extrapole votre temps théorique depuis vos autres courses avec la formule athlétique d'endurance de <strong>Peter Riegel</strong>.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Détail des 3 distances avec exemples concrets -->
+                        <div class="space-y-3">
+                            <h4 class="font-bold text-gray-900 text-sm flex items-center gap-2">
+                                <i class="fas fa-list-ol text-green-600"></i>
+                                <span>Détail et exemple pour chacune des 3 distances :</span>
+                            </h4>
+
+                            <!-- Carte 1 km -->
+                            <div class="border border-green-200 rounded-lg p-3.5 bg-white shadow-2xs">
+                                <div class="flex items-center justify-between mb-1.5">
+                                    <span class="font-bold text-green-900 text-sm flex items-center gap-1.5">
+                                        <i class="fas fa-bolt text-amber-500"></i> 1 km
+                                    </span>
+                                    <span class="text-[10px] bg-green-100 text-green-800 font-semibold px-2 py-0.5 rounded-full">Vitesse & Explosivité</span>
+                                </div>
+                                <p class="text-xs text-gray-600 leading-relaxed mb-2">
+                                    <strong>Comment c'est calculé :</strong> Si vous avez couru une épreuve courte (~1 km d'effort, relais ou segment Hyrox), elle est prise en repère réel. Sinon, le système prend votre course la plus rapide et projette votre vitesse sur 1 km.
+                                </p>
+                                <div class="bg-gray-50 border-l-4 border-amber-500 p-2.5 rounded-r text-xs">
+                                    <span class="font-semibold text-gray-800 block mb-0.5">💡 Pourquoi une course où vous avez eu une "perf moyenne" peut ressortir ?</span>
+                                    <p class="text-gray-600 text-[11px] leading-relaxed">
+                                        <strong>Exemple concret :</strong> Imaginez un <strong>Trail de 10 km avec 800 m de D+ couru en 1h15</strong>. Vous avez marché dans les montées et vous avez l'impression d'avoir fait un chrono moyen (allure réelle de 7'30/km). Mais pour le système : 10 km + 800 m D+ = <strong>18 km d'effort à plat</strong>.
+                                        En ramenant cet effort global à 1 km, la formule mathématique estime que sur du plat sec vous vaudriez <strong>3'25 au km</strong> ! Ce trail ressort alors comme votre meilleur 1 km estimé, car le fort dénivelé a gonflé la distance d'effort. De même, si vous avez un tour d'Hyrox de 1 km (même couru fatigué), il sera pris comme un 1 km réel.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Carte 10 km -->
+                            <div class="border border-green-200 rounded-lg p-3.5 bg-white shadow-2xs">
+                                <div class="flex items-center justify-between mb-1.5">
+                                    <span class="font-bold text-green-900 text-sm flex items-center gap-1.5">
+                                        <i class="fas fa-running text-green-600"></i> 10 km
+                                    </span>
+                                    <span class="text-[10px] bg-green-100 text-green-800 font-semibold px-2 py-0.5 rounded-full">Distance de référence</span>
+                                </div>
+                                <p class="text-xs text-gray-600 leading-relaxed mb-2">
+                                    <strong>Comment c'est calculé :</strong> Le système recherche vos courses autour de 10 km d'effort. Si vous avez couru des 10 km sur route, votre record personnel est tout simplement votre meilleur chrono direct.
+                                </p>
+                                <div class="bg-gray-50 border-l-4 border-green-500 p-2.5 rounded-r text-xs">
+                                    <span class="font-semibold text-gray-800 block mb-0.5">💡 Exemple concret :</span>
+                                    <p class="text-gray-600 text-[11px] leading-relaxed">
+                                        Si vous avez couru un 10 km sur route plat en <strong>45 min 00 s</strong>, votre RP est directement de 45 min (allure 4'30/km).
+                                        Si vous n'aviez jamais fait de 10 km mais un <strong>Trail court de 6 km avec 400 m de D+</strong> (6 + 4 = 10 km d'effort), il est également comptabilisé comme un 10 km d'effort.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Carte Semi-Marathon -->
+                            <div class="border border-green-200 rounded-lg p-3.5 bg-white shadow-2xs">
+                                <div class="flex items-center justify-between mb-1.5">
+                                    <span class="font-bold text-green-900 text-sm flex items-center gap-1.5">
+                                        <i class="fas fa-mountain text-teal-600"></i> Semi-Marathon (21,1 km)
+                                    </span>
+                                    <span class="text-[10px] bg-green-100 text-green-800 font-semibold px-2 py-0.5 rounded-full">Endurance aérobie</span>
+                                </div>
+                                <p class="text-xs text-gray-600 leading-relaxed mb-2">
+                                    <strong>Comment c'est calculé :</strong> Si vous avez couru un semi officiel, c'est votre meilleur temps direct. Si vous n'en avez jamais couru, le système projette votre temps depuis votre 10 km en appliquant la fatigue naturelle au fil des kilomètres.
+                                </p>
+                                <div class="bg-gray-50 border-l-4 border-teal-500 p-2.5 rounded-r text-xs">
+                                    <span class="font-semibold text-gray-800 block mb-0.5">💡 Exemple concret :</span>
+                                    <p class="text-gray-600 text-[11px] leading-relaxed">
+                                        Si vous courez le 10 km en <strong>50 min</strong>, votre semi-marathon estimé ne sera pas simplement de 1h40 (50 min &times; 2) : sur la distance, le coureur ralentit sous l'effet de la fatigue. La formule d'endurance calcule une projection réaliste d'environ <strong>1h51</strong> (allure 5'16/km). De même, un trail de 15 km avec 600 m D+ (15 + 6 = 21 km d'effort) est considéré comme un semi-marathon d'effort.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Conseil pour le coureur -->
+                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 text-xs text-blue-900 flex items-start gap-2.5">
+                            <i class="fas fa-lightbulb text-blue-500 text-sm mt-0.5"></i>
+                            <div>
+                                <span class="font-bold">Bon à savoir pour le coureur :</span>
+                                <p class="text-[11px] text-blue-800 mt-0.5 leading-relaxed">
+                                    Vos temps et allures moyens reflètent l'ensemble de votre historique de courses. Si vous faites des trails ou de l'Hyrox, leurs chronos et dénivelés participent à ces calculs. Pour établir des records réels incontestables sur 1 km, 10 km ou semi, n'hésitez pas à courir des courses officielles sur route plate !
+                                </p>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="p-4 border-t border-gray-100 bg-gray-50 flex justify-end">
+                        <button type="button" id="okPacesCalcInfoModal" class="w-full sm:w-auto px-6 py-2 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg text-sm transition cursor-pointer shadow-xs active:scale-95">
+                            J'ai compris
+                        </button>
+                    </div>
+                </div>
+            </div>
+            `;
+
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+            const modalEl = document.getElementById('pacesCalcInfoModal');
+            const closeBtn = document.getElementById('closePacesCalcInfoModal');
+            const okBtn = document.getElementById('okPacesCalcInfoModal');
 
             function closeModal() {
                 if (modalEl) modalEl.remove();
