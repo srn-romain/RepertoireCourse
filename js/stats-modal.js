@@ -1086,7 +1086,16 @@
                 // Statistiques sur les distances
                 if (stats.distanceStats && Object.keys(stats.distanceStats).length > 0) {
                     const ds = stats.distanceStats;
-                    html += `<div class="bg-green-100 p-4 rounded-lg"><h4 class="font-bold text-green-800 mb-3">Statistiques sur les distances</h4>`;
+                    html += `<div class="bg-green-100 p-4 rounded-lg">
+                        <div class="flex items-center justify-between mb-3">
+                            <h4 class="font-bold text-green-800 flex items-center gap-2">
+                                <i class="fas fa-route text-green-600"></i>
+                                <span>Statistiques sur les distances</span>
+                            </h4>
+                            <button type="button" class="metric-calc-info-btn inline-flex items-center justify-center w-5 h-5 rounded-full bg-white hover:bg-green-200 border border-green-300 text-green-800 text-[11px] shadow-2xs cursor-pointer transition-all active:scale-95 hover:scale-110" data-metric="distance" title="Comment ces statistiques sont calculées ?">
+                                <i class="fas fa-info text-green-700"></i>
+                            </button>
+                        </div>`;
                     html += `<ul class="list-disc list-inside space-y-2">`;
                     html += `<li><strong>Moyenne :</strong> <span class="text-green-600 font-semibold">${ds.mean} km</span></li>`;
                     html += `<li><strong>Médiane :</strong> <span class="text-green-600 font-semibold">${ds.median} km</span></li>`;
@@ -1099,7 +1108,16 @@
                 // Statistiques sur les prix
                 if (stats.priceStats && Object.keys(stats.priceStats).length > 0) {
                     const ps = stats.priceStats;
-                    html += `<div class="bg-green-100 p-4 rounded-lg"><h4 class="font-bold text-green-800 mb-3">Statistiques sur les prix</h4>`;
+                    html += `<div class="bg-green-100 p-4 rounded-lg">
+                        <div class="flex items-center justify-between mb-3">
+                            <h4 class="font-bold text-green-800 flex items-center gap-2">
+                                <i class="fas fa-euro-sign text-green-600"></i>
+                                <span>Statistiques sur les prix</span>
+                            </h4>
+                            <button type="button" class="metric-calc-info-btn inline-flex items-center justify-center w-5 h-5 rounded-full bg-white hover:bg-green-200 border border-green-300 text-green-800 text-[11px] shadow-2xs cursor-pointer transition-all active:scale-95 hover:scale-110" data-metric="price" title="Comment ces statistiques sont calculées ?">
+                                <i class="fas fa-info text-green-700"></i>
+                            </button>
+                        </div>`;
                     html += `<ul class="list-disc list-inside space-y-2">`;
                     html += `<li><strong>Moyenne :</strong> <span class="text-green-600 font-semibold">${ps.mean} €</span></li>`;
                     html += `<li><strong>Médiane :</strong> <span class="text-green-600 font-semibold">${ps.median} €</span></li>`;
@@ -1135,26 +1153,26 @@
                             display: flex; flex-direction: column;
                           }
                           .elev-flip-face--back { transform: rotateY(180deg); }
-                          @keyframes elev-pulse-flip {
-                            0%,100% { opacity: 1; transform: rotate(0deg) scale(1); }
-                            50% { opacity: 0.6; transform: rotate(180deg) scale(1.15); }
-                          }
-                          .elev-flip-hint { animation: elev-pulse-flip 2s ease-in-out infinite; }
                         </style>
                         <div class="elev-flip-scene rounded-lg" style="min-height:210px;">
                           <div class="elev-flip-card" id="elevFlipCard">
 
                             <!-- RECTO : D+ -->
                             <div class="elev-flip-face bg-green-100">
-                              <div class="flex justify-between items-start mb-3">
-                                <h4 class="font-bold text-green-800 flex items-center gap-2">
-                                  <i class="fas fa-mountain text-green-600"></i> Dénivelé positif (D+)
-                                </h4>
-                                <button onclick="document.getElementById('elevFlipCard').classList.toggle('is-flipped')"
-                                  title="Voir le D-"
-                                  class="flex items-center gap-1 text-xs text-green-700 bg-green-200 hover:bg-green-300 px-2 py-1 rounded-full transition cursor-pointer select-none">
-                                  <i class="fas fa-sync-alt elev-flip-hint"></i>
-                                  <span>D-</span>
+                              <div class="flex justify-between items-center mb-3">
+                                <div class="flex items-center gap-2">
+                                  <h4 class="font-bold text-green-800 flex items-center gap-2">
+                                    <i class="fas fa-mountain text-green-600"></i> Dénivelé positif (D+)
+                                  </h4>
+                                  <button onclick="document.getElementById('elevFlipCard').classList.toggle('is-flipped')"
+                                    title="Voir le D-"
+                                    class="flex items-center gap-1 text-xs text-green-700 bg-green-200 hover:bg-green-300 px-2 py-0.5 rounded-full transition cursor-pointer select-none">
+                                    <i class="fas fa-sync-alt text-[10px]"></i>
+                                    <span>D-</span>
+                                  </button>
+                                </div>
+                                <button type="button" class="metric-calc-info-btn inline-flex items-center justify-center w-5 h-5 rounded-full bg-white hover:bg-green-200 border border-green-300 text-green-800 text-[11px] shadow-2xs cursor-pointer transition-all active:scale-95 hover:scale-110" data-metric="elevation" title="Comment ces statistiques de D+ sont calculées ?">
+                                  <i class="fas fa-info text-green-700"></i>
                                 </button>
                               </div>
                               <ul class="list-disc list-inside space-y-2 text-sm flex-1">
@@ -1168,15 +1186,20 @@
 
                             <!-- VERSO : D- -->
                             <div class="elev-flip-face elev-flip-face--back bg-blue-50 border border-blue-100">
-                              <div class="flex justify-between items-start mb-3">
-                                <h4 class="font-bold text-blue-800 flex items-center gap-2">
-                                  <i class="fas fa-mountain text-blue-500"></i> Dénivelé négatif (D-)
-                                </h4>
-                                <button onclick="document.getElementById('elevFlipCard').classList.toggle('is-flipped')"
-                                  title="Voir le D+"
-                                  class="flex items-center gap-1 text-xs text-blue-700 bg-blue-100 hover:bg-blue-200 px-2 py-1 rounded-full transition cursor-pointer select-none">
-                                  <i class="fas fa-sync-alt elev-flip-hint" style="animation-direction:reverse"></i>
-                                  <span>D+</span>
+                              <div class="flex justify-between items-center mb-3">
+                                <div class="flex items-center gap-2">
+                                  <h4 class="font-bold text-blue-800 flex items-center gap-2">
+                                    <i class="fas fa-mountain text-blue-500"></i> Dénivelé négatif (D-)
+                                  </h4>
+                                  <button onclick="document.getElementById('elevFlipCard').classList.toggle('is-flipped')"
+                                    title="Voir le D+"
+                                    class="flex items-center gap-1 text-xs text-blue-700 bg-blue-100 hover:bg-blue-200 px-2 py-0.5 rounded-full transition cursor-pointer select-none">
+                                    <i class="fas fa-sync-alt text-[10px]"></i>
+                                    <span>D+</span>
+                                  </button>
+                                </div>
+                                <button type="button" class="metric-calc-info-btn inline-flex items-center justify-center w-5 h-5 rounded-full bg-white hover:bg-blue-100 border border-blue-300 text-blue-800 text-[11px] shadow-2xs cursor-pointer transition-all active:scale-95 hover:scale-110" data-metric="elevationNeg" title="Comment ces statistiques de D- sont calculées ?">
+                                  <i class="fas fa-info text-blue-700"></i>
                                 </button>
                               </div>
                               <ul class="list-disc list-inside space-y-2 text-sm flex-1">
@@ -1194,7 +1217,14 @@
                         // Bloc simple D+ sans D-
                         const es = stats.elevationStats;
                         html += `<div class="bg-green-100 p-4 rounded-lg">
-                          <h4 class="font-bold text-green-800 mb-3 flex items-center gap-2"><i class="fas fa-mountain text-green-600"></i> Dénivelé positif (D+)</h4>
+                          <div class="flex items-center justify-between mb-3">
+                            <h4 class="font-bold text-green-800 flex items-center gap-2">
+                              <i class="fas fa-mountain text-green-600"></i> Dénivelé positif (D+)
+                            </h4>
+                            <button type="button" class="metric-calc-info-btn inline-flex items-center justify-center w-5 h-5 rounded-full bg-white hover:bg-green-200 border border-green-300 text-green-800 text-[11px] shadow-2xs cursor-pointer transition-all active:scale-95 hover:scale-110" data-metric="elevation" title="Comment ces statistiques de D+ sont calculées ?">
+                              <i class="fas fa-info text-green-700"></i>
+                            </button>
+                          </div>
                           <ul class="list-disc list-inside space-y-2">
                             <li><strong>Total cumulé :</strong> <span class="text-green-600 font-semibold">${es.sum.toLocaleString('fr-FR')} m</span></li>
                             <li><strong>Moyenne :</strong> <span class="text-green-600 font-semibold">${es.mean} m</span></li>
@@ -1209,7 +1239,16 @@
                 // Statistiques sur les temps
                 if (stats.timeStats && Object.keys(stats.timeStats).length > 0) {
                     const ts = stats.timeStats;
-                    html += `<div class="bg-green-100 p-4 rounded-lg"><h4 class="font-bold text-green-800 mb-3">Statistiques sur les temps</h4>`;
+                    html += `<div class="bg-green-100 p-4 rounded-lg">
+                        <div class="flex items-center justify-between mb-3">
+                            <h4 class="font-bold text-green-800 flex items-center gap-2">
+                                <i class="fas fa-clock text-green-600"></i>
+                                <span>Statistiques sur les temps</span>
+                            </h4>
+                            <button type="button" class="metric-calc-info-btn inline-flex items-center justify-center w-5 h-5 rounded-full bg-white hover:bg-green-200 border border-green-300 text-green-800 text-[11px] shadow-2xs cursor-pointer transition-all active:scale-95 hover:scale-110" data-metric="time" title="Comment ces statistiques sont calculées ?">
+                                <i class="fas fa-info text-green-700"></i>
+                            </button>
+                        </div>`;
                     html += `<ul class="list-disc list-inside space-y-2">`;
                     html += `<li><strong>Moyenne :</strong> <span class="text-green-600 font-semibold">${secondsToTime(ts.mean)}</span></li>`;
                     html += `<li><strong>Médiane :</strong> <span class="text-green-600 font-semibold">${secondsToTime(ts.median)}</span></li>`;
@@ -1744,6 +1783,16 @@
                     });
                 });
 
+                // Attacher l'écouteur sur les boutons d'explication des 4 carrés de statistiques (distance, prix, dénivelé, temps)
+                statsContent.querySelectorAll('.metric-calc-info-btn').forEach(btn => {
+                    btn.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        const metric = this.getAttribute('data-metric');
+                        openMetricCalcInfoModal(metric, stats);
+                    });
+                });
+
                 // Attacher l'écouteur sur les boutons d'explication du calcul des temps & RP
                 statsContent.querySelectorAll('.paces-calc-info-btn').forEach(btn => {
                     btn.addEventListener('click', function (e) {
@@ -2085,6 +2134,269 @@
             if (modalEl) {
                 modalEl.addEventListener('click', function (e) {
                     if (e.target === modalEl) closeModal();
+                });
+            }
+            document.addEventListener('keydown', handleEsc);
+        }
+
+        // Fonction pour ouvrir la modale d'explication des 4 carrés statistiques (distance, prix, dénivelé, temps)
+        function openMetricCalcInfoModal(metricType, stats) {
+            if (!stats) return;
+            const existing = document.getElementById('metricCalcInfoModal');
+            if (existing) existing.remove();
+
+            let title = '';
+            let iconClass = '';
+            let statsObj = null;
+            let racesList = [];
+            let formatVal = v => String(v);
+            let unitName = '';
+
+            if (metricType === 'distance') {
+                title = 'Statistiques sur les distances';
+                iconClass = 'fa-route text-green-600';
+                statsObj = stats.distanceStats;
+                racesList = stats.racesWithDistance || [];
+                unitName = 'km';
+                formatVal = v => (typeof v === 'number' ? (Math.round(v * 100) / 100).toLocaleString('fr-FR') : v) + ' km';
+            } else if (metricType === 'price') {
+                title = 'Statistiques sur les prix';
+                iconClass = 'fa-euro-sign text-green-600';
+                statsObj = stats.priceStats;
+                racesList = stats.racesWithPrice || [];
+                unitName = '€';
+                formatVal = v => (typeof v === 'number' ? (Math.round(v * 100) / 100).toLocaleString('fr-FR') : v) + ' €';
+            } else if (metricType === 'elevation') {
+                title = 'Statistiques sur le dénivelé positif (D+)';
+                iconClass = 'fa-mountain text-green-600';
+                statsObj = stats.elevationStats;
+                racesList = stats.racesWithElevation || [];
+                unitName = 'm';
+                formatVal = v => (typeof v === 'number' ? Math.round(v).toLocaleString('fr-FR') : v) + ' m';
+            } else if (metricType === 'elevationNeg') {
+                title = 'Statistiques sur le dénivelé négatif (D-)';
+                iconClass = 'fa-mountain text-blue-500';
+                statsObj = stats.elevationNegStats;
+                racesList = stats.racesWithElevationNeg || [];
+                unitName = 'm';
+                formatVal = v => (typeof v === 'number' ? Math.round(v).toLocaleString('fr-FR') : v) + ' m';
+            } else if (metricType === 'time') {
+                title = 'Statistiques sur les temps';
+                iconClass = 'fa-clock text-green-600';
+                statsObj = stats.timeStats;
+                racesList = stats.racesWithTime || [];
+                unitName = '';
+                formatVal = v => secondsToTime(v);
+            }
+
+            if (!statsObj || !racesList || racesList.length === 0) return;
+
+            // Trier les courses par valeur croissante (du plus petit au plus grand) pour visualiser la médiane
+            const sortedRaces = [...racesList].sort((a, b) => a.value - b.value);
+            const n = sortedRaces.length;
+
+            // Min, Max, Médiane
+            const minVal = sortedRaces[0].value;
+            const maxVal = sortedRaces[n - 1].value;
+            const medianIndices = n % 2 === 0 ? [(n / 2) - 1, n / 2] : [Math.floor(n / 2)];
+
+            // Explication de la médiane selon n pair ou impair
+            let medianFormulaText = '';
+            if (n % 2 === 0) {
+                const idx1 = (n / 2);
+                const idx2 = idx1 + 1;
+                medianFormulaText = `Le nombre de courses (${n}) est pair : la médiane est la moyenne entre la ${idx1}ᵉ course (${formatVal(sortedRaces[idx1 - 1].value)}) et la ${idx2}ᵉ course (${formatVal(sortedRaces[idx2 - 1].value)}).`;
+            } else {
+                const midIdx = Math.floor(n / 2) + 1;
+                medianFormulaText = `Le nombre de courses (${n}) est impair : la médiane est exactement la valeur de la ${midIdx}ᵉ course du classement (${formatVal(sortedRaces[midIdx - 1].value)}).`;
+            }
+
+            // Génération des lignes de courses avec badges
+            let racesRowsHtml = '';
+            sortedRaces.forEach((item, idx) => {
+                const rank = idx + 1;
+                const r = item.race;
+                const val = item.value;
+                const isMin = (val === minVal);
+                const isMax = (val === maxVal);
+                const isMedian = medianIndices.includes(idx);
+
+                let badgeHtml = '';
+                if (isMin) {
+                    badgeHtml += `<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-green-100 text-green-800 border border-green-200">Min</span> `;
+                }
+                if (isMedian) {
+                    badgeHtml += `<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-800 border border-blue-200">Médiane</span> `;
+                }
+                if (isMax) {
+                    badgeHtml += `<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200">Max</span> `;
+                }
+
+                const dateStr = r.date ? new Date(r.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
+
+                racesRowsHtml += `
+                <div class="flex items-center justify-between py-2 px-3 hover:bg-green-50/60 rounded transition-colors text-xs border-b border-gray-100 last:border-b-0">
+                    <div class="flex items-center gap-2.5 min-w-0 pr-2">
+                        <span class="w-6 text-gray-400 font-mono text-[11px] font-semibold text-right">#${rank}</span>
+                        <div class="truncate">
+                            <span class="font-semibold text-gray-800 cursor-pointer hover:text-green-700 hover:underline stat-calc-race-link" data-race-id="${r.id}" title="Cliquer pour voir la fiche">${r.name}</span>
+                            ${dateStr ? `<span class="text-gray-400 text-[10px] ml-1.5">(${dateStr})</span>` : ''}
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2 shrink-0">
+                        ${badgeHtml}
+                        <span class="font-bold text-gray-900">${formatVal(val)}</span>
+                    </div>
+                </div>
+                `;
+            });
+
+            const modalHtml = `
+            <div id="metricCalcInfoModal" class="fixed inset-0 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm transition-opacity duration-200" style="z-index: 10010;">
+                <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] flex flex-col border border-green-200 overflow-hidden">
+                    <!-- Header -->
+                    <div class="flex items-center justify-between p-4 sm:p-5 border-b border-gray-100 bg-gradient-to-r from-green-50 to-emerald-50">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-8 h-8 rounded-full bg-green-600 text-white flex items-center justify-center shadow-xs text-sm">
+                                <i class="fas ${iconClass}"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-base sm:text-lg font-bold text-green-900 leading-tight">
+                                    ${title}
+                                </h3>
+                                <p class="text-[11px] sm:text-xs text-green-700 mt-0.5">
+                                    Détail pas-à-pas des calculs et liste des courses prises en compte
+                                </p>
+                            </div>
+                        </div>
+                        <button type="button" id="closeMetricCalcInfoModal" class="w-8 h-8 rounded-full text-gray-400 hover:text-gray-700 hover:bg-white/80 flex items-center justify-center transition cursor-pointer text-lg" title="Fermer">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+
+                    <!-- Body scrollable -->
+                    <div class="p-4 sm:p-6 space-y-5 overflow-y-auto text-sm text-gray-700 flex-1 leading-relaxed">
+                        
+                        <!-- Explication pédagogique simple de chaque indicateur -->
+                        <div class="space-y-3">
+                            <h4 class="font-bold text-gray-900 text-xs uppercase tracking-wider flex items-center gap-1.5">
+                                <i class="fas fa-calculator text-green-600"></i> Comment chaque valeur est calculée :
+                            </h4>
+
+                            <!-- Moyenne -->
+                            <div class="p-3 bg-gray-50 border border-gray-200 rounded-lg text-xs space-y-1">
+                                <div class="flex items-center justify-between">
+                                    <span class="font-bold text-green-900">📊 Moyenne : <strong>${formatVal(statsObj.mean)}</strong></span>
+                                    <span class="text-[10px] text-gray-500">Total / ${n} courses</span>
+                                </div>
+                                <p class="text-gray-600 text-[11px]">
+                                    L'addition de toutes les valeurs (${formatVal(statsObj.sum)}) divisée par le nombre de courses (${n}).
+                                </p>
+                            </div>
+
+                            <!-- Médiane -->
+                            <div class="p-3 bg-gray-50 border border-gray-200 rounded-lg text-xs space-y-1">
+                                <div class="flex items-center justify-between">
+                                    <span class="font-bold text-blue-900">🎯 Médiane : <strong>${formatVal(statsObj.median)}</strong></span>
+                                    <span class="text-[10px] text-gray-500">Milieu du classement</span>
+                                </div>
+                                <p class="text-gray-600 text-[11px]">
+                                    La valeur centrale du classement : 50% de vos courses sont inférieures ou égales, et 50% sont supérieures.
+                                </p>
+                                <p class="text-[10px] text-blue-700 font-medium">
+                                    📌 ${medianFormulaText}
+                                </p>
+                            </div>
+
+                            <!-- Étendue -->
+                            <div class="p-3 bg-gray-50 border border-gray-200 rounded-lg text-xs space-y-1">
+                                <div class="flex items-center justify-between">
+                                    <span class="font-bold text-amber-900">📏 Étendue : <strong>${formatVal(statsObj.range)}</strong></span>
+                                    <span class="text-[10px] text-gray-500">Max &minus; Min</span>
+                                </div>
+                                <p class="text-gray-600 text-[11px]">
+                                    La différence entre votre plus grande valeur (${formatVal(maxVal)}) et votre plus petite (${formatVal(minVal)}).
+                                </p>
+                            </div>
+
+                            <!-- Écart-type -->
+                            <div class="p-3 bg-gray-50 border border-gray-200 rounded-lg text-xs space-y-1">
+                                <div class="flex items-center justify-between">
+                                    <span class="font-bold text-purple-900">📐 Écart-type : <strong>${typeof statsObj.standardDeviation === 'number' ? (Math.round(statsObj.standardDeviation * 100) / 100).toLocaleString('fr-FR') : statsObj.standardDeviation} ${unitName}</strong></span>
+                                    <span class="text-[10px] text-gray-500">Indice de dispersion</span>
+                                </div>
+                                <p class="text-gray-600 text-[11px]">
+                                    Mesure si vos courses sont proches de votre moyenne (écart-type faible = pratique très régulière) ou très éloignées (écart-type élevé = grande diversité de courses).
+                                </p>
+                            </div>
+
+                            <!-- Total -->
+                            <div class="p-3 bg-gray-50 border border-gray-200 rounded-lg text-xs space-y-1">
+                                <div class="flex items-center justify-between">
+                                    <span class="font-bold text-gray-900">➕ Total cumulé : <strong>${formatVal(statsObj.sum)}</strong></span>
+                                    <span class="text-[10px] text-gray-500">Somme de toutes les courses</span>
+                                </div>
+                                <p class="text-gray-600 text-[11px]">
+                                    L'addition brute de l'ensemble de vos ${n} courses enregistrées.
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Liste des courses impliquées dans le calcul -->
+                        <div>
+                            <div class="flex items-center justify-between mb-2">
+                                <h4 class="font-bold text-gray-900 text-xs uppercase tracking-wider flex items-center gap-1.5">
+                                    <i class="fas fa-list-ol text-green-600"></i>
+                                    <span>Courses classées (${n} courses prises en compte) :</span>
+                                </h4>
+                                <span class="text-[10px] text-gray-500">Triées du plus petit au plus grand</span>
+                            </div>
+                            <div class="border border-gray-200 rounded-lg max-h-56 overflow-y-auto bg-white divide-y divide-gray-100 shadow-2xs">
+                                ${racesRowsHtml}
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="p-4 border-t border-gray-100 bg-gray-50 flex justify-end">
+                        <button type="button" id="okMetricCalcInfoModal" class="w-full sm:w-auto px-6 py-2 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg text-sm transition cursor-pointer shadow-xs active:scale-95">
+                            Fermer
+                        </button>
+                    </div>
+                </div>
+            </div>
+            `;
+
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+            const modalEl = document.getElementById('metricCalcInfoModal');
+            const closeBtn = document.getElementById('closeMetricCalcInfoModal');
+            const okBtn = document.getElementById('okMetricCalcInfoModal');
+
+            function closeModal() {
+                if (modalEl) modalEl.remove();
+                document.removeEventListener('keydown', handleEsc);
+            }
+
+            function handleEsc(e) {
+                if (e.key === 'Escape') closeModal();
+            }
+
+            if (closeBtn) closeBtn.addEventListener('click', closeModal);
+            if (okBtn) okBtn.addEventListener('click', closeModal);
+            if (modalEl) {
+                modalEl.addEventListener('click', function (e) {
+                    if (e.target === modalEl) closeModal();
+                });
+                // Écouteur pour ouvrir la fiche de course si clic sur une course dans la liste
+                modalEl.querySelectorAll('.stat-calc-race-link').forEach(link => {
+                    link.addEventListener('click', function (e) {
+                        e.stopPropagation();
+                        const raceId = this.getAttribute('data-race-id');
+                        closeModal();
+                        if (raceId) openRaceFromStats(raceId);
+                    });
                 });
             }
             document.addEventListener('keydown', handleEsc);
