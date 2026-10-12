@@ -2552,7 +2552,7 @@
     // ─────────────────────────────────────────────────────────────────────────────
     const badgesModalHTML = `
     <!-- Modale de Badges & Progression (10 Niveaux - 120 Missions - 10 000 XP) -->
-    <div id="badgesModal" class="fixed inset-0 flex items-center justify-center z-[60] hidden modal">
+    <div id="badgesModal" class="fixed inset-0 flex items-center justify-center z-[70] hidden modal">
         <div class="absolute inset-0 bg-black bg-opacity-50 blur-bg" id="badgesModalOverlay"></div>
         <div class="relative bg-white rounded-xl shadow-xl w-full max-w-5xl mx-4 z-10 flex flex-col max-h-[90vh]">
             
