@@ -2228,16 +2228,41 @@
         // Google Drive Link
         const driveContainer = document.getElementById('driveButtonContainer');
         const openDriveBtn = document.getElementById('openDriveBtn');
-        if (race.driveId && race.driveId.trim() !== '' && !isOnPublicPage) {
+        const getCleanDriveId = (id) => {
+            if (typeof extractDriveFolderId === 'function') return extractDriveFolderId(id);
+            if (typeof window !== 'undefined' && typeof window.extractDriveFolderId === 'function') return window.extractDriveFolderId(id);
+            if (!id || typeof id !== 'string') return '';
+            let val = id.trim();
+            const folderMatch = val.match(/\/folders\/([a-zA-Z0-9_-]+)/);
+            if (folderMatch && folderMatch[1]) return folderMatch[1];
+            const dMatch = val.match(/\/d\/([a-zA-Z0-9_-]+)/);
+            if (dMatch && dMatch[1]) return dMatch[1];
+            const idParamMatch = val.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+            if (idParamMatch && idParamMatch[1]) return idParamMatch[1];
+            if (val.startsWith('http://') || val.startsWith('https://') || val.includes('drive.google.com')) {
+                val = val.split('?')[0].split('#')[0].replace(/\/+$/, '');
+                const segments = val.split('/');
+                const last = segments[segments.length - 1] || '';
+                if (['drive', 'folders', 'view', 'edit', 'mobile', 'u', 'google.com', 'drive.google.com'].includes(last.toLowerCase())) {
+                    return '';
+                }
+                return last;
+            }
+            if (val.includes('?') || val.includes('#')) val = val.split('?')[0].split('#')[0];
+            return val.replace(/\/+$/, '').trim();
+        };
+
+        const cleanDriveId = getCleanDriveId(race.driveId);
+        if (cleanDriveId && !isOnPublicPage) {
             if (driveContainer) driveContainer.classList.remove('hidden');
             if (openDriveBtn) {
                 openDriveBtn.onclick = () => {
                     if (typeof openDriveExplorer === 'function') {
-                        openDriveExplorer(race.driveId);
+                        openDriveExplorer(cleanDriveId);
                     } else if (typeof window.openDriveExplorer === 'function') {
-                        window.openDriveExplorer(race.driveId);
+                        window.openDriveExplorer(cleanDriveId);
                     } else {
-                        window.open(`https://drive.google.com/drive/folders/${race.driveId}`, '_blank');
+                        window.open(`https://drive.google.com/drive/folders/${cleanDriveId}`, '_blank');
                     }
                 };
             }

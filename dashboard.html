@@ -847,14 +847,12 @@
                                     <div
                                         class="absolute -top-1.5 right-12 w-3 h-3 bg-white border-t border-l border-green-200 transform rotate-45">
                                     </div>
-                                    Ouvrez votre dossier Drive sur un navigateur, l'ID est la suite de lettres et
-                                    chiffres à la
-                                    fin de l'adresse URL du navigateur (après /folders/).
+                                    Vous pouvez coller l'identifiant (ID) ou le lien complet de votre dossier Google Drive (ex: https://drive.google.com/drive/folders/...). L'identifiant sera extrait automatiquement.
                                 </div>
 
                                 <input type="text" id="raceDriveId" name="raceDriveId"
                                     class="w-full px-3 py-2 border border-green-300 bg-white rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-sm"
-                                    placeholder="Ex: 1A2b3C4d5E6f7G8h9I0j...">
+                                    placeholder="ID ou lien complet (ex: 1A2b3C... ou https://drive.google.com/...)">
                             </div>
 
                             <!-- Lien site de la course -->
@@ -1984,6 +1982,18 @@
 
                 <!-- Messages & alertes dynamiques -->
                 <div id="cardConfigFeedbackContainer" class="flex flex-col gap-2.5">
+                    <!-- Alerte : emplacements pleins / trop d'actions sélectionnées -->
+                    <div id="cardConfigSlotsFullNotice"
+                        class="hidden flex items-start sm:items-center gap-2.5 p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-800 leading-relaxed transition-all duration-300 shadow-2xs">
+                        <div class="w-6 h-6 rounded-full bg-red-100 text-red-600 flex items-center justify-center shrink-0 mt-0.5 sm:mt-0 shadow-2xs">
+                            <i class="fas fa-exclamation-circle text-xs"></i>
+                        </div>
+                        <div class="flex-1" id="cardConfigSlotsFullNoticeText">
+                            Les 3 emplacements sont déjà occupés. Supprimez-en un d'abord en cliquant sur la croix rouge (<span class="inline-flex items-center justify-center w-4 h-4 rounded-full bg-red-500 text-white text-[10px] font-bold leading-none align-middle shadow-2xs select-none">&times;</span>).
+                        </div>
+                    </div>
+
+                    <!-- Alerte : action Supprimer absente -->
                     <div id="cardConfigNoDeleteNotice"
                         class="hidden flex items-start sm:items-center gap-2.5 p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-900 leading-relaxed transition-all duration-300 shadow-2xs">
                         <div class="w-6 h-6 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center shrink-0 mt-0.5 sm:mt-0 shadow-2xs">
@@ -2566,6 +2576,44 @@
             if (isNaN(num)) return '-';
             return parseFloat(num.toFixed(4));
         }
+
+        // Extrait proprement l'ID d'un dossier Google Drive depuis un lien complet ou un ID brut
+        function extractDriveFolderId(input) {
+            if (!input || typeof input !== 'string') return '';
+            let val = input.trim();
+            if (!val) return '';
+
+            // 1. Matches /folders/([a-zA-Z0-9_-]+)
+            const folderMatch = val.match(/\/folders\/([a-zA-Z0-9_-]+)/);
+            if (folderMatch && folderMatch[1]) return folderMatch[1];
+
+            // 2. Matches /d/([a-zA-Z0-9_-]+)
+            const dMatch = val.match(/\/d\/([a-zA-Z0-9_-]+)/);
+            if (dMatch && dMatch[1]) return dMatch[1];
+
+            // 3. Matches id=([a-zA-Z0-9_-]+)
+            const idParamMatch = val.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+            if (idParamMatch && idParamMatch[1]) return idParamMatch[1];
+
+            // 4. URL sans /folders/ explicite (ex: fin d'URL)
+            if (val.startsWith('http://') || val.startsWith('https://') || val.includes('drive.google.com')) {
+                val = val.split('?')[0].split('#')[0].replace(/\/+$/, '');
+                const segments = val.split('/');
+                const last = segments[segments.length - 1] || '';
+                if (['drive', 'folders', 'view', 'edit', 'mobile', 'u', 'google.com', 'drive.google.com'].includes(last.toLowerCase())) {
+                    return '';
+                }
+                return last;
+            }
+
+            // 5. Paramètres résiduels ou hash sur un ID brut
+            if (val.includes('?') || val.includes('#')) {
+                val = val.split('?')[0].split('#')[0];
+            }
+
+            return val.replace(/\/+$/, '').trim();
+        }
+        window.extractDriveFolderId = extractDriveFolderId;
 
         window.customCardButtons = ['edit', 'delete', 'pdf'];
         window.defaultCardImage = 'photo';
@@ -6287,7 +6335,7 @@
             document.getElementById('raceWebsite').value = race.website || '';
             document.getElementById('raceResultUrl').value = race.resultUrl || '';
             document.getElementById('raceGpxUrl').value = race.gpxUrl || '';
-            document.getElementById('raceDriveId').value = race.driveId || '';
+            document.getElementById('raceDriveId').value = extractDriveFolderId(race.driveId) || '';
             document.getElementById('raceFavorite').checked = race.favorite || false;
 
             // Masquer les bulles d'aide
@@ -6505,7 +6553,7 @@
             const website = document.getElementById('raceWebsite').value.trim();
             const resultUrl = document.getElementById('raceResultUrl').value.trim();
             const gpxUrl = document.getElementById('raceGpxUrl').value.trim();
-            const driveId = document.getElementById('raceDriveId').value.trim();
+            const driveId = extractDriveFolderId(document.getElementById('raceDriveId').value);
 
             // Vérification des champs obligatoires (seulement nom et date maintenant)
             let hasErrors = false;
@@ -7361,6 +7409,20 @@
         });
 
         raceForm.addEventListener('submit', saveRace);
+
+        // Nettoyage automatique du champ Drive ID au blur si un lien complet a été collé
+        const raceDriveIdInput = document.getElementById('raceDriveId');
+        if (raceDriveIdInput) {
+            raceDriveIdInput.addEventListener('blur', () => {
+                const val = raceDriveIdInput.value.trim();
+                if (val) {
+                    const clean = extractDriveFolderId(val);
+                    if (clean && clean !== val) {
+                        raceDriveIdInput.value = clean;
+                    }
+                }
+            });
+        }
 
         // Fonction pour mettre à jour le placeholder et l'affichage des filtres
         function updateSearchInputState() {
@@ -10179,7 +10241,8 @@
         }
 
         async function openDriveExplorer(folderId) {
-            currentDriveId = folderId;
+            const cleanFolderId = extractDriveFolderId(folderId);
+            currentDriveId = cleanFolderId;
             const modal = document.getElementById('driveExplorerModal');
             const iframe = document.getElementById('driveIframe');
             const loader = document.getElementById('driveLoader');
@@ -10196,9 +10259,9 @@
             iframe.classList.add('hidden');
 
             // Chargement immédiat de l'iframe (fonctionne si l'utilisateur est connecté à Google)
-            iframe.src = `https://drive.google.com/embeddedfolderview?id=${folderId}#${currentDriveView}`;
+            iframe.src = `https://drive.google.com/embeddedfolderview?id=${cleanFolderId}#${currentDriveView}`;
             updateToggleBtnUI();
-            externalLink.href = `https://drive.google.com/drive/folders/${folderId}`;
+            externalLink.href = `https://drive.google.com/drive/folders/${cleanFolderId}`;
 
             // Masquer le loader dès que l'iframe répond
             iframe.onload = () => {
@@ -10213,7 +10276,7 @@
                 const apiKey = typeof firebaseConfig !== 'undefined' ? firebaseConfig.apiKey : null;
                 if (!apiKey) return;
 
-                const response = await fetch(`https://www.googleapis.com/drive/v3/files/${folderId}?key=${apiKey}&fields=id,name`);
+                const response = await fetch(`https://www.googleapis.com/drive/v3/files/${cleanFolderId}?key=${apiKey}&fields=id,name`);
 
                 if (!response.ok) {
                     const data = await response.json();
@@ -10440,6 +10503,7 @@
             // Open modal handler
             openCardConfigBtn.addEventListener('click', () => {
                 if (isSelectionMode || window.isSelectionMode) return;
+                hideCardConfigToast();
                 // Copy the current configuration
                 tempConfigButtons = [...window.customCardButtons];
                 tempDefaultCardImage = window.defaultCardImage || 'photo';
@@ -10462,9 +10526,8 @@
                 if (window.ScrollLock && typeof window.ScrollLock.unlock === 'function') {
                     window.ScrollLock.unlock();
                 }
-                // Remove any lingering toast messages
-                const toast = document.getElementById('cardConfigToast');
-                if (toast) toast.remove();
+                // Masquer les alertes temporaires
+                hideCardConfigToast();
             };
 
             if (closeCardConfigModalBtn) closeCardConfigModalBtn.addEventListener('click', closeModal);
@@ -10482,6 +10545,7 @@
                 resetCardConfigBtn.addEventListener('click', (e) => {
                     e.preventDefault();
                     e.stopPropagation();
+                    hideCardConfigToast();
                     tempConfigButtons = ['edit', 'delete', 'pdf'];
                     tempDefaultCardImage = 'photo';
                     tempConfigTags = ['distance', 'elevation', 'location', 'terrain'];
@@ -10611,6 +10675,7 @@
                         // If delete badge was clicked, handle it separately
                         if (e.target.closest('.config-slot-delete-btn')) {
                             e.stopPropagation();
+                            hideCardConfigToast();
                             const slotIdx = parseInt(e.target.closest('.config-slot-delete-btn').dataset.slot, 10);
                             tempConfigButtons[slotIdx] = null;
                             selectedAvailableButtonId = null;
@@ -10698,7 +10763,18 @@
                 });
             }
 
+            let slotsFullTimeout = null;
+
+            function hideCardConfigToast() {
+                if (slotsFullTimeout) clearTimeout(slotsFullTimeout);
+                const notice = document.getElementById('cardConfigSlotsFullNotice');
+                if (notice) notice.classList.add('hidden');
+                const toast = document.getElementById('cardConfigToast');
+                if (toast) toast.remove();
+            }
+
             function assignButtonToSlot(buttonId, targetSlotIndex) {
+                hideCardConfigToast();
                 // Enforce unique assignment
                 const existingIndex = tempConfigButtons.indexOf(buttonId);
                 if (existingIndex !== -1) {
@@ -10709,40 +10785,21 @@
             }
 
             function showCardConfigToast(message) {
-                // Remove existing toast if any
-                const existing = document.getElementById('cardConfigToast');
-                if (existing) existing.remove();
-
-                const toast = document.createElement('div');
-                toast.id = 'cardConfigToast';
-                toast.className = 'flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-xs font-semibold shadow-sm border border-red-200 bg-red-50 text-red-800 transition-all duration-300';
-                toast.style.animation = 'toastSlideIn 0.35s cubic-bezier(0.34,1.56,0.64,1)';
-                toast.innerHTML = `
-                    <div class="w-6 h-6 rounded-full bg-red-100 text-red-600 flex items-center justify-center shrink-0 shadow-2xs">
-                        <i class="fas fa-exclamation-circle text-xs"></i>
-                    </div>
-                    <span class="flex-1 leading-snug">${message}</span>
-                `;
-
-                // Insert into feedback container if present, or before available section
-                const feedbackContainer = document.getElementById('cardConfigFeedbackContainer');
-                if (feedbackContainer) {
-                    feedbackContainer.appendChild(toast);
-                } else {
-                    const availableSection = document.getElementById('availableBtnsSection');
-                    if (availableSection) {
-                        availableSection.parentNode.insertBefore(toast, availableSection);
+                const notice = document.getElementById('cardConfigSlotsFullNotice');
+                const textEl = document.getElementById('cardConfigSlotsFullNoticeText');
+                if (notice) {
+                    if (message && textEl) {
+                        textEl.innerHTML = message;
                     }
+                    if (slotsFullTimeout) clearTimeout(slotsFullTimeout);
+                    // Affichage identique au libellé no-delete (sans animation de glissement)
+                    notice.classList.remove('hidden');
+
+                    // Auto-masquage après 4s
+                    slotsFullTimeout = setTimeout(() => {
+                        notice.classList.add('hidden');
+                    }, 4000);
                 }
-
-                // Auto-remove after 3.5s
-                setTimeout(() => {
-                    if (toast.parentNode) {
-                        toast.style.opacity = '0';
-                        toast.style.transform = 'translateY(-10px)';
-                        setTimeout(() => toast.remove(), 300);
-                    }
-                }, 3500);
             }
         }
 
