@@ -1982,6 +1982,19 @@
                     </div>
                 </div>
 
+                <!-- Messages & alertes dynamiques -->
+                <div id="cardConfigFeedbackContainer" class="flex flex-col gap-2.5">
+                    <div id="cardConfigNoDeleteNotice"
+                        class="hidden flex items-start sm:items-center gap-2.5 p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-900 leading-relaxed transition-all duration-300 shadow-2xs">
+                        <div class="w-6 h-6 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center shrink-0 mt-0.5 sm:mt-0 shadow-2xs">
+                            <i class="fas fa-exclamation-triangle text-xs"></i>
+                        </div>
+                        <div class="flex-1">
+                            <span class="font-bold text-amber-900">Attention :</span> en ne sélectionnant pas l'action <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-red-100 text-red-700 border border-red-200 font-semibold text-[11px] align-baseline"><i class="fas fa-trash-alt text-[10px] text-red-600"></i> Supprimer</span>, vous n'aurez aucune action permettant de supprimer une course directement depuis vos cartes <span class="text-amber-800 font-medium">(ce qui est pratique si vous souhaitez éviter les fausses manipulations).</span>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Section Boutons Disponibles -->
                 <div class="space-y-2.5" id="availableBtnsSection">
                     <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1.5">
@@ -10487,9 +10500,9 @@
                     const cleanButtons = tempConfigButtons.filter(b => b !== null && b !== undefined && b !== '');
                     if (cleanButtons.length === 0) {
                         if (typeof showCardConfigToast === 'function') {
-                            showCardConfigToast("Vous devez sélectionner au moins une fonctionnalité");
+                            showCardConfigToast("Vous devez sélectionner au moins un bouton d'action pour vos cartes.");
                         } else {
-                            alert("Vous devez sélectionner au moins une fonctionnalité");
+                            alert("Vous devez sélectionner au moins un bouton d'action pour vos cartes.");
                         }
                         return;
                     }
@@ -10538,6 +10551,17 @@
                 updatePreviewImage();
                 updateCheckboxStyles();
                 updatePreviewTags();
+
+                // Alerte si l'action Supprimer (poubelle) n'est pas sélectionnée
+                const noDeleteNotice = document.getElementById('cardConfigNoDeleteNotice');
+                if (noDeleteNotice) {
+                    const hasDelete = tempConfigButtons.includes('delete');
+                    if (!hasDelete) {
+                        noDeleteNotice.classList.remove('hidden');
+                    } else {
+                        noDeleteNotice.classList.add('hidden');
+                    }
+                }
 
                 // 1. Render slots
                 configCardSlots.innerHTML = '';
@@ -10663,8 +10687,8 @@
                             }
                         }
                         if (targetSlot === -1) {
-                            // All slots full — show inline toast
-                            showCardConfigToast('Les 3 emplacements sont déjà occupés. Supprimez-en un d\'abord en cliquant sur la croix ✕ rouge.');
+                            // All slots full — show inline toast with matching red badge
+                            showCardConfigToast('Les 3 emplacements sont déjà occupés. Supprimez-en un d\'abord en cliquant sur sa pastille rouge <span class="inline-flex items-center justify-center w-4 h-4 rounded-full bg-red-500 text-white text-[10px] font-bold leading-none align-middle shadow-2xs select-none">&times;</span>.');
                             return;
                         }
                         assignButtonToSlot(btnDef.id, targetSlot);
@@ -10691,17 +10715,24 @@
 
                 const toast = document.createElement('div');
                 toast.id = 'cardConfigToast';
-                toast.className = 'flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold shadow-md border transition-all duration-300';
-                toast.style.cssText = 'background: linear-gradient(135deg, #fee2e2, #fecaca); color: #991b1b; border-color: #f87171; animation: toastSlideIn 0.35s cubic-bezier(0.34,1.56,0.64,1);';
+                toast.className = 'flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-xs font-semibold shadow-sm border border-red-200 bg-red-50 text-red-800 transition-all duration-300';
+                toast.style.animation = 'toastSlideIn 0.35s cubic-bezier(0.34,1.56,0.64,1)';
                 toast.innerHTML = `
-                    <span class="text-base">❌</span>
-                    <span>${message}</span>
+                    <div class="w-6 h-6 rounded-full bg-red-100 text-red-600 flex items-center justify-center shrink-0 shadow-2xs">
+                        <i class="fas fa-exclamation-circle text-xs"></i>
+                    </div>
+                    <span class="flex-1 leading-snug">${message}</span>
                 `;
 
-                // Insert just above the "Boutons disponibles" section
-                const availableSection = document.getElementById('availableBtnsSection');
-                if (availableSection) {
-                    availableSection.parentNode.insertBefore(toast, availableSection);
+                // Insert into feedback container if present, or before available section
+                const feedbackContainer = document.getElementById('cardConfigFeedbackContainer');
+                if (feedbackContainer) {
+                    feedbackContainer.appendChild(toast);
+                } else {
+                    const availableSection = document.getElementById('availableBtnsSection');
+                    if (availableSection) {
+                        availableSection.parentNode.insertBefore(toast, availableSection);
+                    }
                 }
 
                 // Auto-remove after 3.5s
