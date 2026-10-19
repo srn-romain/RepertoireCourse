@@ -112,3 +112,15 @@ body {
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
 }
 
+/* ==========================================================================
+   FENÊTRE DE PRÉDICTION IA (CONTRASTE DYNAMIQUE & LISIBILITÉ)
+   ========================================================================== */
+.ai-prediction-card-purple {
+    background-color: #faf5ff;
+    border-color: #e9d5ff;
+}
+.ai-prediction-card-amber {
+    background-color: #fffbeb;
+    border-color: #fde68a;
+}
+

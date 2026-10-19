@@ -1612,48 +1612,6 @@
                     html += `  </div>`;
                     html += `  <p class="text-[10px] text-blue-400 mt-2 italic text-center">Graphique basé sur ${chronologicalRaces.length} courses.</p>`;
 
-                    // PRÉDICTION IA
-                    if (chronologicalRaces.length >= 5) {
-                        const speeds = chronologicalRaces.map(r => r.distance / (timeToSeconds(r.time) / 3600));
-                        const paces = chronologicalRaces.map(r => (timeToSeconds(r.time) / 60) / r.distance);
-                        
-                        function predictNext(arr) {
-                            let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
-                            const n = arr.length;
-                            arr.forEach((y, x) => { sumX += x; sumY += y; sumXY += x * y; sumX2 += x * x; });
-                            const slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
-                            const intercept = (sumY - slope * sumX) / n;
-                            return slope * n + intercept;
-                        }
-                        
-                        let predSpeed = predictNext(speeds);
-                        let predPace = predictNext(paces);
-                        
-                        // Sécurité mathématique
-                        if(predSpeed < 0 || isNaN(predSpeed)) predSpeed = speeds[speeds.length-1];
-                        if(predPace < 0 || isNaN(predPace)) predPace = paces[paces.length-1];
-                        
-                        const pMins = Math.floor(predPace);
-                        const pSecs = Math.round((predPace - pMins) * 60);
-                        const formattedPace = `${pMins}'${pSecs.toString().padStart(2, '0')}"`;
-
-                        html += `  <div class="mt-3 flex justify-center">`;
-                        html += `    <div class="bg-purple-50 border border-purple-100 rounded-md py-1.5 px-3 flex flex-col sm:flex-row items-center gap-2 sm:gap-4 text-[11px] text-purple-700 font-medium">`;
-                        html += `      <span class="flex items-center gap-1"><i class="fas fa-robot text-purple-500"></i> Prédiction IA pour la course n°${chronologicalRaces.length + 1} :</span>`;
-                        html += `      <div class="flex items-center gap-3">`;
-                        html += `        <span title="Vitesse estimée en kilomètres par heure" class="flex items-center gap-1.5 bg-white px-2 py-0.5 rounded border border-purple-100 shadow-sm text-indigo-800 cursor-help"><i class="fas fa-tachometer-alt text-indigo-400"></i> ~${predSpeed.toFixed(2)} km/h</span>`;
-                        html += `        <span title="Allure estimée en minutes par kilomètre" class="flex items-center gap-1.5 bg-white px-2 py-0.5 rounded border border-purple-100 shadow-sm text-purple-800 cursor-help"><i class="fas fa-stopwatch text-purple-400"></i> ~${formattedPace} min/km</span>`;
-                        html += `      </div>`;
-                        html += `    </div>`;
-                        html += `  </div>`;
-                    } else {
-                        html += `  <div class="mt-3 flex justify-center">`;
-                        html += `    <div class="bg-gray-50 border border-gray-100 rounded-md py-1 px-3 flex items-center gap-2 text-[10px] text-gray-500 italic" title="5 courses minimum requises">`;
-                        html += `      <i class="fas fa-robot text-gray-500"></i> Prédiction IA indisponible (5 courses requises)`;
-                        html += `    </div>`;
-                        html += `  </div>`;
-                    }
-
                     html += `</div>`;
                 } else {
                     html += `<div class="bg-blue-50/60 border border-dashed border-blue-200 p-4 rounded-lg mb-6 text-center">`;
@@ -1665,9 +1623,6 @@
                     html += `    <p class="text-xs text-blue-700/80 max-w-md">`;
                     html += `      Ajoutez au moins <strong>2 courses</strong> complètes (avec date, distance et chrono) pour afficher le graphique d'évolution.`;
                     html += `    </p>`;
-                    html += `    <div class="mt-1 bg-white border border-gray-200 rounded-md py-1 px-3 flex items-center gap-2 text-[10px] text-gray-500 italic shadow-xs" title="5 courses minimum requises">`;
-                    html += `      <i class="fas fa-robot text-gray-500"></i> Prédiction IA indisponible (5 courses requises)`;
-                    html += `    </div>`;
                     html += `  </div>`;
                     html += `</div>`;
                 }

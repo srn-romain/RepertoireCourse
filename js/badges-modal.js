@@ -635,7 +635,7 @@
             xp: 30,
             name: 'Œil sur les chiffres',
             icon: 'fa-chart-line',
-            description: 'Consulter ses graphiques d\'évolution et sa prédiction IA.'
+            description: 'Consulter ses graphiques d\'évolution des performances.'
         },
         note_groupee: {
             id: 'note_groupee',

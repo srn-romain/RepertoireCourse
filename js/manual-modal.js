@@ -137,6 +137,22 @@ const manualModalHTML = `
                                         class="fas fa-trash text-red-600"></i> et confirmez la suppression
                                     définitive.
                                 </p>
+                            </div>
+                        </div>
+
+                        <!-- Prédiction IA sur les courses à venir -->
+                        <div class="bg-purple-50/80 border border-purple-200 rounded-lg p-4 shadow-sm">
+                            <h5 class="font-bold text-purple-900 mb-2 flex items-center gap-2">
+                                <i class="fas fa-robot text-purple-600"></i> Prédiction IA personnalisée (Courses à venir)
+                            </h5>
+                            <p class="text-sm text-gray-700 mb-2 leading-relaxed">
+                                Pour toute course <strong>à venir</strong> (y compris le <em>Jour J</em> ou lorsque le chrono est en attente), une estimation intelligente et sur-mesure de votre performance s'affiche dans la fiche détaillée de la course, dans une <strong>fenêtre dédiée</strong> mise en avant avec une couleur distincte, positionnée juste au-dessus du carré des statistiques calculées.
+                            </p>
+                            <ul class="text-xs text-gray-600 space-y-1.5 ml-4">
+                                <li>• <strong>Prise en compte du terrain :</strong> L'algorithme adapte sa projection selon la discipline de la course (Route, Trail avec calcul du dénivelé D+, Relai...).</li>
+                                <li>• <strong>Calcul sur la distance réelle :</strong> Modélisation fine s'appuyant sur la formule athlétique de Peter Riegel et vos vitesses d'effort passées.</li>
+                                <li>• <strong>Condition d'activation :</strong> La prédiction s'affiche automatiquement dès que vous comptabilisez au moins <strong>5 courses complètes</strong> dans votre historique (avec distance et chrono). Si vous avez moins de 5 courses, rien de particulier ne s'affiche (affichage classique du statut).</li>
+                            </ul>
                         </div>
                     </div>
                 </section>
@@ -365,7 +381,6 @@ const manualModalHTML = `
                                 <div>🏃 Vitesse moyenne par période</div>
                                 <div>🏆 Records D+ et D- par course</div>
                                 <div>📈 Courbe d'évolution vitesse & allure</div>
-                                <div>🤖 Prédiction IA de vos prochaines performances</div>
                             </div>
                         </div>
 

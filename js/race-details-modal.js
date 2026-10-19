@@ -83,7 +83,7 @@
                             </p>
                             <p id="detailsElevation" class="font-semibold text-green-800 text-sm"></p>
                         </div>
-                        <div class="bg-green-50 p-3 rounded-lg">
+                        <div class="bg-green-50 p-3 rounded-lg" id="detailsTimeContainer">
                             <p class="text-sm text-green-600 flex items-center gap-2">
                                 <i class="fas fa-stopwatch text-green-500"></i>
                                 <span>Temps</span>
@@ -138,6 +138,7 @@
 
                     </div>
 
+                    <div id="aiPredictionSection" class="mb-2 w-full hidden"></div>
                     <div id="averageSpeedInfo" class="mb-2 text-green-700 font-semibold"></div>
                     <div id="detailsLinksContainer" class="mt-4 mb-4 grid grid-cols-1 gap-3 w-full hidden"></div>
                     <div class="mb-4 max-w-full overflow-hidden" id="detailsNotesContainer">
@@ -306,6 +307,315 @@
         return `${mins}:${String(secs).padStart(2, '0')} min/km`;
     }
 
+    /**
+     * Calcule la prédiction IA personnalisée pour une course à venir en fonction de l'historique du coureur.
+     * Prend en compte :
+     * - Le type de terrain (Route, Trail, Relai, etc.)
+     * - La distance exacte de l'épreuve
+     * - Le dénivelé D+ (équivalent Effort-km : 100m D+ = 1 km plat)
+     * - L'endurance personnalisée (indice de Peter Riegel)
+     * - La dynamique / tendance de progression récente
+     * 
+     * Règle stricte : Au moins 5 courses complètes passées requises (avec chrono et distance valides).
+     * Si moins de 5 courses complètes : retourne null (rien ne s'affiche).
+     */
+    function predictRacePerformance(targetRace, allRaces) {
+        if (!targetRace || !allRaces || !Array.isArray(allRaces)) return null;
+
+        // Déterminer la distance et le dénivelé de la course cible
+        let targetDist = parseFloat(targetRace.distance) || 0;
+        let targetElev = parseFloat(targetRace.elevation) || 0;
+        let targetTerrain = (targetRace.terrain || 'route').toLowerCase();
+
+        // Spécificité Relais : si l'utilisateur a des segments assignés
+        if (targetTerrain === 'relai' && Array.isArray(targetRace.relayLaps) && targetRace.relayLaps.length > 0) {
+            const currentUserPseudo = window.currentUserPseudo || 'Moi';
+            let uDist = 0, uElev = 0;
+            targetRace.relayLaps.forEach(lap => {
+                const runnerLower = String(lap.runner || '').trim().toLowerCase();
+                const isUser = !runnerLower || runnerLower === 'moi' || runnerLower === 'tous ensemble' || runnerLower === 'all' || (currentUserPseudo && runnerLower === currentUserPseudo.toLowerCase());
+                if (isUser) {
+                    uDist += parseFloat(lap.dist) || 0;
+                    uElev += parseInt(lap.elev) || 0;
+                }
+            });
+            if (uDist > 0) {
+                targetDist = uDist;
+                if (uElev > 0) targetElev = uElev;
+            }
+        }
+
+        // Si pas de distance valide pour la course cible, impossible d'estimer un temps
+        if (targetDist <= 0 || isNaN(targetDist)) return null;
+
+        // Récupérer toutes les courses complétées passées
+        const completedRuns = [];
+
+        allRaces.forEach(r => {
+            if (!r || r.id === targetRace.id) return;
+
+            // Cas relais : vérifier les segments de l'utilisateur
+            if (r.terrain === 'relai' && Array.isArray(r.relayLaps) && r.relayLaps.length > 0) {
+                const currentUserPseudo = window.currentUserPseudo || 'Moi';
+                let uDist = 0, uElev = 0, uTimeS = 0;
+                r.relayLaps.forEach(lap => {
+                    const runnerLower = String(lap.runner || '').trim().toLowerCase();
+                    const isUser = !runnerLower || runnerLower === 'moi' || runnerLower === 'tous ensemble' || runnerLower === 'all' || (currentUserPseudo && runnerLower === currentUserPseudo.toLowerCase());
+                    if (isUser) {
+                        uDist += parseFloat(lap.dist) || 0;
+                        uElev += parseInt(lap.elev) || 0;
+                        uTimeS += timeToSeconds(lap.time) || 0;
+                    }
+                });
+                if (uDist > 0 && uTimeS > 0) {
+                    const flatDist = uDist + (uElev > 0 ? uElev / 100 : 0);
+                    const speed = (uDist / uTimeS) * 3600;
+                    const pace = uTimeS / uDist;
+                    if (speed >= 4 && speed <= 30) {
+                        completedRuns.push({
+                            id: r.id,
+                            date: r.date ? new Date(r.date) : new Date(0),
+                            dist: uDist,
+                            elev: uElev,
+                            flatDist,
+                            timeSec: uTimeS,
+                            speedKmH: speed,
+                            paceSecKm: pace,
+                            terrain: 'relai'
+                        });
+                    }
+                }
+                return;
+            }
+
+            // Cas courses standards (hors triathlon solo)
+            if (r.terrain !== 'triathlon') {
+                const dist = parseFloat(r.distance) || 0;
+                const elev = parseFloat(r.elevation) || 0;
+                const tSec = timeToSeconds(r.time);
+                if (dist > 0 && tSec && tSec > 0) {
+                    const speed = (dist / tSec) * 3600;
+                    const pace = tSec / dist;
+                    if (speed >= 4 && speed <= 30) {
+                        const flatDist = dist + (elev > 0 ? elev / 100 : 0);
+                        completedRuns.push({
+                            id: r.id,
+                            date: r.date ? new Date(r.date) : new Date(0),
+                            dist,
+                            elev,
+                            flatDist,
+                            timeSec: tSec,
+                            speedKmH: speed,
+                            paceSecKm: pace,
+                            terrain: (r.terrain || 'route').toLowerCase()
+                        });
+                    }
+                }
+            }
+        });
+
+        // RÈGLE STRICTE : Au moins 5 courses complètes requises
+        if (completedRuns.length < 5) {
+            return null;
+        }
+
+        // Tri chronologique des courses (anciennes -> récentes)
+        completedRuns.sort((a, b) => a.date - b.date);
+
+        // 1. Calcul du coefficient d'endurance de Peter Riegel personnalisé
+        let fatigueExponent = 1.07;
+        const shortRuns = completedRuns.filter(r => r.flatDist >= 3.0 && r.flatDist <= 12.0);
+        const longRuns = completedRuns.filter(r => r.flatDist >= 15.0);
+
+        if (shortRuns.length > 0 && longRuns.length > 0) {
+            const avgShortDist = shortRuns.reduce((s, r) => s + r.flatDist, 0) / shortRuns.length;
+            const avgShortTime = shortRuns.reduce((s, r) => s + r.timeSec, 0) / shortRuns.length;
+            const avgLongDist = longRuns.reduce((s, r) => s + r.flatDist, 0) / longRuns.length;
+            const avgLongTime = longRuns.reduce((s, r) => s + r.timeSec, 0) / longRuns.length;
+
+            if (avgLongDist > avgShortDist * 1.3 && avgLongTime > avgShortTime) {
+                const customF = Math.log(avgLongTime / avgShortTime) / Math.log(avgLongDist / avgShortDist);
+                if (!isNaN(customF) && customF >= 1.03 && customF <= 1.18) {
+                    fatigueExponent = customF;
+                }
+            }
+        } else {
+            const maxDist = Math.max(...completedRuns.map(r => r.flatDist));
+            if (maxDist < 10) fatigueExponent = 1.085;
+            else if (maxDist >= 21) fatigueExponent = 1.06;
+        }
+
+        // 2. Détermination du facteur de technicité de terrain
+        const trailRuns = completedRuns.filter(r => r.terrain === 'trail');
+        const roadRuns = completedRuns.filter(r => r.terrain === 'route' || r.terrain === 'nature' || r.terrain === 'cross' || r.terrain === 'piste');
+
+        let trailSlowdownFactor = 0.88; // Par défaut : un trail est ~12% plus lent à effort-km égal
+        if (trailRuns.length >= 2 && roadRuns.length >= 2) {
+            const avgTrailFlatSpeed = trailRuns.reduce((s, r) => s + ((r.flatDist / r.timeSec) * 3600), 0) / trailRuns.length;
+            const avgRoadFlatSpeed = roadRuns.reduce((s, r) => s + ((r.flatDist / r.timeSec) * 3600), 0) / roadRuns.length;
+            if (avgRoadFlatSpeed > 0 && avgTrailFlatSpeed > 0) {
+                const ratio = avgTrailFlatSpeed / avgRoadFlatSpeed;
+                if (ratio >= 0.70 && ratio <= 0.98) {
+                    trailSlowdownFactor = ratio;
+                }
+            }
+        }
+
+        // 3. Distance d'effort cible (Effort-km : 100m D+ = 1 km plat)
+        const targetEffortDist = targetDist + (targetElev > 0 ? targetElev / 100 : 0);
+
+        // 4. Projection pour chaque course passée avec pondération multi-critères
+        let totalWeight = 0;
+        let weightedProjectedTime = 0;
+        const n = completedRuns.length;
+
+        completedRuns.forEach((r, idx) => {
+            let projectedSec = r.timeSec * Math.pow(targetEffortDist / r.flatDist, fatigueExponent);
+
+            // Ajustement selon le terrain de la course passée vs cible
+            if (targetTerrain === 'trail') {
+                if (r.terrain !== 'trail') {
+                    projectedSec = projectedSec / trailSlowdownFactor;
+                }
+            } else if (targetTerrain === 'route') {
+                if (r.terrain === 'trail') {
+                    projectedSec = projectedSec * trailSlowdownFactor;
+                }
+            } else if (targetTerrain === 'relai') {
+                if (r.terrain === 'trail') {
+                    projectedSec = projectedSec * trailSlowdownFactor;
+                }
+                if (targetDist <= 10) {
+                    projectedSec *= 0.98;
+                }
+            }
+
+            // Pondération 1 : Similarité de terrain
+            let terrainWeight = 1.0;
+            if (targetTerrain === 'trail') {
+                terrainWeight = (r.terrain === 'trail') ? 3.0 : 0.8;
+            } else if (targetTerrain === 'route') {
+                terrainWeight = (r.terrain === 'route' || r.terrain === 'piste') ? 2.5 : ((r.terrain === 'trail') ? 0.7 : 1.2);
+            } else if (targetTerrain === 'relai') {
+                terrainWeight = (r.terrain === 'relai') ? 3.0 : ((r.terrain === 'route') ? 1.5 : 0.7);
+            } else {
+                terrainWeight = (r.terrain === targetTerrain) ? 2.5 : 1.0;
+            }
+
+            // Pondération 2 : Proximité de distance
+            const distRatio = Math.max(r.dist / targetDist, targetDist / r.dist);
+            const distWeight = 1 / (1 + Math.log(distRatio));
+
+            // Pondération 3 : Récence
+            const recencyWeight = 0.5 + 0.5 * ((idx + 1) / n);
+
+            const weight = terrainWeight * distWeight * recencyWeight;
+            weightedProjectedTime += projectedSec * weight;
+            totalWeight += weight;
+        });
+
+        if (totalWeight <= 0) return null;
+
+        let finalTimeSec = weightedProjectedTime / totalWeight;
+
+        // 5. Ajustement de tendance récente (momentum de forme sur les 5 dernières courses)
+        if (completedRuns.length >= 5) {
+            const recentRuns = completedRuns.slice(-5);
+            let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
+            recentRuns.forEach((r, i) => {
+                const speed = (r.flatDist / r.timeSec) * 3600;
+                sumX += i;
+                sumY += speed;
+                sumXY += i * speed;
+                sumX2 += i * i;
+            });
+            const count = recentRuns.length;
+            const slope = (count * sumXY - sumX * sumY) / (count * sumX2 - sumX * sumX);
+            if (!isNaN(slope)) {
+                const avgRecentSpeed = sumY / count;
+                if (avgRecentSpeed > 0) {
+                    const trendFactor = 1 - Math.max(-0.03, Math.min(0.03, (slope * 2) / avgRecentSpeed));
+                    finalTimeSec *= trendFactor;
+                }
+            }
+        }
+
+        // Sécurité physique : allure min 2'30"/km, max 15'00"/km
+        const predPaceSec = finalTimeSec / targetDist;
+        if (predPaceSec < 150) finalTimeSec = 150 * targetDist;
+        if (predPaceSec > 900) finalTimeSec = 900 * targetDist;
+
+        const predSpeedKmH = (targetDist / finalTimeSec) * 3600;
+        const finalPaceSec = finalTimeSec / targetDist;
+        const paceMins = Math.floor(finalPaceSec / 60);
+        const paceSecs = Math.round(finalPaceSec % 60);
+        const formattedPace = `${paceMins}'${String(paceSecs).padStart(2, '0')}"`;
+
+        // Formatage du temps prédit
+        const hours = Math.floor(finalTimeSec / 3600);
+        const minutes = Math.floor((finalTimeSec % 3600) / 60);
+        const seconds = Math.round(finalTimeSec % 60);
+
+        let formattedTime = '';
+        if (hours > 0) {
+            formattedTime = `${hours}h${String(minutes).padStart(2, '0')}'${String(seconds).padStart(2, '0')}"`;
+        } else {
+            formattedTime = `${minutes}'${String(seconds).padStart(2, '0')}"`;
+        }
+
+        return {
+            timeSec: Math.round(finalTimeSec),
+            formattedTime,
+            pace: formattedPace,
+            speed: predSpeedKmH.toFixed(1),
+            targetDist,
+            targetElev,
+            targetTerrain,
+            basedOnRacesCount: completedRuns.length
+        };
+    }
+
+    /**
+     * Détermine les classes de couleur de la fenêtre de prédiction IA pour qu'elle
+    /**
+     * Helper: Détermine dynamiquement une palette de couleur pour la prédiction IA qui
+     * contraste nettement avec le thème choisi par l'utilisateur dans les réglages
+     * tout en restant parfaitement lisible et esthétique.
+     */
+    function getPredictionThemeColors() {
+        const userTheme = (typeof window !== 'undefined' && window.currentThemeColor)
+            || (typeof localStorage !== 'undefined' ? localStorage.getItem('userThemeColor') : null)
+            || 'green';
+
+        // Si l'utilisateur a choisi un thème violet, indigo ou bleu :
+        // basculer sur une teinte ambre/or chaleureuse, lumineuse et ultra visible
+        if (userTheme === 'purple' || userTheme === 'indigo' || userTheme === 'blue') {
+            return {
+                bgClass: 'bg-amber-50 ai-prediction-card-amber',
+                borderClass: 'border-amber-200',
+                headerBorderClass: 'border-amber-200',
+                headerTextClass: 'text-amber-900',
+                iconColorClass: 'text-amber-600',
+                labelClass: 'text-amber-700',
+                valueClass: 'text-amber-950',
+                badgeClass: 'bg-amber-100 text-amber-900 border-amber-300'
+            };
+        }
+
+        // Pour tous les autres thèmes (vert classique, sarcelle, rose, ambre, ardoise),
+        // utiliser une palette violette/pourpre IA moderne, élégante et parfaitement visible
+        return {
+            bgClass: 'bg-purple-50 ai-prediction-card-purple',
+            borderClass: 'border-purple-200',
+            headerBorderClass: 'border-purple-200',
+            headerTextClass: 'text-purple-900',
+            iconColorClass: 'text-purple-600',
+            labelClass: 'text-purple-700',
+            valueClass: 'text-purple-950',
+            badgeClass: 'bg-purple-100 text-purple-900 border-purple-300'
+        };
+    }
+
     // Helper: Surlignage de texte recherché
     function highlightSearchMatch(text, searchQuery) {
         if (!searchQuery || !text) return text;
@@ -398,6 +708,11 @@
         if (modal) {
             modal.classList.add('hidden');
         }
+        const aiPredictionContainer = document.getElementById('aiPredictionSection');
+        if (aiPredictionContainer) {
+            aiPredictionContainer.innerHTML = '';
+            aiPredictionContainer.classList.add('hidden');
+        }
         if (currentKeyNavigationHandler) {
             document.removeEventListener('keydown', currentKeyNavigationHandler);
             currentKeyNavigationHandler = null;
@@ -464,6 +779,18 @@
                     exportSingleRace(currentRaceIdInDetails);
                 }
             };
+        }
+
+        // Si l'utilisateur modifie la palette de couleur dans les paramètres, adapter immédiatement la prédiction
+        if (typeof window !== 'undefined') {
+            window.addEventListener('themeChanged', () => {
+                if (currentRaceIdInDetails) {
+                    const detailsModal = document.getElementById('detailsModal');
+                    if (detailsModal && !detailsModal.classList.contains('hidden')) {
+                        showRaceDetails(currentRaceIdInDetails, cachedRacesListForNav);
+                    }
+                }
+            });
         }
     }
 
@@ -621,6 +948,12 @@
         const timeIcon = timeContainer ? timeContainer.querySelector('i') : null;
 
         // Reset containers styles
+        const aiPredictionContainer = document.getElementById('aiPredictionSection');
+        if (aiPredictionContainer) {
+            aiPredictionContainer.innerHTML = '';
+            aiPredictionContainer.classList.add('hidden');
+        }
+
         [distanceElement?.parentElement, elevationElement?.parentElement, timeElement?.parentElement, terrainContainer].forEach(el => {
             if (el) {
                 el.classList.remove('hidden', 'bg-blue-50', 'bg-orange-50', 'bg-green-50');
@@ -919,6 +1252,72 @@
                     timeElement.innerHTML = highlightSearchMatch(timeDisplay, searchQuery);
                 } else {
                     timeElement.textContent = timeDisplay;
+                }
+
+                // Prédiction IA personnalisée dans sa fenêtre dédiée au-dessus de Statistiques calculées
+                const aiPredictionContainer = document.getElementById('aiPredictionSection');
+                if (aiPredictionContainer) {
+                    const isRelayWithTime = race.terrain === 'relai' && (typeof userRelayTimeS !== 'undefined' && userRelayTimeS > 0);
+                    const isTriathlonSolo = race.terrain === 'triathlon' && race.raceFormat !== 'team';
+
+                    if (!hasCompletedTime && !isRelayWithTime && !isTriathlonSolo) {
+                        const allAvailableRaces = window.allUserRaces || window.originalRaces || window.races || racesList || [];
+                        const prediction = predictRacePerformance(race, allAvailableRaces);
+
+                        if (prediction) {
+                            const themeColors = getPredictionThemeColors();
+
+                            let terrainBadgeName = 'Route';
+                            let elevText = '';
+                            if (prediction.targetTerrain === 'trail') {
+                                terrainBadgeName = 'Trail';
+                                if (prediction.targetElev > 0) {
+                                    elevText = `• D+ ${prediction.targetElev}m`;
+                                    terrainBadgeName = `Trail (+${prediction.targetElev}m)`;
+                                }
+                            } else if (prediction.targetTerrain === 'relai') {
+                                terrainBadgeName = 'Relai';
+                            } else if (prediction.targetTerrain) {
+                                terrainBadgeName = prediction.targetTerrain.charAt(0).toUpperCase() + prediction.targetTerrain.slice(1);
+                            }
+
+                            aiPredictionContainer.innerHTML = `
+                                <div class="${themeColors.bgClass} p-3 rounded-lg w-full border ${themeColors.borderClass} mb-4 shadow-sm transition-all duration-200">
+                                    <h4 class="font-bold ${themeColors.headerTextClass} text-center mb-3 text-sm border-b ${themeColors.headerBorderClass} pb-2 flex items-center justify-center gap-2">
+                                        <i class="fas fa-robot ${themeColors.iconColorClass}"></i>
+                                        <span>Prédiction IA de la course</span>
+                                        <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full border ${themeColors.badgeClass} ml-1">
+                                            ${terrainBadgeName}
+                                        </span>
+                                    </h4>
+                                    <div class="flex flex-col gap-2 text-sm items-center">
+                                        <div class="flex items-center justify-between w-full max-w-sm px-4">
+                                            <span class="${themeColors.labelClass} font-medium">Temps estimé :</span>
+                                            <span class="font-bold ${themeColors.valueClass} text-right text-base">${prediction.formattedTime}</span>
+                                        </div>
+                                        <div class="flex items-center justify-between w-full max-w-sm px-4">
+                                            <span class="${themeColors.labelClass} font-medium">Allure estimée :</span>
+                                            <span class="font-semibold ${themeColors.valueClass} text-right">${prediction.pace}/km</span>
+                                        </div>
+                                        <div class="flex items-center justify-between w-full max-w-sm px-4">
+                                            <span class="${themeColors.labelClass} font-medium">Vitesse estimée :</span>
+                                            <span class="font-semibold ${themeColors.valueClass} text-right">${prediction.speed} km/h</span>
+                                        </div>
+                                    </div>
+                                    <p class="text-[10.5px] ${themeColors.labelClass} opacity-80 italic text-center mt-2.5 pt-2 border-t ${themeColors.headerBorderClass}">
+                                        Basé sur vos ${prediction.basedOnRacesCount} courses passées • Distance : ${formatDist(prediction.targetDist)} km ${elevText}
+                                    </p>
+                                </div>
+                            `;
+                            aiPredictionContainer.classList.remove('hidden');
+                        } else {
+                            aiPredictionContainer.innerHTML = '';
+                            aiPredictionContainer.classList.add('hidden');
+                        }
+                    } else {
+                        aiPredictionContainer.innerHTML = '';
+                        aiPredictionContainer.classList.add('hidden');
+                    }
                 }
             }
         }
@@ -1303,6 +1702,11 @@
             if (relayTimeElement && userRelayTimeS > 0) {
                 relayTimeElement.textContent = secondsToTime(userRelayTimeS);
                 relayTimeElement.className = 'font-semibold text-green-800';
+                const aiPred = document.getElementById('aiPredictionSection');
+                if (aiPred) {
+                    aiPred.innerHTML = '';
+                    aiPred.classList.add('hidden');
+                }
             }
 
         } else if (race.terrain === 'hyrox' && race.hyroxLaps && race.hyroxLaps.length > 0) {
