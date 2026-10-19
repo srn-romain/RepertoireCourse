@@ -98,10 +98,9 @@ const manualModalHTML = `
                                 <div class="grid md:grid-cols-2 gap-2 text-xs text-gray-600">
                                     <div>• Nom de la course <span class="text-red-500">*</span></div>
                                     <div>• Date <span class="text-red-500">*</span></div>
-                                    <div>• Distance (km) <span class="text-red-500">*</span></div>
+                                    <div>• Distance (km)</div>
                                     <div>• Numéro de dossard</div>
-                                    <div>• Dénivelé positif D+ (m)</div>
-                                    <div>• Dénivelé négatif D- (m)</div>
+                                    <div>• Dénivelé D+ et D- (m)</div>
                                     <div>• Temps de course</div>
                                     <div>• Classements (Général et Genre/Catégorie)</div>
                                     <div>• Lieu / Ville</div>
@@ -146,7 +145,7 @@ const manualModalHTML = `
                                 <i class="fas fa-robot text-purple-600"></i> Prédiction IA personnalisée (Courses à venir)
                             </h5>
                             <p class="text-sm text-gray-700 mb-2 leading-relaxed">
-                                Pour toute course <strong>à venir</strong> (y compris le <em>Jour J</em> ou lorsque le chrono est en attente), une estimation intelligente et sur-mesure de votre performance s'affiche dans la fiche détaillée de la course, dans une <strong>fenêtre dédiée</strong> mise en avant avec une couleur distincte, positionnée juste au-dessus du carré des statistiques calculées.
+                                Pour toute course <strong>à venir</strong>, une estimation de votre performance s'affiche dans la fiche détaillée de la course.
                             </p>
                             <ul class="text-xs text-gray-600 space-y-1.5 ml-4">
                                 <li>• <strong>Prise en compte du terrain :</strong> L'algorithme adapte sa projection selon la discipline de la course (Route, Trail avec calcul du dénivelé D+, Relai...).</li>
@@ -406,6 +405,20 @@ const manualModalHTML = `
                                     <p class="text-gray-600">Calcul basé sur la formule athlétique de Peter Riegel. Cliquez sur le badge pour ouvrir la mini-modale explicative interactive.</p>
                                 </div>
                             </div>
+                        </div>
+
+                        <!-- Courbe d'évolution des performances & Allure d'effort -->
+                        <div class="p-4 bg-blue-50/70 border-t border-blue-200">
+                            <h5 class="font-bold text-blue-900 text-sm mb-2 flex items-center gap-2">
+                                <i class="fas fa-chart-line text-blue-600"></i> Courbe d'évolution des performances & Allure d'effort
+                            </h5>
+                            <p class="text-xs text-gray-700 mb-2 leading-relaxed">
+                                Suivez vos progrès chronologiques grâce à une analyse physiologique équitable :
+                            </p>
+                            <ul class="text-xs text-gray-600 space-y-1.5 ml-4">
+                                <li>• <strong>4 métriques au choix :</strong> Vitesse réelle (km/h), Vitesse d'effort avec D+ (Effort-km/h), Allure réelle (min/km) et Allure d'effort ajustée (min/km).</li>
+                                <li>• <strong>Repères vert et rouge équitables :</strong> La « Meilleure » et « Moins bonne » performance ne sont pas basées sur la vitesse brute, mais calculées selon l'effort réel (kilomètre-effort officiel D + D+/100, formule de Riegel et terrain). Un trail avec fort dénivelé est ainsi reconnu à sa juste valeur athlétique.</li>
+                            </ul>
                         </div>
                     </div>
                 </section>
