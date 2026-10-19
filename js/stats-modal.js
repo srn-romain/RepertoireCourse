@@ -1598,19 +1598,21 @@
                     html += `    <div class="flex items-center gap-2">`;
                     html += `      <label for="evolutionMetricSelect" class="text-xs text-blue-700 font-medium whitespace-nowrap">Métrique :</label>`;
                     html += `      <select id="evolutionMetricSelect" class="px-2 py-1 border-b-2 border-blue-400 bg-transparent text-blue-800 text-sm font-semibold cursor-pointer hover:border-blue-600 focus:outline-none focus:border-blue-600">`;
-                    html += `        <option value="speed">Vitesse moyenne (km/h)</option>`;
-                    html += `        <option value="pace">Allure (min/km)</option>`;
+                    html += `        <option value="speed">Vitesse réelle (km/h)</option>`;
+                    html += `        <option value="effort_speed">Vitesse d'effort ajustée (Effort-km/h, avec D+)</option>`;
+                    html += `        <option value="pace">Allure réelle (min/km)</option>`;
+                    html += `        <option value="effort_pace">Allure d'effort ajustée (min/km, avec D+)</option>`;
                     html += `      </select>`;
                     html += `    </div>`;
                     html += `  </div>`;
                     html += `  <div class="relative w-full h-[250px] md:h-[300px] bg-white rounded-lg p-2 border border-blue-100">`;
                     html += `    <canvas id="evolutionChartCanvas"></canvas>`;
                     html += `  </div>`;
-                    html += `  <div class="flex flex-wrap justify-center gap-x-4 gap-y-2 mt-3 mb-1">`;
-                    html += `    <div class="flex items-center gap-1.5 text-[10px] md:text-xs font-medium text-blue-900"><span class="w-3 h-0.5 border-t-2 border-dashed border-[var(--color-green-600,#16a34a)]"></span> Meilleure perf.</div>`;
-                    html += `    <div class="flex items-center gap-1.5 text-[10px] md:text-xs font-medium text-blue-900"><span class="w-3 h-0.5 border-t-2 border-dashed border-[#dc2626]"></span> Moins bonne perf.</div>`;
+                    html += `  <div class="flex flex-wrap justify-center gap-x-5 gap-y-2 mt-3 mb-1">`;
+                    html += `    <div class="flex items-center gap-1.5 text-[10px] md:text-xs font-medium text-blue-900"><span class="w-3.5 h-0.5 border-t-2 border-dashed border-[var(--color-green-600,#16a34a)]"></span> Meilleure perf. athlétique (ajustée D+ & distance)</div>`;
+                    html += `    <div class="flex items-center gap-1.5 text-[10px] md:text-xs font-medium text-blue-900"><span class="w-3.5 h-0.5 border-t-2 border-dashed border-[#dc2626]"></span> Moins bonne perf. athlétique (ajustée D+ & distance)</div>`;
                     html += `  </div>`;
-                    html += `  <p class="text-[10px] text-blue-400 mt-2 italic text-center">Graphique basé sur ${chronologicalRaces.length} courses.</p>`;
+                    html += `  <p class="text-[10px] text-blue-600/80 mt-2 italic text-center">💡 Les repères vert et rouge calculent l'effort physiologique réel en intégrant le dénivelé D+ (kilomètre-effort officiel), la fatigue de distance et le terrain.</p>`;
 
                     html += `</div>`;
                 } else {
@@ -2544,6 +2546,57 @@
             });
         }
 
+        // Helper: Convertir une allure décimale en format standard mm'ss"
+        function formatPaceMinutes(dec) {
+            if (isNaN(dec) || dec <= 0 || !isFinite(dec)) return '-';
+            const mins = Math.floor(dec);
+            const secs = Math.round((dec - mins) * 60);
+            if (secs === 60) return `${mins + 1}'00"`;
+            return `${mins}'${String(secs).padStart(2, '0')}"`;
+        }
+
+        // Helper: Calculer la performance athlétique réelle d'une course (Effort-km avec D+, Riegel et terrain)
+        function getRaceAthleticPerformance(r) {
+            const dist = parseFloat(r.distance) || 0;
+            const elev = parseFloat(r.elevation) || 0;
+            const seconds = timeToSeconds(r.time) || 0;
+            if (dist <= 0 || seconds <= 0) {
+                return { score: 0, effortDist: dist, eq10kSpeed: 0, eq10kTimeStr: '00:00' };
+            }
+
+            // 1. Kilomètre-effort officiel (100m D+ = 1 km plat)
+            const effortDist = dist + (elev > 0 ? elev / 100 : 0);
+
+            // 2. Ajustement de technicité terrain (sentiers, cailloux, descentes techniques)
+            const terrain = (r.terrain || 'route').toLowerCase();
+            let terrainFactor = 1.0;
+            if (terrain === 'trail') {
+                terrainFactor = 0.90; // ~10% plus lent à effort équivalent
+            } else if (terrain === 'cross' || terrain === 'nature') {
+                terrainFactor = 0.95;
+            }
+            const flatEquivDist = effortDist / terrainFactor;
+
+            // 3. Normalisation de la distance (Formule de Peter Riegel vers étalon 10 km plat)
+            // T_10k = T * (10 / D_equiv)^1.07
+            const eq10kSeconds = seconds * Math.pow(10 / flatEquivDist, 1.07);
+            const eq10kSpeed = (10 / (eq10kSeconds / 3600));
+
+            const h = Math.floor(eq10kSeconds / 3600);
+            const m = Math.floor((eq10kSeconds % 3600) / 60);
+            const s = Math.round(eq10kSeconds % 60);
+            const pad = n => String(n).padStart(2, '0');
+            const eq10kTimeStr = h > 0 ? `${h}h${pad(m)}m${pad(s)}s` : `${pad(m)}:${pad(s)}`;
+
+            return {
+                score: eq10kSpeed,
+                effortDist: effortDist,
+                flatEquivDist: flatEquivDist,
+                eq10kSpeed: eq10kSpeed,
+                eq10kTimeStr: eq10kTimeStr
+            };
+        }
+
         // Fonction pour mettre à jour le graphique d'évolution (Chart.js)
         function updateEvolutionChart(races, metric = 'speed') {
             const canvas = document.getElementById('evolutionChartCanvas');
@@ -2556,50 +2609,82 @@
 
             const ctx = canvas.getContext('2d');
             
-            // Préparer les données
+            // Préparer les données chronologiques
             const labels = races.map(r => {
                 const d = new Date(r.date);
                 return d.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: '2-digit' });
             });
-            
-            const data = races.map(r => {
-                const dist = parseFloat(r.distance);
-                const seconds = timeToSeconds(r.time);
-                const speed = dist / (seconds / 3600);
-                
-                if (metric === 'speed') {
-                    return parseFloat(speed.toFixed(2));
-                } else {
-                    // Pace in min/km (decimal)
-                    const pace = 60 / speed;
-                    return parseFloat(pace.toFixed(2));
+
+            // Calculer les scores athlétiques réels pour chaque course
+            const athleticScores = races.map(r => getRaceAthleticPerformance(r));
+
+            // Trouver les repères de meilleure et moins bonne performance athlétique réelle
+            let maxAthleticScore = -Infinity;
+            let minAthleticScore = Infinity;
+            let bestIndex = -1;
+            let worstIndex = -1;
+
+            athleticScores.forEach((ath, idx) => {
+                if (ath && ath.score > 0) {
+                    if (ath.score > maxAthleticScore) {
+                        maxAthleticScore = ath.score;
+                        bestIndex = idx;
+                    }
+                    if (ath.score < minAthleticScore) {
+                        minAthleticScore = ath.score;
+                        worstIndex = idx;
+                    }
                 }
             });
 
-            // Trouver le meilleur et le pire
-            let bestIndex = -1;
-            let worstIndex = -1;
-            if (data.length > 0) {
-                let bestVal, worstVal;
-                if (metric === 'speed') {
-                    bestVal = Math.max(...data);
-                    worstVal = Math.min(...data);
-                } else {
-                    bestVal = Math.min(...data); // Allure : plus bas est mieux
-                    worstVal = Math.max(...data);
-                }
-                bestIndex = data.indexOf(bestVal);
-                worstIndex = data.lastIndexOf(worstVal);
-            }
+            // Calculer les données selon la métrique sélectionnée
+            const data = races.map(r => {
+                const dist = parseFloat(r.distance) || 0;
+                const elev = parseFloat(r.elevation) || 0;
+                const seconds = timeToSeconds(r.time) || 0;
+                if (dist <= 0 || seconds <= 0) return 0;
 
-            const metricLabel = metric === 'speed' ? 'Vitesse (km/h)' : 'Allure (min/km)';
+                const realSpeed = dist / (seconds / 3600);
+                const effortDist = dist + (elev > 0 ? elev / 100 : 0);
+                const effortSpeed = effortDist / (seconds / 3600);
+
+                if (metric === 'speed') {
+                    return parseFloat(realSpeed.toFixed(2));
+                } else if (metric === 'effort_speed') {
+                    return parseFloat(effortSpeed.toFixed(2));
+                } else if (metric === 'pace') {
+                    const pace = 60 / realSpeed;
+                    return parseFloat(pace.toFixed(2));
+                } else {
+                    // effort_pace
+                    const effortPace = 60 / effortSpeed;
+                    return parseFloat(effortPace.toFixed(2));
+                }
+            });
+
+            // Définir les libellés et couleurs du graphique
+            let metricLabel = 'Vitesse réelle (km/h)';
+            if (metric === 'effort_speed') metricLabel = 'Vitesse d\'effort (Effort-km/h)';
+            else if (metric === 'pace') metricLabel = 'Allure réelle (min/km)';
+            else if (metric === 'effort_pace') metricLabel = 'Allure d\'effort (min/km)';
+
             const rootStyle = getComputedStyle(document.documentElement);
             const greenPrimary = rootStyle.getPropertyValue('--color-green-600').trim() || '#16a34a';
             const emeraldPrimary = rootStyle.getPropertyValue('--color-emerald-600').trim() || '#059669';
             const emeraldRgb = rootStyle.getPropertyValue('--color-emerald-600-rgb').trim() || '5, 150, 105';
 
-            const borderColor = metric === 'speed' ? '#2563eb' : emeraldPrimary;
-            const bgColor = metric === 'speed' ? 'rgba(37, 99, 235, 0.1)' : `rgba(${emeraldRgb}, 0.1)`;
+            let borderColor = '#2563eb';
+            let bgColor = 'rgba(37, 99, 235, 0.1)';
+            if (metric === 'effort_speed') {
+                borderColor = '#0284c7';
+                bgColor = 'rgba(2, 132, 199, 0.1)';
+            } else if (metric === 'pace') {
+                borderColor = emeraldPrimary;
+                bgColor = `rgba(${emeraldRgb}, 0.1)`;
+            } else if (metric === 'effort_pace') {
+                borderColor = '#10b981';
+                bgColor = 'rgba(16, 185, 129, 0.1)';
+            }
 
             // Plugin personnalisé pour dessiner les barres verticales Best/Worst
             const verticalLinePlugin = {
@@ -2607,9 +2692,10 @@
                 afterDatasetsDraw(chart) {
                     const { ctx, chartArea: { top, bottom }, scales: { x } } = chart;
                     
-                    const drawVLine = (idx, color, label) => {
-                        if (idx === -1) return;
+                    const drawVLine = (idx, color) => {
+                        if (idx === -1 || idx === undefined) return;
                         const xPos = x.getPixelForValue(idx);
+                        if (isNaN(xPos)) return;
                         
                         ctx.save();
                         ctx.beginPath();
@@ -2631,6 +2717,8 @@
                 }
             };
 
+            const isPaceMetric = (metric === 'pace' || metric === 'effort_pace');
+
             // Créer le graphique
             evolutionChartInstance = new Chart(ctx, {
                 type: 'line',
@@ -2643,10 +2731,21 @@
                         borderColor: borderColor,
                         backgroundColor: bgColor,
                         borderWidth: 2,
-                        pointBackgroundColor: borderColor,
+                        pointBackgroundColor: function(context) {
+                            const index = context.dataIndex;
+                            if (index === bestIndex) return greenPrimary;
+                            if (index === worstIndex) return '#dc2626';
+                            return borderColor;
+                        },
+                        pointBorderColor: function(context) {
+                            const index = context.dataIndex;
+                            if (index === bestIndex) return greenPrimary;
+                            if (index === worstIndex) return '#dc2626';
+                            return borderColor;
+                        },
                         pointRadius: function(context) {
                             const index = context.dataIndex;
-                            return (index === bestIndex || index === worstIndex) ? 6 : 3;
+                            return (index === bestIndex || index === worstIndex) ? 6 : 3.5;
                         },
                         pointHoverRadius: 8,
                         tension: 0.3,
@@ -2688,26 +2787,55 @@
                             display: false
                         },
                         tooltip: {
-                            backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                            backgroundColor: 'rgba(15, 23, 42, 0.92)',
                             padding: 10,
                             titleFont: { size: 12, weight: 'bold' },
-                            bodyFont: { size: 13 },
+                            bodyFont: { size: 12 },
                             callbacks: {
                                 title: (context) => {
                                     const index = context[0].dataIndex;
                                     const race = races[index];
-                                    return race.name;
+                                    let tag = '';
+                                    if (index === bestIndex && bestIndex !== worstIndex) tag = ' 🏆 (Meilleure perf. athlétique)';
+                                    else if (index === worstIndex) tag = ' 📉 (Moins bonne perf. athlétique)';
+                                    return `${race.name}${tag}`;
                                 },
                                 label: (context) => {
                                     const val = context.parsed.y;
                                     const index = context.dataIndex;
                                     const race = races[index];
                                     const date = labels[index];
-                                    return [
-                                        `Performance : ${val} ${metric === 'speed' ? 'km/h' : 'min/km'}`,
+                                    const ath = athleticScores[index];
+                                    const dist = parseFloat(race.distance) || 0;
+                                    const elev = parseFloat(race.elevation) || 0;
+
+                                    let perfLine = '';
+                                    if (metric === 'speed') {
+                                        perfLine = `Vitesse réelle : ${val} km/h`;
+                                    } else if (metric === 'effort_speed') {
+                                        perfLine = `Vitesse d'effort : ${val} Effort-km/h`;
+                                    } else if (metric === 'pace') {
+                                        perfLine = `Allure réelle : ${formatPaceMinutes(val)} (${val} min/km)`;
+                                    } else {
+                                        perfLine = `Allure d'effort : ${formatPaceMinutes(val)} (${val} min/km)`;
+                                    }
+
+                                    const lines = [
+                                        perfLine,
                                         `Date : ${date}`,
-                                        `Distance : ${race.distance} km`
+                                        `Distance : ${dist} km` + (elev > 0 ? ` • D+ : +${elev}m (Effort : ${ath.effortDist.toFixed(1)} km)` : ''),
+                                        `Chrono : ${race.time || '/'}`
                                     ];
+
+                                    if (race.terrain) {
+                                        lines.push(`Terrain : ${race.terrain.charAt(0).toUpperCase() + race.terrain.slice(1)}`);
+                                    }
+
+                                    if (ath && ath.score > 0) {
+                                        lines.push(`Équiv. 10km plat : ~${ath.eq10kTimeStr} (${ath.eq10kSpeed.toFixed(1)} km/h)`);
+                                    }
+
+                                    return lines;
                                 },
                                 afterBody: () => {
                                     return ['', '👉 Cliquer pour ouvrir la fiche de course'];
@@ -2718,13 +2846,17 @@
                     scales: {
                         y: {
                             beginAtZero: false,
+                            reverse: isPaceMetric,
                             grid: {
                                 color: 'rgba(0, 0, 0, 0.05)'
                             },
                             ticks: {
                                 font: { size: 11 },
                                 callback: function(value) {
-                                    return value + (metric === 'speed' ? ' km/h' : ' min/km');
+                                    if (metric === 'speed') return value + ' km/h';
+                                    if (metric === 'effort_speed') return value + ' eff-km/h';
+                                    if (metric === 'pace' || metric === 'effort_pace') return formatPaceMinutes(value);
+                                    return value;
                                 }
                             }
                         },
@@ -2742,6 +2874,7 @@
                 }
             });
         }
+        window.updateEvolutionChart = updateEvolutionChart;
 
         // --- GESTION DES ÉVÉNEMENTS ---
 
