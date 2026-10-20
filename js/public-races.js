@@ -401,6 +401,576 @@ if (typeof firebase !== 'undefined' && firebase.auth) {
     });
 }
 
+// Helper pour formater les nombres (distance, dénivelé)
+function formatNumber(val) {
+    if (!val && val !== 0) return '?';
+    const num = parseFloat(String(val).replace(',', '.'));
+    if (isNaN(num)) return '?';
+    return num.toLocaleString('fr-FR', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+}
+
+// Helper pour normaliser le nom de la course pour la comparaison
+function normalizeRaceName(name) {
+    if (!name) return "";
+    return String(name)
+        .trim()
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[\-_']/g, " ")
+        .replace(/\s+/g, " ");
+}
+
+// Helper pour vérifier si deux dates sont proches (même année, écart <= maxDays)
+function areDatesClose(dateStr1, dateStr2, maxDays = 7) {
+    if (!dateStr1 || !dateStr2) return false;
+    const d1 = new Date(dateStr1);
+    const d2 = new Date(dateStr2);
+    if (isNaN(d1.getTime()) || isNaN(d2.getTime())) return false;
+    // Règle essentielle : ne pas confondre les éditions d'années différentes
+    if (d1.getFullYear() !== d2.getFullYear()) return false;
+    const diffMs = Math.abs(d1.getTime() - d2.getTime());
+    const diffDays = diffMs / (1000 * 60 * 60 * 24);
+    return diffDays <= maxDays;
+}
+
+// Fonction de regroupement des courses adjacentes qui font la même épreuve
+function groupAdjacentSimilarRaces(items) {
+    if (!items || items.length === 0) return [];
+
+    const groups = [];
+    for (const item of items) {
+        let placed = false;
+
+        // 1. Vérifier si l'élément courant correspond au dernier groupe en cours (courses directement consécutives)
+        if (groups.length > 0) {
+            const lastGroup = groups[groups.length - 1];
+            const leadItem = lastGroup[0];
+            const isSameName = normalizeRaceName(item.race.name) === normalizeRaceName(leadItem.race.name);
+            const isCloseDate = areDatesClose(item.race.date, leadItem.race.date, 7);
+
+            if (isSameName && isCloseDate) {
+                lastGroup.push(item);
+                placed = true;
+            }
+        }
+
+        // 2. Si non placé avec le dernier groupe, vérifier s'il correspond à un groupe très récent (ex: dans les 3 derniers)
+        // partageant la même date quasi-identique (<= 2 jours), au cas où Firestore a intercalé une autre course
+        if (!placed) {
+            for (let i = groups.length - 1; i >= 0 && i >= groups.length - 3; i--) {
+                const targetGroup = groups[i];
+                const leadItem = targetGroup[0];
+                const isSameName = normalizeRaceName(item.race.name) === normalizeRaceName(leadItem.race.name);
+                const isVeryCloseDate = areDatesClose(item.race.date, leadItem.race.date, 2);
+
+                if (isSameName && isVeryCloseDate) {
+                    targetGroup.push(item);
+                    placed = true;
+                    break;
+                }
+            }
+        }
+
+        // 3. Sinon, créer un nouveau groupe distinct
+        if (!placed) {
+            groups.push([item]);
+        }
+    }
+
+    return groups;
+}
+
+// Construction du DOM d'une carte de course individuelle (taille et style d'origine préservés à 100%)
+function buildSingleRaceCardElement(item, stackInfo = null) {
+    const {
+        race,
+        userData,
+        uid,
+        privacy,
+        privacyLevel,
+        officialUrl,
+        dateStr,
+        locationDisplay,
+        badgeAvenir,
+        showCity,
+        showFavorite,
+        shouldShowCount,
+        ownerPseudoDisplay,
+        isOwner,
+        isAdmin,
+        isInvite,
+        currentUser,
+        docPath,
+        userWishlist
+    } = item;
+
+    const favIcon = (showFavorite && race.favorite)
+        ? `<i class="fas fa-star text-yellow-400 mr-2" title="Favori"></i>`
+        : '';
+
+    const cityHtml = (showCity && locationDisplay)
+        ? `<span class="flex items-center gap-1 px-2 py-1 bg-teal-50 text-teal-800 text-xs rounded-full" title="${escapeHtml(race.location || '')}">
+             <i class="fas fa-map-marker-alt text-teal-500"></i> ${escapeHtml(locationDisplay)}
+           </span>`
+        : '';
+
+    const likedBy = race.likedBy || [];
+    const likeCount = likedBy.length;
+    const isLiked = currentUser && likedBy.includes(currentUser.uid);
+    const showLikers = isOwner || isAdmin;
+
+    const heartClass = isLiked ? 'fas fa-heart text-red-500' : 'far fa-heart text-gray-400';
+    const likeAnimation = isLiked ? 'pulse-once' : '';
+
+    const likeAction = `event.stopPropagation(); toggleRaceLike('${docPath}', this)`;
+
+    const CounterTag = showLikers ? 'button' : 'span';
+    const counterClickAttr = showLikers ? `onclick="event.stopPropagation(); openLikersModal('${docPath}')"` : '';
+    const counterHoverClass = showLikers ? 'hover:text-green-700 cursor-pointer hover:underline decoration-green-700 underline-offset-2' : '';
+
+    const likeButtonTitle = isInvite ? "Fonctionnalité désactivée pour le compte invité" : (isLiked ? "Je n'aime plus" : "J'aime");
+
+    const likeButtonHtml = `
+        <div class="flex flex-col items-end z-10 like-btn-wrapper relative group/likes shrink-0">
+            <div class="flex items-center gap-1">
+                <button onclick="${likeAction}" ${isInvite ? 'disabled' : ''}
+                    class="transition flex items-center gap-1 focus:outline-none group/btn pt-1 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                    title="${likeButtonTitle}">
+                    <i class="${heartClass} text-xl transition-all duration-300 ${likeAnimation} transform group-active/btn:scale-90 group-hover/btn:scale-110"></i>
+                </button>
+                <${CounterTag} ${counterClickAttr}
+                    class="text-xs font-bold text-gray-600 like-count-display ml-1 min-w-[10px] text-center ${counterHoverClass}" 
+                    title="${showLikers ? 'Voir qui a aimé' : ''}"
+                    data-hidden="${!shouldShowCount}">
+                    ${shouldShowCount && likeCount > 0 ? likeCount : ''}
+                </${CounterTag}>
+            </div>
+        </div>`;
+
+    let titleHtml = '';
+    if (privacyLevel === 2) {
+        titleHtml = `
+            <h3 class="text-xl font-bold text-green-800 mb-1 flex items-center gap-1.5 cursor-pointer"
+                title="Ouvrir la fiche complète de la course"
+                onclick="event.stopPropagation(); if(typeof window.showRaceDetails==='function') window.showRaceDetails(this.closest('.public-race-card')?._raceData || null, null, this.closest('.public-race-card')?._authorPrivacy || null);">
+                ${favIcon}
+                <span>${escapeHtml(race.name || 'Course')}</span>
+            </h3>
+        `;
+    } else if (privacyLevel === 1) {
+        const discreetLock = `<i class="fas fa-lock text-gray-400 text-xs shrink-0 ml-1" title="Aperçu simple (fiche détaillée confidentielle)"></i>`;
+        if (officialUrl) {
+            titleHtml = `
+                <h3 class="text-xl font-bold text-green-800 mb-1 flex items-center gap-1.5 group-hover:text-blue-600 transition-colors">
+                    ${favIcon}
+                    <a href="${escapeHtml(officialUrl)}" target="_blank" rel="noopener noreferrer" 
+                       class="group-hover:text-blue-600 group-hover:underline flex items-center gap-1.5 text-inherit no-underline"
+                       onclick="event.stopPropagation();"
+                       title="Accéder au site officiel de la course : ${escapeHtml(officialUrl)}">
+                        <span>${escapeHtml(race.name || 'Course')}</span>
+                        <i class="fas fa-external-link-alt text-xs text-blue-500 shrink-0"></i>
+                    </a>
+                    ${discreetLock}
+                </h3>
+            `;
+        } else {
+            titleHtml = `
+                <h3 class="text-xl font-bold text-green-800 mb-1 flex items-center gap-1.5" title="Aperçu simple (fiche détaillée confidentielle, aucun lien officiel renseigné)">
+                    ${favIcon}
+                    <span>${escapeHtml(race.name || 'Course')}</span>
+                    ${discreetLock}
+                </h3>
+            `;
+        }
+    }
+
+    let wishlistBtnHtml = '';
+    if (currentUser && !isOwner && !isInvite) {
+        const rawTerrain = (race.terrain || '').toLowerCase();
+        let wishlistCategory = 'route';
+        if (rawTerrain === 'trail') wishlistCategory = 'trail';
+        else if (rawTerrain === 'triathlon') wishlistCategory = 'triathlon';
+        else if (rawTerrain === 'relai') wishlistCategory = 'relai';
+
+        const raceName = (race.name || '').trim();
+        const raceDateStr = race.date ? (typeof race.date === 'string' ? race.date.split('T')[0] : '') : '';
+        const raceLink = officialUrl || '';
+
+        const isAlreadyInWishlist = checkIsRaceInWishlist(raceName, window.currentUserWishlist || userWishlist);
+
+        if (isAlreadyInWishlist) {
+            wishlistBtnHtml = `
+                <span onclick="event.stopPropagation();" class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-medium border border-emerald-300 shrink-0 shadow-xs" title="Cette course est déjà dans votre wishlist">
+                    <i class="fas fa-check text-emerald-600 text-[10px]"></i>
+                    <span>Dans ma wishlist</span>
+                </span>
+            `;
+        } else {
+            wishlistBtnHtml = `
+                <button type="button"
+                    onclick="event.stopPropagation(); window.addPublicRaceToWishlist(this)"
+                    data-name="${escapeHtml(raceName)}"
+                    data-category="${escapeHtml(wishlistCategory)}"
+                    data-date="${escapeHtml(raceDateStr)}"
+                    data-link="${escapeHtml(raceLink)}"
+                    class="wishlist-add-btn inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 hover:bg-emerald-100 active:bg-emerald-200 text-emerald-700 hover:text-emerald-900 text-[11px] font-semibold border border-emerald-200 hover:border-emerald-300 transition-all shrink-0 shadow-xs hover:scale-105 active:scale-95 cursor-pointer"
+                    title="Ajouter « ${escapeHtml(raceName)} » à ma wishlist">
+                    <i class="far fa-bookmark text-emerald-600 text-[10px]"></i>
+                    <span>+ Wishlist</span>
+                </button>
+            `;
+        }
+    }
+
+    // Petit bouton clair pour changer de pile de la card (placé tout à gauche)
+    const stackBtnHtml = (stackInfo && stackInfo.total > 1) ? `
+        <div class="inline-flex items-center rounded-full bg-white border border-emerald-300 shadow-xs text-emerald-800 text-[11px] font-semibold shrink-0 select-none overflow-hidden mr-1.5" title="Même course : ${stackInfo.total} coureurs dans cette pile (cliquez ou molette)">
+            <button type="button" class="stack-nav-btn stack-prev-btn px-1.5 py-0.5 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-900 transition cursor-pointer" title="Coureur précédent">‹</button>
+            <button type="button" class="stack-nav-btn stack-next-btn px-1.5 py-0.5 text-emerald-800 hover:bg-emerald-50 hover:text-emerald-950 flex items-center gap-1 transition cursor-pointer font-bold border-l border-r border-emerald-100" title="Passer au coureur suivant">
+                <i class="fas fa-layer-group text-[9px] text-emerald-600"></i>
+                <span>${stackInfo.index + 1}/${stackInfo.total}</span>
+            </button>
+            <button type="button" class="stack-nav-btn stack-next-btn px-1.5 py-0.5 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-900 transition cursor-pointer font-bold" title="Coureur suivant">›</button>
+        </div>
+    ` : '';
+
+    const raceCard = document.createElement('div');
+    if (privacyLevel === 2) {
+        raceCard.className = 'bg-white rounded-xl overflow-hidden shadow-md card-hover cursor-pointer relative group h-full public-race-card flex flex-col justify-between';
+        raceCard.addEventListener('click', (e) => {
+            if (e.target.closest('button, a, img, .like-btn-wrapper, .stack-nav-btn')) return;
+            if (typeof window.showRaceDetails === 'function') {
+                window.showRaceDetails(race, null, privacy);
+            }
+        });
+    } else if (privacyLevel === 1 && officialUrl) {
+        raceCard.className = 'bg-white rounded-xl overflow-hidden shadow-md card-hover cursor-pointer relative group h-full public-race-card flex flex-col justify-between';
+        raceCard.addEventListener('click', (e) => {
+            if (e.target.closest('button, a, img, .like-btn-wrapper, .stack-nav-btn')) return;
+            window.open(officialUrl, '_blank');
+        });
+    } else {
+        raceCard.className = 'bg-white rounded-xl overflow-hidden shadow-md relative group h-full public-race-card flex flex-col justify-between';
+    }
+
+    if (!isInvite) {
+        raceCard.setAttribute('ondblclick', `toggleRaceLike('${docPath}', this.querySelector('.like-btn-wrapper'))`);
+    }
+
+    // Attacher les métadonnées de l'auteur sur l'objet race et l'élément
+    race._uid = uid;
+    race._authorPrivacy = privacy;
+    raceCard._raceData = race;
+    raceCard._authorPrivacy = privacy;
+
+    // Rendu avec le padding p-6 d'origine exact
+    raceCard.innerHTML = `
+        <div class="p-6 relative h-full flex flex-col justify-between">
+            <div>
+                <div class="flex justify-between items-start">
+                    <div class="min-w-0 flex-1 pr-2">
+                        ${titleHtml}
+                        <div class="flex items-center gap-2 mt-0.5 flex-wrap">
+                            <p class="text-green-600 capitalize text-sm">
+                                ${dateStr}
+                            </p>
+                            ${wishlistBtnHtml}
+                        </div>
+                    </div>
+                    <!-- LIKE BUTTON (Top Right) -->
+                    ${likeButtonHtml}
+                </div>
+
+                <div class="mt-4 flex flex-col gap-2 pr-28">
+                    <div class="flex flex-wrap items-center gap-2">
+                    ${race.terrain === 'triathlon' ?
+            (race.raceFormat === 'team' ?
+                (() => {
+                    const relaySportVal = (() => {
+                        if (race.raceRelaySport === 'swim') {
+                            const val = formatNumber(race.swimDistance);
+                            return `<span class="flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-800 text-xs rounded-full" title="Natation (Relais)">
+                                                <i class="fas fa-swimmer text-blue-500"></i> ${val}m
+                                             </span>`;
+                        } else if (race.raceRelaySport === 'bike') {
+                            const distVal = formatNumber(race.bikeDistance);
+                            const elevVal = formatNumber(race.bikeElevation);
+                            let html = `<span class="flex items-center gap-1 px-2 py-1 bg-orange-50 text-orange-800 text-xs rounded-full" title="Vélo (Relais)">
+                                                    <i class="fas fa-biking text-orange-500"></i> ${distVal}km
+                                                 </span>`;
+                            if (elevVal !== '?') {
+                                html += `<span class="flex items-center gap-1 px-2 py-1 bg-orange-50 text-orange-800 text-xs rounded-full" title="Dénivelé">
+                                                    <i class="fas fa-mountain text-orange-500"></i> +${elevVal}m
+                                                 </span>`;
+                            }
+                            return html;
+                        } else { // Run
+                            const distVal = formatNumber(race.distance);
+                            const elevVal = formatNumber(race.runElevation);
+                            let html = `<span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full" title="Course à pied (Relais)">
+                                                    <i class="fas fa-running text-green-500"></i> ${distVal}km
+                                                 </span>`;
+                            if (elevVal !== '?') {
+                                html += `<span class="flex items-center gap-1 px-2 py-1 bg-orange-50 text-orange-800 text-xs rounded-full" title="Dénivelé">
+                                                    <i class="fas fa-mountain text-orange-500"></i> +${elevVal}m
+                                                 </span>`;
+                            }
+                            return html;
+                        }
+                    })();
+                    return `${relaySportVal}
+                                     <span class="flex items-center gap-1 px-2 py-1 bg-indigo-50 text-indigo-800 text-xs rounded-full" title="Relais">
+                                        <i class="fas fa-users text-indigo-500"></i> Relais
+                                     </span>`;
+                })()
+                :
+                // STANDARD TRIATHLON DISPLAY
+                `
+                         <span class="flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-800 text-xs rounded-full" title="Natation">
+                                 <i class="fas fa-swimmer text-blue-500"></i> ${formatNumber(race.swimDistance)}m
+                             </span>
+                         <span class="flex items-center gap-1 px-2 py-1 bg-orange-50 text-orange-800 text-xs rounded-full" title="Vélo">
+                                 <i class="fas fa-biking text-orange-500"></i> ${formatNumber(race.bikeDistance)}km
+                             </span>
+                         <span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full" title="Course à pied">
+                                 <i class="fas fa-running text-green-500"></i> ${formatNumber(race.distance)}km
+                             </span>
+                 `)
+            :
+            `
+             ${formatNumber(race.distance) !== '?' ? `<span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full">
+                <i class="fas fa-ruler-horizontal text-green-500"></i> ${formatNumber(race.distance)} km
+             </span>` : ''}
+             ${race.terrain !== 'hyrox' && race.elevation && race.elevation !== '0' && race.elevation !== 0 && race.elevation !== '-' && formatNumber(race.elevation) !== '?' ? `
+             <span class="flex items-center gap-1 px-2 py-1 bg-orange-50 text-orange-800 text-xs rounded-full">
+                <i class="fas fa-mountain text-orange-500"></i> +${formatNumber(race.elevation)} m
+             </span>
+             ` : ''}
+             ${race.terrain === 'relai' ? `
+             <span class="flex items-center gap-1 px-2 py-1 bg-indigo-50 text-indigo-800 text-xs rounded-full"><i class="fas fa-users text-indigo-500"></i> Relais</span>
+             ` : ''}
+             ${cityHtml}
+             ${race.terrain === 'hyrox' ? `
+             <span class="flex items-center gap-1 px-2 py-1 bg-indigo-50 text-indigo-800 text-xs rounded-full"><i class="fas fa-dumbbell text-indigo-500"></i> Hyrox</span>
+             ` : ''}
+             ${race.terrain === 'trail' ? `
+             <span class="flex items-center gap-1 px-2 py-1 bg-indigo-50 text-indigo-800 text-xs rounded-full"><i class="fas fa-tree text-indigo-500"></i> Trail</span>
+             ` : ''}
+             ${race.terrain === 'route' || (!race.terrain && race.terrain !== 'hyrox' && race.terrain !== 'relai' && race.terrain !== 'trail') ? `
+             <span class="flex items-center gap-1 px-2 py-1 bg-indigo-50 text-indigo-800 text-xs rounded-full"><i class="fas fa-road text-indigo-500"></i> Route</span>
+             ` : ''}`
+        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="mt-4 pt-3 flex items-center min-w-0 border-t border-green-50 pr-28">
+                <div class="flex items-center gap-1.5 min-w-0 flex-nowrap w-full">
+                    ${stackBtnHtml}
+                    ${userData.photoURL ?
+            `<img src="${escapeHtml(userData.photoURL)}" onclick="event.stopPropagation(); zoomImage('${escapeHtml(userData.photoURL)}')" class="w-6 h-6 rounded-full object-cover border border-green-200 shadow-sm cursor-zoom-in hover:scale-110 transition-transform shrink-0">` :
+            `<i class="fas fa-user-circle text-green-600 text-lg shrink-0"></i>`
+        }
+                    <span class="truncate max-w-[100px] font-semibold text-xs text-gray-700 shrink-0" title="${escapeHtml(ownerPseudoDisplay)}">${escapeHtml(ownerPseudoDisplay)}</span>
+                    ${badgeAvenir}
+                </div>
+            </div>
+
+            <!-- Image (Bottom Right) -->
+            <div class="absolute bottom-3 right-3 z-10">
+                <div class="h-28 w-28 group-hover:scale-105 transition-transform duration-300">
+                    ${race.photo ?
+            `<img src="${race.photo}" onclick="event.stopPropagation(); zoomImage('${race.photo}')" alt="Photo course" class="h-full w-full object-cover rounded-lg shadow-md border border-green-200 cursor-zoom-in" />`
+            : (race.parcours ?
+            `<img src="${race.parcours}" onclick="event.stopPropagation(); zoomImage('${race.parcours}')" alt="Parcours course" class="h-full w-full object-cover rounded-lg shadow-md border border-green-200 cursor-zoom-in" />`
+            :
+            `<div class="h-full w-full flex flex-col items-center justify-center bg-gray-100 rounded-lg border border-gray-300">
+                        <i class="fas fa-running text-gray-300 text-3xl"></i>
+                    </div>`)
+        }
+                </div>
+            </div>
+        </div>
+    `;
+
+    return raceCard;
+}
+
+// Construction du composant de pile mutualisée pour courses identiques superposées
+function buildRaceStackElement(group) {
+    const stackWrapper = document.createElement('div');
+    stackWrapper.className = 'public-race-stack-wrapper relative h-full';
+    stackWrapper.setAttribute('data-stack-count', group.length);
+
+    // Calques d'arrière-plan réalistes pour matérialiser clairement la pile de cartes
+    const layer1 = document.createElement('div');
+    layer1.className = 'stack-card-layer stack-card-layer-1';
+    stackWrapper.appendChild(layer1);
+
+    if (group.length >= 3) {
+        const layer2 = document.createElement('div');
+        layer2.className = 'stack-card-layer stack-card-layer-2';
+        stackWrapper.appendChild(layer2);
+    }
+
+    // Viewport de la pile
+    const viewport = document.createElement('div');
+    viewport.className = 'stack-card-viewport relative h-full w-full';
+    stackWrapper.appendChild(viewport);
+
+    // Conteneur des diapositives de cartes
+    const slidesContainer = document.createElement('div');
+    slidesContainer.className = 'stack-slides-container relative h-full w-full';
+    viewport.appendChild(slidesContainer);
+
+    const slideElements = [];
+    let currentIndex = 0;
+    const total = group.length;
+    let isTransitioning = false;
+
+    group.forEach((item, idx) => {
+        const slide = document.createElement('div');
+        slide.className = `stack-slide ${idx === 0 ? 'stack-slide-active' : 'stack-slide-hidden'}`;
+        slide.setAttribute('data-index', idx);
+
+        const nextPseudo = idx < total - 1 ? group[idx + 1].ownerPseudoDisplay : group[0].ownerPseudoDisplay;
+        const prevPseudo = idx > 0 ? group[idx - 1].ownerPseudoDisplay : group[total - 1].ownerPseudoDisplay;
+
+        const cardElem = buildSingleRaceCardElement(item, {
+            index: idx,
+            total,
+            nextPseudo,
+            prevPseudo
+        });
+
+        // Clic sur les boutons de navigation (petit bouton clair à côté du tag 'À venir')
+        const prevBtns = cardElem.querySelectorAll('.stack-prev-btn');
+        prevBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                goToIndex(currentIndex - 1, 'prev');
+            });
+        });
+
+        const nextBtns = cardElem.querySelectorAll('.stack-next-btn');
+        nextBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                goToIndex(currentIndex + 1, 'next');
+            });
+        });
+
+        slide.appendChild(cardElem);
+        slidesContainer.appendChild(slide);
+        slideElements.push(slide);
+    });
+
+    function goToIndex(targetIndex, direction = 'next') {
+        if (targetIndex < 0) targetIndex = total - 1;
+        if (targetIndex >= total) targetIndex = 0;
+        if (targetIndex === currentIndex || isTransitioning) return;
+
+        isTransitioning = true;
+        stackWrapper.classList.add('is-animating');
+
+        const currentSlide = slideElements[currentIndex];
+        const targetSlide = slideElements[targetIndex];
+
+        // Nettoyer les classes d'animation antérieures
+        slideElements.forEach(s => {
+            s.classList.remove(
+                'stack-slide-pass-behind',
+                'stack-slide-rise-front',
+                'stack-slide-pull-from-behind',
+                'stack-slide-drop-back'
+            );
+        });
+
+        if (direction === 'next') {
+            // Transition spectaculaire : la carte de devant s'élève, sort de la pile et passe DERRIÈRE
+            currentSlide.className = 'stack-slide stack-slide-pass-behind';
+            targetSlide.className = 'stack-slide stack-slide-rise-front';
+        } else {
+            // Transition inverse : la carte de derrière est tirée vers l'avant et atterrit sur le dessus
+            targetSlide.className = 'stack-slide stack-slide-pull-from-behind';
+            currentSlide.className = 'stack-slide stack-slide-drop-back';
+        }
+
+        // Fin de l'animation : stabiliser les états actifs et masqués
+        setTimeout(() => {
+            slideElements.forEach((s, idx) => {
+                if (idx === targetIndex) {
+                    s.className = 'stack-slide stack-slide-active';
+                } else {
+                    s.className = 'stack-slide stack-slide-hidden';
+                }
+            });
+            currentIndex = targetIndex;
+            isTransitioning = false;
+            stackWrapper.classList.remove('is-animating');
+        }, 460);
+    }
+
+    // Option pour scroller à la molette sur la carte et voir celle du dessous
+    let lastWheelTime = 0;
+    stackWrapper.addEventListener('wheel', (e) => {
+        if (isTransitioning) return;
+        if (Math.abs(e.deltaY) < 18) return;
+
+        const now = Date.now();
+        if (now - lastWheelTime < 460) return;
+
+        if (e.deltaY > 0) {
+            // Défilement vers le bas -> aller vers la carte du dessous (la carte passe derrière)
+            if (currentIndex < total - 1) {
+                e.preventDefault();
+                lastWheelTime = now;
+                goToIndex(currentIndex + 1, 'next');
+            }
+            // Au bout de la pile, on laisse défiler la page normalement sans bloquer l'utilisateur
+        } else {
+            // Défilement vers le haut -> remonter
+            if (currentIndex > 0) {
+                e.preventDefault();
+                lastWheelTime = now;
+                goToIndex(currentIndex - 1, 'prev');
+            }
+            // Au début de la pile, on laisse défiler la page normalement vers le haut
+        }
+    }, { passive: false });
+
+    // Option pour swiper au toucher sur mobile
+    let touchStartX = 0;
+    let touchStartY = 0;
+    stackWrapper.addEventListener('touchstart', (e) => {
+        if (e.touches && e.touches.length > 0) {
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+        }
+    }, { passive: true });
+
+    stackWrapper.addEventListener('touchend', (e) => {
+        if (isTransitioning) return;
+        if (e.changedTouches && e.changedTouches.length > 0) {
+            const deltaX = e.changedTouches[0].clientX - touchStartX;
+            const deltaY = e.changedTouches[0].clientY - touchStartY;
+            if (Math.abs(deltaX) > 40 && Math.abs(deltaX) > Math.abs(deltaY) * 1.5) {
+                if (deltaX < 0) {
+                    goToIndex(currentIndex + 1, 'next');
+                } else {
+                    goToIndex(currentIndex - 1, 'prev');
+                }
+            }
+        }
+    }, { passive: true });
+
+    return stackWrapper;
+}
+
 async function loadPublicRaces() {
     // Prevent concurrent executions
     if (isLoadingPublicRaces) return;
@@ -417,7 +987,7 @@ async function loadPublicRaces() {
     grid.innerHTML = typeof getRunnerLoaderHTML === 'function' ? getRunnerLoaderHTML(3) : '<div class="col-span-full flex justify-center items-center py-12"><i class="fas fa-circle-notch fa-spin text-green-500 text-4xl"></i></div>';
 
     try {
-        const fetchLimit = Math.max(publicRaceFilters.limit * 3, 50);
+        const fetchLimit = Math.max(publicRaceFilters.limit * 4, 60);
         const snapshot = await db.collectionGroup('races')
             .orderBy('date', publicRaceFilters.sort) // Tri dynamique
             .limit(fetchLimit)
@@ -460,21 +1030,10 @@ async function loadPublicRaces() {
             return;
         }
 
-        // Prepare a fragment to batch updates (prevents visual duplicates during render)
-        const fragment = document.createDocumentFragment();
-
         // Cache object
         const userCache = {};
+        const validRaceItems = [];
 
-        // Helper function to format numbers (distance, elevation)
-        const formatNumber = (val) => {
-            if (!val && val !== 0) return '?';
-            const num = parseFloat(String(val).replace(',', '.'));
-            if (isNaN(num)) return '?';
-            return num.toLocaleString('fr-FR', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
-        };
-
-        let displayedCount = 0;
         for (const doc of snapshot.docs) {
             const race = { id: doc.id, ...doc.data() };
 
@@ -517,7 +1076,6 @@ async function loadPublicRaces() {
             }
 
             // === PRIVACY LOGIC ===
-            const currentUser = firebase.auth().currentUser; // Get sync
             const isOwner = currentUser && (uid === currentUser.uid);
             const privacy = userData.privacy || {};
 
@@ -591,7 +1149,10 @@ async function loadPublicRaces() {
                 if (hasCompletedTime && isWithin10Days) {
                     badgeAvenir = `<span class="px-2 py-1 bg-green-200 text-green-800 text-xs rounded-full animate-pulse">New !</span>`;
                 } else if (!hasCompletedTime && isWithin10Days) {
-                    badgeAvenir = `<span class="px-2 py-0.5 bg-yellow-200 text-yellow-800 text-[10px] sm:text-[11px] font-semibold rounded-full animate-pulse whitespace-nowrap">Chrono en attente</span>`;
+                    // Le tag 'Chrono en attente' ne doit être visible que si la fiche détaillée est accessible
+                    if (privacyLevel === 2) {
+                        badgeAvenir = `<span class="px-2 py-0.5 bg-yellow-200 text-yellow-800 text-[10px] sm:text-[11px] font-semibold rounded-full animate-pulse whitespace-nowrap">Chrono en attente</span>`;
+                    }
                 }
             }
 
@@ -603,295 +1164,52 @@ async function loadPublicRaces() {
                 ? (rawLink.startsWith('http://') || rawLink.startsWith('https://') ? rawLink : 'https://' + rawLink)
                 : null;
 
-            const raceCard = document.createElement('div');
-            if (privacyLevel === 2) {
-                raceCard.className = 'bg-white rounded-xl overflow-hidden shadow-md card-hover cursor-pointer relative group h-full public-race-card';
-                raceCard.addEventListener('click', (e) => {
-                    if (e.target.closest('button, a, img, .like-btn-wrapper')) return;
-                    if (typeof window.showRaceDetails === 'function') {
-                        window.showRaceDetails(race, null, privacy);
-                    }
-                });
-            } else if (privacyLevel === 1 && officialUrl) {
-                raceCard.className = 'bg-white rounded-xl overflow-hidden shadow-md card-hover cursor-pointer relative group h-full public-race-card';
-                raceCard.addEventListener('click', (e) => {
-                    if (e.target.closest('button, a, img, .like-btn-wrapper')) return;
-                    window.open(officialUrl, '_blank');
-                });
-            } else {
-                raceCard.className = 'bg-white rounded-xl overflow-hidden shadow-md relative group h-full public-race-card';
-            }
+            validRaceItems.push({
+                race,
+                uid,
+                userData: { ...userData },
+                privacy,
+                privacyLevel,
+                officialUrl,
+                raceDate,
+                dateStr,
+                locationDisplay,
+                badgeAvenir,
+                showCity,
+                showFavorite,
+                shouldShowCount,
+                ownerPseudoDisplay,
+                isOwner,
+                isAdmin,
+                isInvite,
+                currentUser,
+                docPath: doc.ref.path,
+                userWishlist
+            });
 
-            // Attacher les métadonnées de l'auteur sur l'objet race
-            race._uid = uid;
-            race._authorPrivacy = privacy;
-            raceCard._raceData = race;
-            raceCard._authorPrivacy = privacy;
-
-            // Favorite Icon conditional
-            const favIcon = (showFavorite && race.favorite)
-                ? `<i class="fas fa-star text-yellow-400 mr-2" title="Favori"></i>`
-                : '';
-
-            // City conditional
-            const cityHtml = (showCity && locationDisplay)
-                ? `<span class="flex items-center gap-1 px-2 py-1 bg-teal-50 text-teal-800 text-xs rounded-full" title="${escapeHtml(race.location || '')}">
-                     <i class="fas fa-map-marker-alt text-teal-500"></i> ${escapeHtml(locationDisplay)}
-                   </span>`
-                : '';
-
-            // === LIKE LOGIC ===
-            const likedBy = race.likedBy || [];
-            const likeCount = likedBy.length;
-            const isLiked = currentUser && likedBy.includes(currentUser.uid);
-            const showLikers = isOwner || isAdmin;
-            const racePath = doc.ref.path;
-
-            const heartClass = isLiked ? 'fas fa-heart text-red-500' : 'far fa-heart text-gray-400';
-            const likeAnimation = isLiked ? 'pulse-once' : '';
-
-            // Interaction
-            const likeAction = `event.stopPropagation(); toggleRaceLike('${racePath}', this)`;
-            if (!isInvite) {
-                raceCard.setAttribute('ondblclick', `toggleRaceLike('${racePath}', this.querySelector('.like-btn-wrapper'))`);
-            }
-
-            // Likers Button (Eye)
-            const CounterTag = showLikers ? 'button' : 'span';
-            const counterClickAttr = showLikers ? `onclick="event.stopPropagation(); openLikersModal('${racePath}')"` : '';
-            const counterHoverClass = showLikers ? 'hover:text-green-700 cursor-pointer hover:underline decoration-green-700 underline-offset-2' : '';
-
-            // Like Button HTML
-            const likeButtonTitle = isInvite ? "Fonctionnalité désactivée pour le compte invité" : (isLiked ? "Je n'aime plus" : "J'aime");
-
-            const likeButtonHtml = `
-                <div class="flex flex-col items-end z-10 like-btn-wrapper relative group/likes shrink-0">
-                    <div class="flex items-center gap-1">
-                        <button onclick="${likeAction}" ${isInvite ? 'disabled' : ''}
-                            class="transition flex items-center gap-1 focus:outline-none group/btn pt-1 disabled:opacity-50 disabled:cursor-not-allowed"
-                            title="${likeButtonTitle}">
-                            <i class="${heartClass} text-xl transition-all duration-300 ${likeAnimation} transform group-active/btn:scale-90 group-hover/btn:scale-110"></i>
-                        </button>
-                        <${CounterTag} ${counterClickAttr}
-                            class="text-xs font-bold text-gray-600 like-count-display ml-1 min-w-[10px] text-center ${counterHoverClass}" 
-                            title="${showLikers ? 'Voir qui a aimé' : ''}"
-                            data-hidden="${!shouldShowCount}">
-                            ${shouldShowCount && likeCount > 0 ? likeCount : ''}
-                        </${CounterTag}>
-                    </div>
-                </div>`;
-
-            // Titre avec lien ou ouverture de modale selon le niveau de confidentialité
-            let titleHtml = '';
-            if (privacyLevel === 2) {
-                titleHtml = `
-                    <h3 class="text-xl font-bold text-green-800 mb-1 flex items-center gap-1.5 cursor-pointer"
-                        title="Ouvrir la fiche complète de la course"
-                        onclick="event.stopPropagation(); if(typeof window.showRaceDetails==='function') window.showRaceDetails(this.closest('.public-race-card')?._raceData || null, null, this.closest('.public-race-card')?._authorPrivacy || null);">
-                        ${favIcon}
-                        <span>${escapeHtml(race.name || 'Course')}</span>
-                    </h3>
-                `;
-            } else if (privacyLevel === 1) {
-                const discreetLock = `<i class="fas fa-lock text-gray-400 text-xs shrink-0 ml-1" title="Aperçu simple (fiche détaillée confidentielle)"></i>`;
-                if (officialUrl) {
-                    titleHtml = `
-                        <h3 class="text-xl font-bold text-green-800 mb-1 flex items-center gap-1.5 group-hover:text-blue-600 transition-colors">
-                            ${favIcon}
-                            <a href="${escapeHtml(officialUrl)}" target="_blank" rel="noopener noreferrer" 
-                               class="group-hover:text-blue-600 group-hover:underline flex items-center gap-1.5 text-inherit no-underline"
-                               onclick="event.stopPropagation();"
-                               title="Accéder au site officiel de la course : ${escapeHtml(officialUrl)}">
-                                <span>${escapeHtml(race.name || 'Course')}</span>
-                                <i class="fas fa-external-link-alt text-xs text-blue-500 shrink-0"></i>
-                            </a>
-                            ${discreetLock}
-                        </h3>
-                    `;
-                } else {
-                    titleHtml = `
-                        <h3 class="text-xl font-bold text-green-800 mb-1 flex items-center gap-1.5" title="Aperçu simple (fiche détaillée confidentielle, aucun lien officiel renseigné)">
-                            ${favIcon}
-                            <span>${escapeHtml(race.name || 'Course')}</span>
-                            ${discreetLock}
-                        </h3>
-                    `;
-                }
-            }
-
-            // === WISHLIST BUTTON (Only for connected user, not owner, not guest/invite) ===
-            let wishlistBtnHtml = '';
-            if (currentUser && !isOwner && !isInvite) {
-                const rawTerrain = (race.terrain || '').toLowerCase();
-                let wishlistCategory = 'route';
-                if (rawTerrain === 'trail') wishlistCategory = 'trail';
-                else if (rawTerrain === 'triathlon') wishlistCategory = 'triathlon';
-                else if (rawTerrain === 'relai') wishlistCategory = 'relai';
-
-                const raceName = (race.name || '').trim();
-                const raceDateStr = race.date ? (typeof race.date === 'string' ? race.date.split('T')[0] : '') : '';
-                const raceLink = officialUrl || '';
-
-                const isAlreadyInWishlist = checkIsRaceInWishlist(raceName, window.currentUserWishlist);
-
-                if (isAlreadyInWishlist) {
-                    wishlistBtnHtml = `
-                        <span onclick="event.stopPropagation();" class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-medium border border-emerald-300 shrink-0 shadow-xs" title="Cette course est déjà dans votre wishlist">
-                            <i class="fas fa-check text-emerald-600 text-[10px]"></i>
-                            <span>Dans ma wishlist</span>
-                        </span>
-                    `;
-                } else {
-                    wishlistBtnHtml = `
-                        <button type="button"
-                            onclick="event.stopPropagation(); window.addPublicRaceToWishlist(this)"
-                            data-name="${escapeHtml(raceName)}"
-                            data-category="${escapeHtml(wishlistCategory)}"
-                            data-date="${escapeHtml(raceDateStr)}"
-                            data-link="${escapeHtml(raceLink)}"
-                            class="wishlist-add-btn inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 hover:bg-emerald-100 active:bg-emerald-200 text-emerald-700 hover:text-emerald-900 text-[11px] font-semibold border border-emerald-200 hover:border-emerald-300 transition-all shrink-0 shadow-xs hover:scale-105 active:scale-95 cursor-pointer"
-                            title="Ajouter « ${escapeHtml(raceName)} » à ma wishlist">
-                            <i class="far fa-bookmark text-emerald-600 text-[10px]"></i>
-                            <span>+ Wishlist</span>
-                        </button>
-                    `;
-                }
-            }
-
-            // === CARD CONTENT ===
-            raceCard.innerHTML = `
-                <div class="p-6 relative h-full flex flex-col justify-between">
-                    <div>
-                        <div class="flex justify-between items-start">
-                            <div class="min-w-0 flex-1 pr-2">
-                                ${titleHtml}
-                                <div class="flex items-center gap-2 mt-0.5 flex-wrap">
-                                    <p class="text-green-600 capitalize text-sm">
-                                        ${dateStr}
-                                    </p>
-                                    ${wishlistBtnHtml}
-                                </div>
-                            </div>
-                            <!-- LIKE BUTTON (Top Right) -->
-                            ${likeButtonHtml}
-                        </div>
-
-                        <div class="mt-4 flex flex-col gap-2 pr-28">
-                            <div class="flex flex-wrap items-center gap-2">
-                            ${race.terrain === 'triathlon' ?
-                    (race.raceFormat === 'team' ?
-                        (() => {
-                            const relaySportVal = (() => {
-                                if (race.raceRelaySport === 'swim') {
-                                    const val = formatNumber(race.swimDistance);
-                                    return `<span class="flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-800 text-xs rounded-full" title="Natation (Relais)">
-                                                        <i class="fas fa-swimmer text-blue-500"></i> ${val}m
-                                                     </span>`;
-                                } else if (race.raceRelaySport === 'bike') {
-                                    const distVal = formatNumber(race.bikeDistance);
-                                    const elevVal = formatNumber(race.bikeElevation);
-                                    let html = `<span class="flex items-center gap-1 px-2 py-1 bg-orange-50 text-orange-800 text-xs rounded-full" title="Vélo (Relais)">
-                                                            <i class="fas fa-biking text-orange-500"></i> ${distVal}km
-                                                         </span>`;
-                                    if (elevVal !== '?') {
-                                        html += `<span class="flex items-center gap-1 px-2 py-1 bg-orange-50 text-orange-800 text-xs rounded-full" title="Dénivelé">
-                                                            <i class="fas fa-mountain text-orange-500"></i> +${elevVal}m
-                                                         </span>`;
-                                    }
-                                    return html;
-                                } else { // Run
-                                    const distVal = formatNumber(race.distance);
-                                    const elevVal = formatNumber(race.runElevation);
-                                    let html = `<span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full" title="Course à pied (Relais)">
-                                                            <i class="fas fa-running text-green-500"></i> ${distVal}km
-                                                         </span>`;
-                                    if (elevVal !== '?') {
-                                        html += `<span class="flex items-center gap-1 px-2 py-1 bg-orange-50 text-orange-800 text-xs rounded-full" title="Dénivelé">
-                                                            <i class="fas fa-mountain text-orange-500"></i> +${elevVal}m
-                                                         </span>`;
-                                    }
-                                    return html;
-                                }
-                            })();
-                            return `${relaySportVal}
-                                             <span class="flex items-center gap-1 px-2 py-1 bg-indigo-50 text-indigo-800 text-xs rounded-full" title="Relais">
-                                                <i class="fas fa-users text-indigo-500"></i> Relais
-                                             </span>`;
-                        })()
-                        :
-                        // STANDARD TRIATHLON DISPLAY
-                        `
-                                 <span class="flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-800 text-xs rounded-full" title="Natation">
-                                         <i class="fas fa-swimmer text-blue-500"></i> ${formatNumber(race.swimDistance)}m
-                                     </span>
-                                 <span class="flex items-center gap-1 px-2 py-1 bg-orange-50 text-orange-800 text-xs rounded-full" title="Vélo">
-                                         <i class="fas fa-biking text-orange-500"></i> ${formatNumber(race.bikeDistance)}km
-                                     </span>
-                                 <span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full" title="Course à pied">
-                                         <i class="fas fa-running text-green-500"></i> ${formatNumber(race.distance)}km
-                                     </span>
-                         `)
-                    :
-                    `
-                     ${formatNumber(race.distance) !== '?' ? `<span class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-800 text-xs rounded-full">
-                        <i class="fas fa-ruler-horizontal text-green-500"></i> ${formatNumber(race.distance)} km
-                     </span>` : ''}
-                     ${race.terrain !== 'hyrox' && race.elevation && race.elevation !== '0' && race.elevation !== 0 && race.elevation !== '-' && formatNumber(race.elevation) !== '?' ? `
-                     <span class="flex items-center gap-1 px-2 py-1 bg-orange-50 text-orange-800 text-xs rounded-full">
-                        <i class="fas fa-mountain text-orange-500"></i> +${formatNumber(race.elevation)} m
-                     </span>
-                     ` : ''}
-                     ${race.terrain === 'relai' ? `
-                     <span class="flex items-center gap-1 px-2 py-1 bg-indigo-50 text-indigo-800 text-xs rounded-full"><i class="fas fa-users text-indigo-500"></i> Relais</span>
-                     ` : ''}
-                     ${cityHtml}
-                     ${race.terrain === 'hyrox' ? `
-                     <span class="flex items-center gap-1 px-2 py-1 bg-indigo-50 text-indigo-800 text-xs rounded-full"><i class="fas fa-dumbbell text-indigo-500"></i> Hyrox</span>
-                     ` : ''}
-                     ${race.terrain === 'trail' ? `
-                     <span class="flex items-center gap-1 px-2 py-1 bg-indigo-50 text-indigo-800 text-xs rounded-full"><i class="fas fa-tree text-indigo-500"></i> Trail</span>
-                     ` : ''}
-                     ${race.terrain === 'route' || (!race.terrain && race.terrain !== 'hyrox' && race.terrain !== 'relai' && race.terrain !== 'trail') ? `
-                     <span class="flex items-center gap-1 px-2 py-1 bg-indigo-50 text-indigo-800 text-xs rounded-full"><i class="fas fa-road text-indigo-500"></i> Route</span>
-                     ` : ''}`
-                }
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Footer -->
-                    <div class="mt-4 pt-3 flex items-center border-t border-green-50 pr-28">
-                        <span class="text-xs text-gray-500 flex items-center gap-2" title="${escapeHtml(ownerPseudoDisplay)}">
-                            ${userData.photoURL ?
-                    `<img src="${escapeHtml(userData.photoURL)}" onclick="event.stopPropagation(); zoomImage('${escapeHtml(userData.photoURL)}')" class="w-6 h-6 rounded-full object-cover border border-green-200 shadow-sm cursor-zoom-in hover:scale-110 transition-transform">` :
-                    `<i class="fas fa-user-circle text-green-600 text-lg"></i>`
-                }
-                            <span class="truncate max-w-[150px] font-semibold">${escapeHtml(ownerPseudoDisplay)}</span>
-                            ${badgeAvenir}
-                        </span>
-                    </div>
-
-                    <!-- Image (Bottom Right) -->
-                    <div class="absolute bottom-3 right-3 z-10">
-                        <div class="h-28 w-28 group-hover:scale-105 transition-transform duration-300">
-                            ${race.photo ?
-                        `<img src="${race.photo}" onclick="event.stopPropagation(); zoomImage('${race.photo}')" alt="Photo course" class="h-full w-full object-cover rounded-lg shadow-md border border-green-200 cursor-zoom-in" />`
-                        : (race.parcours ?
-                        `<img src="${race.parcours}" onclick="event.stopPropagation(); zoomImage('${race.parcours}')" alt="Parcours course" class="h-full w-full object-cover rounded-lg shadow-md border border-green-200 cursor-zoom-in" />`
-                        :
-                        `<div class="h-full w-full flex flex-col items-center justify-center bg-gray-100 rounded-lg border border-gray-300">
-                                    <i class="fas fa-running text-gray-300 text-3xl"></i>
-                                </div>`)
-                    }
-                        </div>
-                    </div>
-                </div>
-            `;
-
-            fragment.appendChild(raceCard);
-            displayedCount++;
-            if (displayedCount >= publicRaceFilters.limit) {
+            // Ne pas surcharger le traitement si on a déjà largement de quoi remplir les slots
+            if (validRaceItems.length >= publicRaceFilters.limit * 3) {
                 break;
+            }
+        }
+
+        if (validRaceItems.length === 0) {
+            grid.innerHTML = '<div class="col-span-full text-center text-gray-500 py-8">Aucune course publique trouvée.</div>';
+            return;
+        }
+
+        // Regrouper les courses identiques et adjacentes (même nom, date proche, même année)
+        const groups = groupAdjacentSimilarRaces(validRaceItems);
+        const displayGroups = groups.slice(0, publicRaceFilters.limit);
+
+        const fragment = document.createDocumentFragment();
+        for (const group of displayGroups) {
+            if (group.length === 1) {
+                const singleCard = buildSingleRaceCardElement(group[0], false);
+                fragment.appendChild(singleCard);
+            } else {
+                const stackCard = buildRaceStackElement(group);
+                fragment.appendChild(stackCard);
             }
         }
 

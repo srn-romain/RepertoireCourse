@@ -95,3 +95,235 @@
     }
 }
 
+/* ==========================================================================
+   Public Races Mutualized Stacks (Superposition discrète des courses identiques)
+/* ==========================================================================
+   Public Races Mutualized Stacks (Superposition nette & animation réaliste)
+   ========================================================================== */
+
+.public-race-stack-wrapper {
+    position: relative;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    perspective: 1200px;
+}
+
+.public-race-stack-wrapper.is-animating {
+    z-index: 35 !important;
+}
+
+/* Calques réalistes en arrière-plan suggérant clairement une vraie pile de cartes */
+.stack-card-layer {
+    position: absolute;
+    border-radius: 0.75rem; /* rounded-xl identique à la carte */
+    pointer-events: none;
+    background: #ffffff;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
+}
+
+/* 1ère carte en-dessous (décalage visible vers le bas et la droite) */
+.stack-card-layer-1 {
+    top: 7px;
+    bottom: -7px;
+    left: 7px;
+    right: -7px;
+    background: #ffffff;
+    border: 1.5px solid #86efac;
+    box-shadow: 0 6px 14px -2px rgba(16, 185, 129, 0.18), 0 3px 6px -1px rgba(0, 0, 0, 0.08);
+    z-index: 1;
+}
+
+/* 2ème carte en-dessous (si 3 coureurs ou plus) */
+.stack-card-layer-2 {
+    top: 14px;
+    bottom: -14px;
+    left: 14px;
+    right: -14px;
+    background: #f8fafc;
+    border: 1.5px solid #cbd5e1;
+    box-shadow: 0 8px 18px -3px rgba(0, 0, 0, 0.12), 0 4px 8px -2px rgba(0, 0, 0, 0.06);
+    z-index: 0;
+}
+
+/* Éventail subtil et vivant au survol de la pile */
+.public-race-stack-wrapper:hover .stack-card-layer-1 {
+    transform: translate(3px, 3px);
+    box-shadow: 0 8px 18px -2px rgba(16, 185, 129, 0.25), 0 4px 8px -1px rgba(0, 0, 0, 0.1);
+}
+
+.public-race-stack-wrapper:hover .stack-card-layer-2 {
+    transform: translate(6px, 6px);
+    box-shadow: 0 12px 24px -4px rgba(0, 0, 0, 0.16), 0 5px 10px -2px rgba(0, 0, 0, 0.08);
+}
+
+/* Viewport préservant fidèlement les dimensions exactes de la carte originale */
+.stack-card-viewport {
+    position: relative;
+    height: 100%;
+    width: 100%;
+    z-index: 2;
+}
+
+.stack-slides-container {
+    position: relative;
+    height: 100%;
+    width: 100%;
+}
+
+.stack-slide {
+    will-change: transform, opacity;
+}
+
+/* État actif : carte normale au premier plan */
+.stack-slide.stack-slide-active {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    opacity: 1;
+    pointer-events: auto;
+    transform: translate(0, 0) scale(1);
+    z-index: 10;
+}
+
+/* État masqué en attente */
+.stack-slide.stack-slide-hidden {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    pointer-events: none;
+    transform: translate(7px, 7px) scale(0.97);
+    z-index: 0;
+}
+
+/* === ANIMATION 1 : La carte passe DERRIÈRE la pile (sens 'next' / scroll bas) === */
+.stack-slide.stack-slide-pass-behind {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    animation: animCardPassBehind 0.46s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+@keyframes animCardPassBehind {
+    0% {
+        transform: translate(0, 0) rotate(0deg) scale(1);
+        z-index: 25;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        opacity: 1;
+    }
+    38% {
+        /* La carte s'élève, pivote légèrement et sort vers le haut/droite */
+        transform: translate(32px, -40px) rotate(3deg) scale(1.02);
+        z-index: 25;
+        box-shadow: 0 22px 30px -5px rgba(0, 0, 0, 0.22), 0 12px 14px -5px rgba(0, 0, 0, 0.1);
+        opacity: 1;
+    }
+    48% {
+        /* Bascule du z-index derrière la carte montante */
+        z-index: 1;
+    }
+    85% {
+        /* La carte glisse derrière la nouvelle carte de tête */
+        transform: translate(7px, 7px) rotate(0deg) scale(0.98);
+        z-index: 1;
+        opacity: 0.85;
+    }
+    100% {
+        transform: translate(7px, 7px) rotate(0deg) scale(0.97);
+        z-index: 1;
+        opacity: 0;
+    }
+}
+
+/* La carte du dessous qui monte au premier plan */
+.stack-slide.stack-slide-rise-front {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    pointer-events: auto;
+    animation: animCardRiseFront 0.46s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+@keyframes animCardRiseFront {
+    0% {
+        transform: translate(7px, 7px) scale(0.97);
+        z-index: 5;
+        opacity: 0.85;
+    }
+    40% {
+        transform: translate(3px, 3px) scale(0.985);
+        z-index: 5;
+        opacity: 0.95;
+    }
+    50% {
+        z-index: 10;
+    }
+    100% {
+        transform: translate(0, 0) scale(1);
+        z-index: 10;
+        opacity: 1;
+    }
+}
+
+/* === ANIMATION 2 : Tirer la carte depuis l'arrière vers l'avant (sens 'prev' / scroll haut) === */
+.stack-slide.stack-slide-pull-from-behind {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    pointer-events: auto;
+    animation: animCardPullFromBehind 0.46s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+@keyframes animCardPullFromBehind {
+    0% {
+        transform: translate(7px, 7px) scale(0.97);
+        z-index: 2;
+        opacity: 0.7;
+    }
+    45% {
+        /* La carte sort par le haut-droite et repasse au premier plan */
+        transform: translate(32px, -40px) rotate(3deg) scale(1.02);
+        z-index: 25;
+        box-shadow: 0 22px 30px -5px rgba(0, 0, 0, 0.22), 0 12px 14px -5px rgba(0, 0, 0, 0.1);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(0, 0) rotate(0deg) scale(1);
+        z-index: 25;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        opacity: 1;
+    }
+}
+
+/* La carte précédente qui recule pour faire place */
+.stack-slide.stack-slide-drop-back {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    animation: animCardDropBack 0.46s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+@keyframes animCardDropBack {
+    0% {
+        transform: translate(0, 0) scale(1);
+        z-index: 5;
+        opacity: 1;
+    }
+    50% {
+        transform: translate(3px, 3px) scale(0.985);
+        z-index: 5;
+        opacity: 0.9;
+    }
+    100% {
+        transform: translate(7px, 7px) scale(0.97);
+        z-index: 2;
+        opacity: 0;
+    }
+}
+
