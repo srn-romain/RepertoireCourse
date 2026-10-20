@@ -585,6 +585,10 @@ const manualModalHTML = `
                                     <i class="fas fa-eye text-blue-600 mt-0.5"></i>
                                     <span><strong>Découvrir :</strong> Consultez les performances des autres coureurs sur la page d'accueil de l'application.</span>
                                 </li>
+                                <li class="flex items-start gap-2">
+                                    <i class="fas fa-layer-group text-green-600 mt-0.5"></i>
+                                    <span><strong>Courses identiques en pile :</strong> Si plusieurs membres participent à la même épreuve, les cartes se superposent en pile interactive. Feuilletez-les avec le bouton ‹ › ou la molette.</span>
+                                </li>
                             </ul>
                         </div>
 
