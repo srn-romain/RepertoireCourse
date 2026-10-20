@@ -833,6 +833,7 @@
             ? isInvite()
             : ((typeof BackendAPI !== 'undefined' && BackendAPI.isInvite) ? BackendAPI.isInvite() : false);
         const isOnPublicPage = (typeof window.location !== 'undefined' && (window.location.pathname.includes('index.html') || window.location.pathname === '/' || window.location.pathname.endsWith('/')));
+        const isDashboard = !isOnPublicPage && ((typeof window.location !== 'undefined' && window.location.pathname.includes('dashboard')) || !!document.getElementById('racesContainer'));
 
         if (detailsActionsContainer) {
             if (isOnPublicPage || isInviteCheck || typeof populateEditForm !== 'function') {
@@ -1254,13 +1255,13 @@
                     timeElement.textContent = timeDisplay;
                 }
 
-                // Prédiction IA personnalisée dans sa fenêtre dédiée au-dessus de Statistiques calculées
+                // Prédiction IA personnalisée dans sa fenêtre dédiée au-dessus de Statistiques calculées (uniquement sur le dashboard)
                 const aiPredictionContainer = document.getElementById('aiPredictionSection');
                 if (aiPredictionContainer) {
                     const isRelayWithTime = race.terrain === 'relai' && (typeof userRelayTimeS !== 'undefined' && userRelayTimeS > 0);
                     const isTriathlonSolo = race.terrain === 'triathlon' && race.raceFormat !== 'team';
 
-                    if (!hasCompletedTime && !isRelayWithTime && !isTriathlonSolo) {
+                    if (isDashboard && !hasCompletedTime && !isRelayWithTime && !isTriathlonSolo) {
                         const allAvailableRaces = window.allUserRaces || window.originalRaces || window.races || racesList || [];
                         const prediction = predictRacePerformance(race, allAvailableRaces);
 
@@ -2727,6 +2728,11 @@
             if (badgeBtn) badgeBtn.classList.add('hidden');
             if (imgBtn && !imgBtn.classList.contains('hidden')) {
                 imgBtn.classList.add('col-span-2');
+            }
+            const aiPred = document.getElementById('aiPredictionSection');
+            if (aiPred) {
+                aiPred.innerHTML = '';
+                aiPred.classList.add('hidden');
             }
         }
 

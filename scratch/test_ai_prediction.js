@@ -181,4 +181,37 @@ if (predSection.classList.contains('hidden') && predSection.innerHTML === '') {
     process.exit(1);
 }
 
+console.log('\n--- TEST 6 : Restriction par page (Masqué sur index.html et visible sur dashboard.html) ---');
+
+// Cas index.html
+global.location.pathname = '/index.html';
+window.showRaceDetails(upcomingRace);
+console.log('Sur index.html : section prédiction cachée ?', predSection.classList.contains('hidden'));
+if (predSection.classList.contains('hidden') && predSection.innerHTML === '') {
+    console.log('✅ Section prédiction masquée avec succès sur index.html');
+} else {
+    console.error('❌ La prédiction NE DOIT PAS s\'afficher sur index.html !');
+    process.exit(1);
+}
+
+// Cas racine / (GitHub Pages ou serveur racine)
+global.location.pathname = '/RepertoireCourse/';
+window.showRaceDetails(upcomingRace);
+if (predSection.classList.contains('hidden') && predSection.innerHTML === '') {
+    console.log('✅ Section prédiction masquée avec succès sur /RepertoireCourse/');
+} else {
+    console.error('❌ La prédiction NE DOIT PAS s\'afficher sur la page d\'accueil /RepertoireCourse/ !');
+    process.exit(1);
+}
+
+// Retour sur dashboard.html
+global.location.pathname = '/dashboard.html';
+window.showRaceDetails(upcomingRace);
+if (!predSection.classList.contains('hidden') && predSection.innerHTML.includes('Prédiction IA de la course')) {
+    console.log('✅ Section prédiction réactivée et visible avec succès sur dashboard.html');
+} else {
+    console.error('❌ La prédiction DOIT s\'afficher sur dashboard.html !');
+    process.exit(1);
+}
+
 console.log('\n🎉 TOUS LES TESTS DE LA NOUVELLE FENÊTRE SONT PASSÉS AVEC SUCCÈS !');
