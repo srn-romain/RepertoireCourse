@@ -521,6 +521,10 @@ const manualModalHTML = `
                             </li>
                             <li class="flex items-start gap-2">
                                 <i class="fas fa-check-circle text-green-600 mt-0.5"></i>
+                                <span><strong>Tri par date ou par nom :</strong> Triez vos courses en un clic par date ou par nom au sein de chaque discipline (Route, Trail, Triathlon, Relai), en consultation comme en édition. Cliquez à nouveau sur le bouton actif pour inverser l'ordre.</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i class="fas fa-check-circle text-green-600 mt-0.5"></i>
                                 <span><strong>Lien cliquable direct :</strong> Cliquez sur le nom de la course dans votre wishlist pour être redirigé vers son site officiel.</span>
                             </li>
                             <li class="flex items-start gap-2">
