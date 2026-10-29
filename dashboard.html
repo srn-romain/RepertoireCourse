@@ -1608,6 +1608,31 @@
                         </button>
                     </div>
 
+                    <!-- Barre de tri intra type de course -->
+                    <div id="wishlistSortBar"
+                        class="flex items-center justify-between gap-2 mb-3 px-2.5 py-1.5 bg-gray-50/90 border border-gray-200/80 rounded-xl text-xs select-none">
+                        <div class="flex items-center gap-1.5 text-gray-600 font-semibold pl-0.5">
+                            <i class="fas fa-sort-amount-down text-green-600 text-xs"></i>
+                            <span class="text-[11px]">Trier par :</span>
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                            <button id="wishlistSortDateBtn" type="button"
+                                class="px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all flex items-center gap-1 cursor-pointer select-none"
+                                title="Trier par date de course (intra catégorie)">
+                                <i class="fas fa-calendar-alt text-[10px]"></i>
+                                <span>Date</span>
+                                <i id="wishlistSortDateIcon" class="fas fa-arrow-up text-[9px] ml-0.5"></i>
+                            </button>
+                            <button id="wishlistSortNameBtn" type="button"
+                                class="px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all flex items-center gap-1 cursor-pointer select-none"
+                                title="Trier par nom de course (intra catégorie)">
+                                <i class="fas fa-font text-[10px]"></i>
+                                <span>Nom</span>
+                                <i id="wishlistSortNameIcon" class="fas fa-arrow-down-a-z text-[9px] ml-0.5"></i>
+                            </button>
+                        </div>
+                    </div>
+
                     <ul id="wishlistItems" class="list-disc pl-5 space-y-0.1 text-gray-700">
                         <!-- Les éléments de la liste seront ajoutés ici -->
                     </ul>
@@ -1644,6 +1669,30 @@
                         <div id="wishlistEditTabs"
                             class="relative flex items-center gap-1.5 p-1 bg-gray-100/90 rounded-xl mb-3.5 overflow-x-auto no-scrollbar scroll-smooth">
                             <!-- Les boutons d'onglets sont générés dynamiquement -->
+                        </div>
+                        <!-- Barre de tri intra type de course en mode édition -->
+                        <div id="wishlistEditSortBar"
+                            class="flex items-center justify-between gap-2 mb-3 px-2.5 py-1.5 bg-gray-50/90 border border-gray-200/80 rounded-xl text-xs select-none">
+                            <div class="flex items-center gap-1.5 text-gray-600 font-semibold pl-0.5">
+                                <i class="fas fa-sort-amount-down text-green-600 text-xs"></i>
+                                <span class="text-[11px]">Trier par :</span>
+                            </div>
+                            <div class="flex items-center gap-1.5">
+                                <button id="wishlistEditSortDateBtn" type="button"
+                                    class="px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all flex items-center gap-1 cursor-pointer select-none"
+                                    title="Trier par date de course (intra catégorie)">
+                                    <i class="fas fa-calendar-alt text-[10px]"></i>
+                                    <span>Date</span>
+                                    <i id="wishlistEditSortDateIcon" class="fas fa-arrow-up text-[9px] ml-0.5"></i>
+                                </button>
+                                <button id="wishlistEditSortNameBtn" type="button"
+                                    class="px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all flex items-center gap-1 cursor-pointer select-none"
+                                    title="Trier par nom de course (intra catégorie)">
+                                    <i class="fas fa-font text-[10px]"></i>
+                                    <span>Nom</span>
+                                    <i id="wishlistEditSortNameIcon" class="fas fa-arrow-down-a-z text-[9px] ml-0.5"></i>
+                                </button>
+                            </div>
                         </div>
                         <ul id="wishlistEditList" class="space-y-3"></ul>
                         <p id="emptyWishlistEditSearch"
@@ -7595,6 +7644,146 @@
         const copyAllWishlistContainer = document.getElementById('copyAllWishlistContainer');
         const copyAllWishlistBtn = document.getElementById('copyAllWishlistBtn');
         let wishlistEditItems = [];
+
+        // État et éléments de tri intra-catégorie de la wishlist (par date de course ou par nom)
+        let wishlistSortBy = localStorage.getItem('wishlistSortBy') || 'date';
+        let wishlistSortOrder = localStorage.getItem('wishlistSortOrder') || 'asc';
+
+        const wishlistSortBar = document.getElementById('wishlistSortBar');
+        const wishlistSortDateBtn = document.getElementById('wishlistSortDateBtn');
+        const wishlistSortDateIcon = document.getElementById('wishlistSortDateIcon');
+        const wishlistSortNameBtn = document.getElementById('wishlistSortNameBtn');
+        const wishlistSortNameIcon = document.getElementById('wishlistSortNameIcon');
+
+        const wishlistEditSortBar = document.getElementById('wishlistEditSortBar');
+        const wishlistEditSortDateBtn = document.getElementById('wishlistEditSortDateBtn');
+        const wishlistEditSortDateIcon = document.getElementById('wishlistEditSortDateIcon');
+        const wishlistEditSortNameBtn = document.getElementById('wishlistEditSortNameBtn');
+        const wishlistEditSortNameIcon = document.getElementById('wishlistEditSortNameIcon');
+
+        function getWishlistItemDateTimestamp(item) {
+            const raw = (item.date || item.raceDate || '').trim();
+            if (!raw) return null;
+            const d = new Date(raw + (raw.includes('T') ? '' : 'T00:00:00'));
+            const time = d.getTime();
+            return isNaN(time) ? null : time;
+        }
+
+        function compareWishlistItems(a, b, sortBy = 'date', sortOrder = 'asc') {
+            if (sortBy === 'date') {
+                const timeA = getWishlistItemDateTimestamp(a);
+                const timeB = getWishlistItemDateTimestamp(b);
+
+                // Les courses avec date valide viennent en premier, celles sans date à la fin
+                if (timeA !== null && timeB === null) return -1;
+                if (timeA === null && timeB !== null) return 1;
+
+                if (timeA !== null && timeB !== null) {
+                    const diff = (sortOrder === 'desc') ? (timeB - timeA) : (timeA - timeB);
+                    if (diff !== 0) return diff;
+                }
+
+                // Égalité de date ou aucune date : tri secondaire alphabétique par nom
+                const nameA = (a.name || '').trim();
+                const nameB = (b.name || '').trim();
+                return nameA.localeCompare(nameB, 'fr', { sensitivity: 'base' });
+            } else {
+                // Tri par nom de course
+                const nameA = (a.name || '').trim();
+                const nameB = (b.name || '').trim();
+                const cmp = nameA.localeCompare(nameB, 'fr', { sensitivity: 'base' });
+                if (cmp !== 0) {
+                    return (sortOrder === 'desc') ? -cmp : cmp;
+                }
+
+                // Égalité de nom : tri secondaire chronologique par date
+                const timeA = getWishlistItemDateTimestamp(a);
+                const timeB = getWishlistItemDateTimestamp(b);
+                if (timeA !== null && timeB === null) return -1;
+                if (timeA === null && timeB !== null) return 1;
+                if (timeA !== null && timeB !== null) return timeA - timeB;
+                return 0;
+            }
+        }
+
+        function sortWishlistItemsList(items, sortBy = 'date', sortOrder = 'asc') {
+            return [...items].sort((a, b) => compareWishlistItems(a, b, sortBy, sortOrder));
+        }
+
+        function updateWishlistSortUI() {
+            const isDate = wishlistSortBy === 'date';
+            const isAsc = wishlistSortOrder === 'asc';
+
+            const activeClass = 'bg-green-600 text-white font-semibold shadow-xs';
+            const inactiveClass = 'bg-white text-gray-600 hover:text-gray-800 hover:bg-gray-100 border border-gray-200/90 font-medium';
+
+            if (wishlistSortDateBtn) {
+                wishlistSortDateBtn.className = `px-2.5 py-1 rounded-lg text-[11px] transition-all flex items-center gap-1 cursor-pointer select-none ${isDate ? activeClass : inactiveClass}`;
+                if (wishlistSortDateIcon) {
+                    wishlistSortDateIcon.className = isDate
+                        ? (isAsc ? 'fas fa-arrow-up text-[9px] ml-0.5' : 'fas fa-arrow-down text-[9px] ml-0.5')
+                        : 'fas fa-arrow-up text-[9px] ml-0.5 opacity-60';
+                }
+                wishlistSortDateBtn.title = isDate
+                    ? `Trié par date (${isAsc ? 'plus proche en premier - cliquer pour inverser' : 'plus lointaine en premier - cliquer pour inverser'})`
+                    : 'Trier par date de course';
+            }
+
+            if (wishlistSortNameBtn) {
+                wishlistSortNameBtn.className = `px-2.5 py-1 rounded-lg text-[11px] transition-all flex items-center gap-1 cursor-pointer select-none ${!isDate ? activeClass : inactiveClass}`;
+                if (wishlistSortNameIcon) {
+                    wishlistSortNameIcon.className = !isDate
+                        ? (isAsc ? 'fas fa-arrow-down-a-z text-[9px] ml-0.5' : 'fas fa-arrow-up-z-a text-[9px] ml-0.5')
+                        : 'fas fa-arrow-down-a-z text-[9px] ml-0.5 opacity-60';
+                }
+                wishlistSortNameBtn.title = !isDate
+                    ? `Trié par nom (${isAsc ? 'A à Z - cliquer pour inverser' : 'Z à A - cliquer pour inverser'})`
+                    : 'Trier par nom de course';
+            }
+
+            if (wishlistEditSortDateBtn) {
+                wishlistEditSortDateBtn.className = `px-2.5 py-1 rounded-lg text-[11px] transition-all flex items-center gap-1 cursor-pointer select-none ${isDate ? activeClass : inactiveClass}`;
+                if (wishlistEditSortDateIcon) {
+                    wishlistEditSortDateIcon.className = isDate
+                        ? (isAsc ? 'fas fa-arrow-up text-[9px] ml-0.5' : 'fas fa-arrow-down text-[9px] ml-0.5')
+                        : 'fas fa-arrow-up text-[9px] ml-0.5 opacity-60';
+                }
+                wishlistEditSortDateBtn.title = isDate
+                    ? `Trié par date (${isAsc ? 'plus proche en premier - cliquer pour inverser' : 'plus lointaine en premier - cliquer pour inverser'})`
+                    : 'Trier par date de course';
+            }
+
+            if (wishlistEditSortNameBtn) {
+                wishlistEditSortNameBtn.className = `px-2.5 py-1 rounded-lg text-[11px] transition-all flex items-center gap-1 cursor-pointer select-none ${!isDate ? activeClass : inactiveClass}`;
+                if (wishlistEditSortNameIcon) {
+                    wishlistEditSortNameIcon.className = !isDate
+                        ? (isAsc ? 'fas fa-arrow-down-a-z text-[9px] ml-0.5' : 'fas fa-arrow-up-z-a text-[9px] ml-0.5')
+                        : 'fas fa-arrow-down-a-z text-[9px] ml-0.5 opacity-60';
+                }
+                wishlistEditSortNameBtn.title = !isDate
+                    ? `Trié par nom (${isAsc ? 'A à Z - cliquer pour inverser' : 'Z à A - cliquer pour inverser'})`
+                    : 'Trier par nom de course';
+            }
+        }
+
+        function setWishlistSort(sortBy) {
+            if (wishlistSortBy === sortBy) {
+                wishlistSortOrder = (wishlistSortOrder === 'asc') ? 'desc' : 'asc';
+            } else {
+                wishlistSortBy = sortBy;
+                wishlistSortOrder = 'asc';
+            }
+            localStorage.setItem('wishlistSortBy', wishlistSortBy);
+            localStorage.setItem('wishlistSortOrder', wishlistSortOrder);
+            updateWishlistSortUI();
+            handleWishlistSearch();
+        }
+
+        if (wishlistSortDateBtn) wishlistSortDateBtn.addEventListener('click', () => setWishlistSort('date'));
+        if (wishlistSortNameBtn) wishlistSortNameBtn.addEventListener('click', () => setWishlistSort('name'));
+        if (wishlistEditSortDateBtn) wishlistEditSortDateBtn.addEventListener('click', () => setWishlistSort('date'));
+        if (wishlistEditSortNameBtn) wishlistEditSortNameBtn.addEventListener('click', () => setWishlistSort('name'));
+
         const WISHLIST_CATEGORY_THEMES = {
             route: {
                 label: 'Route',
@@ -8446,11 +8635,8 @@
                 });
                 if (catItems.length === 0) return;
 
-                const sortedCatItems = [...catItems].sort((a, b) => {
-                    const dateA = new Date(a.addedAt || 0);
-                    const dateB = new Date(b.addedAt || 0);
-                    return dateA - dateB;
-                });
+                // Trier intra-catégorie selon le critère choisi
+                const sortedCatItems = sortWishlistItemsList(catItems, wishlistSortBy, wishlistSortOrder);
 
                 const catLabel = categoryLabels[cat] || (cat.charAt(0).toUpperCase() + cat.slice(1));
                 const lines = sortedCatItems.map(item => `• ${item.name.trim()}`);
@@ -8463,7 +8649,8 @@
                 return !categories.includes(c) && c !== 'course';
             });
             if (otherItems.length > 0) {
-                const lines = otherItems.map(item => `• ${item.name.trim()}`);
+                const sortedOther = sortWishlistItemsList(otherItems, wishlistSortBy, wishlistSortOrder);
+                const lines = sortedOther.map(item => `• ${item.name.trim()}`);
                 sections.push(`Autre :\n${lines.join('\n')}`);
             }
 
@@ -8503,6 +8690,16 @@
                 }
             }
 
+            // Mettre à jour la visibilité de la barre de tri et son état visuel
+            if (wishlistSortBar) {
+                if (items && items.length > 0) {
+                    wishlistSortBar.classList.remove('hidden');
+                } else {
+                    wishlistSortBar.classList.add('hidden');
+                }
+            }
+            updateWishlistSortUI();
+
             // Séparer par catégorie
             const categories = ['route', 'trail', 'triathlon', 'relai'];
             categories.forEach(cat => {
@@ -8512,13 +8709,11 @@
                     return itemCat === cat || (cat === 'route' && itemCat === 'course');
                 });
                 if (catItems.length === 0) return;
-                // Trier par date croissante (plus ancienne en premier)
-                const sortedCatItems = [...catItems].sort((a, b) => {
-                    const dateA = new Date(a.addedAt || 0);
-                    const dateB = new Date(b.addedAt || 0);
-                    return dateA - dateB;
-                });
-                // Séparer favoris et non favoris
+
+                // Trier intra-catégorie selon le critère choisi (date de course ou nom de course)
+                const sortedCatItems = sortWishlistItemsList(catItems, wishlistSortBy, wishlistSortOrder);
+
+                // Séparer favoris et non favoris (les favoris restent en tête de chaque catégorie)
                 const favItems = sortedCatItems.filter(item => item.favorite);
                 const nonFavItems = sortedCatItems.filter(item => !item.favorite);
 
@@ -8736,16 +8931,28 @@
 
         // Afficher la liste éditable avec éléments dépliables/repliables et pastille d'incomplétude
         function renderWishlistEditList(items) {
-            // Sort items by category and then by name
-            items.sort((a, b) => {
-                const catA = (a.category || '').toLowerCase();
-                const catB = (b.category || '').toLowerCase();
-                if (catA < catB) return -1;
-                if (catA > catB) return 1;
+            if (wishlistEditSortBar) {
+                if (items && items.length > 0) {
+                    wishlistEditSortBar.classList.remove('hidden');
+                } else {
+                    wishlistEditSortBar.classList.add('hidden');
+                }
+            }
+            updateWishlistSortUI();
 
-                const nameA = (a.name || '').toLowerCase();
-                const nameB = (b.name || '').toLowerCase();
-                return nameA.localeCompare(nameB);
+            // Trier par catégorie puis intra-catégorie selon le critère choisi (date de course ou nom)
+            const categoryOrder = { route: 1, trail: 2, triathlon: 3, relai: 4 };
+            items.sort((a, b) => {
+                let catA = (a.category || 'route').toLowerCase();
+                if (catA === 'course') catA = 'route';
+                let catB = (b.category || 'route').toLowerCase();
+                if (catB === 'course') catB = 'route';
+
+                const orderA = categoryOrder[catA] || 99;
+                const orderB = categoryOrder[catB] || 99;
+                if (orderA !== orderB) return orderA - orderB;
+
+                return compareWishlistItems(a, b, wishlistSortBy, wishlistSortOrder);
             });
 
             wishlistEditList.innerHTML = '';
