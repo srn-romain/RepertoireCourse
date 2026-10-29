@@ -1456,9 +1456,9 @@
                             <p class="font-bold text-blue-800 text-xs whitespace-nowrap">${calculatePace(userRelayDist, userRelayTimeS)}</p>
                         </div>
                     </div>
-                    <div class="mt-3 pt-2 border-t border-blue-200 flex items-center justify-center gap-2">
-                        <i class="fas fa-person-running text-blue-500 text-xs"></i>
-                        <span class="text-[11px] text-blue-700 font-semibold">${userRelayCount} relai${userRelayCount > 1 ? 's' : ''} effectué${userRelayCount > 1 ? 's' : ''} (${userRelayLaps.join(', ')})</span>
+                    <div class="mt-3 pt-2 border-t border-blue-200 flex items-center justify-center gap-2 text-center flex-wrap px-2">
+                        <i class="fas fa-person-running text-blue-500 text-xs shrink-0"></i>
+                        <span class="text-[11px] text-blue-700 font-semibold break-words">${userRelayCount} relai${userRelayCount > 1 ? 's' : ''} effectué${userRelayCount > 1 ? 's' : ''} (${userRelayLaps.join(', ')})</span>
                     </div>
                 </div>
             `;
@@ -1648,9 +1648,9 @@
                                     <p class="font-bold ${c.title} text-xs whitespace-nowrap">${calculatePace(st.dist, st.timeS)}</p>
                                 </div>
                             </div>
-                            <div class="mt-3 pt-2 border-t ${c.foot} flex items-center justify-center gap-2">
-                                <i class="fas fa-person-running ${c.icon} text-xs"></i>
-                                <span class="text-[11px] ${c.title} font-semibold">${st.count} relai${st.count > 1 ? 's' : ''} effectué${st.count > 1 ? 's' : ''} (${st.laps.join(', ')})</span>
+                            <div class="mt-3 pt-2 border-t ${c.foot} flex items-center justify-center gap-2 text-center flex-wrap px-2">
+                                <i class="fas fa-person-running ${c.icon} text-xs shrink-0"></i>
+                                <span class="text-[11px] ${c.title} font-semibold break-words">${st.count} relai${st.count > 1 ? 's' : ''} effectué${st.count > 1 ? 's' : ''} (${st.laps.join(', ')})</span>
                             </div>
                         </div>
                     `;

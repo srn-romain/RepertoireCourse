@@ -58,7 +58,7 @@ async function generateRacePdf(raceId) {
     }
 
     // Email du propriétaire du compte
-    if (firebase.auth().currentUser && firebase.auth().currentUser.email) {
+    if (typeof firebase !== 'undefined' && firebase.auth && firebase.auth().currentUser && firebase.auth().currentUser.email) {
         doc.setFont(undefined, 'bold');
         doc.text('Par : ', margin, yPos);
         const labelWidth = doc.getTextWidth('Par : ');
@@ -723,20 +723,18 @@ async function generateRacePdf(raceId) {
         ];
 
         // Draw Card Function
-        function drawCard(xPos, title, badgeLabel, dist, elev, elevNeg, timeS, count, laps, colors, cardWidth) {
-            const cardHeight = 34;
-
+        function drawCard(xPos, yCardPos, title, badgeLabel, dist, elev, elevNeg, timeS, count, laps, colors, cardWidth, cardHeight, footerLines, fontSize, lineHeight) {
             // Draw Background and Border
             doc.setFillColor(...colors.bg);
             doc.setDrawColor(...colors.border);
             doc.setLineWidth(0.4);
-            doc.roundedRect(xPos, yPos, cardWidth, cardHeight, 3, 3, 'FD');
+            doc.roundedRect(xPos, yCardPos, cardWidth, cardHeight, 3, 3, 'FD');
 
             // Draw Title
             doc.setFont(undefined, 'bold');
             doc.setFontSize(10.5);
             doc.setTextColor(...colors.title);
-            doc.text(title, xPos + 6, yPos + 7);
+            doc.text(title, xPos + 6, yCardPos + 7);
 
             // Draw Badge
             doc.setFont(undefined, 'bold');
@@ -745,7 +743,7 @@ async function generateRacePdf(raceId) {
             const badgeWidth = badgeTextWidth + 4;
             const badgeHeight = 4.5;
             const badgeX = xPos + cardWidth - badgeWidth - 6;
-            const badgeY = yPos + 3.5;
+            const badgeY = yCardPos + 3.5;
 
             doc.setFillColor(...colors.badgeBg);
             doc.roundedRect(badgeX, badgeY, badgeWidth, badgeHeight, 1.5, 1.5, 'F');
@@ -755,7 +753,7 @@ async function generateRacePdf(raceId) {
             // Draw Header Underline
             doc.setDrawColor(...colors.border);
             doc.setLineWidth(0.2);
-            doc.line(xPos + 6, yPos + 10.5, xPos + cardWidth - 6, yPos + 10.5);
+            doc.line(xPos + 6, yCardPos + 10.5, xPos + cardWidth - 6, yCardPos + 10.5);
 
             const stats = [
                 { label: 'DISTANCE', value: `${dist.toFixed(2)} km` },
@@ -772,30 +770,38 @@ async function generateRacePdf(raceId) {
                 doc.setFont(undefined, 'normal');
                 doc.setFontSize(7.5);
                 doc.setTextColor(...colors.sub);
-                doc.text(stat.label, colX, yPos + 15.5, { align: 'center' });
+                doc.text(stat.label, colX, yCardPos + 15.5, { align: 'center' });
 
                 // Value
                 doc.setFont(undefined, 'bold');
                 doc.setFontSize(9.5);
                 doc.setTextColor(...colors.title);
-                doc.text(stat.value, colX, yPos + 21, { align: 'center' });
+                doc.text(stat.value, colX, yCardPos + 21, { align: 'center' });
             });
 
             // Draw Footer Divider
             doc.setDrawColor(...colors.border);
             doc.setLineWidth(0.2);
-            doc.line(xPos + 6, yPos + 24.5, xPos + cardWidth - 6, yPos + 24.5);
+            doc.line(xPos + 6, yCardPos + 24.5, xPos + cardWidth - 6, yCardPos + 24.5);
 
-            // Draw Footer
+            // Draw Footer (avec retour à la ligne automatique et centrage vertical si carte étirée)
             doc.setFont(undefined, 'bold');
-            doc.setFontSize(8);
+            doc.setFontSize(fontSize);
             doc.setTextColor(...colors.title);
-            const footerText = `${count} relais effectué${count > 1 ? 's' : ''} (${laps.join(', ')})`;
-            doc.text(footerText, xPos + cardWidth / 2, yPos + 29.5, { align: 'center' });
+
+            const linesCount = footerLines.length;
+            const textBlockHeight = Math.max(0, linesCount - 1) * lineHeight;
+            const extraSpace = (cardHeight - 24.5) - (9.5 + textBlockHeight);
+            const startY = yCardPos + 29.5 + Math.max(0, extraSpace / 2);
+
+            footerLines.forEach((line, lIdx) => {
+                doc.text(line, xPos + cardWidth / 2, startY + lIdx * lineHeight, { align: 'center' });
+            });
         }
 
         // Draw Section Title for Performances
-        if (yPos > doc.internal.pageSize.getHeight() - 60) {
+        const pageHeight = doc.internal.pageSize.getHeight();
+        if (yPos > pageHeight - 55) {
             doc.addPage();
             yPos = margin;
         }
@@ -838,35 +844,55 @@ async function generateRacePdf(raceId) {
 
         const gap = 4;
         const cardWidth = (pageWidth - 2 * margin - gap) / 2;
-        const cardHeight = 34;
+        const maxTextWidth = cardWidth - 14;
 
-        participants.forEach((p, idx) => {
-            const col = idx % 2;
-            const isLast = idx === participants.length - 1;
+        // Pré-calculer les lignes du footer et la hauteur requise pour chaque participant
+        participants.forEach(p => {
+            const lapsList = Array.isArray(p.laps) ? p.laps : [];
+            const footerText = lapsList.length > 0
+                ? `${p.count} relais effectué${p.count > 1 ? 's' : ''} (${lapsList.join(', ')})`
+                : `${p.count} relais effectué${p.count > 1 ? 's' : ''}`;
 
-            let xPos;
-            if (col === 0 && isLast) {
-                // Centrer le dernier participant s'il est seul sur sa ligne
-                const availableWidth = pageWidth - 2 * margin;
-                xPos = margin + (availableWidth - cardWidth) / 2;
-            } else {
-                xPos = margin + col * (cardWidth + gap);
-            }
+            const fontSize = lapsList.length > 25 ? 7.5 : 8;
+            const lineHeight = fontSize === 7.5 ? 3.2 : 3.5;
 
-            // Page break check only on new row
-            if (col === 0) {
-                if (yPos + cardHeight > doc.internal.pageSize.getHeight() - margin) {
-                    doc.addPage();
-                    yPos = margin;
-                }
-            }
+            doc.setFont(undefined, 'bold');
+            doc.setFontSize(fontSize);
+            const lines = doc.splitTextToSize(footerText, maxTextWidth);
 
-            drawCard(xPos, p.title, p.badgeLabel, p.dist, p.elev, p.elevNeg, p.timeS, p.count, p.laps, p.colors, cardWidth);
-
-            if (col === 1 || idx === participants.length - 1) {
-                yPos += cardHeight + gap;
-            }
+            p.footerLines = Array.isArray(lines) ? lines : [lines];
+            if (p.footerLines.length === 0) p.footerLines = [footerText];
+            p.fontSize = fontSize;
+            p.lineHeight = lineHeight;
+            p.neededHeight = 34 + Math.max(0, p.footerLines.length - 1) * lineHeight;
         });
+
+        // Découpage et affichage en rangées de 2 participants
+        for (let i = 0; i < participants.length; i += 2) {
+            const row = participants.slice(i, i + 2);
+            const rowHeight = Math.max(...row.map(p => p.neededHeight));
+
+            if (yPos + rowHeight > pageHeight - margin) {
+                doc.addPage();
+                yPos = margin;
+            }
+
+            const isSingleLast = row.length === 1 && (i + 1 === participants.length);
+            row.forEach((p, col) => {
+                let xPos;
+                if (isSingleLast) {
+                    // Centrer le dernier participant s'il est seul sur sa ligne
+                    const availableWidth = pageWidth - 2 * margin;
+                    xPos = margin + (availableWidth - cardWidth) / 2;
+                } else {
+                    xPos = margin + col * (cardWidth + gap);
+                }
+
+                drawCard(xPos, yPos, p.title, p.badgeLabel, p.dist, p.elev, p.elevNeg, p.timeS, p.count, p.laps, p.colors, cardWidth, rowHeight, p.footerLines, p.fontSize, p.lineHeight);
+            });
+
+            yPos += rowHeight + gap;
+        }
 
         yPos += 8; // Petit espace supplémentaire à la fin des cartes des participants
 
@@ -1675,18 +1701,16 @@ async function generateRelayTableOnlyPdf(raceId) {
         return `${timePerKm.toFixed(2)} min/km`;
     }
 
-    function drawCard(xPos, title, badgeLabel, dist, elev, elevNeg, timeS, count, laps, colors, cardWidth) {
-        const cardHeight = 34;
-
+    function drawCard(xPos, yCardPos, title, badgeLabel, dist, elev, elevNeg, timeS, count, laps, colors, cardWidth, cardHeight, footerLines, fontSize, lineHeight) {
         doc.setFillColor(...colors.bg);
         doc.setDrawColor(...colors.border);
         doc.setLineWidth(0.4);
-        doc.roundedRect(xPos, yPos, cardWidth, cardHeight, 3, 3, 'FD');
+        doc.roundedRect(xPos, yCardPos, cardWidth, cardHeight, 3, 3, 'FD');
 
         doc.setFont(undefined, 'bold');
         doc.setFontSize(10.5);
         doc.setTextColor(...colors.title);
-        doc.text(title, xPos + 6, yPos + 7);
+        doc.text(title, xPos + 6, yCardPos + 7);
 
         doc.setFont(undefined, 'bold');
         doc.setFontSize(7.5);
@@ -1694,7 +1718,7 @@ async function generateRelayTableOnlyPdf(raceId) {
         const badgeWidth = badgeTextWidth + 4;
         const badgeHeight = 4.5;
         const badgeX = xPos + cardWidth - badgeWidth - 6;
-        const badgeY = yPos + 3.5;
+        const badgeY = yCardPos + 3.5;
 
         doc.setFillColor(...colors.badgeBg);
         doc.roundedRect(badgeX, badgeY, badgeWidth, badgeHeight, 1.5, 1.5, 'F');
@@ -1703,7 +1727,7 @@ async function generateRelayTableOnlyPdf(raceId) {
 
         doc.setDrawColor(...colors.border);
         doc.setLineWidth(0.2);
-        doc.line(xPos + 6, yPos + 10.5, xPos + cardWidth - 6, yPos + 10.5);
+        doc.line(xPos + 6, yCardPos + 10.5, xPos + cardWidth - 6, yCardPos + 10.5);
 
         const stats = [
             { label: 'DISTANCE', value: `${dist.toFixed(2)} km` },
@@ -1719,28 +1743,36 @@ async function generateRelayTableOnlyPdf(raceId) {
             doc.setFont(undefined, 'normal');
             doc.setFontSize(7.5);
             doc.setTextColor(...colors.sub);
-            doc.text(stat.label, colX, yPos + 15.5, { align: 'center' });
+            doc.text(stat.label, colX, yCardPos + 15.5, { align: 'center' });
 
             doc.setFont(undefined, 'bold');
             doc.setFontSize(9.5);
             doc.setTextColor(...colors.title);
-            doc.text(stat.value, colX, yPos + 21, { align: 'center' });
+            doc.text(stat.value, colX, yCardPos + 21, { align: 'center' });
         });
 
         doc.setDrawColor(...colors.border);
         doc.setLineWidth(0.2);
-        doc.line(xPos + 6, yPos + 24.5, xPos + cardWidth - 6, yPos + 24.5);
+        doc.line(xPos + 6, yCardPos + 24.5, xPos + cardWidth - 6, yCardPos + 24.5);
 
+        // Draw Footer (avec retour à la ligne automatique et centrage vertical si carte étirée)
         doc.setFont(undefined, 'bold');
-        doc.setFontSize(8);
+        doc.setFontSize(fontSize);
         doc.setTextColor(...colors.title);
-        const footerText = `${count} relais effectué${count > 1 ? 's' : ''} (${laps.join(', ')})`;
-        doc.text(footerText, xPos + cardWidth / 2, yPos + 29.5, { align: 'center' });
+
+        const linesCount = footerLines.length;
+        const textBlockHeight = Math.max(0, linesCount - 1) * lineHeight;
+        const extraSpace = (cardHeight - 24.5) - (9.5 + textBlockHeight);
+        const startY = yCardPos + 29.5 + Math.max(0, extraSpace / 2);
+
+        footerLines.forEach((line, lIdx) => {
+            doc.text(line, xPos + cardWidth / 2, startY + lIdx * lineHeight, { align: 'center' });
+        });
     }
 
     // Titre de la section performances
     yPos += totalRowHeight + 10;
-    if (yPos > pageHeight - 40) {
+    if (yPos > pageHeight - 55) {
         doc.addPage();
         yPos = margin;
     }
@@ -1783,35 +1815,55 @@ async function generateRelayTableOnlyPdf(raceId) {
 
     const gap = 4;
     const cardWidth = (pageWidth - 2 * margin - gap) / 2;
-    const cardHeight = 34;
+    const maxTextWidth = cardWidth - 14;
 
-    participants.forEach((p, idx) => {
-        const col = idx % 2;
-        const isLast = idx === participants.length - 1;
+    // Pré-calculer les lignes du footer et la hauteur requise pour chaque participant
+    participants.forEach(p => {
+        const lapsList = Array.isArray(p.laps) ? p.laps : [];
+        const footerText = lapsList.length > 0
+            ? `${p.count} relais effectué${p.count > 1 ? 's' : ''} (${lapsList.join(', ')})`
+            : `${p.count} relais effectué${p.count > 1 ? 's' : ''}`;
 
-        let xPos;
-        if (col === 0 && isLast) {
-            // Centrer le dernier participant s'il est seul sur sa ligne
-            const availableWidth = pageWidth - 2 * margin;
-            xPos = margin + (availableWidth - cardWidth) / 2;
-        } else {
-            xPos = margin + col * (cardWidth + gap);
-        }
+        const fontSize = lapsList.length > 25 ? 7.5 : 8;
+        const lineHeight = fontSize === 7.5 ? 3.2 : 3.5;
 
-        // Page break check only on new row
-        if (col === 0) {
-            if (yPos + cardHeight > pageHeight - margin) {
-                doc.addPage();
-                yPos = margin;
-            }
-        }
+        doc.setFont(undefined, 'bold');
+        doc.setFontSize(fontSize);
+        const lines = doc.splitTextToSize(footerText, maxTextWidth);
 
-        drawCard(xPos, p.title, p.badgeLabel, p.dist, p.elev, p.elevNeg, p.timeS, p.count, p.laps, p.colors, cardWidth);
-
-        if (col === 1 || idx === participants.length - 1) {
-            yPos += cardHeight + gap;
-        }
+        p.footerLines = Array.isArray(lines) ? lines : [lines];
+        if (p.footerLines.length === 0) p.footerLines = [footerText];
+        p.fontSize = fontSize;
+        p.lineHeight = lineHeight;
+        p.neededHeight = 34 + Math.max(0, p.footerLines.length - 1) * lineHeight;
     });
+
+    // Découpage et affichage en rangées de 2 participants
+    for (let i = 0; i < participants.length; i += 2) {
+        const row = participants.slice(i, i + 2);
+        const rowHeight = Math.max(...row.map(p => p.neededHeight));
+
+        if (yPos + rowHeight > pageHeight - margin) {
+            doc.addPage();
+            yPos = margin;
+        }
+
+        const isSingleLast = row.length === 1 && (i + 1 === participants.length);
+        row.forEach((p, col) => {
+            let xPos;
+            if (isSingleLast) {
+                // Centrer le dernier participant s'il est seul sur sa ligne
+                const availableWidth = pageWidth - 2 * margin;
+                xPos = margin + (availableWidth - cardWidth) / 2;
+            } else {
+                xPos = margin + col * (cardWidth + gap);
+            }
+
+            drawCard(xPos, yPos, p.title, p.badgeLabel, p.dist, p.elev, p.elevNeg, p.timeS, p.count, p.laps, p.colors, cardWidth, rowHeight, p.footerLines, p.fontSize, p.lineHeight);
+        });
+
+        yPos += rowHeight + gap;
+    }
 
     function parseTimeToSeconds(timeStr) {
         if (!timeStr) return 0;
