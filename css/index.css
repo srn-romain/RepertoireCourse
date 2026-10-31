@@ -327,3 +327,16 @@
     }
 }
 
+/* ==========================================================================
+   FAQ Accordion Custom Styles
+   ========================================================================== */
+summary::-webkit-details-marker {
+    display: none;
+}
+summary {
+    list-style: none;
+}
+details summary::-webkit-details-marker {
+    display: none;
+}
+
