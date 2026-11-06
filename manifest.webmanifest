@@ -22,7 +22,7 @@
     ],
     "icons": [
         {
-            "src": "https://srn-romain.github.io/RepertoireCourse/img/favicon.webp",
+            "src": "https://macollectiondecourses.web.app/img/favicon.webp",
             "sizes": "192x192 512x512",
             "type": "image/webp",
             "purpose": "any maskable"
@@ -36,7 +36,7 @@
             "url": "dashboard.html",
             "icons": [
                 {
-                    "src": "https://srn-romain.github.io/RepertoireCourse/img/favicon.webp",
+                    "src": "https://macollectiondecourses.web.app/img/favicon.webp",
                     "sizes": "192x192"
                 }
             ]

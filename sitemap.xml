@@ -4,14 +4,14 @@
 
   <!-- Page d'accueil publique -->
   <url>
-    <loc>https://srn-romain.github.io/RepertoireCourse/</loc>
+    <loc>https://macollectiondecourses.web.app/</loc>
     <lastmod>2026-03-05</lastmod>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
   </url>
 
   <url>
-    <loc>https://srn-romain.github.io/RepertoireCourse/index.html</loc>
+    <loc>https://macollectiondecourses.web.app/index.html</loc>
     <lastmod>2026-03-05</lastmod>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>

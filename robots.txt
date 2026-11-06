@@ -9,4 +9,4 @@ Disallow: /dashboard.html
 Disallow: /js/
 Disallow: /google8d80269a8469c6f5.html
 
-Sitemap: https://srn-romain.github.io/RepertoireCourse/sitemap.xml
+Sitemap: https://macollectiondecourses.web.app/sitemap.xml

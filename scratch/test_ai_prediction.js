@@ -195,12 +195,12 @@ if (predSection.classList.contains('hidden') && predSection.innerHTML === '') {
 }
 
 // Cas racine / (GitHub Pages ou serveur racine)
-global.location.pathname = '/RepertoireCourse/';
+global.location.pathname = '/index.html';
 window.showRaceDetails(upcomingRace);
 if (predSection.classList.contains('hidden') && predSection.innerHTML === '') {
-    console.log('✅ Section prédiction masquée avec succès sur /RepertoireCourse/');
+    console.log('✅ Section prédiction masquée avec succès sur index.html');
 } else {
-    console.error('❌ La prédiction NE DOIT PAS s\'afficher sur la page d\'accueil /RepertoireCourse/ !');
+    console.error('❌ La prédiction NE DOIT PAS s\'afficher sur la page d\'accueil index.html !');
     process.exit(1);
 }
 

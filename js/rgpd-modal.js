@@ -54,7 +54,7 @@
                 </h3>
                 <div class="bg-gray-50 rounded-lg p-4 space-y-1">
                     <p><strong>Application :</strong> Carnet de Courses</p>
-                    <p><strong>Site web :</strong> <a href="https://srn-romain.github.io/RepertoireCourse/" target="_blank" class="text-green-700 underline">https://srn-romain.github.io/RepertoireCourse/</a></p>
+                    <p><strong>Site web :</strong> <a href="https://macollectiondecourses.web.app/" target="_blank" class="text-green-700 underline">https://macollectiondecourses.web.app/</a></p>
                     <p><strong>Contact :</strong> Via le formulaire de contact disponible sur la page d'accueil</p>
                     <p class="text-xs text-gray-500 mt-2">
                         Le responsable du traitement est la personne physique qui gère et développe l'application
