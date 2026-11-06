@@ -2,7 +2,7 @@
     "name": "Carnet de Courses",
     "short_name": "Courses",
     "description": "Suivez, organisez et analysez toutes vos courses sportives : trail, route, triathlon, relai, Hyrox et plus encore.",
-    "start_url": "index.html",
+    "start_url": "/",
     "scope": "./",
     "display": "standalone",
     "orientation": "portrait-primary",
