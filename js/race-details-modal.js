@@ -268,6 +268,20 @@
             .replace(/'/g, "&#039;");
     }
 
+    function parseCompanionTime(value) {
+        const match = /^(\d+):([0-5]\d):([0-5]\d)$/.exec(String(value || ''));
+        return match ? Number(match[1]) * 3600 + Number(match[2]) * 60 + Number(match[3]) : null;
+    }
+
+    function formatCompanionTimeGap(seconds) {
+        const hours = Math.floor(seconds / 3600);
+        const minutes = Math.floor((seconds % 3600) / 60);
+        const remainingSeconds = seconds % 60;
+        if (hours) return `${hours} h ${minutes} min ${remainingSeconds} s`;
+        if (minutes) return `${minutes} min ${remainingSeconds} s`;
+        return `${remainingSeconds} s`;
+    }
+
     // Helper: Formater la distance
     function formatDist(d) {
         if (d === undefined || d === null || d === '') return '/';
@@ -1351,18 +1365,104 @@
         if (detailsCompanions) {
             if (race.companions && race.companions.length > 0) {
                 detailsCompanions.className = 'bg-green-50 rounded-lg p-4 mb-4 text-center block';
-                const companionsLi = race.companions.map(comp => {
+                const sortedCompanions = [...race.companions].sort((a, b) => {
+                    const aType = typeof a === 'object' ? a.type : 'runner';
+                    const bType = typeof b === 'object' ? b.type : 'runner';
+                    return (aType === 'runner' ? 0 : 1) - (bType === 'runner' ? 0 : 1);
+                });
+                const hasAnyCompanionDetails = sortedCompanions.some(comp =>
+                    comp && typeof comp === 'object' && comp.type === 'runner' &&
+                    (comp.raceTime || comp.rankPos != null || comp.rankTotal != null ||
+                        comp.distance != null || comp.elevation != null)
+                );
+                const companionsLi = sortedCompanions.map((comp, index) => {
                     const name = typeof comp === 'object' ? comp.name : comp;
                     const type = typeof comp === 'object' ? comp.type : 'runner';
                     const iconClass = type === 'spectator' ? 'fa-eye' : 'fa-running';
-                    return `<li class="flex items-center gap-2 text-sm text-green-800"><i class="fas ${iconClass} text-green-600 w-4"></i><span>${name}</span></li>`;
+                    let palmares = '';
+                    if (type === 'runner' && comp && typeof comp === 'object') {
+                        const details = [];
+                        if (comp.sameRaceDistance === false) {
+                            if (comp.distance != null && comp.distance !== '') details.push(`Distance : ${escapeHtml(comp.distance)} km`);
+                            if (comp.elevation != null && comp.elevation !== '') details.push(`D+ : ${escapeHtml(comp.elevation)} m`);
+                        }
+                        if (comp.raceTime) details.push(`Temps : ${escapeHtml(comp.raceTime)}`);
+                        if ((comp.rankPos != null && comp.rankPos !== '') || (comp.rankTotal != null && comp.rankTotal !== '')) {
+                            details.push(`Classement : ${comp.rankPos != null && comp.rankPos !== '' ? escapeHtml(comp.rankPos) : '—'} / ${comp.rankTotal != null && comp.rankTotal !== '' ? escapeHtml(comp.rankTotal) : '—'}`);
+                        }
+                        if (comp.sameRaceDistance === true) {
+                            const gaps = [];
+                            const runnerTime = parseCompanionTime(comp.raceTime);
+                            const myTime = parseCompanionTime(race.time);
+                            if (runnerTime !== null && myTime !== null) {
+                                const difference = myTime - runnerTime;
+                                if (difference === 0) {
+                                    gaps.push('<i class="fas fa-equals text-gray-500 mr-1"></i>Même temps que vous');
+                                } else {
+                                    const faster = difference > 0;
+                                    gaps.push(`<i class="fas fa-arrow-${faster ? 'up' : 'down'} ${faster ? 'text-green-600' : 'text-red-600'} mr-1"></i>${formatCompanionTimeGap(Math.abs(difference))} ${faster ? 'plus rapide' : 'plus lent'}`);
+                                }
+                            }
+                            const runnerRank = Number.parseInt(comp.rankPos, 10);
+                            const myRank = Number.parseInt(race.rankPos, 10);
+                            if (Number.isFinite(runnerRank) && Number.isFinite(myRank)) {
+                                const difference = myRank - runnerRank;
+                                if (difference === 0) {
+                                    gaps.push('<i class="fas fa-equals text-gray-500 mr-1"></i>Même classement que vous');
+                                } else {
+                                    const ahead = difference > 0;
+                                    gaps.push(`<i class="fas fa-arrow-${ahead ? 'up' : 'down'} ${ahead ? 'text-green-600' : 'text-red-600'} mr-1"></i>${Math.abs(difference)} place${Math.abs(difference) > 1 ? 's' : ''} ${ahead ? 'devant vous' : 'derrière vous'}`);
+                                }
+                            }
+                            if (gaps.length) {
+                                details.push(`Écart avec vous : ${gaps.join(' · ')}`);
+                            }
+                        }
+                        if (details.length) {
+                            palmares = `<div class="mt-2 border-t border-green-100 pt-2 space-y-1 text-xs text-green-800">${details.map(detail => `<div class="leading-relaxed"><i class="fas fa-medal text-green-600 mr-1"></i>${detail}</div>`).join('')}</div>`;
+                        }
+                    }
+                    const hasDetails = palmares !== '';
+                    const detailsId = `raceCompanionDetails-${index}`;
+                    return `<li data-companion-item ${hasDetails ? `data-companion-details-toggle role="button" tabindex="0" aria-controls="${detailsId}" aria-expanded="false" aria-label="Afficher les détails de ${escapeHtml(name)}" title="Afficher les détails"` : ''} class="flex items-start gap-2 text-sm text-green-800 min-w-0 ${hasAnyCompanionDetails ? `rounded-lg border p-2 ${hasDetails ? 'cursor-pointer hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-green-400' : ''}` : ''}" ${hasAnyCompanionDetails ? 'style="background-color: rgba(var(--color-emerald-500-rgb, 16, 185, 129), 0.08); border-color: rgba(var(--color-emerald-500-rgb, 16, 185, 129), 0.24);"' : ''}>
+                        <i class="fas ${iconClass} text-green-600 w-4 mt-0.5"></i>
+                        <div class="min-w-0 flex-1">
+                            <div class="flex items-center justify-between gap-2">
+                                <span>${escapeHtml(name)}</span>
+                                ${hasDetails ? '<i data-companion-chevron class="fas fa-chevron-down text-green-700" aria-hidden="true"></i>' : ''}
+                            </div>
+                            ${hasDetails ? `<div id="${detailsId}" class="hidden">${palmares}</div>` : ''}
+                        </div>
+                    </li>`;
                 }).join('');
 
                 detailsCompanions.innerHTML = `
                     <h4 class="font-bold text-green-800 text-center mb-3 text-sm border-b border-green-200 pb-2">Accompagnants</h4>
-                    <ul class="grid grid-cols-2 gap-1 text-left">
+                    <ul class="grid grid-cols-2 gap-2 text-left" style="grid-auto-flow: dense;">
                         ${companionsLi}
                     </ul>`;
+                detailsCompanions.querySelectorAll('[data-companion-details-toggle]').forEach(button => {
+                    const toggleDetails = () => {
+                        const expanded = button.getAttribute('aria-expanded') === 'true';
+                        const panel = document.getElementById(button.getAttribute('aria-controls'));
+                        if (!panel) return;
+                        panel.classList.toggle('hidden', expanded);
+                        button.setAttribute('aria-expanded', String(!expanded));
+                        button.title = expanded ? 'Afficher les détails' : 'Masquer les détails';
+                        button.setAttribute('aria-label', `${expanded ? 'Afficher' : 'Masquer'} les détails`);
+                        const item = button.closest('[data-companion-item]');
+                        if (item) item.classList.toggle('col-span-2', !expanded);
+                        const chevron = button.querySelector('[data-companion-chevron]');
+                        if (chevron) chevron.className = `fas fa-chevron-${expanded ? 'down' : 'up'} text-green-700`;
+                    };
+                    button.addEventListener('click', toggleDetails);
+                    button.addEventListener('keydown', event => {
+                        if (event.key === 'Enter' || event.key === ' ') {
+                            event.preventDefault();
+                            toggleDetails();
+                        }
+                    });
+                });
                 detailsCompanions.classList.remove('hidden');
             } else {
                 detailsCompanions.classList.add('hidden');

@@ -6654,6 +6654,27 @@
                 }
             }
 
+            const companionTimeRegex = /^\d{2}:\d{2}:\d{2}$/;
+            (currentCompanions || []).forEach(companion => {
+                if (!companion || typeof companion !== 'object' || companion.type !== 'runner') return;
+                if (companion.raceTime && !companionTimeRegex.test(companion.raceTime)) {
+                    if (globalError) {
+                        globalError.textContent = "Le temps d'un accompagnant doit respecter le format HH:MM:SS.";
+                        globalError.classList.remove('hidden');
+                    }
+                    hasErrors = true;
+                }
+                if (companion.rankPos !== '' && companion.rankPos != null &&
+                    companion.rankTotal !== '' && companion.rankTotal != null &&
+                    parseInt(companion.rankPos, 10) > parseInt(companion.rankTotal, 10)) {
+                    if (globalError) {
+                        globalError.textContent = "Le classement d'un accompagnant ne peut pas dépasser le nombre de participants.";
+                        globalError.classList.remove('hidden');
+                    }
+                    hasErrors = true;
+                }
+            });
+
             // Vérifier les classements (x <= y)
             const checkRanking = (pos, total, label) => {
                 if (pos && total) {
@@ -6717,6 +6738,38 @@
 
             const favorite = document.getElementById('raceFavorite').checked;
 
+            const userRankTotalInput = document.getElementById('raceRankTotal');
+            const userRankTotal = userRankTotalInput ? userRankTotalInput.value.trim() : '';
+            if (!userRankTotal) {
+                const companionWithTotal = (currentCompanions || []).find(companion =>
+                    companion && typeof companion === 'object' &&
+                    companion.type === 'runner' &&
+                    companion.sameRaceDistance === true &&
+                    companion.rankTotal !== '' &&
+                    companion.rankTotal != null
+                );
+                if (companionWithTotal && window.confirm(
+                    `Vous avez renseigné un total de ${companionWithTotal.rankTotal} participants pour ${companionWithTotal.name}, qui a couru la même course que vous, mais pas pour vous. Voulez-vous aussi l'ajouter à votre classement ?`
+                )) {
+                    userRankTotalInput.value = companionWithTotal.rankTotal;
+                    syncCompanionRankTotals();
+                }
+            }
+
+            const companionsForSave = (currentCompanions || []).map(companion => {
+                if (!companion || typeof companion !== 'object' || companion.type !== 'runner') return companion;
+                const normalized = { ...companion };
+                if (normalized.raceTime) normalized.raceTime = normalized.raceTime.trim();
+                else delete normalized.raceTime;
+                ['rankPos', 'rankTotal', 'elevation'].forEach(key => {
+                    if (normalized[key] === '' || normalized[key] == null) delete normalized[key];
+                    else normalized[key] = parseInt(normalized[key], 10);
+                });
+                if (normalized.distance === '' || normalized.distance == null) delete normalized.distance;
+                else normalized.distance = parseFloat(normalized.distance);
+                return normalized;
+            });
+
             // Collecter la valeur brute/traitée pour chaque champ potentiel
             const rawFields = {
                 name,
@@ -6741,7 +6794,7 @@
                 resultUrl: resultUrl ? resultUrl.trim() : null,
                 gpxUrl: gpxUrl ? gpxUrl.trim() : null,
                 driveId: driveId ? driveId.trim() : null,
-                companions: (currentCompanions && currentCompanions.length > 0) ? currentCompanions : null,
+                companions: companionsForSave.length > 0 ? companionsForSave : null,
                 favorite: favorite || false
             };
 
@@ -7297,23 +7350,118 @@
                 const name = typeof comp === 'object' ? comp.name : comp;
                 const type = typeof comp === 'object' ? comp.type : 'runner';
                 const iconClass = type === 'spectator' ? 'fa-eye' : 'fa-running';
+                const hasPalmares = type === 'runner' && comp && typeof comp === 'object' &&
+                    (comp.raceTime || comp.rankPos != null || comp.rankTotal != null ||
+                        comp.sameRaceDistance !== undefined || comp.distance != null || comp.elevation != null);
+                const sameRaceDistance = comp && typeof comp === 'object' ? comp.sameRaceDistance : undefined;
+                const distanceFieldsVisible = sameRaceDistance === false;
+                const userRankTotal = document.getElementById('raceRankTotal')?.value.trim() || '';
+                const rankTotalLocked = type === 'runner' && sameRaceDistance === true && userRankTotal !== '';
+                const companionRankTotal = rankTotalLocked ? userRankTotal : (comp && comp.rankTotal != null ? comp.rankTotal : '');
+                if (rankTotalLocked) comp.rankTotal = userRankTotal;
 
                 const li = document.createElement('li');
-                li.className = 'flex items-center justify-between bg-green-50 px-3 py-2 rounded-lg border border-green-100';
+                li.className = 'flex flex-wrap items-center gap-2 bg-green-50 px-3 py-2 rounded-lg border border-green-100';
                 li.innerHTML = `
-                    <div class="flex items-center gap-2">
+                    <div class="flex items-center gap-2 flex-1 min-w-0">
                         <i class="fas ${iconClass} text-green-600 text-sm"></i>
-                        <span class="text-green-800">${name}</span>
+                        <span class="text-green-800">${escapeHtml(name)}</span>
                     </div>
-                    <button type="button" class="text-red-500 hover:text-red-700" onclick="removeCompanion(event, ${index})">
+                    ${type === 'runner' ? `<button type="button" class="ml-auto mr-2 text-green-700 hover:text-green-900 px-1" title="${hasPalmares ? 'Modifier le palmarès' : 'Ajouter un palmarès (facultatif)'}" aria-label="${hasPalmares ? 'Modifier le palmarès' : 'Ajouter un palmarès facultatif'}" aria-expanded="false" onclick="toggleCompanionPalmares(${index}, this)"><i class="fas fa-plus text-sm"></i></button>` : ''}
+                    <button type="button" class="text-red-500 hover:text-red-700" onclick="removeCompanion(event, ${index})" aria-label="Supprimer ${escapeHtml(name)}">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                         </svg>
                     </button>
                 `;
+                if (type === 'runner') {
+                    li.insertAdjacentHTML('beforeend', `<div id="companionPalmares-${index}" class="hidden w-full mt-3 pt-3 border-t border-green-200 space-y-3">
+                        <fieldset>
+                            <legend class="text-xs font-semibold text-green-800 mb-1">Cette personne a courru la meme course ?</legend>
+                            <div class="flex gap-4 text-xs text-gray-700">
+                                <label class="inline-flex items-center gap-1"><input type="radio" name="companionSameRace-${index}" value="yes" ${sameRaceDistance === true ? 'checked' : ''} onchange="updateCompanionSameRaceDistance(${index}, true)"> Oui</label>
+                                <label class="inline-flex items-center gap-1"><input type="radio" name="companionSameRace-${index}" value="no" ${sameRaceDistance === false ? 'checked' : ''} onchange="updateCompanionSameRaceDistance(${index}, false)"> Non</label>
+                            </div>
+                        </fieldset>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            <label class="text-xs text-green-800">Temps (HH:MM:SS)
+                                <input type="text" inputmode="numeric" placeholder="01:23:45" value="${escapeHtml(comp && comp.raceTime || '')}" oninput="handleTimeInput(this); updateCompanionPalmaresField(${index}, 'raceTime', this.value)" class="mt-1 w-full px-2 py-1.5 border border-green-200 rounded-md text-sm">
+                            </label>
+                            <label class="text-xs text-green-800">Classement
+                                <div class="flex items-center gap-1 mt-1">
+                                    <input type="number" min="1" placeholder="Pos." aria-label="Position au classement" value="${escapeHtml(String(comp && comp.rankPos != null ? comp.rankPos : ''))}" oninput="updateCompanionPalmaresField(${index}, 'rankPos', this.value)" class="w-1/2 min-w-0 px-2 py-1.5 border border-green-200 rounded-md text-sm">
+                                    <span>/</span>
+                                    <input type="number" min="1" placeholder="Total" aria-label="Nombre total de participants" data-companion-rank-total="${index}" value="${escapeHtml(String(companionRankTotal))}" ${rankTotalLocked ? 'disabled' : ''} oninput="updateCompanionPalmaresField(${index}, 'rankTotal', this.value)" class="w-1/2 min-w-0 px-2 py-1.5 border border-green-200 rounded-md text-sm ${rankTotalLocked ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : ''}">
+                                </div>
+                            </label>
+                        </div>
+                        <div id="companionOtherDistance-${index}" class="${distanceFieldsVisible ? '' : 'hidden'} grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            <label class="text-xs text-green-800">Distance (km)
+                                <input type="number" min="0" step="any" placeholder="Ex. 10" value="${escapeHtml(String(comp && comp.distance != null ? comp.distance : ''))}" oninput="updateCompanionPalmaresField(${index}, 'distance', this.value)" class="mt-1 w-full px-2 py-1.5 border border-green-200 rounded-md text-sm">
+                            </label>
+                            <label class="text-xs text-green-800">Dénivelé positif (m)
+                                <input type="number" min="0" step="1" placeholder="Ex. 500" value="${escapeHtml(String(comp && comp.elevation != null ? comp.elevation : ''))}" oninput="updateCompanionPalmaresField(${index}, 'elevation', this.value)" class="mt-1 w-full px-2 py-1.5 border border-green-200 rounded-md text-sm">
+                            </label>
+                        </div>
+                    </div>`);
+                }
                 companionsList.appendChild(li);
             });
         }
+
+        window.toggleCompanionPalmares = function (index, button) {
+            const form = document.getElementById(`companionPalmares-${index}`);
+            if (!form) return;
+            const isOpening = form.classList.contains('hidden');
+            form.classList.toggle('hidden', !isOpening);
+            button.setAttribute('aria-expanded', String(isOpening));
+        };
+
+        window.updateCompanionPalmaresField = function (index, field, value) {
+            const companion = currentCompanions[index];
+            if (!companion || typeof companion !== 'object' || companion.type !== 'runner') return;
+            companion[field] = value;
+        };
+
+        window.updateCompanionSameRaceDistance = function (index, sameRaceDistance) {
+            const companion = currentCompanions[index];
+            if (!companion || typeof companion !== 'object' || companion.type !== 'runner') return;
+            companion.sameRaceDistance = sameRaceDistance;
+            const otherDistance = document.getElementById(`companionOtherDistance-${index}`);
+            if (otherDistance) otherDistance.classList.toggle('hidden', sameRaceDistance);
+            if (sameRaceDistance) {
+                delete companion.distance;
+                delete companion.elevation;
+                const inputs = otherDistance ? otherDistance.querySelectorAll('input[type="number"]') : [];
+                if (inputs[0]) inputs[0].value = '';
+                if (inputs[1]) inputs[1].value = '';
+            } else {
+                delete companion.rankTotal;
+                const rankTotalInput = document.querySelector(`[data-companion-rank-total="${index}"]`);
+                if (rankTotalInput) rankTotalInput.value = '';
+            }
+            syncCompanionRankTotals();
+        };
+
+        window.syncCompanionRankTotals = function () {
+            const userRankTotal = document.getElementById('raceRankTotal')?.value.trim() || '';
+            currentCompanions.forEach((companion, index) => {
+                if (!companion || typeof companion !== 'object' ||
+                    companion.type !== 'runner') return;
+                const input = document.querySelector(`[data-companion-rank-total="${index}"]`);
+                if (companion.sameRaceDistance === true && userRankTotal) {
+                    companion.rankTotal = userRankTotal;
+                    if (input) {
+                        input.value = userRankTotal;
+                        input.disabled = true;
+                        input.classList.add('bg-gray-100', 'text-gray-500', 'cursor-not-allowed');
+                    }
+                } else if (input) {
+                    input.disabled = false;
+                    input.classList.remove('bg-gray-100', 'text-gray-500', 'cursor-not-allowed');
+                }
+            });
+        };
 
         function addCompanion() {
             const companionTypeError = document.getElementById('companionTypeError');
@@ -7458,6 +7606,7 @@
         });
 
         raceForm.addEventListener('submit', saveRace);
+        document.getElementById('raceRankTotal').addEventListener('input', syncCompanionRankTotals);
 
         // Nettoyage automatique du champ Drive ID au blur si un lien complet a été collé
         const raceDriveIdInput = document.getElementById('raceDriveId');
@@ -11017,7 +11166,7 @@
 
     <script src="js/isAdmin.js"></script>
     <script src="js/isInvite.js"></script>
-    <script src="js/race-details-modal.js?v=20261020_1"></script>
+    <script src="js/race-details-modal.js?v=20261108_11"></script>
     <script src="js/stats-modal.js?v=10"></script>
     <script src="js/advanced-filters.js?v=20260929_1"></script>
     <script src="js/user-settings.js?v=20260930_7"></script>

@@ -110,11 +110,12 @@ const manualModalHTML = `
                                     <div>• Notes personnelles avec éditeur</div>
                                     <div>• Statut favori</div>
                                     <div>• Partage public</div>
-                                    <div>• Accompagnants</div>
+                                    <div>• Accompagnants avec type coureur ou spectateur</div>
                                     <div>• Lien site de la course</div>
                                     <div>• Lien résultats en ligne</div>
                                     <div>• Lien Google Drive en ligne</div>
                                 </div>
+                                <p class="text-xs text-gray-600 mt-3">Pour un accompagnant coureur, le petit bouton « + » permet d’ajouter facultativement son temps et son classement. Indiquez d’abord s’il a couru la même course / distance ; sinon, vous pouvez préciser sa distance (km) et son dénivelé positif (m). Son palmarès apparaîtra dans le détail de la course.</p>
                             </div>
                         </div>
 
