@@ -716,6 +716,7 @@ function initAuthLogic() {
                         hideStatsBtn: false,
                         hideBadgesBtn: false,
                         hideWishlistBtn: false,
+                        hideFriendsBtn: false,
                         compactDashboardStats: false
                     }
                 }, { merge: true });

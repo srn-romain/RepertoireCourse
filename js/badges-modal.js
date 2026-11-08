@@ -1640,6 +1640,7 @@
     window.formatBadgeUnlockDate = formatBadgeUnlockDate;
 
     function getStoredBadgesMetadata() {
+        if (window.isFriendView || window.isInviteView) return {};
         if (window.unlockedBadgesMetadata && typeof window.unlockedBadgesMetadata === 'object' && Object.keys(window.unlockedBadgesMetadata).length > 0) {
             return window.unlockedBadgesMetadata;
         }
@@ -1657,6 +1658,7 @@
     }
 
     function syncBadgesMetadataToFirestore(metadataMap) {
+        if (window.isFriendView || window.isInviteView) return;
         try {
             const fbUser = (typeof firebase !== 'undefined' && firebase.auth) ? firebase.auth().currentUser : null;
             if (!fbUser || !fbUser.uid || typeof db === 'undefined') return;
@@ -1776,7 +1778,7 @@
         const isTutorialCompleted = localStorage.getItem('tutorialCompleted') === 'true' || window.tutorialCompleted === true;
         
         // Profil soigné : doit obligatoirement avoir un pseudo valide ET une vraie photo de profil importée (pas un avatar par défaut)
-        const userPseudoVal = window.currentUserPseudo || localStorage.getItem('userPseudo') || (window.currentUser && (window.currentUser.displayName || window.currentUser.pseudo)) || '';
+        const userPseudoVal = window.activeCarnetPseudo || window.currentUserPseudo || localStorage.getItem('userPseudo') || (window.currentUser && (window.currentUser.displayName || window.currentUser.pseudo)) || '';
         const hasValidPseudo = typeof userPseudoVal === 'string' && userPseudoVal.trim().length > 0 && !['utilisateur', 'user', 'invité', 'invite'].includes(userPseudoVal.trim().toLowerCase());
         const userPhotoVal = window.currentUserPhoto || (window.currentUser && window.currentUser.photoURL) || localStorage.getItem('userCustomPhoto') || '';
         const hasCustomPhoto = typeof userPhotoVal === 'string' && userPhotoVal.trim().length > 0 && !userPhotoVal.includes('ui-avatars.com') && !userPhotoVal.includes('default-avatar');
@@ -2501,7 +2503,7 @@
         });
 
         // Gestion et synchronisation des metadata de validation (date et heure de déblocage)
-        const badgesMetadata = getStoredBadgesMetadata();
+        const badgesMetadata = window.isFriendView ? {} : getStoredBadgesMetadata();
         const newMetadataToSync = {};
         let metadataChanged = false;
 
@@ -2519,7 +2521,7 @@
             }
         });
 
-        if (metadataChanged) {
+        if (metadataChanged && !window.isFriendView && !window.isInviteView) {
             window.unlockedBadgesMetadata = badgesMetadata;
             const currentUser = (typeof firebase !== 'undefined' && firebase.auth) ? firebase.auth().currentUser : null;
             const storageKey = 'unlockedBadgesMetadata_' + (currentUser ? currentUser.uid : 'local_user');
@@ -2823,13 +2825,12 @@
 
     // Synchronisation en arrière-plan avec Firestore (données réelles)
     async function syncCommunityLeaderboard(currentUserXP, currentPseudo, currentUid) {
+        if (window.isFriendView || window.isInviteView) return;
         if (typeof firebase === 'undefined' || !firebase.firestore || typeof db === 'undefined') return;
         try {
-            const effectivePseudo = window.currentUserPseudo || currentPseudo || localStorage.getItem('userPseudo');
+            const effectivePseudo = window.activeCarnetPseudo || window.currentUserPseudo || currentPseudo || localStorage.getItem('userPseudo');
             if (currentUid && currentUserXP >= 0) {
-                const updatePayload = { gamificationXP: currentUserXP };
-                if (effectivePseudo) updatePayload.pseudo = effectivePseudo;
-                await db.collection('users').doc(currentUid).set(updatePayload, { merge: true }).catch(() => {});
+                await db.collection('users').doc(currentUid).set({ gamificationXP: currentUserXP }, { merge: true }).catch(() => {});
             }
             const snap = await db.collection('users').get();
             const users = [];
@@ -2871,6 +2872,7 @@
     }
 
     async function toggleLeaderboardPseudo() {
+        if (window.isFriendView || window.isInviteView) return;
         const currentlyShown = (localStorage.getItem('prefShowPseudoInLeaderboard') !== 'false' && window.prefShowPseudoInLeaderboard !== false);
         const newShown = !currentlyShown;
 
@@ -2960,7 +2962,7 @@
         // Informations utilisateur connecté
         const currentUser = (typeof firebase !== 'undefined' && firebase.auth) ? firebase.auth().currentUser : null;
         const currentUid = currentUser ? currentUser.uid : 'local_user';
-        const currentPseudo = window.currentUserPseudo || localStorage.getItem('userPseudo') || (currentUser ? currentUser.displayName : null) || 'Coureur';
+        const currentPseudo = window.activeCarnetPseudo || window.currentUserPseudo || localStorage.getItem('userPseudo') || (currentUser ? currentUser.displayName : null) || 'Coureur';
 
         // Lancer la synchro Firestore en tâche de fond pour mettre à jour et récupérer les vrais utilisateurs
         syncCommunityLeaderboard(data.totalPoints, currentPseudo, currentUid);
@@ -3062,7 +3064,7 @@
             : 'Afficher mon pseudo dans le classement';
 
         html += `
-        <div class="mb-5 bg-white border border-gray-200 rounded-xl p-4 shadow-sm relative overflow-hidden">
+        <div class="mb-5 bg-white border border-gray-200 rounded-xl p-4 shadow-sm relative overflow-hidden ${window.isFriendView || window.isInviteView ? 'hidden' : ''}">
             <div class="leaderboard-header-toggle flex items-center justify-between border-b border-gray-100 pb-2.5 cursor-pointer hover:bg-gray-50/70 p-1 -mx-1 -mt-1 rounded-t-xl select-none" title="Cliquer pour ${userLeaderboardExpandedState ? 'replier' : 'déplier'} le classement">
                 <div class="flex items-center gap-2.5">
                     <span class="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-amber-100 text-amber-700 font-extrabold text-sm shadow-2xs">
@@ -3089,7 +3091,7 @@
                 <div id="leaderboard-rows-wrapper">
                     ${initialLeaderboard.rowsHtml}
                 </div>
-                <div class="mt-2.5 pt-2 border-t border-gray-100 flex flex-wrap items-center justify-between gap-2 text-[11px]">
+                <div class="mt-2.5 pt-2 border-t border-gray-100 flex flex-wrap items-center justify-between gap-2 text-[11px] ${window.isFriendView || window.isInviteView ? 'hidden' : ''}">
                     <span id="leaderboard-privacy-status" class="flex items-center gap-1.5 transition-colors duration-200 ${isShowPseudoInLeaderboard ? 'text-gray-600' : 'text-amber-700 font-medium'}">
                         <i class="fas ${isShowPseudoInLeaderboard ? 'fa-eye text-emerald-600' : 'fa-eye-slash text-amber-500'}"></i>
                         <span>${isShowPseudoInLeaderboard ? 'Votre pseudo est actuellement visible par la communauté.' : 'Votre pseudo est actuellement masqué dans le classement.'}</span>
@@ -4214,7 +4216,7 @@
     const BADGES_SESSION_START_TIME = window.__badgesSessionStartTime || (window.__badgesSessionStartTime = Date.now());
 
     function checkAndNotifyNewBadges(data) {
-        if (!data || !data.unlockedBadges) return;
+        if (window.isFriendView || window.isInviteView || !data || !data.unlockedBadges) return;
 
         // Obtenir la liste actuelle des badges réellement débloqués (badge débloqué ET niveau débloqué)
         const currentUnlockedIds = [];
@@ -4409,7 +4411,7 @@
         try {
             const currentUser = (typeof firebase !== 'undefined' && firebase.auth) ? firebase.auth().currentUser : null;
             if (currentUser && currentUser.uid) {
-                const currentPseudo = window.currentUserPseudo || localStorage.getItem('userPseudo') || (currentUser ? currentUser.displayName : null) || 'Coureur';
+                const currentPseudo = window.activeCarnetPseudo || window.currentUserPseudo || localStorage.getItem('userPseudo') || (currentUser ? currentUser.displayName : null) || 'Coureur';
                 syncCommunityLeaderboard(data.totalPoints, currentPseudo, currentUser.uid);
             }
         } catch (e) {
@@ -4535,6 +4537,10 @@
     function updateBadgesButtonVisibility() {
         const badgesBtn = document.getElementById('badgesBtn');
         if (!badgesBtn) return;
+        if (window.isFriendView || window.isInviteView) {
+            badgesBtn.classList.toggle('hidden', window.friendViewPermissions?.badges !== true);
+            return;
+        }
         badgesBtn.classList.remove('hidden');
     }
 

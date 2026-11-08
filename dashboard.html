@@ -138,7 +138,7 @@
         <header class="flex flex-col min-[1650px]:flex-row justify-between items-center mb-8 gap-4">
             <div class="w-full min-[1650px]:w-auto text-center min-[1650px]:text-left">
                 <a href="index.html" class="inline-block hover:opacity-80 transition">
-                    <h1 class="text-3xl md:text-4xl font-bold text-green-800">📊 Carnet de courses</h1>
+                    <h1 id="dashboardTitle" class="text-3xl md:text-4xl font-bold text-green-800">📊 Carnet de courses</h1>
                 </a>
                 <div id="statsText"
                     class="text-green-600 text-sm flex items-center justify-center min-[1650px]:justify-start gap-2 py-1">
@@ -149,6 +149,15 @@
             <div class="w-full min-[1650px]:w-auto">
                 <div
                     class="flex flex-col sm:flex-row sm:flex-nowrap items-center justify-center min-[1650px]:justify-end gap-2 sm:gap-2.5 w-full min-[1650px]:w-auto">
+                    <a id="backToOwnDashboardBtn" href="dashboard.html"
+                        class="hidden h-10 px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white text-sm font-medium rounded-full transition shadow-sm flex items-center justify-center w-full sm:w-auto whitespace-nowrap shrink-0">
+                        <i class="fas fa-arrow-left mr-1.5"></i><span>Mon carnet</span>
+                    </a>
+                    <button id="friendsBtn"
+                        class="hidden h-10 px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white text-sm font-medium rounded-full transition shadow-sm hover:shadow flex items-center justify-center w-full sm:w-auto whitespace-nowrap shrink-0 relative">
+                        <i class="fas fa-user-group mr-1.5"></i><span>Amis</span>
+                        <span id="friendsNotificationCount" class="hidden absolute -top-1 -right-1 min-w-5 h-5 px-1 bg-red-600 text-white text-[10px] rounded-full flex items-center justify-center"></span>
+                    </button>
                     <button id="wishlistBtn"
                         class="h-10 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-full transition shadow-sm hover:shadow flex items-center justify-center w-full sm:w-auto whitespace-nowrap shrink-0">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1.5 shrink-0" viewBox="0 0 20 20"
@@ -2636,7 +2645,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="js/runner-loader.js"></script>
     <script src="js/user-flags.js?v=20260930_2"></script>
-    <script src="js/badges-modal.js?v=20261001_5"></script>
+    <script src="js/badges-modal.js?v=20261108_1"></script>
     <script src="js/toast.js?v=20260929_2"></script>
     <script src="js/city-autocomplete.js?v=20260929_2"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
@@ -2855,6 +2864,70 @@
         let usersCollection = db.collection('users');
         let racesCollection = null;
         let wishlistCollection = null;
+        // Keep the signed-in viewer's identity separate from the carnet being consulted.
+        window.isFriendView = false;
+        window.isInviteView = false;
+        window.friendViewPermissions = {};
+        window.friendViewPrivacy = null;
+        window.friendViewPseudo = '';
+        window.activeCarnetPseudo = window.currentUserPseudo || localStorage.getItem('userPseudo') || '';
+        window.friendViewCardConfig = null;
+
+        async function configureFriendView(friendUid, viewerUid) {
+            if (!friendUid || friendUid === viewerUid) return false;
+            const friendRef = db.collection('users').doc(friendUid);
+            const [friendDoc, followerDoc] = await Promise.all([
+                friendRef.get(),
+                friendRef.collection('followers').doc(viewerUid).get()
+            ]);
+            const access = followerDoc.exists ? (followerDoc.data().permissions || {}) : {};
+            if (!friendDoc.exists || access.dashboard !== true) {
+                showPermissionDeniedModal('consulter ce carnet');
+                window.history.replaceState({}, '', 'dashboard.html');
+                return false;
+            }
+
+            const friendData = friendDoc.data();
+            window.isFriendView = true;
+            window.friendViewPermissions = access;
+            window.friendViewPrivacy = friendData.privacy || null;
+            window.friendViewPseudo = friendData.pseudo || 'Utilisateur';
+            window.activeCarnetPseudo = window.friendViewPseudo;
+            window.friendViewCardConfig = {
+                cardTags: Array.isArray(friendData.cardTags) ? friendData.cardTags : ['distance', 'elevation', 'location', 'terrain'],
+                defaultCardImage: friendData.defaultCardImage || 'photo'
+            };
+            window.customCardButtons = [];
+            window.customCardTags = window.friendViewCardConfig.cardTags;
+            window.defaultCardImage = window.friendViewCardConfig.defaultCardImage;
+            racesCollection = friendRef.collection('races');
+            wishlistCollection = access.wishlist === true ? friendRef.collection('wishlist') : null;
+
+            const title = document.getElementById('dashboardTitle');
+            if (title) title.textContent = `Carnet de ${window.friendViewPseudo}`;
+            const wishlistTitle = document.querySelector('#wishlistModal h3');
+            if (wishlistTitle && access.wishlist === true) wishlistTitle.textContent = `Wishlist de ${window.friendViewPseudo}`;
+            const editWishlistButton = document.getElementById('editWishlistBtn');
+            if (editWishlistButton) editWishlistButton.classList.add('hidden');
+            const backButton = document.getElementById('backToOwnDashboardBtn');
+            if (backButton) backButton.classList.remove('hidden');
+            const wishlistButton = document.getElementById('wishlistBtn');
+            if (wishlistButton) wishlistButton.classList.toggle('hidden', access.wishlist !== true);
+            const friendsButton = document.getElementById('friendsBtn');
+            if (friendsButton) friendsButton.classList.add('hidden');
+            const cardConfigButton = document.getElementById('openCardConfigBtn');
+            if (cardConfigButton) cardConfigButton.classList.add('hidden');
+            const selectionButton = document.getElementById('toggleSelectionModeBtn');
+            if (selectionButton) selectionButton.classList.add('hidden');
+            const favoritesFilterButton = document.getElementById('favoritesFilterBtn');
+            if (window.friendViewPrivacy?.hideFavorite === true) {
+                currentFavoritesFilter = false;
+                window.currentFavoritesFilter = false;
+                updateFavoritesFilterUI();
+            }
+            if (favoritesFilterButton) favoritesFilterButton.classList.toggle('hidden', window.friendViewPrivacy?.hideFavorite === true);
+            return true;
+        }
 
         // Gestion de l'état d'authentification
         auth.onAuthStateChanged(async user => {
@@ -2899,6 +2972,7 @@
                                 hideStatsBtn: false,
                                 hideBadgesBtn: false,
                                 hideWishlistBtn: false,
+                                hideFriendsBtn: false,
                                 compactDashboardStats: false
                             };
                         }
@@ -2915,6 +2989,7 @@
 
                 if (isInviteUser) {
                     console.log("Mode Invité détecté");
+                    window.isInviteView = true;
                     sessionStorage.setItem('authLevel', 'invite');
 
                     // Masquer le bouton de configuration de carte pour les invités
@@ -2958,6 +3033,7 @@
                         inviteUserSelectBtn.onclick = async () => {
                             const targetUserId = inviteSelect.value;
                             const targetUserEmail = inviteSelect.options[inviteSelect.selectedIndex].text;
+                            window.activeCarnetPseudo = targetUserEmail;
 
                             // Configurer les collections sur l'utilisateur CIBLE
                             racesCollection = db.collection('users').doc(targetUserId).collection('races');
@@ -3001,7 +3077,7 @@
                                     if (doc.exists) {
                                         targetPhotoURL = doc.data().photoURL;
                                         targetPseudo = doc.data().pseudo || doc.data().email.split('@')[0];
-                                        window.currentUserPseudo = targetPseudo;
+                                        window.activeCarnetPseudo = targetPseudo;
                                     }
                                     const avatarSrc = targetPhotoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(targetPseudo)}&background=random`;
                                     authText.innerHTML = `
@@ -3030,15 +3106,28 @@
 
                 } else {
                     // Utilisateur Normal / Admin
-                    racesCollection = db.collection('users').doc(user.uid).collection('races');
-                    wishlistCollection = db.collection('users').doc(user.uid).collection('wishlist');
+                    const requestedFriendUid = new URLSearchParams(window.location.search).get('friend');
+                    if (requestedFriendUid && !isInviteUser) {
+                        try {
+                            await configureFriendView(requestedFriendUid, user.uid);
+                        } catch (error) {
+                            console.error('Erreur lors de l’ouverture du carnet ami :', error);
+                            showPermissionDeniedModal('consulter ce carnet');
+                            window.history.replaceState({}, '', 'dashboard.html');
+                        }
+                    }
+
+                    if (!window.isFriendView) {
+                        racesCollection = db.collection('users').doc(user.uid).collection('races');
+                        wishlistCollection = db.collection('users').doc(user.uid).collection('wishlist');
+                    }
 
                     // Lancer immédiatement le chargement des courses (parallèle)
                     if (typeof loadRaces === 'function') {
                         loadRaces();
                     }
 
-                    if (wishlistCollection) {
+                    if (!window.isFriendView && wishlistCollection) {
                         wishlistCollection.get().then((snap) => {
                             let items = [];
                             snap.forEach(doc => {
@@ -3053,7 +3142,7 @@
                     }
 
                     // Initialiser le tutoriel pour les nouveaux utilisateurs
-                    if (typeof window.initTutorial === 'function') {
+                    if (!window.isFriendView && typeof window.initTutorial === 'function') {
                         window.initTutorial();
                     }
                 }
@@ -3075,6 +3164,7 @@
                         // Récupération immédiate des données en cache pour affichage instantané
                         let userPseudo = localStorage.getItem('userPseudo') || user.displayName || (user.email ? user.email.split('@')[0] : "Utilisateur");
                         window.currentUserPseudo = userPseudo;
+                        if (!window.isFriendView && !window.isInviteView) window.activeCarnetPseudo = userPseudo;
                         let userPhotoURL = localStorage.getItem('userCustomPhoto') || user.photoURL || null;
                         window.currentUserPhoto = userPhotoURL;
 
@@ -3114,6 +3204,7 @@
                                 const newPhoto = uData.photoURL || null;
 
                                 window.currentUserPseudo = newPseudo;
+                                if (!window.isFriendView && !window.isInviteView) window.activeCarnetPseudo = newPseudo;
                                 localStorage.setItem('userPseudo', newPseudo);
                                 window.currentUserPhoto = newPhoto;
                                 if (newPhoto) {
@@ -3153,6 +3244,12 @@
                                 if (uData.cardTags && Array.isArray(uData.cardTags)) {
                                     window.customCardTags = uData.cardTags;
                                     localStorage.setItem('customCardTags', JSON.stringify(uData.cardTags));
+                                    configChanged = true;
+                                }
+                                if (window.isFriendView) {
+                                    window.customCardButtons = [];
+                                    window.customCardTags = window.friendViewCardConfig.cardTags;
+                                    window.defaultCardImage = window.friendViewCardConfig.defaultCardImage;
                                     configChanged = true;
                                 }
 
@@ -3499,7 +3596,8 @@
             if (!lap) return false;
             const runner = String(lap.runner || '').trim().toLowerCase();
             if (!runner || runner === 'moi' || runner === 'tous ensemble' || runner === 'all') return true;
-            const pseudo = (typeof window !== 'undefined' && window.currentUserPseudo) ? String(window.currentUserPseudo).trim().toLowerCase() : '';
+            const activePseudo = window.activeCarnetPseudo || window.currentUserPseudo;
+            const pseudo = activePseudo ? String(activePseudo).trim().toLowerCase() : '';
             if (pseudo && runner === pseudo) return true;
             return false;
         }
@@ -4089,8 +4187,8 @@
         const isAuthenticated = () => BackendAPI.isAuthenticated();
         const isAdmin = () => BackendAPI.isAdmin();
         const isAdminAsync = () => BackendAPI.isAdminAsync();
-        const isInvite = () => BackendAPI.isInvite();
-        const isInviteAsync = () => BackendAPI.isInviteAsync();
+        const isInvite = () => window.isFriendView === true || BackendAPI.isInvite();
+        const isInviteAsync = async () => window.isFriendView === true || await BackendAPI.isInviteAsync();
         const confirmDeleteModal = document.getElementById('confirmDeleteModal');
         const cancelDelete = document.getElementById('cancelDelete');
         const confirmDelete = document.getElementById('confirmDelete');
@@ -4112,6 +4210,7 @@
             }
             permissionDeniedModal.classList.remove('hidden');
         }
+        window.showPermissionDeniedModal = showPermissionDeniedModal;
 
         // Fermer la modale de permissions refusées
         closePermissionDeniedModal.addEventListener('click', () => {
@@ -4151,6 +4250,11 @@
         function updateStatsButtonVisibility() {
             const statsBtn = document.getElementById('statsBtn');
             const badgesBtn = document.getElementById('badgesBtn');
+            if (window.isFriendView) {
+                if (statsBtn) statsBtn.classList.toggle('hidden', window.friendViewPermissions?.stats !== true || window.friendViewPrivacy?.hideStats === true);
+                if (badgesBtn) badgesBtn.classList.toggle('hidden', window.friendViewPermissions?.badges !== true);
+                return;
+            }
             if (statsBtn) statsBtn.classList.remove('hidden');
             if (badgesBtn) badgesBtn.classList.remove('hidden');
         }
@@ -4172,7 +4276,11 @@
         });
 
         // Gestionnaire pour confirmer la suppression
-        confirmDelete.addEventListener('click', () => {
+        confirmDelete.addEventListener('click', async () => {
+            if (await isInviteAsync()) {
+                showPermissionDeniedModal('supprimer une course');
+                return;
+            }
             if (raceIdToDelete) {
                 // Afficher un indicateur de chargement
                 confirmDelete.disabled = true;
@@ -4462,6 +4570,10 @@
 
         // Basculer le mode sélection
         function toggleSelectionMode(forceState) {
+            if (isInvite() && forceState !== false) {
+                showPermissionDeniedModal('modifier des courses');
+                return;
+            }
             if (typeof forceState === 'boolean') {
                 isSelectionMode = forceState;
             } else {
@@ -4498,6 +4610,7 @@
 
         // Sélectionner / Désélectionner une course
         function toggleRaceSelection(raceId) {
+            if (isInvite()) return;
             if (!isSelectionMode) {
                 toggleSelectionMode(true);
             }
@@ -4518,6 +4631,7 @@
 
         // Tout sélectionner / Tout désélectionner
         function toggleSelectAllRaces() {
+            if (isInvite()) return;
             const allDisplayedIds = currentlyDisplayedRaces.map(r => r.id);
             const areAllSelected = allDisplayedIds.length > 0 && allDisplayedIds.every(id => selectedRaceIds.has(id));
 
@@ -4667,6 +4781,10 @@
         }
 
         async function confirmApplyBulkNote() {
+            if (await isInviteAsync()) {
+                showPermissionDeniedModal('modifier des courses en masse');
+                return;
+            }
             const noteToAdd = bulkNoteInput.value.trim();
             if (!noteToAdd) {
                 alert('Veuillez saisir un texte de note.');
@@ -4738,6 +4856,10 @@
         }
 
         async function confirmFinalBulkDelete() {
+            if (await isInviteAsync()) {
+                showPermissionDeniedModal('supprimer des courses en masse');
+                return;
+            }
             if (!racesCollection || selectedRaceIds.size === 0) return;
 
             finalConfirmBulkDeleteBtn.disabled = true;
@@ -4924,6 +5046,9 @@
                         displayedImageAlt = "Parcours course";
                     }
                 }
+                if (window.isFriendView && window.friendViewPrivacy?.hidePhotos === true) {
+                    displayedImage = null;
+                }
 
                 const raceDate = new Date(race.date);
                 const year = raceDate.getFullYear();
@@ -4968,7 +5093,8 @@
 
                 // Vérifier si cette course possède l'une des 3 cocardes records
                 const raceCocardesInfo = (window.recordCocardes && window.recordCocardes.byRaceId && window.recordCocardes.byRaceId[race.id]) ? window.recordCocardes.byRaceId[race.id] : null;
-                const hasRecordCocarde = !!raceCocardesInfo;
+                const hasRecordCocarde = !!raceCocardesInfo
+                    && (!window.isFriendView || (window.friendViewPermissions?.badges === true && window.friendViewPrivacy?.hideStats !== true));
                 let cocardeRecordTitle = '';
                 let cocardeRecordEmoji = '🏅';
                 if (raceCocardesInfo) {
@@ -5002,14 +5128,21 @@
                 const cardTagsHtml = (() => {
                     const allTags = [];
                     const cardTags = window.customCardTags || ['distance', 'elevation', 'location', 'terrain'];
-                    const showDistance = cardTags.includes('distance');
-                    const showElevation = cardTags.includes('elevation');
-                    const showLocation = cardTags.includes('location');
+                    const privacy = window.isFriendView ? window.friendViewPrivacy || {} : {};
+                    const showDistance = cardTags.includes('distance') && privacy.hideStats !== true;
+                    const showElevation = cardTags.includes('elevation') && privacy.hideStats !== true;
+                    const showLocation = cardTags.includes('location') && privacy.hideCity !== true;
                     const showTerrain = cardTags.includes('terrain');
-                    const showTime = cardTags.includes('time');
-                    const showPace = cardTags.includes('pace');
-                    const showPrice = cardTags.includes('price');
-                    const showRank = cardTags.includes('rank');
+                    const showTime = cardTags.includes('time') && privacy.hideStats !== true
+                        && (!window.isFriendView || window.friendViewPermissions?.stats === true);
+                    const showPace = cardTags.includes('pace') && privacy.hideStats !== true
+                        && (!window.isFriendView || window.friendViewPermissions?.stats === true);
+                    const showPrice = cardTags.includes('price') && privacy.hidePrice !== true
+                        && privacy.hideStats !== true
+                        && (!window.isFriendView || window.friendViewPermissions?.stats === true);
+                    const showRank = cardTags.includes('rank') && privacy.hideRanking !== true
+                        && privacy.hideStats !== true
+                        && (!window.isFriendView || window.friendViewPermissions?.stats === true);
 
                     const distVal = formatDist(race.distance);
                     const elevVal = race.elevation || '0';
@@ -5222,6 +5355,10 @@
         `;
 
                 racesContainer.appendChild(raceCard);
+                if (window.isFriendView && window.friendViewPrivacy?.hideFavorite === true) {
+                    const favoriteIcon = raceCard.querySelector('h3 svg');
+                    if (favoriteIcon) favoriteIcon.remove();
+                }
 
                 // Gestion du survol des likes
                 const likeTrigger = raceCard.querySelector('.like-hover-trigger');
@@ -6281,6 +6418,10 @@
 
         // Add new race
         function addRace() {
+            if (isInvite()) {
+                showPermissionDeniedModal('ajouter une course');
+                return;
+            }
             modalTitle.textContent = 'Ajouter une course';
             raceForm.reset();
             const rNE = document.getElementById('raceNotesEditor');
@@ -6596,6 +6737,10 @@
         // Sauvegarder une course
         async function saveRace(e) {
             e.preventDefault();
+            if (await isInviteAsync()) {
+                showPermissionDeniedModal('modifier une course');
+                return;
+            }
 
             // Check if companion input has text but not added
             const companionNameInput = document.getElementById('companionNameInput');
@@ -8357,10 +8502,14 @@
         // Ouvrir le modal wishlist au clic sur le bouton
         wishlistBtn.addEventListener('click', () => {
             if (isSelectionMode || window.isSelectionMode) return;
+            if (!wishlistCollection) {
+                showPermissionDeniedModal('consulter la wishlist');
+                return;
+            }
             wishlistModal.classList.remove('hidden');
             wishlistDisplay.classList.remove('hidden');
             wishlistEditForm.classList.add('hidden');
-            editWishlistBtn.classList.remove('hidden');
+            editWishlistBtn.classList.toggle('hidden', isInvite());
             loadWishlist();
         });
 
@@ -8371,6 +8520,7 @@
 
         // Charger la wishlist depuis Firebase (chaque course = un document)
         function loadWishlist() {
+            if (!wishlistCollection) return;
             wishlistItems.innerHTML = '<li class="text-gray-400">Chargement...</li>';
             wishlistCollection.get()
                 .then((querySnapshot) => {
@@ -8497,7 +8647,7 @@
                 const raceDateObj = new Date(raceDateStr + (raceDateStr.includes('T') ? '' : 'T00:00:00'));
                 raceDateObj.setHours(0, 0, 0, 0);
 
-                if (raceDateObj.getTime() < today.getTime()) {
+                if (raceDateObj.getTime() < today.getTime() && !window.isFriendView) {
                     const newDateStr = getYearPlusOneDate(raceDateStr);
                     const nextYear = newDateStr ? newDateStr.split('-')[0] : '';
                     const formattedDate = raceDateObj.toLocaleDateString('fr-FR');
@@ -8515,8 +8665,9 @@
                 } else {
                     const formattedDate = raceDateObj.toLocaleDateString('fr-FR');
                     const dateBadge = document.createElement('span');
-                    dateBadge.className = 'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 whitespace-nowrap';
-                    dateBadge.innerHTML = `<i class="far fa-calendar-alt mr-1 text-green-600"></i>${formattedDate}`;
+                    const isPastDate = raceDateObj.getTime() < today.getTime();
+                    dateBadge.className = `inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${isPastDate ? 'bg-gray-100 text-gray-600' : 'bg-green-100 text-green-800'} whitespace-nowrap`;
+                    dateBadge.innerHTML = `<i class="far fa-calendar-alt mr-1 ${isPastDate ? 'text-gray-500' : 'text-green-600'}"></i>${formattedDate}`;
                     rightDiv.appendChild(dateBadge);
                 }
             } else if (item.addedAt) {
@@ -8627,6 +8778,7 @@
             const updateAllBtn = document.getElementById('updateAllPastWishlistDatesBtn');
 
             if (!bubble || !textElem) return;
+            if (updateAllBtn) updateAllBtn.classList.toggle('hidden', window.isFriendView === true);
 
             const searchInput = document.getElementById('wishlistSearchInput');
             const searchActive = searchInput && searchInput.value.trim().length > 0;
@@ -9120,6 +9272,10 @@
 
         // Ouvrir le formulaire d'édition de la wishlist
         editWishlistBtn.addEventListener('click', async () => {
+            if (window.isFriendView) {
+                showPermissionDeniedModal('modifier la wishlist');
+                return;
+            }
             if (!await isInviteAsync()) {
                 loadAndShowWishlistEditor();
             } else {
@@ -9180,6 +9336,11 @@
         const wishlistDeleteConfirmBtn = document.getElementById('wishlistDeleteConfirmBtn');
         if (wishlistDeleteConfirmBtn) {
             wishlistDeleteConfirmBtn.onclick = function () {
+                if (isInvite()) {
+                    showPermissionDeniedModal('modifier la wishlist');
+                    closeWishlistDeleteConfirmModal();
+                    return;
+                }
                 if (!pendingWishlistDelete) {
                     closeWishlistDeleteConfirmModal();
                     return;
@@ -9669,6 +9830,10 @@
         }
 
         function addWishlistItemToFirebase(item) {
+            if (isInvite()) {
+                showPermissionDeniedModal('modifier la wishlist');
+                return;
+            }
             wishlistCollection.add(item).then((docRef) => {
                 item.id = docRef.id;
                 wishlistEditItems.push(item);
@@ -9681,6 +9846,10 @@
         }
 
         addWishlistItemBtn.onclick = function () {
+            if (isInvite()) {
+                showPermissionDeniedModal('modifier la wishlist');
+                return;
+            }
             ensureRadioGroup();
             const name = newWishlistItemInput.value.trim();
             const category = document.querySelector('input[name="wishlistCategory"]:checked');
@@ -9753,6 +9922,10 @@
 
                             updateBtn.onclick = function (e) {
                                 e.stopPropagation();
+                                if (isInvite()) {
+                                    showPermissionDeniedModal('modifier la wishlist');
+                                    return;
+                                }
                                 if (dateVal) item.date = dateVal;
                                 if (linkVal) item.link = linkVal;
                                 if (category.value) item.category = category.value;
@@ -9808,6 +9981,10 @@
         const confirmAddSimilarBtn = document.getElementById('confirmAddSimilar');
         if (confirmAddSimilarBtn) {
             confirmAddSimilarBtn.onclick = function () {
+                if (isInvite()) {
+                    showPermissionDeniedModal('modifier la wishlist');
+                    return;
+                }
                 if (pendingWishlistItemToAdd) {
                     addWishlistItemToFirebase(pendingWishlistItemToAdd);
                     pendingWishlistItemToAdd = null;
@@ -9827,6 +10004,10 @@
 
         // Correction du bouton Enregistrer de la modale d'édition de la wishlist
         saveWishlistBtn.onclick = function () {
+            if (isInvite()) {
+                showPermissionDeniedModal('modifier la wishlist');
+                return;
+            }
             // Vérifier que chaque item a une catégorie
             let hasError = false;
             wishlistEditItems.forEach(item => {
@@ -10047,6 +10228,10 @@
 
         // Handlers pour modal de nettoyage (Similitudes Clean)
         document.getElementById('btnConfirmClean').addEventListener('click', function () {
+            if (isInvite()) {
+                showPermissionDeniedModal('modifier la wishlist');
+                return;
+            }
             const checkboxes = document.querySelectorAll('.wishlist-delete-checkbox:checked');
             const idsToDelete = Array.from(checkboxes).map(cb => cb.value);
 
@@ -10388,12 +10573,16 @@
             const statsBtn = document.getElementById('statsBtn');
             const badgesBtn = document.getElementById('badgesBtn');
             const wishlistBtn = document.getElementById('wishlistBtn');
+            const friendsBtn = document.getElementById('friendsBtn');
+            const backToOwnDashboardBtn = document.getElementById('backToOwnDashboardBtn');
 
             if (!user) {
                 window.compactDashboardStats = false;
                 window.dispatchEvent(new Event('compactDashboardStatsChanged'));
                 if (statsBtn) statsBtn.classList.add('hidden');
                 if (badgesBtn) badgesBtn.classList.add('hidden');
+                if (friendsBtn) friendsBtn.classList.add('hidden');
+                if (backToOwnDashboardBtn) backToOwnDashboardBtn.classList.add('hidden');
                 return;
             }
 
@@ -10404,30 +10593,41 @@
                     const uiPrefs = data.uiPreferences || {};
                     window.compactDashboardStats = uiPrefs.compactDashboardStats === true;
                     window.dispatchEvent(new Event('compactDashboardStatsChanged'));
+                    const isFriendView = window.isFriendView === true;
+                    if (backToOwnDashboardBtn) backToOwnDashboardBtn.classList.toggle('hidden', !isFriendView);
 
                     // Stats button
-                    const hideStats = (uiPrefs.hideStatsBtn === true) || (uiPrefs.showStatsBtn === false);
+                    const hideStats = isFriendView
+                        ? (!window.friendViewPermissions?.stats || window.friendViewPrivacy?.hideStats === true)
+                        : ((uiPrefs.hideStatsBtn === true) || (uiPrefs.showStatsBtn === false));
                     if (statsBtn) {
                         if (hideStats) statsBtn.classList.add('hidden');
                         else statsBtn.classList.remove('hidden');
                     }
 
                     // Badges button
-                    const hideBadges = (uiPrefs.hideBadgesBtn === true) || (uiPrefs.showBadgesBtn === false);
+                    const hideBadges = isFriendView ? !window.friendViewPermissions?.badges : ((uiPrefs.hideBadgesBtn === true) || (uiPrefs.showBadgesBtn === false));
                     if (badgesBtn) {
                         if (hideBadges) badgesBtn.classList.add('hidden');
                         else badgesBtn.classList.remove('hidden');
                     }
 
                     // Wishlist button
-                    const hideWishlist = (uiPrefs.hideWishlistBtn === true) || (uiPrefs.showWishlistBtn === false);
+                    const hideWishlist = isFriendView
+                        ? (window.friendViewPermissions?.wishlist !== true || uiPrefs.hideWishlistBtn === true)
+                        : ((uiPrefs.hideWishlistBtn === true) || (uiPrefs.showWishlistBtn === false));
                     if (wishlistBtn) {
                         if (hideWishlist) wishlistBtn.classList.add('hidden');
                         else wishlistBtn.classList.remove('hidden');
                     }
+                    if (friendsBtn) {
+                        const hideFriends = isFriendView || uiPrefs.hideFriendsBtn === true || data.role === 'invite';
+                        friendsBtn.classList.toggle('hidden', hideFriends);
+                    }
                 } else {
                     window.compactDashboardStats = false;
                     window.dispatchEvent(new Event('compactDashboardStatsChanged'));
+                    if (friendsBtn) friendsBtn.classList.remove('hidden');
                 }
             } catch (error) {
                 console.error("Error applying UI prefs:", error);
@@ -11312,10 +11512,11 @@
 
     <script src="js/isAdmin.js"></script>
     <script src="js/isInvite.js"></script>
-    <script src="js/race-details-modal.js?v=20261108_32"></script>
+    <script src="js/race-details-modal.js?v=20261108_33"></script>
     <script src="js/stats-modal.js?v=12"></script>
     <script src="js/advanced-filters.js?v=20260929_1"></script>
-    <script src="js/user-settings.js?v=20261108_1"></script>
+    <script src="js/user-settings.js?v=20261108_2"></script>
+    <script src="js/friends-modal.js?v=20261108_2"></script>
     <script src="js/reviews.js"></script>
     <script src="js/upcoming-features.js?v=20260930_1"></script>
     <script src="js/admin-modal.js?v=20261009_1"></script>

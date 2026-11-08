@@ -605,7 +605,7 @@
 
         // Spécificité Relais : si l'utilisateur a des segments assignés
         if (targetTerrain === 'relai' && Array.isArray(targetRace.relayLaps) && targetRace.relayLaps.length > 0) {
-            const currentUserPseudo = window.currentUserPseudo || 'Moi';
+            const currentUserPseudo = window.activeCarnetPseudo || window.currentUserPseudo || 'Moi';
             let uDist = 0, uElev = 0;
             targetRace.relayLaps.forEach(lap => {
                 const runnerLower = String(lap.runner || '').trim().toLowerCase();
@@ -632,7 +632,7 @@
 
             // Cas relais : vérifier les segments de l'utilisateur
             if (r.terrain === 'relai' && Array.isArray(r.relayLaps) && r.relayLaps.length > 0) {
-                const currentUserPseudo = window.currentUserPseudo || 'Moi';
+                const currentUserPseudo = window.activeCarnetPseudo || window.currentUserPseudo || 'Moi';
                 let uDist = 0, uElev = 0, uTimeS = 0;
                 r.relayLaps.forEach(lap => {
                     const runnerLower = String(lap.runner || '').trim().toLowerCase();
@@ -1073,6 +1073,12 @@
     // Afficher les détails d'une course
     function showRaceDetails(idOrRace, optionalRacesList, authorPrivacy) {
         if (window.isSelectionMode) return;
+        if (window.isFriendView && window.friendViewPermissions?.details !== true) {
+            if (typeof window.showPermissionDeniedModal === 'function') {
+                window.showPermissionDeniedModal('consulter le détail de cette course');
+            }
+            return;
+        }
 
         ensureModalInDom();
 
@@ -1095,7 +1101,8 @@
 
         if (!race) return;
 
-        const effectivePrivacy = authorPrivacy || race._authorPrivacy || race.privacy || null;
+        const effectivePrivacy = authorPrivacy || race._authorPrivacy ||
+            (window.isFriendView ? window.friendViewPrivacy : null) || race.privacy || null;
         const currentUid = (typeof firebase !== 'undefined' && firebase.auth && firebase.auth().currentUser) ? firebase.auth().currentUser.uid : null;
         const isOwner = (race._uid && currentUid && race._uid === currentUid) || (!race._uid && (typeof window.location !== 'undefined' && window.location.pathname.includes('dashboard')));
 
@@ -1747,7 +1754,7 @@
         }
 
         if (race.terrain === 'relai' && race.relayLaps && race.relayLaps.length > 0) {
-            const currentUserPseudo = window.currentUserPseudo || 'Moi';
+            const currentUserPseudo = window.activeCarnetPseudo || window.currentUserPseudo || 'Moi';
             let totalRelayDist = 0, totalRelayElev = 0, totalRelayElevNeg = 0, totalRelayTimeS = 0;
             let userRelayDist = 0, userRelayElev = 0, userRelayElevNeg = 0, userRelayTimeS = 0;
             let userRelayCount = 0;
