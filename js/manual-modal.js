@@ -102,7 +102,7 @@ const manualModalHTML = `
                                     <div>• Numéro de dossard</div>
                                     <div>• Dénivelé D+ et D- (m)</div>
                                     <div>• Temps de course</div>
-                                    <div>• Classements (Général et Genre/Catégorie)</div>
+                                    <div>• Classements (Général, Catégorie FFA nommée et Genre)</div>
                                     <div>• Lieu / Ville</div>
                                     <div>• Photo (JPG, PNG)</div>
                                     <div>• Image automatique (Web/Nom)</div>

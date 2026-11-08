@@ -781,10 +781,9 @@
                                         class="text-green-700 font-medium text-xs whitespace-nowrap">participants</span>
                                 </div>
                             </div>
-                            <!-- Classement Catégorie / Genre -->
+                            <!-- Classement par genre -->
                             <div>
-                                <span class="block text-xs font-medium text-gray-500 mb-1">Classement par Genre /
-                                    Cat.</span>
+                                <span class="block text-xs font-medium text-gray-500 mb-1">Classement par genre</span>
                                 <div class="flex items-center gap-2 flex-wrap sm:flex-nowrap">
                                     <input type="number" id="raceRankGenderPos" min="1"
                                         class="w-20 px-2 py-1.5 border border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-sm shrink-0"
@@ -795,6 +794,105 @@
                                         placeholder="400">
                                     <span
                                         class="text-green-700 font-medium text-xs whitespace-nowrap">participants</span>
+                                </div>
+                            </div>
+                            <!-- Classement par catégorie -->
+                            <div>
+                                <div class="mb-1">
+                                    <span class="block text-xs font-medium text-gray-500">Classement par catégorie</span>
+                                </div>
+                                <div class="space-y-2">
+                                    <div class="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+                                        <input type="number" id="raceRankCategoryPos" min="1"
+                                            class="w-20 px-2 py-1.5 border border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-sm shrink-0"
+                                            placeholder="Ex: 12">
+                                        <span class="text-green-700 font-medium text-sm shrink-0">sur</span>
+                                        <input type="number" id="raceRankCategoryTotal" min="1"
+                                            class="w-20 px-2 py-1.5 border border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-sm shrink-0"
+                                            placeholder="120">
+                                        <span class="text-green-700 font-medium text-xs whitespace-nowrap">participants</span>
+                                    </div>
+                                    <div>
+                                        <div class="flex items-center justify-between mb-1">
+                                            <label for="raceRankCategoryCode" class="block text-green-700 text-sm font-medium">Nom de la catégorie</label>
+                                            <button type="button"
+                                                class="text-xs text-gray-400 underline hover:text-green-600 transition select-none"
+                                                aria-controls="categoryHelpBox" aria-expanded="false"
+                                                onclick="const box = document.getElementById('categoryHelpBox'); box.classList.toggle('hidden'); this.setAttribute('aria-expanded', String(!box.classList.contains('hidden')));">
+                                                Comment savoir ?
+                                            </button>
+                                        </div>
+                                        <div id="categoryHelpBox"
+                                            class="hidden mb-3 max-h-80 overflow-y-auto bg-white border border-green-200 p-3 rounded-lg relative shadow-sm text-xs text-green-800">
+                                            <div class="absolute -top-1.5 right-12 w-3 h-3 bg-white border-t border-l border-green-200 transform rotate-45"></div>
+                                    <p class="font-semibold mb-2">Catégories d'âge officielles FFA</p>
+                                    <p>Voici les catégories d'âge officielles de la Fédération Française d'Athlétisme (FFA). Les âges sont indicatifs.</p>
+                                    <div class="overflow-x-auto mt-2">
+                                        <table class="w-full text-left text-[11px] border-collapse">
+                                            <thead>
+                                                <tr class="border-b border-green-100 text-green-900">
+                                                    <th class="py-1 pr-3">Catégorie</th>
+                                                    <th class="py-1 pr-3">Code</th>
+                                                    <th class="py-1">Âge</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="divide-y divide-green-50">
+                                                <tr><td class="py-1 pr-3">Baby Athlé</td><td class="py-1 pr-3">BB / U7</td><td class="py-1">Moins de 7 ans</td></tr>
+                                                <tr><td class="py-1 pr-3">Éveil athlétique</td><td class="py-1 pr-3">EA / U10</td><td class="py-1">7 à 9 ans</td></tr>
+                                                <tr><td class="py-1 pr-3">Poussins</td><td class="py-1 pr-3">PO / U12</td><td class="py-1">10 à 11 ans</td></tr>
+                                                <tr><td class="py-1 pr-3">Benjamins</td><td class="py-1 pr-3">BE / U14</td><td class="py-1">12 à 13 ans</td></tr>
+                                                <tr><td class="py-1 pr-3">Minimes</td><td class="py-1 pr-3">MI / U16</td><td class="py-1">14 à 15 ans</td></tr>
+                                                <tr><td class="py-1 pr-3">Cadets</td><td class="py-1 pr-3">CA / U18</td><td class="py-1">16 à 17 ans</td></tr>
+                                                <tr><td class="py-1 pr-3">Juniors</td><td class="py-1 pr-3">JU / U20</td><td class="py-1">18 à 19 ans</td></tr>
+                                                <tr><td class="py-1 pr-3">Espoirs</td><td class="py-1 pr-3">ES / U23</td><td class="py-1">20 à 22 ans</td></tr>
+                                                <tr><td class="py-1 pr-3">Seniors</td><td class="py-1 pr-3">SE</td><td class="py-1">23 à 34 ans</td></tr>
+                                                <tr><td class="py-1 pr-3">Masters</td><td class="py-1 pr-3">MA / M35+</td><td class="py-1">35 ans et plus</td></tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <p class="font-semibold mt-3 mb-1">Détail des catégories Masters</p>
+                                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-x-3 gap-y-1 text-[11px]">
+                                        <span>M0 : 35-39 ans</span><span>M1 : 40-44 ans</span>
+                                        <span>M2 : 45-49 ans</span><span>M3 : 50-54 ans</span>
+                                        <span>M4 : 55-59 ans</span><span>M5 : 60-64 ans</span>
+                                        <span>M6 : 65-69 ans</span><span>M7 : 70-74 ans</span>
+                                        <span>M8 : 75-79 ans</span><span>M9 : 80-84 ans</span>
+                                        <span>M10 : 85 ans et plus</span>
+                                    </div>
+                                    <p class="mt-3 border-t border-green-100 pt-2">
+                                        <i class="fas fa-lightbulb text-yellow-500 mr-1"></i>
+                                        <strong>Bon à savoir :</strong> la lettre H (Homme) ou F (Femme) est ajoutée au code (par exemple ESH ou U23H). En course à pied, le changement de catégorie dépend généralement de l'année civile de naissance, la saison sportive commençant le 1er septembre.
+                                    </p>
+                                </div>
+                                        <select id="raceRankCategoryCode" class="w-full px-2 py-1.5 border border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-sm">
+                                            <option value="">Sélectionner une catégorie…</option>
+                                            <optgroup label="Jeunes et adultes">
+                                                <option value="BB" data-name="Baby Athlé" data-code="BB / U7">Baby Athlé - BB / U7 - moins de 7 ans</option>
+                                                <option value="EA" data-name="Éveil athlétique" data-code="EA / U10">Éveil athlétique - EA / U10 - 7 à 9 ans</option>
+                                                <option value="PO" data-name="Poussins" data-code="PO / U12">Poussins - PO / U12 - 10 à 11 ans</option>
+                                                <option value="BE" data-name="Benjamins" data-code="BE / U14">Benjamins - BE / U14 - 12 à 13 ans</option>
+                                                <option value="MI" data-name="Minimes" data-code="MI / U16">Minimes - MI / U16 - 14 à 15 ans</option>
+                                                <option value="CA" data-name="Cadets" data-code="CA / U18">Cadets - CA / U18 - 16 à 17 ans</option>
+                                                <option value="JU" data-name="Juniors" data-code="JU / U20">Juniors - JU / U20 - 18 à 19 ans</option>
+                                                <option value="ES" data-name="Espoirs" data-code="ES / U23">Espoirs - ES / U23 - 20 à 22 ans</option>
+                                                <option value="SE" data-name="Seniors" data-code="SE">Seniors - SE - 23 à 34 ans</option>
+                                            </optgroup>
+                                            <optgroup label="Masters">
+                                                <option value="MA" data-name="Masters" data-code="MA / M35+">Masters - MA / M35+ - 35 ans et plus</option>
+                                                <option value="M0" data-name="Masters" data-code="M0">Masters M0 - 35 à 39 ans</option>
+                                                <option value="M1" data-name="Masters" data-code="M1">Masters M1 - 40 à 44 ans</option>
+                                                <option value="M2" data-name="Masters" data-code="M2">Masters M2 - 45 à 49 ans</option>
+                                                <option value="M3" data-name="Masters" data-code="M3">Masters M3 - 50 à 54 ans</option>
+                                                <option value="M4" data-name="Masters" data-code="M4">Masters M4 - 55 à 59 ans</option>
+                                                <option value="M5" data-name="Masters" data-code="M5">Masters M5 - 60 à 64 ans</option>
+                                                <option value="M6" data-name="Masters" data-code="M6">Masters M6 - 65 à 69 ans</option>
+                                                <option value="M7" data-name="Masters" data-code="M7">Masters M7 - 70 à 74 ans</option>
+                                                <option value="M8" data-name="Masters" data-code="M8">Masters M8 - 75 à 79 ans</option>
+                                                <option value="M9" data-name="Masters" data-code="M9">Masters M9 - 80 à 84 ans</option>
+                                                <option value="M10" data-name="Masters" data-code="M10">Masters M10 - 85 ans et plus</option>
+                                            </optgroup>
+                                        </select>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -2645,7 +2743,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="js/runner-loader.js"></script>
     <script src="js/user-flags.js?v=20260930_2"></script>
-    <script src="js/badges-modal.js?v=20261108_1"></script>
+    <script src="js/badges-modal.js?v=20261108_3"></script>
     <script src="js/toast.js?v=20260929_2"></script>
     <script src="js/city-autocomplete.js?v=20260929_2"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
@@ -5284,12 +5382,21 @@
                         allTags.push(`<span class="tag-item flex items-center gap-1 px-2 py-1 bg-red-50 text-red-800 text-xs rounded-full"><i class="fas fa-euro-sign text-red-500"></i> ${parsedPrice.toFixed(2)} €</span>`);
                     }
 
-                    if (showRank && race.rankPos) {
-                        const totalStr = race.rankTotal ? `/${race.rankTotal}` : '';
-                        allTags.push(`<span class="tag-item flex items-center gap-1 px-2 py-1 bg-yellow-50 text-yellow-800 text-xs rounded-full"><i class="fas fa-medal text-yellow-500"></i> ${race.rankPos}${totalStr}</span>`);
-                    } else if (showRank && race.rankGenderPos) {
-                        const totalStr = race.rankGenderTotal ? `/${race.rankGenderTotal}` : '';
-                        allTags.push(`<span class="tag-item flex items-center gap-1 px-2 py-1 bg-yellow-50 text-yellow-800 text-xs rounded-full"><i class="fas fa-medal text-yellow-500"></i> ${race.rankGenderPos}${totalStr} (cat.)</span>`);
+                    if (showRank) {
+                        const rankings = getRaceRankingValues(race);
+                        if (hasRankingValue(race.rankPos)) {
+                            const totalStr = hasRankingValue(race.rankTotal) ? `/${race.rankTotal}` : '';
+                            allTags.push(`<span class="tag-item flex items-center gap-1 px-2 py-1 bg-yellow-50 text-yellow-800 text-xs rounded-full"><i class="fas fa-medal text-yellow-500"></i> ${race.rankPos}${totalStr} (gén.)</span>`);
+                        }
+                        if (hasRankingValue(rankings.categoryPos)) {
+                            const totalStr = hasRankingValue(rankings.categoryTotal) ? `/${rankings.categoryTotal}` : '';
+                            const categoryLabel = [rankings.categoryName, rankings.categoryCode].filter(Boolean).join(' ');
+                            allTags.push(`<span class="tag-item flex items-center gap-1 px-2 py-1 bg-amber-50 text-amber-800 text-xs rounded-full" title="${categoryLabel || 'Catégorie'}"><i class="fas fa-layer-group text-amber-500"></i> ${rankings.categoryPos}${totalStr} (${categoryLabel || 'cat.'})</span>`);
+                        }
+                        if (hasRankingValue(rankings.genderPos)) {
+                            const totalStr = hasRankingValue(rankings.genderTotal) ? `/${rankings.genderTotal}` : '';
+                            allTags.push(`<span class="tag-item flex items-center gap-1 px-2 py-1 bg-pink-50 text-pink-800 text-xs rounded-full"><i class="fas fa-venus-mars text-pink-500"></i> ${rankings.genderPos}${totalStr} (genre)</span>`);
+                        }
                     }
 
                     return `<div class="card-tags-container flex items-center gap-1.5 flex-wrap">${allTags.join('')}</div>`;
@@ -6458,6 +6565,8 @@
             // Masquer les bulles d'aide
             const driveHelp = document.getElementById('driveHelpBox');
             if (driveHelp) driveHelp.classList.add('hidden');
+            const categoryHelp = document.getElementById('categoryHelpBox');
+            if (categoryHelp) categoryHelp.classList.add('hidden');
             const relayHelp = document.getElementById('relayHelpBox');
             if (relayHelp) relayHelp.classList.remove('hidden'); // Affiché par défaut
 
@@ -6473,9 +6582,27 @@
             raceModal.classList.remove('hidden');
         }
 
+        function hasRankingValue(value) {
+            return value !== undefined && value !== null && value !== '';
+        }
+
+        function getRaceRankingValues(race) {
+            const hasNewRankingSchema = Number(race.rankingFieldsVersion) >= 2 ||
+                hasRankingValue(race.rankCategoryPos) || hasRankingValue(race.rankCategoryTotal);
+            return {
+                categoryPos: hasNewRankingSchema ? race.rankCategoryPos : race.rankGenderPos,
+                categoryTotal: hasNewRankingSchema ? race.rankCategoryTotal : race.rankGenderTotal,
+                categoryCode: hasNewRankingSchema ? race.rankCategoryCode : null,
+                categoryName: hasNewRankingSchema ? race.rankCategoryName : null,
+                genderPos: hasNewRankingSchema ? race.rankGenderPos : null,
+                genderTotal: hasNewRankingSchema ? race.rankGenderTotal : null
+            };
+        }
+
         function populateEditForm(raceId) {
             const race = races.find(r => r.id === raceId);
             if (!race) return;
+            const raceRankings = getRaceRankingValues(race);
 
             // Réinitialiser les messages d'erreur
             ['raceNameError', 'raceDateError', 'raceTimeError', 'formGlobalError', 'companionError'].forEach(id => {
@@ -6496,8 +6623,11 @@
             document.getElementById('raceTime').value = (race.time && race.time !== 'undefined' && race.time !== '00:00:00') ? race.time : '';
             document.getElementById('raceRankPos').value = (race.rankPos !== undefined && race.rankPos !== null) ? race.rankPos : '';
             document.getElementById('raceRankTotal').value = (race.rankTotal !== undefined && race.rankTotal !== null) ? race.rankTotal : '';
-            document.getElementById('raceRankGenderPos').value = (race.rankGenderPos !== undefined && race.rankGenderPos !== null) ? race.rankGenderPos : '';
-            document.getElementById('raceRankGenderTotal').value = (race.rankGenderTotal !== undefined && race.rankGenderTotal !== null) ? race.rankGenderTotal : '';
+            document.getElementById('raceRankCategoryPos').value = hasRankingValue(raceRankings.categoryPos) ? raceRankings.categoryPos : '';
+            document.getElementById('raceRankCategoryTotal').value = hasRankingValue(raceRankings.categoryTotal) ? raceRankings.categoryTotal : '';
+            document.getElementById('raceRankCategoryCode').value = raceRankings.categoryCode || '';
+            document.getElementById('raceRankGenderPos').value = hasRankingValue(raceRankings.genderPos) ? raceRankings.genderPos : '';
+            document.getElementById('raceRankGenderTotal').value = hasRankingValue(raceRankings.genderTotal) ? raceRankings.genderTotal : '';
             document.getElementById('raceLocation').value = race.location || '';
             if (document.getElementById('raceDepartment')) {
                 document.getElementById('raceDepartment').value = race.department || race.dept || race.codeDepartement || '';
@@ -6573,6 +6703,8 @@
             // Masquer les bulles d'aide
             const driveHelpEdit = document.getElementById('driveHelpBox');
             if (driveHelpEdit) driveHelpEdit.classList.add('hidden');
+            const categoryHelpEdit = document.getElementById('categoryHelpBox');
+            if (categoryHelpEdit) categoryHelpEdit.classList.add('hidden');
             const relayHelpEdit = document.getElementById('relayHelpBox');
             if (relayHelpEdit) relayHelpEdit.classList.remove('hidden'); // Affiché par défaut
 
@@ -6649,10 +6781,13 @@
                 }
                 const rankPosInput = document.getElementById('raceRankPos');
                 const rankTotalInput = document.getElementById('raceRankTotal');
+                const rankCategoryCodeInput = document.getElementById('raceRankCategoryCode');
+                const rankCategoryPosInput = document.getElementById('raceRankCategoryPos');
+                const rankCategoryTotalInput = document.getElementById('raceRankCategoryTotal');
                 const rankGenderPosInput = document.getElementById('raceRankGenderPos');
                 const rankGenderTotalInput = document.getElementById('raceRankGenderTotal');
 
-                [rankPosInput, rankTotalInput, rankGenderPosInput, rankGenderTotalInput].forEach(input => {
+                [rankPosInput, rankTotalInput, rankCategoryCodeInput, rankCategoryPosInput, rankCategoryTotalInput, rankGenderPosInput, rankGenderTotalInput].forEach(input => {
                     if (input) {
                         input.value = '';
                         input.disabled = true;
@@ -6694,10 +6829,13 @@
                 }
                 const rankPosInputEn = document.getElementById('raceRankPos');
                 const rankTotalInputEn = document.getElementById('raceRankTotal');
+                const rankCategoryCodeInputEn = document.getElementById('raceRankCategoryCode');
+                const rankCategoryPosInputEn = document.getElementById('raceRankCategoryPos');
+                const rankCategoryTotalInputEn = document.getElementById('raceRankCategoryTotal');
                 const rankGenderPosInputEn = document.getElementById('raceRankGenderPos');
                 const rankGenderTotalInputEn = document.getElementById('raceRankGenderTotal');
 
-                [rankPosInputEn, rankTotalInputEn, rankGenderPosInputEn, rankGenderTotalInputEn].forEach(input => {
+                [rankPosInputEn, rankTotalInputEn, rankCategoryCodeInputEn, rankCategoryPosInputEn, rankCategoryTotalInputEn, rankGenderPosInputEn, rankGenderTotalInputEn].forEach(input => {
                     if (input) {
                         input.disabled = false;
                         input.classList.remove('bg-gray-100', 'cursor-not-allowed');
@@ -6777,6 +6915,14 @@
             const time = document.getElementById('raceTime').value;
             const rankPos = document.getElementById('raceRankPos').value;
             const rankTotal = document.getElementById('raceRankTotal').value;
+            const rankCategoryCodeInput = document.getElementById('raceRankCategoryCode');
+            const rankCategoryCode = rankCategoryCodeInput.value;
+            const selectedRankCategory = rankCategoryCodeInput.selectedOptions[0];
+            const rankCategoryName = rankCategoryCode && selectedRankCategory
+                ? (selectedRankCategory.dataset.name || selectedRankCategory.textContent.trim())
+                : '';
+            const rankCategoryPos = document.getElementById('raceRankCategoryPos').value;
+            const rankCategoryTotal = document.getElementById('raceRankCategoryTotal').value;
             const rankGenderPos = document.getElementById('raceRankGenderPos').value;
             const rankGenderTotal = document.getElementById('raceRankGenderTotal').value;
             const location = document.getElementById('raceLocation').value;
@@ -6899,6 +7045,7 @@
                 }
             };
             checkRanking(rankPos, rankTotal, 'générale');
+            checkRanking(rankCategoryPos, rankCategoryTotal, 'par catégorie');
             checkRanking(rankGenderPos, rankGenderTotal, 'par genre');
 
             // Vérifier la date
@@ -6994,8 +7141,13 @@
                 time: (time && time.trim() !== '' && time !== 'undefined' && time !== '00:00:00') ? time.trim() : null,
                 rankPos: rankPos ? parseInt(rankPos) : null,
                 rankTotal: rankTotal ? parseInt(rankTotal) : null,
+                rankCategoryPos: rankCategoryPos ? parseInt(rankCategoryPos) : null,
+                rankCategoryTotal: rankCategoryTotal ? parseInt(rankCategoryTotal) : null,
+                rankCategoryCode: rankCategoryCode || null,
+                rankCategoryName: rankCategoryName || null,
                 rankGenderPos: rankGenderPos ? parseInt(rankGenderPos) : null,
                 rankGenderTotal: rankGenderTotal ? parseInt(rankGenderTotal) : null,
+                rankingFieldsVersion: 2,
                 location: location ? location.trim() : null,
                 department: (document.getElementById('raceDepartment') && document.getElementById('raceDepartment').value.trim()) ? document.getElementById('raceDepartment').value.trim() : null,
                 region: (document.getElementById('raceRegion') && document.getElementById('raceRegion').value.trim()) ? document.getElementById('raceRegion').value.trim() : null,
@@ -7053,7 +7205,7 @@
             // Liste de tous les champs connus pouvant exister en BDD
             const allPossibleFields = [
                 'name', 'date', 'hour', 'distance', 'elevation', 'elevationNeg', 'time',
-                'rankPos', 'rankTotal', 'rankGenderPos', 'rankGenderTotal', 'location',
+                'rankPos', 'rankTotal', 'rankCategoryPos', 'rankCategoryTotal', 'rankCategoryCode', 'rankCategoryName', 'rankGenderPos', 'rankGenderTotal', 'rankingFieldsVersion', 'location',
                 'terrain', 'notes', 'price', 'bibNumber', 'website', 'resultUrl', 'gpxUrl',
                 'driveId', 'companions', 'favorite', 'public', 'raceFormat', 'raceRelaySport',
                 'swimDistance', 'bikeDistance', 'swimTime', 'bikeTime', 'runTime',
@@ -11514,9 +11666,9 @@
 
     <script src="js/isAdmin.js"></script>
     <script src="js/isInvite.js"></script>
-    <script src="js/race-details-modal.js?v=20261108_33"></script>
+    <script src="js/race-details-modal.js?v=20261108_36"></script>
     <script src="js/stats-modal.js?v=12"></script>
-    <script src="js/advanced-filters.js?v=20260929_1"></script>
+    <script src="js/advanced-filters.js?v=20261108_3"></script>
     <script src="js/user-settings.js?v=20261108_2"></script>
     <script src="js/friends-modal.js?v=20261108_2"></script>
     <script src="js/reviews.js"></script>

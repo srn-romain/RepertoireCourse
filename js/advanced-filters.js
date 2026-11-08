@@ -152,8 +152,11 @@
                         ${race.rating || ''} 
                         ${race.notes || ''} 
                         ${race.bibNumber || ''} 
+                        ${race.rankCategoryName || ''} ${race.rankCategoryCode || ''}
                         ${race.rankPos || ''}/${race.rankTotal || ''} 
                         ${race.rankPos || ''} / ${race.rankTotal || ''}
+                        ${race.rankCategoryPos || ''}/${race.rankCategoryTotal || ''}
+                        ${race.rankCategoryPos || ''} / ${race.rankCategoryTotal || ''}
                         ${race.rankGenderPos || ''}/${race.rankGenderTotal || ''}
                         ${race.rankGenderPos || ''} / ${race.rankGenderTotal || ''}
                     `.toLowerCase();
@@ -232,8 +235,19 @@
                 if (!isNaN(pos) && !isNaN(total) && total > 0 && pos > 0) {
                     return (pos / total) * 100;
                 }
-                const gPos = parseFloat(race.rankGenderPos);
-                const gTotal = parseFloat(race.rankGenderTotal);
+                const hasNewRankingSchema = Number(race.rankingFieldsVersion) >= 2 ||
+                    (race.rankCategoryPos != null && race.rankCategoryPos !== '') ||
+                    (race.rankCategoryTotal != null && race.rankCategoryTotal !== '');
+                const categoryPos = parseFloat(hasNewRankingSchema ? race.rankCategoryPos : race.rankGenderPos);
+                const categoryTotal = parseFloat(hasNewRankingSchema ? race.rankCategoryTotal : race.rankGenderTotal);
+                const genderPos = hasNewRankingSchema ? parseFloat(race.rankGenderPos) : NaN;
+                const genderTotal = hasNewRankingSchema ? parseFloat(race.rankGenderTotal) : NaN;
+                const gPos = Number.isFinite(categoryPos) && Number.isFinite(categoryTotal)
+                    ? categoryPos
+                    : genderPos;
+                const gTotal = Number.isFinite(categoryPos) && Number.isFinite(categoryTotal)
+                    ? categoryTotal
+                    : genderTotal;
                 if (!isNaN(gPos) && !isNaN(gTotal) && gTotal > 0 && gPos > 0) {
                     return (gPos / gTotal) * 100;
                 }

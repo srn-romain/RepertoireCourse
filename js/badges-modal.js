@@ -1916,7 +1916,10 @@
                    (r.ranking !== undefined && r.ranking !== null && r.ranking !== '') ||
                    (r.generalRank !== undefined && r.generalRank !== null && r.generalRank !== '') ||
                    (r.rank !== undefined && r.rank !== null && r.rank !== '') ||
+                   (r.rankCategoryPos !== undefined && r.rankCategoryPos !== null && r.rankCategoryPos !== '') ||
+                   (r.rankCategoryTotal !== undefined && r.rankCategoryTotal !== null && r.rankCategoryTotal !== '') ||
                    (r.rankGenderPos !== undefined && r.rankGenderPos !== null && r.rankGenderPos !== '') ||
+                   (r.rankGenderTotal !== undefined && r.rankGenderTotal !== null && r.rankGenderTotal !== '') ||
                    (r.catRanking !== undefined && r.catRanking !== null && r.catRanking !== '') ||
                    (r.categoryRank !== undefined && r.categoryRank !== null && r.categoryRank !== '') ||
                    (r.categoryRanking !== undefined && r.categoryRanking !== null && r.categoryRanking !== '') ||
@@ -1929,10 +1932,27 @@
             return hasRacePhoto(r) && hasRaceGpx(r) && hasRaceNote(r) && hasAnyRaceRanking(r);
         }
 
+        function getRaceCategoryRanking(r) {
+            const hasNewRankingSchema = Number(r.rankingFieldsVersion) >= 2 ||
+                (r.rankCategoryPos !== undefined && r.rankCategoryPos !== null && r.rankCategoryPos !== '') ||
+                (r.rankCategoryTotal !== undefined && r.rankCategoryTotal !== null && r.rankCategoryTotal !== '');
+            const explicitCategoryPos = r.rankCategoryPos || r.categoryRank || r.catRank || r.catRanking || r.categoryRanking || r.classementCategorie;
+            const explicitCategoryTotal = r.rankCategoryTotal || r.catTotal;
+            if (explicitCategoryPos || explicitCategoryTotal) {
+                return { pos: explicitCategoryPos, total: explicitCategoryTotal };
+            }
+            if (!hasNewRankingSchema) {
+                return { pos: r.rankGenderPos, total: r.rankGenderTotal };
+            }
+            return { pos: null, total: null };
+        }
+
         function hasRaceRankings(r) {
             if (!r) return false;
             const hasGeneral = (r.rankPos !== undefined && r.rankPos !== null && r.rankPos !== '') || (r.ranking && r.ranking !== '') || (r.generalRank && r.generalRank !== '') || (r.rank && r.rank !== '');
-            const hasCategory = (r.rankGenderPos !== undefined && r.rankGenderPos !== null && r.rankGenderPos !== '') || (r.catRanking && r.catRanking !== '') || (r.categoryRank && r.categoryRank !== '') || (r.categoryRanking && r.categoryRanking !== '') || (r.catRank && r.catRank !== '') || (r.classementCategorie && r.classementCategorie !== '');
+            const categoryRanking = getRaceCategoryRanking(r);
+            const hasCategory = (categoryRanking.pos !== undefined && categoryRanking.pos !== null && categoryRanking.pos !== '') ||
+                (categoryRanking.total !== undefined && categoryRanking.total !== null && categoryRanking.total !== '');
             return hasGeneral && hasCategory;
         }
 
@@ -1943,10 +1963,18 @@
             if (!isNaN(pos) && !isNaN(total) && total > 0 && pos > 0) {
                 return (pos / total) <= 0.33;
             }
-            const catPos = parseInt(r.rankGenderPos || r.categoryRank || r.catRank, 10);
-            const catTotal = parseInt(r.rankGenderTotal || r.catTotal, 10);
+            const categoryRanking = getRaceCategoryRanking(r);
+            const catPos = parseInt(categoryRanking.pos, 10);
+            const catTotal = parseInt(categoryRanking.total, 10);
             if (!isNaN(catPos) && !isNaN(catTotal) && catTotal > 0 && catPos > 0) {
                 return (catPos / catTotal) <= 0.33;
+            }
+            if (Number(r.rankingFieldsVersion) >= 2) {
+                const genderPos = parseInt(r.rankGenderPos, 10);
+                const genderTotal = parseInt(r.rankGenderTotal, 10);
+                if (!isNaN(genderPos) && !isNaN(genderTotal) && genderTotal > 0 && genderPos > 0) {
+                    return (genderPos / genderTotal) <= 0.33;
+                }
             }
             return false;
         }

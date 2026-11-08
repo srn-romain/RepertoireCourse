@@ -118,7 +118,7 @@
                                 class="text-[11px] text-yellow-600 font-semibold uppercase tracking-wider hidden items-center justify-center gap-1.5 w-full">
                                 <i class="fas fa-medal opacity-75"></i> Classements
                             </p>
-                            <div class="flex flex-col sm:flex-row items-center justify-center gap-2 w-full">
+                            <div class="flex flex-col sm:flex-row items-center justify-center gap-2 w-full flex-wrap">
                                 <div class="flex items-center gap-2" id="detailsGeneralRankingWrapper">
                                     <p class="text-sm text-yellow-600 flex items-center gap-1.5">
                                         <i class="fas fa-medal text-yellow-500" id="detailsGeneralIcon"></i>
@@ -126,7 +126,13 @@
                                     </p>
                                     <span id="detailsRanking" class="font-bold text-yellow-800 text-sm">-</span>
                                 </div>
-                                <div class="hidden sm:block text-yellow-300 mx-2" id="detailsRankingSeparator">|</div>
+                                <div class="flex items-center gap-2 hidden" id="detailsCategoryRankingContainer">
+                                    <p class="text-sm text-yellow-600 flex items-center gap-1.5">
+                                        <i class="fas fa-layer-group text-amber-500" id="detailsCategoryIcon"></i>
+                                        <span class="font-medium text-xs" id="detailsCategoryLabelText">Catégorie :</span>
+                                    </p>
+                                    <span id="detailsCategoryRanking" class="font-bold text-yellow-800 text-sm">-</span>
+                                </div>
                                 <div id="detailsGenderRankingContainer" class="flex items-center gap-2 hidden">
                                     <p class="text-sm text-yellow-600 flex items-center gap-1.5">
                                         <i class="fas fa-venus-mars text-yellow-500" id="detailsGenderIcon"></i>
@@ -462,17 +468,15 @@
         currentYearComparisons = comparisons;
         container.innerHTML = `
             <div class="py-1">
-                <div class="flex items-start gap-2">
-                    <i class="fas fa-chart-line text-green-600 mt-0.5"></i>
-                    <div class="min-w-0 flex-1">
-                        <h4 class="text-sm font-semibold text-green-800">Comparaison des éditions</h4>
-                        <div id="raceYearComparisonContent" class="mt-1 flex w-full flex-col gap-3"></div>
-                        <button id="detailsYearComparisonButton" type="button" class="mt-1 w-full rounded-md px-3 py-1 text-xs font-medium text-gray-600 hover:text-green-700 transition-colors flex items-center justify-center gap-2" aria-label="Afficher le détail des comparaisons" aria-expanded="false" aria-controls="raceYearComparisonContent">
-                            <span>Voir plus de comparaisons</span>
-                            <i class="fas fa-chevron-down text-[10px]"></i>
-                        </button>
-                    </div>
-                </div>
+                <h4 class="flex items-center gap-2 text-sm font-semibold text-green-800">
+                    <i class="fas fa-chart-line text-green-600"></i>
+                    Comparaison des éditions
+                </h4>
+                <div id="raceYearComparisonContent" class="mt-2 flex w-full flex-col gap-3"></div>
+                <button id="detailsYearComparisonButton" type="button" class="mt-1 w-full rounded-md px-3 py-1 text-xs font-medium text-gray-600 hover:text-green-700 transition-colors flex items-center justify-center gap-2" aria-label="Afficher le détail des comparaisons" aria-expanded="false" aria-controls="raceYearComparisonContent">
+                    <span>Voir plus de comparaisons</span>
+                    <i class="fas fa-chevron-down text-[10px]"></i>
+                </button>
             </div>`;
         container.classList.remove('hidden');
 
@@ -2156,14 +2160,27 @@
         if (!effectivePrivacy || !effectivePrivacy.hideRanking) {
             const generalRankPos = parseFloat(race.rankPos);
             const generalRankTotal = parseFloat(race.rankTotal);
-            const genderRankPos = parseFloat(race.rankGenderPos);
-            const genderRankTotal = parseFloat(race.rankGenderTotal);
+            const hasNewRankingSchema = Number(race.rankingFieldsVersion) >= 2 ||
+                (race.rankCategoryPos != null && race.rankCategoryPos !== '') ||
+                (race.rankCategoryTotal != null && race.rankCategoryTotal !== '');
+            const categoryRankPos = parseFloat(hasNewRankingSchema ? race.rankCategoryPos : race.rankGenderPos);
+            const categoryRankTotal = parseFloat(hasNewRankingSchema ? race.rankCategoryTotal : race.rankGenderTotal);
+            const genderRankPos = hasNewRankingSchema ? parseFloat(race.rankGenderPos) : NaN;
+            const genderRankTotal = hasNewRankingSchema ? parseFloat(race.rankGenderTotal) : NaN;
             const hasGeneralRank = Number.isFinite(generalRankPos) &&
                 Number.isFinite(generalRankTotal) &&
                 generalRankPos > 0 &&
                 generalRankTotal >= generalRankPos;
-            const rankPos = hasGeneralRank ? generalRankPos : genderRankPos;
-            const rankTotal = hasGeneralRank ? generalRankTotal : genderRankTotal;
+            const hasCategoryRank = Number.isFinite(categoryRankPos) &&
+                Number.isFinite(categoryRankTotal) &&
+                categoryRankPos > 0 &&
+                categoryRankTotal >= categoryRankPos;
+            const hasGenderRank = Number.isFinite(genderRankPos) &&
+                Number.isFinite(genderRankTotal) &&
+                genderRankPos > 0 &&
+                genderRankTotal >= genderRankPos;
+            const rankPos = hasGeneralRank ? generalRankPos : (hasCategoryRank ? categoryRankPos : (hasGenderRank ? genderRankPos : NaN));
+            const rankTotal = hasGeneralRank ? generalRankTotal : (hasCategoryRank ? categoryRankTotal : (hasGenderRank ? genderRankTotal : NaN));
 
             if (Number.isFinite(rankPos) &&
                 Number.isFinite(rankTotal) &&
@@ -2311,105 +2328,72 @@
         // Classement
         const rankingContainer = document.getElementById('detailsRankingContainer');
         const rankingElement = document.getElementById('detailsRanking');
+        const categoryRankingContainer = document.getElementById('detailsCategoryRankingContainer');
+        const categoryRankingElement = document.getElementById('detailsCategoryRanking');
         const genderRankingContainer = document.getElementById('detailsGenderRankingContainer');
         const genderRankingElement = document.getElementById('detailsGenderRanking');
-        const rankingSeparator = document.getElementById('detailsRankingSeparator');
         const isRaceUpcoming = raceDateOnlyForTime > todayForTime;
+        const hasRankingValue = value => value !== undefined && value !== null && value !== '';
+        const hasNewRankingSchema = Number(race.rankingFieldsVersion) >= 2 ||
+            hasRankingValue(race.rankCategoryPos) || hasRankingValue(race.rankCategoryTotal);
+        const categoryRankPos = hasNewRankingSchema ? race.rankCategoryPos : race.rankGenderPos;
+        const categoryRankTotal = hasNewRankingSchema ? race.rankCategoryTotal : race.rankGenderTotal;
+        const genderRankPos = hasNewRankingSchema ? race.rankGenderPos : null;
+        const genderRankTotal = hasNewRankingSchema ? race.rankGenderTotal : null;
+        const hasGeneralRank = hasRankingValue(race.rankPos);
+        const hasCategoryRank = hasRankingValue(categoryRankPos);
+        const hasGenderRank = hasRankingValue(genderRankPos);
+        const rankCount = [hasGeneralRank, hasCategoryRank, hasGenderRank].filter(Boolean).length;
 
         if (rankingContainer && rankingElement) {
-            if (isRaceUpcoming) {
+            if (isRaceUpcoming || rankCount === 0) {
                 rankingContainer.classList.remove('flex');
                 rankingContainer.classList.add('hidden');
-            } else if (race.rankPos || race.rankGenderPos) {
+            } else {
                 rankingContainer.classList.remove('hidden');
                 rankingContainer.classList.add('flex');
 
-                const hasGeneral = race.rankPos != null && race.rankPos !== '';
-                const hasGender = race.rankGenderPos != null && race.rankGenderPos !== '';
-
                 const topLabel = document.getElementById('detailsRankingTopLabel');
+                if (topLabel) {
+                    topLabel.classList.toggle('hidden', rankCount < 2);
+                    topLabel.classList.toggle('flex', rankCount >= 2);
+                }
+
                 const generalWrapper = document.getElementById('detailsGeneralRankingWrapper') || rankingElement.parentElement;
-                const generalTextLabel = document.getElementById('detailsGeneralLabelText') || generalWrapper.querySelector('p span.font-medium');
-                const generalIcon = document.getElementById('detailsGeneralIcon') || generalWrapper.querySelector('i.fa-medal');
-                const genderTextLabel = document.getElementById('detailsGenderLabelText') || document.querySelector('#detailsGenderRankingContainer p span.font-medium');
-                const genderIcon = document.getElementById('detailsGenderIcon') || document.querySelector('#detailsGenderRankingContainer i.fa-venus-mars');
-
-                if (hasGeneral && hasGender && topLabel) {
-                    topLabel.classList.remove('hidden');
-                    topLabel.classList.add('flex');
-                } else if (topLabel) {
-                    topLabel.classList.add('hidden');
-                    topLabel.classList.remove('flex');
+                generalWrapper.classList.toggle('hidden', !hasGeneralRank);
+                generalWrapper.classList.toggle('flex', hasGeneralRank);
+                if (hasGeneralRank) {
+                    rankingElement.textContent = hasRankingValue(race.rankTotal)
+                        ? `${race.rankPos} / ${race.rankTotal}`
+                        : `${race.rankPos}e`;
                 }
 
-                if (hasGeneral) {
-                    generalWrapper.classList.remove('hidden');
-                    generalWrapper.classList.add('flex');
-                    if (race.rankTotal) rankingElement.textContent = `${race.rankPos} / ${race.rankTotal}`;
-                    else rankingElement.textContent = `${race.rankPos}e`;
-
-                    if (!hasGender) {
-                        if (generalTextLabel) {
-                            generalTextLabel.classList.remove('hidden');
-                            generalTextLabel.textContent = "Classement général :";
+                if (categoryRankingContainer && categoryRankingElement) {
+                    categoryRankingContainer.classList.toggle('hidden', !hasCategoryRank);
+                    categoryRankingContainer.classList.toggle('flex', hasCategoryRank);
+                    if (hasCategoryRank) {
+                        const categoryLabel = document.getElementById('detailsCategoryLabelText');
+                        const categoryName = race.rankCategoryName || '';
+                        const categoryCode = race.rankCategoryCode || '';
+                        if (categoryLabel) {
+                            const namedCategory = [categoryName, categoryCode].filter(Boolean).join(' ');
+                            categoryLabel.textContent = namedCategory ? `Catégorie (${namedCategory}) :` : 'Catégorie :';
                         }
-                        if (generalIcon) generalIcon.classList.remove('hidden');
-                    } else {
-                        if (generalTextLabel) {
-                            generalTextLabel.classList.remove('hidden');
-                            generalTextLabel.textContent = "Général :";
-                        }
-                        if (generalIcon) generalIcon.classList.add('hidden');
-                    }
-                } else {
-                    generalWrapper.classList.add('hidden');
-                    generalWrapper.classList.remove('flex');
-                }
-
-                if (rankingSeparator) {
-                    if (hasGeneral && hasGender) {
-                        rankingSeparator.classList.remove('hidden', 'sm:hidden');
-                        rankingSeparator.classList.add('hidden', 'sm:block');
-                    } else {
-                        rankingSeparator.classList.remove('sm:block');
-                        rankingSeparator.classList.add('hidden');
+                        categoryRankingElement.textContent = hasRankingValue(categoryRankTotal)
+                            ? `${categoryRankPos} / ${categoryRankTotal}`
+                            : `${categoryRankPos}e`;
                     }
                 }
 
                 if (genderRankingContainer && genderRankingElement) {
-                    if (hasGender) {
-                        genderRankingContainer.classList.remove('hidden');
-                        genderRankingContainer.classList.add('flex');
-                        if (race.rankGenderTotal) genderRankingElement.textContent = `${race.rankGenderPos} / ${race.rankGenderTotal}`;
-                        else genderRankingElement.textContent = `${race.rankGenderPos}e`;
-
-                        if (!hasGeneral) {
-                            if (genderTextLabel) {
-                                genderTextLabel.classList.remove('hidden');
-                                genderTextLabel.textContent = "Classement par Genre / Catégorie :";
-                            }
-                            if (genderIcon) {
-                                genderIcon.classList.remove('fa-venus-mars', 'hidden');
-                                genderIcon.classList.add('fa-medal');
-                            }
-                        } else {
-                            if (genderTextLabel) {
-                                genderTextLabel.classList.remove('hidden');
-                                genderTextLabel.textContent = "Genre/Cat. :";
-                            }
-                            if (genderIcon) {
-                                genderIcon.classList.remove('fa-medal', 'hidden');
-                                genderIcon.classList.add('fa-venus-mars', 'hidden');
-                            }
-                        }
-                    } else {
-                        genderRankingContainer.classList.add('hidden');
-                        genderRankingContainer.classList.remove('flex');
+                    genderRankingContainer.classList.toggle('hidden', !hasGenderRank);
+                    genderRankingContainer.classList.toggle('flex', hasGenderRank);
+                    if (hasGenderRank) {
+                        genderRankingElement.textContent = hasRankingValue(genderRankTotal)
+                            ? `${genderRankPos} / ${genderRankTotal}`
+                            : `${genderRankPos}e`;
                     }
                 }
-            } else {
-                rankingContainer.classList.remove('flex');
-                rankingContainer.classList.add('hidden');
             }
         }
 
