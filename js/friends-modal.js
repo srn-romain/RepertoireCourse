@@ -6,7 +6,7 @@
         ['wishlist', 'Wishlist'],
         ['stats', 'Statistiques'],
         ['badges', 'Badges'],
-        ['details', 'Détails des courses']
+        ['details', 'Détails des courses (sauf notes)']
     ];
     const DEFAULT_PERMISSIONS = { dashboard: true, wishlist: false, stats: false, badges: false, details: false };
     const modalHtml = `
@@ -317,6 +317,23 @@
         setMessage('Autorisation mise à jour.', false);
     }
 
+    function enforcePermissionDependencies(input) {
+        const card = input.closest('[data-follower-card], [data-request-card]');
+        if (!card) return;
+
+        const dashboardInput = card.querySelector('.friend-permission[data-permission="dashboard"]');
+        if (!dashboardInput) return;
+
+        const otherInputs = Array.from(card.querySelectorAll('.friend-permission:not([data-permission="dashboard"])'));
+        if (input.dataset.permission === 'dashboard' && !dashboardInput.checked) {
+            otherInputs.forEach(permissionInput => {
+                permissionInput.checked = false;
+            });
+        } else if (input.dataset.permission !== 'dashboard' && input.checked) {
+            dashboardInput.checked = true;
+        }
+    }
+
     function bindModal() {
         if (!document.getElementById('friendsModal')) document.body.insertAdjacentHTML('beforeend', modalHtml);
         const modal = document.getElementById('friendsModal');
@@ -377,13 +394,25 @@
             }
         });
         modal.addEventListener('change', async event => {
-            const input = event.target.closest('.friend-permission:not([data-pending="true"])');
+            const input = event.target.closest('.friend-permission');
             if (!input) return;
+            const card = input.closest('[data-follower-card], [data-request-card]');
+            const previousStates = card
+                ? Array.from(card.querySelectorAll('.friend-permission')).map(permissionInput => ({
+                    input: permissionInput,
+                    checked: permissionInput.checked
+                }))
+                : [];
+            enforcePermissionDependencies(input);
+            if (input.dataset.pending === 'true') return;
+
             try {
                 await updatePermission(input);
             } catch (error) {
                 console.error('Erreur de mise à jour des accès ami :', error);
-                input.checked = !input.checked;
+                previousStates.forEach(({ input: permissionInput, checked }) => {
+                    permissionInput.checked = checked;
+                });
                 setMessage('Impossible d’enregistrer cette autorisation.', true);
             }
         });

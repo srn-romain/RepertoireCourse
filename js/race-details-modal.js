@@ -2275,8 +2275,13 @@
         const notesElement = document.getElementById('detailsNotes');
         const notesLabel = document.getElementById('detailsNotesLabel');
         const notesSection = document.getElementById('detailsNotesContainer') || (notesElement ? notesElement.parentElement : null);
+        const friendCanViewDetailsOnly = window.isFriendView && window.friendViewPermissions?.details === true;
 
-        if (notesElement && race.notes && race.notes.replace(/<[^>]*>/g, '').trim() !== '') {
+        if (notesSection) {
+            notesSection.classList.toggle('hidden', friendCanViewDetailsOnly || !!(effectivePrivacy && effectivePrivacy.hideNotes));
+        }
+
+        if (notesElement && race.notes && race.notes.replace(/<[^>]*>/g, '').trim() !== '' && !friendCanViewDetailsOnly && !(effectivePrivacy && effectivePrivacy.hideNotes)) {
             if (notesSection) notesSection.classList.remove('hidden');
             if (notesLabel) notesLabel.textContent = 'Note';
 

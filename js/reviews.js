@@ -15,11 +15,11 @@ const reviewFormHTML = `
     <div class="flex items-center justify-between mb-1">
         <h3 class="text-sm font-semibold text-gray-700 flex items-center gap-2">
             <i class="fas fa-star text-yellow-400"></i> Laisser un avis
-            <div class="group relative inline-block">
-                <i class="fas fa-info-circle text-gray-300 hover:text-blue-400 cursor-help transition-colors text-xs"></i>
-                <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block w-48 bg-gray-800 text-white text-[10px] p-2 rounded-lg shadow-xl z-50 text-center leading-snug">
-                    Votre avis sera affiché dans le carrousel de la page d'accueil pour aider les autres utilisateurs
-                    <div class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-800"></div>
+            <div class="group relative inline-flex items-center justify-center">
+                <i class="fas fa-info-circle text-gray-400 hover:text-emerald-600 cursor-help transition-colors text-[11px]"></i>
+                <div class="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden w-60 rounded-xl border border-emerald-100 bg-white/95 p-2.5 text-center text-[10px] leading-snug text-slate-700 shadow-xl shadow-emerald-900/10 backdrop-blur-sm group-hover:block z-50">
+                    Votre avis sera affiché dans le carrousel de la page d'accueil pour aider les autres utilisateurs.
+                    <div class="absolute top-full left-1/2 -translate-x-1/2 border-[6px] border-transparent border-t-white drop-shadow-[0_-1px_0_rgba(16,185,129,0.08)]"></div>
                 </div>
             </div>
         </h3>
