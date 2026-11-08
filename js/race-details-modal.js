@@ -116,7 +116,7 @@
                             id="detailsRankingContainer">
                             <p id="detailsRankingTopLabel"
                                 class="text-[11px] text-yellow-600 font-semibold uppercase tracking-wider hidden items-center justify-center gap-1.5 w-full">
-                                <i class="fas fa-medal opacity-75"></i> Classements
+                                <i class="fas fa-list-ol opacity-75"></i> Classements
                             </p>
                             <div class="flex flex-col sm:flex-row items-center justify-center gap-2 w-full flex-wrap">
                                 <div class="flex items-center gap-2" id="detailsGeneralRankingWrapper">
