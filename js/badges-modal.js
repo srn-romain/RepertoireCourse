@@ -1778,7 +1778,7 @@
         const isTutorialCompleted = localStorage.getItem('tutorialCompleted') === 'true' || window.tutorialCompleted === true;
         
         // Profil soigné : doit obligatoirement avoir un pseudo valide ET une vraie photo de profil importée (pas un avatar par défaut)
-        const userPseudoVal = window.activeCarnetPseudo || window.currentUserPseudo || localStorage.getItem('userPseudo') || (window.currentUser && (window.currentUser.displayName || window.currentUser.pseudo)) || '';
+        const userPseudoVal = window.currentUserPseudo || (window.currentUser && (window.currentUser.displayName || window.currentUser.pseudo)) || localStorage.getItem('userPseudo') || '';
         const hasValidPseudo = typeof userPseudoVal === 'string' && userPseudoVal.trim().length > 0 && !['utilisateur', 'user', 'invité', 'invite'].includes(userPseudoVal.trim().toLowerCase());
         const userPhotoVal = window.currentUserPhoto || (window.currentUser && window.currentUser.photoURL) || localStorage.getItem('userCustomPhoto') || '';
         const hasCustomPhoto = typeof userPhotoVal === 'string' && userPhotoVal.trim().length > 0 && !userPhotoVal.includes('ui-avatars.com') && !userPhotoVal.includes('default-avatar');
@@ -2582,6 +2582,8 @@
     let activeLevelTab = 'all';
     let activeBadgeStatusFilter = 'all'; // 'all', 'unlocked', 'locked'
     let currentBadgeSearchQuery = '';
+    let isLeaderboardAdmin = false;
+    let isAdminLeaderboardExpanded = false;
     const userLevelExpandedState = {};
     let userLeaderboardExpandedState = localStorage.getItem('leaderboardExpandedState') !== 'false';
     let userCocardesExpandedState = localStorage.getItem('cocardesExpandedState') !== 'false';
@@ -2647,13 +2649,13 @@
 
     function renderLeaderboardRowsHTML(currentUserXP, currentPseudo, currentUid) {
         const allUsers = buildLeaderboardEntries(currentUserXP, currentPseudo, currentUid);
-        const top5Users = allUsers.slice(0, 5);
+        const displayedUsers = isLeaderboardAdmin && isAdminLeaderboardExpanded ? allUsers : allUsers.slice(0, 5);
         const currentUserIndex = allUsers.findIndex(u => u.isCurrent || u.uid === currentUid);
         const currentUserRank = currentUserIndex >= 0 ? (currentUserIndex + 1) : 1;
         const isUserInTop5 = currentUserIndex >= 0 && currentUserIndex < 5;
 
         let rowsHtml = '<div class="grid grid-cols-1 gap-2">';
-        top5Users.forEach((u, idx) => {
+        displayedUsers.forEach((u, idx) => {
             const rank = idx + 1;
             const lvl = getLevelFromTotalXP(u.xp);
             let medalBadge = `<span class="w-6 text-center font-bold text-gray-500 text-xs">#${rank}</span>`;
@@ -2692,8 +2694,17 @@
             `;
         });
 
+        if (isLeaderboardAdmin && allUsers.length > 5) {
+            const remainingCount = allUsers.length - 5;
+            rowsHtml += `
+            <button type="button" onclick="toggleAdminLeaderboardExpansion()" class="w-full py-2 text-xs font-semibold text-amber-800 hover:text-amber-900 hover:bg-amber-50 rounded-lg transition">
+                ${isAdminLeaderboardExpanded ? 'Réduire le classement' : `Voir les ${remainingCount} autres utilisateurs`}
+            </button>
+            `;
+        }
+
         // Si l'utilisateur connecté n'est pas dans le top 5, afficher sa position, l'utilisateur au-dessus et l'écart d'XP
-        if (!isUserInTop5 && currentUserIndex >= 0) {
+        if (!isLeaderboardAdmin && !isUserInTop5 && currentUserIndex >= 0) {
             const userAbove = allUsers[currentUserIndex - 1];
             const myLvl = getLevelFromTotalXP(currentUserXP);
 
@@ -2820,7 +2831,7 @@
         }
         rowsHtml += '</div>';
 
-        return { rowsHtml, currentUserRank, isUserInTop5 };
+        return { rowsHtml, currentUserRank, isUserInTop5, userCount: allUsers.length };
     }
 
     // Synchronisation en arrière-plan avec Firestore (données réelles)
@@ -2828,13 +2839,14 @@
         if (window.isFriendView || window.isInviteView) return;
         if (typeof firebase === 'undefined' || !firebase.firestore || typeof db === 'undefined') return;
         try {
-            const effectivePseudo = window.activeCarnetPseudo || window.currentUserPseudo || currentPseudo || localStorage.getItem('userPseudo');
+            const effectivePseudo = window.currentUserPseudo || currentPseudo || localStorage.getItem('userPseudo');
             if (currentUid && currentUserXP >= 0) {
                 await db.collection('users').doc(currentUid).set({ gamificationXP: currentUserXP }, { merge: true }).catch(() => {});
             }
             const snap = await db.collection('users').get();
             const users = [];
             snap.forEach(doc => {
+                if (doc.id === 'local_user') return;
                 const d = doc.data();
                 const uid = doc.id;
                 const isCurrent = (uid === currentUid);
@@ -2861,6 +2873,10 @@
             if (rowsContainer) {
                 const computed = renderLeaderboardRowsHTML(currentUserXP, currentPseudo, currentUid);
                 rowsContainer.innerHTML = computed.rowsHtml;
+                const countBadge = document.getElementById('leaderboard-count-badge');
+                if (countBadge && isLeaderboardAdmin) {
+                    countBadge.textContent = `${computed.userCount} utilisateurs`;
+                }
                 if (rankBadge) {
                     rankBadge.innerHTML = `Votre rang : <strong class="font-extrabold">#${computed.currentUserRank}</strong> (${currentUserXP.toLocaleString('fr-FR')} XP)`;
                     rankBadge.className = `text-xs font-semibold px-2.5 py-1 rounded-full ${computed.isUserInTop5 ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-gray-100 text-gray-700 border border-gray-200'}`;
@@ -2931,8 +2947,23 @@
 
     window.toggleLeaderboardPseudo = toggleLeaderboardPseudo;
 
-    function displayRaceBadgesModal() {
+    function toggleAdminLeaderboardExpansion() {
+        if (!isLeaderboardAdmin) return;
+        isAdminLeaderboardExpanded = !isAdminLeaderboardExpanded;
+        const rowsWrapper = document.getElementById('leaderboard-rows-wrapper');
+        if (!rowsWrapper || !window._lastBadgesData) return;
+
+        const currentPseudo = window._lastCurrentPseudo || window.currentUserPseudo || localStorage.getItem('userPseudo') || 'Moi';
+        const currentUid = window._lastCurrentUid || ((typeof firebase !== 'undefined' && firebase.auth && firebase.auth().currentUser) ? firebase.auth().currentUser.uid : null);
+        rowsWrapper.innerHTML = renderLeaderboardRowsHTML(window._lastBadgesData.totalPoints, currentPseudo, currentUid).rowsHtml;
+    }
+
+    window.toggleAdminLeaderboardExpansion = toggleAdminLeaderboardExpansion;
+
+    async function displayRaceBadgesModal() {
         if (window.isSelectionMode) return;
+        isLeaderboardAdmin = typeof window.isAdminUser === 'function' && await window.isAdminUser();
+        isAdminLeaderboardExpanded = false;
         ensureBadgesModalInDom();
         const modal = document.getElementById('badgesModal');
         const content = document.getElementById('badgesContent');
@@ -2961,8 +2992,8 @@
 
         // Informations utilisateur connecté
         const currentUser = (typeof firebase !== 'undefined' && firebase.auth) ? firebase.auth().currentUser : null;
-        const currentUid = currentUser ? currentUser.uid : 'local_user';
-        const currentPseudo = window.activeCarnetPseudo || window.currentUserPseudo || localStorage.getItem('userPseudo') || (currentUser ? currentUser.displayName : null) || 'Coureur';
+        const currentUid = currentUser ? currentUser.uid : null;
+        const currentPseudo = window.currentUserPseudo || (currentUser ? currentUser.displayName : null) || localStorage.getItem('userPseudo') || 'Coureur';
 
         // Lancer la synchro Firestore en tâche de fond pour mettre à jour et récupérer les vrais utilisateurs
         syncCommunityLeaderboard(data.totalPoints, currentPseudo, currentUid);
@@ -3073,7 +3104,7 @@
                     <div>
                         <h4 class="font-bold text-gray-800 text-sm sm:text-base flex items-center gap-2">
                             <span>Classement des Coureurs</span>
-                            <span class="text-xs px-2 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200 font-medium">Top 5</span>
+                            <span id="leaderboard-count-badge" class="text-xs px-2 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200 font-medium">${isLeaderboardAdmin ? `${initialLeaderboard.userCount} utilisateurs` : 'Top 5'}</span>
                         </h4>
                     </div>
                 </div>
@@ -4411,7 +4442,7 @@
         try {
             const currentUser = (typeof firebase !== 'undefined' && firebase.auth) ? firebase.auth().currentUser : null;
             if (currentUser && currentUser.uid) {
-                const currentPseudo = window.activeCarnetPseudo || window.currentUserPseudo || localStorage.getItem('userPseudo') || (currentUser ? currentUser.displayName : null) || 'Coureur';
+                const currentPseudo = window.currentUserPseudo || currentUser.displayName || localStorage.getItem('userPseudo') || 'Coureur';
                 syncCommunityLeaderboard(data.totalPoints, currentPseudo, currentUser.uid);
             }
         } catch (e) {

@@ -19,11 +19,11 @@ window.isInviteUser = async function () {
         const userDoc = await db.collection('users').doc(user.uid).get();
         if (userDoc.exists) {
             const role = userDoc.data().role;
-            console.log(`[isInvite] Role de l'utilisateur ${user.email}: ${role}`);
+            console.log(`Role de l'utilisateur ${user.email}: ${role}`);
             return role === 'invite';
         }
     } catch (error) {
-        console.error('[isInvite] Erreur lors de la vérification du rôle:', error);
+        console.error('Erreur lors de la vérification du rôle:', error);
     }
 
     return false;

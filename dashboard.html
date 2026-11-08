@@ -2948,6 +2948,8 @@
                 try {
                     const userDocRef = usersCollection.doc(user.uid);
                     const docSnapshot = await userDocRef.get();
+                    window.currentUserPseudo = (docSnapshot.exists && docSnapshot.data().pseudo) ||
+                        user.displayName || (user.email ? user.email.split('@')[0] : 'Utilisateur');
 
                     // Si le document n'existe pas, ou s'il manque l'email
                     if (!docSnapshot.exists || (user.email && !docSnapshot.data().email)) {
@@ -3162,7 +3164,7 @@
 
                     if (authStatusText) {
                         // Récupération immédiate des données en cache pour affichage instantané
-                        let userPseudo = localStorage.getItem('userPseudo') || user.displayName || (user.email ? user.email.split('@')[0] : "Utilisateur");
+                        let userPseudo = window.currentUserPseudo || user.displayName || (user.email ? user.email.split('@')[0] : "Utilisateur");
                         window.currentUserPseudo = userPseudo;
                         if (!window.isFriendView && !window.isInviteView) window.activeCarnetPseudo = userPseudo;
                         let userPhotoURL = localStorage.getItem('userCustomPhoto') || user.photoURL || null;
