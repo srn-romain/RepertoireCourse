@@ -59,6 +59,24 @@ const manualModalHTML = `
                     </div>
                 </section>
 
+                <!-- Amis -->
+                <section class="mb-8">
+                    <h4 class="text-xl font-bold text-green-700 mb-3 flex items-center gap-2">
+                        <i class="fas fa-user-group text-green-600"></i> Amis
+                    </h4>
+                    <div class="bg-white border border-green-100 rounded-lg p-4 shadow-sm">
+                        <p class="text-sm text-gray-700 mb-3">
+                            Depuis le bouton <strong>Amis</strong> du tableau de bord, recherchez un coureur par son pseudo et envoyez-lui une demande pour suivre son carnet.
+                        </p>
+                        <ul class="text-sm text-gray-600 space-y-1.5 ml-4">
+                            <li>• Le coureur choisit les accès qu’il vous accorde : son carnet, sa wishlist, ses statistiques, ses badges et les détails de ses courses.</li>
+                            <li>• Dans l’onglet <strong>Notifications</strong>, acceptez ou refusez les demandes reçues et gérez vos abonnés.</li>
+                            <li>• Une fois votre demande acceptée et l’accès au carnet autorisé, sélectionnez <strong>Voir le carnet</strong> dans vos abonnements.</li>
+                            <li>• Vous pouvez arrêter de suivre un coureur à tout moment ; vous pouvez aussi révoquer l’accès d’un abonné.</li>
+                        </ul>
+                    </div>
+                </section>
+
                 <!-- Interface principale -->
                 <section class="mb-8">
                     <h4 class="text-xl font-bold text-green-700 mb-3 flex items-center gap-2">
@@ -102,7 +120,7 @@ const manualModalHTML = `
                                     <div>• Numéro de dossard</div>
                                     <div>• Dénivelé D+ et D- (m)</div>
                                     <div>• Temps de course</div>
-                                    <div>• Classements (Général, Catégorie FFA nommée et Genre)</div>
+                                    <div>• Classements général, par genre et par catégorie FFA</div>
                                     <div>• Lieu / Ville</div>
                                     <div>• Photo (JPG, PNG)</div>
                                     <div>• Image automatique (Web/Nom)</div>
@@ -115,6 +133,9 @@ const manualModalHTML = `
                                     <div>• Lien résultats en ligne</div>
                                     <div>• Lien Google Drive en ligne</div>
                                 </div>
+                                <p class="text-xs text-gray-600 mt-3">
+                                    <strong>Classements :</strong> renseignez votre position et le nombre de participants pour le général, le genre et la catégorie. Pour le classement par catégorie, sélectionnez votre catégorie d’âge FFA dans la liste.
+                                </p>
                                 <p class="text-xs text-gray-600 mt-3">Pour un accompagnant coureur, le bouton « + » permet d’ajouter son temps et son classement. Indiquez s’il a couru la même course ; sinon, précisez sa distance et son dénivelé. Son palmarès est consultable dans le détail de la course.</p>
                             </div>
                         </div>
