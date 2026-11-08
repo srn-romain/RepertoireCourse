@@ -6739,7 +6739,17 @@
             if (relayHelpEdit) relayHelpEdit.classList.remove('hidden'); // Affiché par défaut
 
             // Load companions
-            currentCompanions = race.companions || [];
+            currentCompanions = Array.isArray(race.companions)
+                ? race.companions.map(companion => {
+                    if (typeof companion === 'string') {
+                        return { name: companion, type: 'runner' };
+                    }
+                    if (companion && typeof companion === 'object' && !companion.type) {
+                        return { ...companion, type: 'runner' };
+                    }
+                    return companion;
+                })
+                : [];
             renderCompanionsList();
             if (typeof updateRelayRunnersDropdowns === 'function') updateRelayRunnersDropdowns();
 
