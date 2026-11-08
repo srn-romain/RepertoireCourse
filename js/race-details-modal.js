@@ -8,6 +8,7 @@
     let currentRaceIdInDetails = null;
     let currentKeyNavigationHandler = null;
     let cachedRacesListForNav = null;
+    let currentYearComparisons = [];
     const userPseudoCache = {};
 
     // Template HTML de la modale de détails
@@ -138,6 +139,7 @@
 
                     </div>
 
+                    <div id="detailsYearComparisonContainer" class="hidden mb-4"></div>
                     <div id="aiPredictionSection" class="mb-2 w-full hidden"></div>
                     <div id="averageSpeedInfo" class="mb-2 text-green-700 font-semibold"></div>
                     <div id="detailsLinksContainer" class="mt-4 mb-4 grid grid-cols-1 gap-3 w-full hidden"></div>
@@ -255,6 +257,36 @@
             document.body.appendChild(container.firstElementChild);
             bindModalStaticEvents();
         }
+        const comparisonSection = document.getElementById('detailsYearComparisonContainer');
+        if (comparisonSection) {
+            comparisonSection.onclick = event => {
+                const toggleButton = event.target.closest('#detailsYearComparisonButton');
+                if (toggleButton) {
+                    const comparisonContent = document.getElementById('raceYearComparisonContent');
+                    if (comparisonContent) {
+                        const isExpanded = toggleButton.getAttribute('aria-expanded') !== 'true';
+                        comparisonContent.querySelectorAll('[data-comparison-extra]').forEach(row => {
+                            row.classList.toggle('hidden', !isExpanded);
+                        });
+                        comparisonContent.querySelectorAll('[data-comparison-secondary]').forEach(group => {
+                            group.style.display = isExpanded ? 'flex' : 'none';
+                        });
+                        toggleButton.setAttribute('aria-expanded', String(isExpanded));
+                        const label = toggleButton.querySelector('span');
+                        if (label) label.textContent = isExpanded ? 'Voir moins de comparaisons' : 'Voir plus de comparaisons';
+                        toggleButton.setAttribute('aria-label', isExpanded ? 'Masquer les comparaisons' : 'Afficher le détail des comparaisons');
+                        const icon = toggleButton.querySelector('i');
+                        if (icon) icon.className = `fas fa-chevron-${isExpanded ? 'up' : 'down'} text-[10px]`;
+                    }
+                    return;
+                }
+                const switchButton = event.target.closest('[data-comparison-index]');
+                if (!switchButton) return;
+                const comparison = currentYearComparisons[Number(switchButton.dataset.comparisonIndex)];
+                if (!comparison) return;
+                showRaceDetails(comparison.race, cachedRacesListForNav);
+            };
+        }
     }
 
     // Helper: Échapper le HTML pour éviter les failles XSS
@@ -319,6 +351,236 @@
         const mins = Math.floor(paceSecs / 60);
         const secs = Math.round(paceSecs % 60);
         return `${mins}:${String(secs).padStart(2, '0')} min/km`;
+    }
+
+    function normalizeRaceComparisonName(name) {
+        return String(name || '')
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .toLowerCase()
+            .replace(/\b(?:19|20)\d{2}\b/g, ' ')
+            .replace(/\b\d+(?:[.,]\d+)?\s*(?:km|kms|k)\b/g, ' ')
+            .replace(/[^a-z0-9]+/g, ' ')
+            .trim();
+    }
+
+    function getAnnualRaceComparisons(currentRace, allRaces) {
+        const currentDate = new Date(currentRace.date);
+        const normalizedName = normalizeRaceComparisonName(currentRace.name);
+        if (!normalizedName || Number.isNaN(currentDate.getTime()) || !Array.isArray(allRaces)) return [];
+
+        const currentYear = currentDate.getUTCFullYear();
+        const currentDateUtc = Date.UTC(currentYear, currentDate.getUTCMonth(), currentDate.getUTCDate());
+        const sourceRaces = allRaces.includes(currentRace) ? allRaces : [currentRace, ...allRaces];
+        const seenIds = new Set();
+
+        const comparisons = sourceRaces.filter(previousRace => {
+            if (!previousRace || previousRace === currentRace) return false;
+            if (previousRace.id != null && currentRace.id != null && String(previousRace.id) === String(currentRace.id)) return false;
+            if (normalizeRaceComparisonName(previousRace.name) !== normalizedName) return false;
+
+            const previousDate = new Date(previousRace.date);
+            if (Number.isNaN(previousDate.getTime()) || previousDate.getUTCFullYear() === currentYear) return false;
+            const previousMonth = previousDate.getUTCMonth();
+            const previousDay = previousDate.getUTCDate();
+            const nearestAnnualGap = [currentYear - 1, currentYear, currentYear + 1]
+                .map(year => Math.abs(currentDateUtc - Date.UTC(year, previousMonth, previousDay)) / 86400000)
+                .reduce((nearest, gap) => Math.min(nearest, gap), Infinity);
+            if (nearestAnnualGap > 45) return false;
+
+            if (previousRace.id != null) {
+                const id = String(previousRace.id);
+                if (seenIds.has(id)) return false;
+                seenIds.add(id);
+            }
+            return true;
+        }).map(previousRace => {
+            const previousDate = new Date(previousRace.date);
+            const currentDistance = parseFloat(String(currentRace.distance || '').replace(',', '.'));
+            const previousDistance = parseFloat(String(previousRace.distance || '').replace(',', '.'));
+            const currentSeconds = timeToSeconds(currentRace.time);
+            const previousSeconds = timeToSeconds(previousRace.time);
+            const currentRank = Number.parseInt(currentRace.rankPos, 10);
+            const previousRank = Number.parseInt(previousRace.rankPos, 10);
+            const currentRankTotal = Number.parseInt(currentRace.rankTotal, 10);
+            const previousRankTotal = Number.parseInt(previousRace.rankTotal, 10);
+            const hasCurrentDistance = Number.isFinite(currentDistance) && currentDistance > 0;
+            const hasPreviousDistance = Number.isFinite(previousDistance) && previousDistance > 0;
+
+            return {
+                race: previousRace,
+                date: previousDate,
+                currentDate,
+                currentDistance: hasCurrentDistance ? currentDistance : null,
+                previousDistance: hasPreviousDistance ? previousDistance : null,
+                currentSeconds: currentSeconds > 0 ? currentSeconds : null,
+                previousSeconds: previousSeconds > 0 ? previousSeconds : null,
+                currentRank: Number.isFinite(currentRank) && currentRank > 0 ? currentRank : null,
+                previousRank: Number.isFinite(previousRank) && previousRank > 0 ? previousRank : null,
+                currentRankTotal: Number.isFinite(currentRankTotal) && currentRankTotal > 0 ? currentRankTotal : null,
+                previousRankTotal: Number.isFinite(previousRankTotal) && previousRankTotal > 0 ? previousRankTotal : null,
+                currentElevation: parseFloat(String(currentRace.elevation || '').replace(',', '.')),
+                previousElevation: parseFloat(String(previousRace.elevation || '').replace(',', '.')),
+                isLaterEdition: previousDate.getTime() > currentDate.getTime(),
+                sameDistance: hasCurrentDistance && hasPreviousDistance &&
+                    Math.abs(currentDistance - previousDistance) <= Math.max(0.1, currentDistance * 0.01)
+            };
+        });
+        const hasLaterEdition = comparisons.some(comparison => comparison.isLaterEdition);
+        return comparisons.sort((a, b) => hasLaterEdition && a.isLaterEdition !== b.isLaterEdition
+            ? Number(b.isLaterEdition) - Number(a.isLaterEdition)
+            : hasLaterEdition
+                ? a.date.getTime() - b.date.getTime()
+                : b.date.getTime() - a.date.getTime());
+    }
+
+    function formatComparisonNumber(value, digits = 1) {
+        return Number(value).toLocaleString('fr-FR', {
+            minimumFractionDigits: digits,
+            maximumFractionDigits: digits
+        });
+    }
+
+    function formatComparisonDate(date) {
+        return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+    }
+
+    function renderRaceYearComparison(currentRace, racesList) {
+        const container = document.getElementById('detailsYearComparisonContainer');
+        if (!container) return;
+
+        const allRaces = [window.allUserRaces, window.originalRaces, window.races, racesList]
+            .find(availableRaces => Array.isArray(availableRaces) && availableRaces.length > 0) || [];
+        const comparisons = getAnnualRaceComparisons(currentRace, allRaces);
+        if (comparisons.length === 0) {
+            currentYearComparisons = [];
+            container.innerHTML = '';
+            container.classList.add('hidden');
+            return;
+        }
+
+        currentYearComparisons = comparisons;
+        container.innerHTML = `
+            <div class="py-1">
+                <div class="flex items-start gap-2">
+                    <i class="fas fa-chart-line text-green-600 mt-0.5"></i>
+                    <div class="min-w-0 flex-1">
+                        <h4 class="text-sm font-semibold text-green-800">Comparaison des éditions</h4>
+                        <div id="raceYearComparisonContent" class="mt-1 flex w-full flex-col gap-3"></div>
+                        <button id="detailsYearComparisonButton" type="button" class="mt-1 w-full rounded-md px-3 py-1 text-xs font-medium text-gray-600 hover:text-green-700 transition-colors flex items-center justify-center gap-2" aria-label="Afficher le détail des comparaisons" aria-expanded="false" aria-controls="raceYearComparisonContent">
+                            <span>Voir plus de comparaisons</span>
+                            <i class="fas fa-chevron-down text-[10px]"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>`;
+        container.classList.remove('hidden');
+
+        const comparisonContent = document.getElementById('raceYearComparisonContent');
+        if (!comparisonContent) return;
+        comparisonContent.innerHTML = comparisons.map((comparison, index) => {
+            const previousRace = comparison.race;
+            const currentDate = new Date(currentRace.date);
+            const isLaterEdition = comparison.isLaterEdition;
+            const earlierDate = isLaterEdition ? currentDate : comparison.date;
+            const laterDate = isLaterEdition ? comparison.date : currentDate;
+            const earlierDistance = isLaterEdition ? comparison.currentDistance : comparison.previousDistance;
+            const laterDistance = isLaterEdition ? comparison.previousDistance : comparison.currentDistance;
+            const earlierSeconds = isLaterEdition ? comparison.currentSeconds : comparison.previousSeconds;
+            const laterSeconds = isLaterEdition ? comparison.previousSeconds : comparison.currentSeconds;
+            const earlierRank = isLaterEdition ? comparison.currentRank : comparison.previousRank;
+            const laterRank = isLaterEdition ? comparison.previousRank : comparison.currentRank;
+            const earlierRankTotal = isLaterEdition ? comparison.currentRankTotal : comparison.previousRankTotal;
+            const laterRankTotal = isLaterEdition ? comparison.previousRankTotal : comparison.currentRankTotal;
+            const earlierElevation = isLaterEdition ? comparison.currentElevation : comparison.previousElevation;
+            const laterElevation = isLaterEdition ? comparison.previousElevation : comparison.currentElevation;
+            const comparisonRow = (label, value, valueClass = 'text-gray-800', isDate = false) => `
+                <div class="flex w-full items-start justify-between gap-3 text-xs">
+                    <span class="shrink-0 ${isDate ? 'text-black' : 'text-gray-700'}">${label}</span>
+                    <span class="min-w-0 text-right font-medium ${isDate ? 'text-black' : valueClass}">${value}</span>
+                </div>`;
+            const rows = [];
+            const extraRows = [];
+            const addRow = (label, value, valueClass, isExtra, isDate = false) => {
+                (isExtra ? extraRows : rows).push(comparisonRow(label, value, valueClass, isDate));
+            };
+            const earlierSpeed = earlierSeconds && earlierDistance
+                ? earlierDistance / earlierSeconds * 3600
+                : null;
+            const laterSpeed = laterSeconds && laterDistance
+                ? laterDistance / laterSeconds * 3600
+                : null;
+            const earlierPace = earlierSpeed ? earlierSeconds / earlierDistance : null;
+            const laterPace = laterSpeed ? laterSeconds / laterDistance : null;
+
+            addRow('Dates', `${formatComparisonDate(earlierDate)} → ${formatComparisonDate(laterDate)}`, 'text-black', false, true);
+            let hasMetric = false;
+            if (earlierDistance && laterDistance) {
+                hasMetric = true;
+                const distanceChange = laterDistance - earlierDistance;
+                const distanceText = comparison.sameDistance
+                    ? 'Distances identiques'
+                    : `Évolution : ${distanceChange > 0 ? '+' : '−'}${formatComparisonNumber(Math.abs(distanceChange), 2)} km`;
+                const distanceColor = distanceChange >= 0 ? 'text-green-700' : 'text-red-600';
+                addRow('Distance', `${formatDist(earlierDistance)} km → ${formatDist(laterDistance)} km<span class="block text-[10px] ${distanceColor}">${distanceText}</span>`, distanceColor, true);
+            }
+            const hasSpeedComparison = earlierSpeed && laterSpeed;
+            if (earlierSeconds && laterSeconds) {
+                hasMetric = true;
+                const timeDifference = earlierSeconds - laterSeconds;
+                const timeUnchanged = timeDifference === 0;
+                const timeLabel = comparison.sameDistance
+                    ? (timeDifference > 0 ? `−${formatCompanionTimeGap(timeDifference)} au chrono` : timeDifference < 0 ? `+${formatCompanionTimeGap(Math.abs(timeDifference))} au chrono` : 'Chrono identique')
+                    : 'Temps brut à interpréter selon la distance';
+                const earlierTime = isLaterEdition ? currentRace.time : previousRace.time;
+                const laterTime = isLaterEdition ? previousRace.time : currentRace.time;
+                const timeColor = !comparison.sameDistance || timeUnchanged ? 'text-gray-700' : timeDifference > 0 ? 'text-green-700' : 'text-red-600';
+                const timeIsExtra = !comparison.sameDistance || timeUnchanged || hasSpeedComparison;
+                addRow('Temps', `${escapeHtml(earlierTime)} → ${escapeHtml(laterTime)}<span class="block text-[10px] ${timeColor}">${timeLabel}</span>`, timeColor, timeIsExtra);
+            }
+            if (earlierSpeed && laterSpeed && earlierPace && laterPace) {
+                hasMetric = true;
+                const speedChange = (laterSpeed / earlierSpeed - 1) * 100;
+                const speedUnchanged = Math.abs(speedChange) < 0.05;
+                const speedColor = speedUnchanged ? 'text-gray-700' : speedChange > 0 ? 'text-green-700' : 'text-red-600';
+                const paceDifference = earlierPace - laterPace;
+                const paceUnchanged = Math.abs(paceDifference) < 0.5;
+                const paceColor = paceUnchanged ? 'text-gray-700' : paceDifference > 0 ? 'text-green-700' : 'text-red-600';
+                addRow('Vitesse', `${formatComparisonNumber(earlierSpeed)} km/h → ${formatComparisonNumber(laterSpeed)} km/h<span class="block text-[10px] ${speedColor}">${speedUnchanged ? 'Vitesse identique' : `${speedChange > 0 ? '+' : ''}${formatComparisonNumber(speedChange)} %`}</span>`, speedColor, speedUnchanged);
+                addRow('Allure', `${calculatePace(earlierDistance, earlierSeconds)} → ${calculatePace(laterDistance, laterSeconds)}<span class="block text-[10px] ${paceColor}">${paceUnchanged ? 'Allure identique' : `${paceDifference >= 0 ? '+' : '−'}${formatComparisonNumber(Math.abs(paceDifference), 0)} s/km ${paceDifference > 0 ? 'plus rapide' : 'plus lente'}`}</span>`, paceColor, true);
+            }
+            if (earlierRank && laterRank) {
+                if (earlierRankTotal && laterRankTotal &&
+                    (!comparison.sameDistance || earlierRankTotal !== laterRankTotal)) {
+                    hasMetric = true;
+                    const earlierPercent = earlierRank / earlierRankTotal * 100;
+                    const laterPercent = laterRank / laterRankTotal * 100;
+                    const percentileImprovement = earlierPercent - laterPercent;
+                    const rankUnchanged = Math.abs(percentileImprovement) < 0.05;
+                    const rankColor = rankUnchanged ? 'text-gray-700' : percentileImprovement > 0 ? 'text-green-700' : 'text-red-600';
+                    addRow('Classement relatif', `Top ${formatComparisonNumber(earlierPercent)} % → top ${formatComparisonNumber(laterPercent)} %<span class="block text-[10px] ${rankColor}">${rankUnchanged ? 'Position identique' : `${percentileImprovement > 0 ? '+' : '−'}${formatComparisonNumber(Math.abs(percentileImprovement))} points au prorata des participants`}</span>`, rankColor, rankUnchanged);
+                } else if (comparison.sameDistance) {
+                    hasMetric = true;
+                    const rankImprovement = earlierRank - laterRank;
+                    const rankColor = rankImprovement === 0 ? 'text-gray-700' : rankImprovement > 0 ? 'text-green-700' : 'text-red-600';
+                    addRow('Classement', `${earlierRank}${earlierRankTotal ? ` / ${earlierRankTotal}` : ''} → ${laterRank}${laterRankTotal ? ` / ${laterRankTotal}` : ''}<span class="block text-[10px] ${rankColor}">${rankImprovement > 0 ? `${rankImprovement} place${rankImprovement > 1 ? 's' : ''} de mieux` : rankImprovement < 0 ? `${Math.abs(rankImprovement)} place${Math.abs(rankImprovement) > 1 ? 's' : ''} de moins` : 'Classement identique'}</span>`, rankColor, rankImprovement === 0);
+                }
+            }
+            if (Number.isFinite(earlierElevation) && Number.isFinite(laterElevation)) {
+                hasMetric = true;
+                const elevationChange = laterElevation - earlierElevation;
+                const elevationColor = elevationChange === 0 ? 'text-gray-700' : elevationChange > 0 ? 'text-green-700' : 'text-red-600';
+                addRow('Dénivelé', `${formatDist(earlierElevation)} m → ${formatDist(laterElevation)} m<span class="block text-[10px] ${elevationColor}">${elevationChange === 0 ? 'Dénivelé identique' : `${elevationChange > 0 ? '+' : '−'}${formatDist(Math.abs(elevationChange))} m`}</span>`, elevationColor, true);
+            }
+            if (!hasMetric) addRow('Données', 'Aucune donnée exploitable pour comparer ces éditions.', 'text-gray-800', false);
+
+            return `
+                <div data-comparison-group="${index}" ${index > 0 ? 'data-comparison-secondary style="display:none" class="flex flex-col gap-1.5"' : 'class="flex flex-col gap-1.5"'}>
+                    ${rows.join('')}
+                    ${extraRows.map(row => `<div data-comparison-extra class="hidden">${row}</div>`).join('')}
+                    <button type="button" data-comparison-extra data-comparison-index="${index}" class="hidden w-full rounded-lg bg-green-600 px-3 py-2 text-xs font-semibold text-white shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2 transition-colors">Voir l’édition ${comparison.date.getFullYear()}</button>
+                </div>`;
+        }).join('');
     }
 
     /**
@@ -1336,6 +1598,8 @@
                 }
             }
         }
+
+        renderRaceYearComparison(race, racesList);
 
         // Lieu
         const locationElement = document.getElementById('detailsLocation');
