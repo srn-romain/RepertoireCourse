@@ -312,6 +312,17 @@ const manualModalHTML = `
                     </div>
                 </section>
 
+                <!-- Nouveautés de la fiche détail -->
+                <section class="mb-8">
+                    <h4 class="text-xl font-bold text-green-700 mb-3 flex items-center gap-2">
+                        <i class="fas fa-chart-line text-green-600"></i> Fiche détail d’une course
+                    </h4>
+                    <ul class="text-sm text-gray-600 space-y-1">
+                        <li>• Comparez vos performances avec les éditions précédentes.</li>
+                        <li>• Consultez votre position en pourcentage du classement (ex. : Top 11.0%).</li>
+                    </ul>
+                </section>
+
                 <!-- Triathlon & Relais -->
                 <section class="mb-8">
                     <h4 class="text-xl font-bold text-green-700 mb-3 flex items-center gap-2">
