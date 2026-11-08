@@ -2146,6 +2146,26 @@
 
         let statsList = [];
 
+        if (!effectivePrivacy || !effectivePrivacy.hideRanking) {
+            const generalRankPos = parseFloat(race.rankPos);
+            const generalRankTotal = parseFloat(race.rankTotal);
+            const genderRankPos = parseFloat(race.rankGenderPos);
+            const genderRankTotal = parseFloat(race.rankGenderTotal);
+            const hasGeneralRank = Number.isFinite(generalRankPos) &&
+                Number.isFinite(generalRankTotal) &&
+                generalRankPos > 0 &&
+                generalRankTotal >= generalRankPos;
+            const rankPos = hasGeneralRank ? generalRankPos : genderRankPos;
+            const rankTotal = hasGeneralRank ? generalRankTotal : genderRankTotal;
+
+            if (Number.isFinite(rankPos) &&
+                Number.isFinite(rankTotal) &&
+                rankPos > 0 &&
+                rankTotal >= rankPos) {
+                statsList.push({ label: 'Position dans le classement', value: `Top ${((rankPos / rankTotal) * 100).toFixed(1)}%` });
+            }
+        }
+
         // Prix / km
         if (race.price && !isNaN(parseFloat(race.price)) && !isNaN(distance) && distance > 0) {
             const price = parseFloat(race.price);
