@@ -1415,7 +1415,7 @@
                                 }
                             }
                             if (gaps.length) {
-                                details.push(`Écart avec vous : ${gaps.join(' · ')}`);
+                                details.push(gaps.map((gap, index) => index === 0 ? gap : `<span class="inline-block ml-4">${gap}</span>`).join('<br>'));
                             }
                         }
                         if (details.length) {
