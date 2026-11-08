@@ -2895,7 +2895,12 @@
                                 hideNotes: false, hideRanking: false, hideStats: false, hidePhotos: false,
                                 hidePrice: false, hideBib: false, hideCompanions: false
                             };
-                            updateData.uiPreferences = { hideStatsBtn: false, hideBadgesBtn: false, hideWishlistBtn: false };
+                            updateData.uiPreferences = {
+                                hideStatsBtn: false,
+                                hideBadgesBtn: false,
+                                hideWishlistBtn: false,
+                                compactDashboardStats: false
+                            };
                         }
 
                         await userDocRef.set(updateData, { merge: true });
@@ -3580,7 +3585,11 @@
         }
 
         // Fonction pour calculer et afficher les statistiques du bandeau
+        window.compactDashboardStats = false;
+        let lastStatsDataForDisplay = [];
         function updateStats(racesData) {
+            lastStatsDataForDisplay = racesData || [];
+
             // Synchroniser les variables globales pour le module stats-modal.js
             if (window.updateGlobalRaces) {
                 window.updateGlobalRaces(racesData);
@@ -3624,6 +3633,7 @@
             // Mettre à jour le texte des statistiques
             const statsElement = document.getElementById('statsText');
             let statsHtml = '';
+            const compactStats = window.compactDashboardStats === true;
 
             // Affichage du contexte du filtre année
             const isYearFilter = typeof currentYearFilter !== 'undefined' && currentYearFilter !== 'all' && currentYearFilter !== null;
@@ -3636,13 +3646,13 @@
                     <span class="font-semibold group-hover:underline underline-offset-2 decoration-green-500">${totalRaces}</span> <span>course${totalRaces > 1 ? 's' : ''}</span>
                 </div>
                 <div class="stat-item md:before:content-['|'] md:before:mr-3 md:before:opacity-30 cursor-pointer hover:text-green-800 transition group" onclick="openStatDetailsModal('distance')" title="Cliquer pour voir le détail des kilomètres">
-                    <span class="font-semibold group-hover:underline underline-offset-2 decoration-green-500">${totalDistance}</span> <span>km parcourus</span>
+                    <span class="font-semibold group-hover:underline underline-offset-2 decoration-green-500">${totalDistance}${compactStats ? 'km' : ''}</span>${compactStats ? '' : ' <span>km parcourus</span>'}
                 </div>
                 <div class="stat-item md:before:content-['|'] md:before:mr-3 md:before:opacity-30 cursor-pointer hover:text-green-800 transition group" onclick="openStatDetailsModal('elevation')" title="Cliquer pour voir le détail du dénivelé">
-                    <span class="font-semibold group-hover:underline underline-offset-2 decoration-green-500">${totalElevation}</span> <span>m de dénivelé</span>
+                    <span class="font-semibold group-hover:underline underline-offset-2 decoration-green-500">${totalElevation}${compactStats ? 'm' : ''}</span>${compactStats ? '' : ' <span>m de dénivelé</span>'}
                 </div>
                 <div class="stat-item md:before:content-['|'] md:before:mr-3 md:before:opacity-30 cursor-pointer hover:text-green-800 transition group" onclick="openStatDetailsModal('time')" title="Cliquer pour voir le détail du temps de course">
-                    <span class="font-semibold group-hover:underline underline-offset-2 decoration-green-500">${formattedTime}</span> <span>de course</span>
+                    <span class="font-semibold group-hover:underline underline-offset-2 decoration-green-500">${formattedTime}</span>${compactStats ? '' : ' <span>de course</span>'}
                 </div>
             `;
 
@@ -3650,13 +3660,15 @@
             const priceFormatted = totalPrice.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
             statsHtml += `
                 <div class="stat-item stat-price md:before:content-['|'] md:before:mr-3 md:before:opacity-30 cursor-pointer hover:text-green-800 transition group" onclick="openStatDetailsModal('price')" title="Cliquer pour voir le détail des dépenses">
-                    <span class="font-semibold group-hover:underline underline-offset-2 decoration-green-500">${priceFormatted} €</span> <span>dépensés</span>
+                    <span class="font-semibold group-hover:underline underline-offset-2 decoration-green-500">${priceFormatted}${compactStats ? '€' : ' €'}</span>${compactStats ? '' : ' <span>dépensés</span>'}
                 </div>
             `;
 
             statsElement.innerHTML = statsHtml;
             statsElement.className = "stats-loaded text-green-600 text-sm md:text-base flex flex-wrap items-center justify-center min-[1650px]:justify-start gap-x-3 gap-y-1";
         }
+
+        window.addEventListener('compactDashboardStatsChanged', () => updateStats(lastStatsDataForDisplay));
 
         // --- Modale Détail du calcul des statistiques ---
         let currentDetailRaces = [];
@@ -10378,6 +10390,8 @@
             const wishlistBtn = document.getElementById('wishlistBtn');
 
             if (!user) {
+                window.compactDashboardStats = false;
+                window.dispatchEvent(new Event('compactDashboardStatsChanged'));
                 if (statsBtn) statsBtn.classList.add('hidden');
                 if (badgesBtn) badgesBtn.classList.add('hidden');
                 return;
@@ -10388,6 +10402,8 @@
                 if (doc.exists) {
                     const data = doc.data();
                     const uiPrefs = data.uiPreferences || {};
+                    window.compactDashboardStats = uiPrefs.compactDashboardStats === true;
+                    window.dispatchEvent(new Event('compactDashboardStatsChanged'));
 
                     // Stats button
                     const hideStats = (uiPrefs.hideStatsBtn === true) || (uiPrefs.showStatsBtn === false);
@@ -10409,6 +10425,9 @@
                         if (hideWishlist) wishlistBtn.classList.add('hidden');
                         else wishlistBtn.classList.remove('hidden');
                     }
+                } else {
+                    window.compactDashboardStats = false;
+                    window.dispatchEvent(new Event('compactDashboardStatsChanged'));
                 }
             } catch (error) {
                 console.error("Error applying UI prefs:", error);
@@ -11294,9 +11313,9 @@
     <script src="js/isAdmin.js"></script>
     <script src="js/isInvite.js"></script>
     <script src="js/race-details-modal.js?v=20261108_32"></script>
-    <script src="js/stats-modal.js?v=10"></script>
+    <script src="js/stats-modal.js?v=12"></script>
     <script src="js/advanced-filters.js?v=20260929_1"></script>
-    <script src="js/user-settings.js?v=20260930_7"></script>
+    <script src="js/user-settings.js?v=20261108_1"></script>
     <script src="js/reviews.js"></script>
     <script src="js/upcoming-features.js?v=20260930_1"></script>
     <script src="js/admin-modal.js?v=20261009_1"></script>

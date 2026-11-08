@@ -715,7 +715,8 @@ function initAuthLogic() {
                     uiPreferences: {
                         hideStatsBtn: false,
                         hideBadgesBtn: false,
-                        hideWishlistBtn: false
+                        hideWishlistBtn: false,
+                        compactDashboardStats: false
                     }
                 }, { merge: true });
 

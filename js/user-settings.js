@@ -296,12 +296,16 @@ const userSettingsModalHTML = `
                         <input type="checkbox" id="prefHideBadgesBtn" class="w-4 h-4 text-green-600 rounded focus:ring-green-500">
                         <span class="ml-2 text-sm text-gray-700">Masquer le bouton "Badges"</span>
                     </label>
+                    <label class="flex items-center cursor-pointer">
+                        <input type="checkbox" id="prefCompactDashboardStats" class="w-4 h-4 text-green-600 rounded focus:ring-green-500">
+                        <span class="ml-2 text-sm text-gray-700">Afficher les stat. du tableau de bord en compact</span>
+                    </label>
                     <div class="pt-2 border-t border-gray-200 mt-2">
                         <p id="uiAutoSaveStatus" class="text-xs text-green-600 font-medium flex items-center"><i class="fas fa-check-circle mr-1"></i>Modifications enregistrées automatiquement.</p>
                     </div>
                 </div>
                 <div class="flex flex-col gap-1 mt-2">
-                     <p class="text-xs text-gray-400 italic">Ces réglages contrôlent l'affichage des boutons dans le tableau de bord.</p>
+                     <p class="text-xs text-gray-400 italic">Ces réglages contrôlent l'affichage du tableau de bord.</p>
                 </div>
             </div>
 
@@ -533,6 +537,7 @@ async function initSettingsLogic() {
     const prefHideStatsBtn = document.getElementById('prefHideStatsBtn');
     const prefHideBadgesBtn = document.getElementById('prefHideBadgesBtn');
     const prefHideWishlistBtn = document.getElementById('prefHideWishlistBtn');
+    const prefCompactDashboardStats = document.getElementById('prefCompactDashboardStats');
 
     let currentSelectedPrivacyLevel = 2;
 
@@ -997,6 +1002,7 @@ async function initSettingsLogic() {
             hideStatsBtn: prefHideStatsBtn ? prefHideStatsBtn.checked : false,
             hideBadgesBtn: prefHideBadgesBtn ? prefHideBadgesBtn.checked : false,
             hideWishlistBtn: prefHideWishlistBtn ? prefHideWishlistBtn.checked : false,
+            compactDashboardStats: prefCompactDashboardStats ? prefCompactDashboardStats.checked : false,
             // Rétrocompatibilité
             showStatsBtn: prefHideStatsBtn ? !prefHideStatsBtn.checked : true,
             showBadgesBtn: prefHideBadgesBtn ? !prefHideBadgesBtn.checked : true,
@@ -1004,6 +1010,8 @@ async function initSettingsLogic() {
         };
 
         window.settingsHasChanged = true;
+        window.compactDashboardStats = uiPreferences.compactDashboardStats;
+        window.dispatchEvent(new Event('compactDashboardStatsChanged'));
         updateAutoSaveStatus('ui', 'saving');
 
         pendingUIPayload = { uiPreferences };
@@ -1035,7 +1043,7 @@ async function initSettingsLogic() {
             if (cb) cb.addEventListener('change', savePrivacySettings);
         });
 
-        [prefHideStatsBtn, prefHideBadgesBtn, prefHideWishlistBtn].forEach(cb => {
+        [prefHideStatsBtn, prefHideBadgesBtn, prefHideWishlistBtn, prefCompactDashboardStats].forEach(cb => {
             if (cb) cb.addEventListener('change', saveUISettings);
         });
 
@@ -1184,12 +1192,16 @@ async function initSettingsLogic() {
                     if (prefHideStatsBtn) prefHideStatsBtn.checked = data.uiPreferences.hideStatsBtn === true || data.uiPreferences.showStatsBtn === false;
                     if (prefHideBadgesBtn) prefHideBadgesBtn.checked = data.uiPreferences.hideBadgesBtn === true || data.uiPreferences.showBadgesBtn === false;
                     if (prefHideWishlistBtn) prefHideWishlistBtn.checked = data.uiPreferences.hideWishlistBtn === true || data.uiPreferences.showWishlistBtn === false;
+                    if (prefCompactDashboardStats) prefCompactDashboardStats.checked = data.uiPreferences.compactDashboardStats === true;
                 } else {
                     // Defaults: none hidden
                     if (prefHideStatsBtn) prefHideStatsBtn.checked = false;
                     if (prefHideBadgesBtn) prefHideBadgesBtn.checked = false;
                     if (prefHideWishlistBtn) prefHideWishlistBtn.checked = false;
+                    if (prefCompactDashboardStats) prefCompactDashboardStats.checked = false;
                 }
+                window.compactDashboardStats = data.uiPreferences?.compactDashboardStats === true;
+                window.dispatchEvent(new Event('compactDashboardStatsChanged'));
 
                 // Pseudo input
                 const pseudoInput = document.getElementById('settingsNewPseudo');
@@ -1565,9 +1577,14 @@ window.openUserSettings = async function () {
             const prefHideStatsBtn = document.getElementById('prefHideStatsBtn');
             const prefHideBadgesBtn = document.getElementById('prefHideBadgesBtn');
             const prefHideWishlistBtn = document.getElementById('prefHideWishlistBtn');
+            const prefCompactDashboardStats = document.getElementById('prefCompactDashboardStats');
 
             if (prefHideStatsBtn) prefHideStatsBtn.checked = (ui.hideStatsBtn === true) || (ui.showStatsBtn === false);
             if (prefHideBadgesBtn) prefHideBadgesBtn.checked = (ui.hideBadgesBtn === true) || (ui.showBadgesBtn === false);
+            if (prefHideWishlistBtn) prefHideWishlistBtn.checked = (ui.hideWishlistBtn === true) || (ui.showWishlistBtn === false);
+            if (prefCompactDashboardStats) prefCompactDashboardStats.checked = ui.compactDashboardStats === true;
+            window.compactDashboardStats = ui.compactDashboardStats === true;
+            window.dispatchEvent(new Event('compactDashboardStatsChanged'));
             // Theme color preference
             if (data && data.themeColor) {
                 if (typeof window.applyThemeColor === 'function') {
