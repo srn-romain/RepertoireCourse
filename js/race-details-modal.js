@@ -1372,8 +1372,8 @@
                 });
                 const hasAnyCompanionDetails = sortedCompanions.some(comp =>
                     comp && typeof comp === 'object' && comp.type === 'runner' &&
-                    (comp.raceTime || comp.rankPos != null || comp.rankTotal != null ||
-                        comp.distance != null || comp.elevation != null)
+                    [comp.raceTime, comp.rankPos, comp.rankTotal, comp.distance, comp.elevation]
+                        .some(value => value != null && String(value).trim() !== '')
                 );
                 const companionsLi = sortedCompanions.map((comp, index) => {
                     const name = typeof comp === 'object' ? comp.name : comp;

@@ -2308,6 +2308,33 @@
         </div>
     </div>
 
+    <div id="companionRankTotalConfirmModal" class="fixed inset-0 z-[90] hidden flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
+        <div role="dialog" aria-modal="true" aria-labelledby="companionRankTotalConfirmTitle"
+            class="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+            <div class="mb-4 flex items-center gap-3">
+                <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-700">
+                    <i class="fas fa-users"></i>
+                </span>
+                <h2 id="companionRankTotalConfirmTitle" class="text-lg font-bold text-gray-900">Compléter votre classement ?</h2>
+            </div>
+            <p id="companionRankTotalConfirmMessage" class="mb-6 text-sm leading-relaxed text-gray-700"></p>
+            <div class="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+                <button type="button" id="companionRankTotalReturnBtn"
+                    class="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 transition hover:bg-gray-50">
+                    Retour à l’édition
+                </button>
+                <button type="button" id="companionRankTotalDeclineBtn"
+                    class="rounded-lg bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-200">
+                    Non, continuer
+                </button>
+                <button type="button" id="companionRankTotalAcceptBtn"
+                    class="rounded-lg bg-amber-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-amber-600">
+                    Oui, ajouter pour moi
+                </button>
+            </div>
+        </div>
+    </div>
 
     <!-- Modale confirmation suppression wishlist -->
     <div id="confirmDeleteWishlistModal"
@@ -6656,8 +6683,30 @@
             }
 
             const companionTimeRegex = /^\d{2}:\d{2}:\d{2}$/;
-            (currentCompanions || []).forEach(companion => {
+            (currentCompanions || []).forEach((companion, index) => {
                 if (!companion || typeof companion !== 'object' || companion.type !== 'runner') return;
+                const hasRunnerDetails = [
+                    companion.raceTime,
+                    companion.rankPos,
+                    companion.rankTotal,
+                    companion.distance,
+                    companion.elevation
+                ].some(value => value != null && String(value).trim() !== '');
+                const sameRaceError = document.getElementById(`companionSameRaceError-${index}`);
+                if (hasRunnerDetails && companion.sameRaceDistance !== true && companion.sameRaceDistance !== false) {
+                    if (sameRaceError) sameRaceError.classList.remove('hidden');
+                    const detailsPanel = document.getElementById(`companionPalmares-${index}`);
+                    if (detailsPanel) detailsPanel.classList.remove('hidden');
+                    const toggleButton = document.querySelector(`[data-companion-palmares-toggle="${index}"]`);
+                    if (toggleButton) toggleButton.setAttribute('aria-expanded', 'true');
+                    if (globalError) {
+                        globalError.textContent = `Veuillez préciser si ${companion.name} a couru la même course.`;
+                        globalError.classList.remove('hidden');
+                    }
+                    hasErrors = true;
+                } else if (sameRaceError) {
+                    sameRaceError.classList.add('hidden');
+                }
                 if (companion.raceTime && !companionTimeRegex.test(companion.raceTime)) {
                     if (globalError) {
                         globalError.textContent = "Le temps d'un accompagnant doit respecter le format HH:MM:SS.";
@@ -6741,21 +6790,25 @@
 
             const userRankTotalInput = document.getElementById('raceRankTotal');
             const userRankTotal = userRankTotalInput ? userRankTotalInput.value.trim() : '';
-            if (!userRankTotal) {
-                const companionWithTotal = (currentCompanions || []).find(companion =>
+            if (!userRankTotal && raceForm.dataset.companionRankTotalHandled !== 'true') {
+                const companionIndex = (currentCompanions || []).findIndex(companion =>
                     companion && typeof companion === 'object' &&
                     companion.type === 'runner' &&
                     companion.sameRaceDistance === true &&
                     companion.rankTotal !== '' &&
                     companion.rankTotal != null
                 );
-                if (companionWithTotal && window.confirm(
-                    `Vous avez renseigné un total de ${companionWithTotal.rankTotal} participants pour ${companionWithTotal.name}, qui a couru la même course que vous, mais pas pour vous. Voulez-vous aussi l'ajouter à votre classement ?`
-                )) {
-                    userRankTotalInput.value = companionWithTotal.rankTotal;
-                    syncCompanionRankTotals();
+                if (companionIndex >= 0) {
+                    const companion = currentCompanions[companionIndex];
+                    const modal = document.getElementById('companionRankTotalConfirmModal');
+                    const message = document.getElementById('companionRankTotalConfirmMessage');
+                    modal.dataset.companionIndex = String(companionIndex);
+                    message.textContent = `Vous avez renseigné un total de ${companion.rankTotal} participants pour ${companion.name}, qui a couru la même course que vous, mais pas pour vous. Voulez-vous aussi l'ajouter à votre classement ?`;
+                    modal.classList.remove('hidden');
+                    return;
                 }
             }
+            delete raceForm.dataset.companionRankTotalHandled;
 
             const companionsForSave = (currentCompanions || []).map(companion => {
                 if (!companion || typeof companion !== 'object' || companion.type !== 'runner') return companion;
@@ -7352,8 +7405,11 @@
                 const type = typeof comp === 'object' ? comp.type : 'runner';
                 const iconClass = type === 'spectator' ? 'fa-eye' : 'fa-running';
                 const hasPalmares = type === 'runner' && comp && typeof comp === 'object' &&
-                    (comp.raceTime || comp.rankPos != null || comp.rankTotal != null ||
-                        comp.sameRaceDistance !== undefined || comp.distance != null || comp.elevation != null);
+                    (comp.raceTime || (comp.rankPos != null && comp.rankPos !== '') ||
+                        (comp.rankTotal != null && comp.rankTotal !== '') ||
+                        comp.sameRaceDistance !== undefined ||
+                        (comp.distance != null && comp.distance !== '') ||
+                        (comp.elevation != null && comp.elevation !== ''));
                 const sameRaceDistance = comp && typeof comp === 'object' ? comp.sameRaceDistance : undefined;
                 const distanceFieldsVisible = sameRaceDistance === false;
                 const userRankTotal = document.getElementById('raceRankTotal')?.value.trim() || '';
@@ -7368,7 +7424,7 @@
                         <i class="fas ${iconClass} text-green-600 text-sm"></i>
                         <span class="text-green-800">${escapeHtml(name)}</span>
                     </div>
-                    ${type === 'runner' ? `<button type="button" class="ml-auto mr-2 text-green-700 hover:text-green-900 px-1" title="${hasPalmares ? 'Modifier le palmarès' : 'Ajouter un palmarès (facultatif)'}" aria-label="${hasPalmares ? 'Modifier le palmarès' : 'Ajouter un palmarès facultatif'}" aria-expanded="false" onclick="toggleCompanionPalmares(${index}, this)"><i class="fas fa-plus text-sm"></i></button>` : ''}
+                    ${type === 'runner' ? `<button type="button" data-companion-palmares-toggle="${index}" class="ml-auto mr-2 text-green-700 hover:text-green-900 px-1" title="${hasPalmares ? 'Modifier le palmarès' : 'Ajouter un palmarès (facultatif)'}" aria-label="${hasPalmares ? 'Modifier le palmarès' : 'Ajouter un palmarès facultatif'}" aria-expanded="false" onclick="toggleCompanionPalmares(${index}, this)"><i class="fas fa-plus text-sm"></i></button>` : ''}
                     <button type="button" class="text-red-500 hover:text-red-700" onclick="removeCompanion(event, ${index})" aria-label="Supprimer ${escapeHtml(name)}">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -7383,6 +7439,7 @@
                                 <label class="inline-flex items-center gap-1"><input type="radio" name="companionSameRace-${index}" value="yes" ${sameRaceDistance === true ? 'checked' : ''} onchange="updateCompanionSameRaceDistance(${index}, true)"> Oui</label>
                                 <label class="inline-flex items-center gap-1"><input type="radio" name="companionSameRace-${index}" value="no" ${sameRaceDistance === false ? 'checked' : ''} onchange="updateCompanionSameRaceDistance(${index}, false)"> Non</label>
                             </div>
+                            <p id="companionSameRaceError-${index}" class="hidden mt-1 text-xs text-red-600">Veuillez préciser si cette personne a couru la même course.</p>
                         </fieldset>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                             <label class="text-xs text-green-800">Temps (HH:MM:SS)
@@ -7404,6 +7461,9 @@
                                 <input type="number" min="0" step="1" placeholder="Ex. 500" value="${escapeHtml(String(comp && comp.elevation != null ? comp.elevation : ''))}" oninput="updateCompanionPalmaresField(${index}, 'elevation', this.value)" class="mt-1 w-full px-2 py-1.5 border border-green-200 rounded-md text-sm">
                             </label>
                         </div>
+                        <div class="flex justify-end">
+                            <button type="button" data-companion-clear-details class="text-xs text-gray-500 hover:text-red-600 ${hasPalmares ? '' : 'hidden'}" onclick="clearCompanionPalmares(${index}, this)">Effacer les détails</button>
+                        </div>
                     </div>`);
                 }
                 companionsList.appendChild(li);
@@ -7418,16 +7478,58 @@
             button.setAttribute('aria-expanded', String(isOpening));
         };
 
+        window.updateCompanionClearButton = function (index) {
+            const companion = currentCompanions[index];
+            const hasDetails = companion && typeof companion === 'object' &&
+                ((companion.sameRaceDistance === true || companion.sameRaceDistance === false) ||
+                    [companion.raceTime, companion.rankPos, companion.rankTotal, companion.distance, companion.elevation]
+                        .some(value => value != null && String(value).trim() !== ''));
+            const clearButton = document.querySelector(`#companionPalmares-${index} [data-companion-clear-details]`);
+            if (clearButton) clearButton.classList.toggle('hidden', !hasDetails);
+        };
+
         window.updateCompanionPalmaresField = function (index, field, value) {
             const companion = currentCompanions[index];
             if (!companion || typeof companion !== 'object' || companion.type !== 'runner') return;
-            companion[field] = value;
+            if (value === '') delete companion[field];
+            else companion[field] = value;
+            updateCompanionClearButton(index);
+        };
+
+        window.clearCompanionPalmares = function (index, button) {
+            const companion = currentCompanions[index];
+            if (!companion || typeof companion !== 'object' || companion.type !== 'runner') return;
+            ['sameRaceDistance', 'raceTime', 'rankPos', 'rankTotal', 'distance', 'elevation'].forEach(field => {
+                delete companion[field];
+            });
+
+            const form = document.getElementById(`companionPalmares-${index}`);
+            if (form) {
+                form.querySelectorAll('input').forEach(input => {
+                    if (input.type === 'radio') input.checked = false;
+                    else input.value = '';
+                });
+                form.classList.add('hidden');
+            }
+            const distanceFields = document.getElementById(`companionOtherDistance-${index}`);
+            if (distanceFields) distanceFields.classList.add('hidden');
+            const toggleButton = button.closest('li')?.querySelector(`[data-companion-palmares-toggle="${index}"]`);
+            if (toggleButton) {
+                toggleButton.setAttribute('aria-expanded', 'false');
+                toggleButton.setAttribute('aria-label', 'Ajouter un palmarès facultatif');
+                toggleButton.title = 'Ajouter un palmarès (facultatif)';
+                toggleButton.innerHTML = '<i class="fas fa-plus text-sm"></i>';
+            }
+            updateCompanionClearButton(index);
+            syncCompanionRankTotals();
         };
 
         window.updateCompanionSameRaceDistance = function (index, sameRaceDistance) {
             const companion = currentCompanions[index];
             if (!companion || typeof companion !== 'object' || companion.type !== 'runner') return;
             companion.sameRaceDistance = sameRaceDistance;
+            const sameRaceError = document.getElementById(`companionSameRaceError-${index}`);
+            if (sameRaceError) sameRaceError.classList.add('hidden');
             const otherDistance = document.getElementById(`companionOtherDistance-${index}`);
             if (otherDistance) otherDistance.classList.toggle('hidden', sameRaceDistance);
             if (sameRaceDistance) {
@@ -7441,6 +7543,7 @@
                 const rankTotalInput = document.querySelector(`[data-companion-rank-total="${index}"]`);
                 if (rankTotalInput) rankTotalInput.value = '';
             }
+            updateCompanionClearButton(index);
             syncCompanionRankTotals();
         };
 
@@ -7604,6 +7707,29 @@
         // Écouteur pour le bouton Annuler
         cancelBtn.addEventListener('click', () => {
             checkAndCloseRaceModal();
+        });
+
+        const companionRankTotalModal = document.getElementById('companionRankTotalConfirmModal');
+        const continueAfterRankTotalPrompt = addToUser => {
+            const companionIndex = parseInt(companionRankTotalModal.dataset.companionIndex, 10);
+            const companion = currentCompanions[companionIndex];
+            if (addToUser && companion && companion.rankTotal != null) {
+                document.getElementById('raceRankTotal').value = companion.rankTotal;
+                syncCompanionRankTotals();
+            }
+            raceForm.dataset.companionRankTotalHandled = 'true';
+            companionRankTotalModal.classList.add('hidden');
+            raceForm.dispatchEvent(new Event('submit'));
+        };
+        document.getElementById('companionRankTotalAcceptBtn').addEventListener('click', () => {
+            continueAfterRankTotalPrompt(true);
+        });
+        document.getElementById('companionRankTotalDeclineBtn').addEventListener('click', () => {
+            continueAfterRankTotalPrompt(false);
+        });
+        document.getElementById('companionRankTotalReturnBtn').addEventListener('click', () => {
+            companionRankTotalModal.classList.add('hidden');
+            raceForm.querySelector('button[type="submit"]')?.focus();
         });
 
         raceForm.addEventListener('submit', saveRace);
@@ -11167,7 +11293,7 @@
 
     <script src="js/isAdmin.js"></script>
     <script src="js/isInvite.js"></script>
-    <script src="js/race-details-modal.js?v=20261108_11"></script>
+    <script src="js/race-details-modal.js?v=20261108_12"></script>
     <script src="js/stats-modal.js?v=10"></script>
     <script src="js/advanced-filters.js?v=20260929_1"></script>
     <script src="js/user-settings.js?v=20260930_7"></script>
