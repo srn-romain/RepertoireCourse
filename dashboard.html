@@ -2863,15 +2863,15 @@
                 actionClass: 'results-btn',
                 isEnabled: (race) => !!(race.resultUrl && race.resultUrl.trim() !== '')
             },
-            onlineResults: {
-                id: 'onlineResults',
-                label: 'Résultats en ligne',
-                icon: '<i class="fas fa-globe"></i>',
-                bgColorClass: 'bg-orange-100 text-orange-800 hover:bg-orange-200',
-                colorClass: 'text-orange-600 border-orange-200 hover:bg-orange-50',
-                title: 'Résultats en ligne / Site web',
-                actionClass: 'online-results-btn',
-                isEnabled: (race) => !!((race.website && race.website.trim() !== '') || (race.resultUrl && race.resultUrl.trim() !== ''))
+            favorite: {
+                id: 'favorite',
+                label: 'Favori',
+                icon: '<i class="fas fa-star"></i>',
+                bgColorClass: 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200',
+                colorClass: 'text-yellow-600 border-yellow-200 hover:bg-yellow-50',
+                title: 'Ajouter ou retirer des favoris',
+                actionClass: 'favorite-race-btn',
+                isEnabled: (race) => !window.isFriendView
             },
             gpx: {
                 id: 'gpx',
@@ -2941,16 +2941,21 @@
                 const btnDef = AVAILABLE_CARD_BUTTONS[btnId];
                 if (!btnDef) return '';
                 const enabled = btnDef.isEnabled(race);
+                const isFavoriteButton = btnId === 'favorite';
+                const buttonIcon = isFavoriteButton && !race.favorite ? '<i class="fa-regular fa-star"></i>' : btnDef.icon;
+                const buttonTitle = isFavoriteButton
+                    ? (race.favorite ? 'Retirer des favoris' : 'Ajouter aux favoris')
+                    : btnDef.title;
                 if (enabled) {
                     return `
-                        <button class="${btnDef.actionClass} w-9 h-9 flex items-center justify-center ${btnDef.bgColorClass} rounded-md transition-colors" data-id="${race.id}" title="${btnDef.title}">
-                            ${btnDef.icon}
+                        <button class="${btnDef.actionClass} w-9 h-9 flex items-center justify-center ${btnDef.bgColorClass} rounded-md transition-colors" data-id="${race.id}" title="${buttonTitle}">
+                            ${buttonIcon}
                         </button>
                     `;
                 } else {
                     return `
-                        <button class="w-9 h-9 flex items-center justify-center bg-gray-100 text-gray-400 rounded-md cursor-not-allowed opacity-40" disabled title="${btnDef.title} (Non disponible)">
-                            ${btnDef.icon}
+                        <button class="w-9 h-9 flex items-center justify-center bg-gray-100 text-gray-400 rounded-md cursor-not-allowed opacity-40" disabled title="${buttonTitle} (Non disponible)">
+                            ${buttonIcon}
                         </button>
                     `;
                 }
@@ -3062,6 +3067,8 @@
                         if (!docSnapshot.exists) {
                             updateData.role = 'user'; // Rôle par défaut à la création
                             updateData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+                            updateData.pseudo = user.displayName || (user.email ? user.email.split('@')[0] : 'Utilisateur');
+                            updateData.photoURL = user.photoURL || null;
                             // Valeurs par défaut pour les préférences (rien n'est masqué par défaut)
                             updateData.privacy = {
                                 hidePseudo: false, hideCity: false, hideFavorite: false, hideLikeCount: false,
@@ -5618,13 +5625,36 @@
                     });
                 });
 
-                const onlineResultsBtns = raceCard.querySelectorAll('.online-results-btn');
-                onlineResultsBtns.forEach(btn => {
-                    btn.addEventListener('click', (e) => {
+                const favoriteBtns = raceCard.querySelectorAll('.favorite-race-btn');
+                favoriteBtns.forEach(btn => {
+                    btn.addEventListener('click', async (e) => {
                         e.stopPropagation();
                         if (isSelectionMode || window.isSelectionMode) return;
-                        const url = race.website || race.resultUrl;
-                        if (url) window.open(url, '_blank');
+                        if (window.isFriendView) {
+                            showPermissionDeniedModal('modifier les favoris');
+                            return;
+                        }
+                        if (await isInviteAsync()) {
+                            showPermissionDeniedModal('modifier les favoris');
+                            return;
+                        }
+
+                        const nextFavorite = !race.favorite;
+                        try {
+                            await racesCollection.doc(race.id).update({ favorite: nextFavorite });
+                            race.favorite = nextFavorite;
+                            await loadRaces();
+                            if (typeof showToast === 'function') {
+                                showToast(nextFavorite ? 'Course ajoutée aux favoris' : 'Course retirée des favoris', 'info');
+                            }
+                        } catch (err) {
+                            console.error('Erreur lors de la mise à jour du favori:', err);
+                            if (typeof showToast === 'function') {
+                                showToast('Erreur lors de la mise à jour du favori', 'error');
+                            } else {
+                                alert('Erreur lors de la mise à jour du favori.');
+                            }
+                        }
                     });
                 });
 

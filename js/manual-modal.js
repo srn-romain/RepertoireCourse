@@ -234,7 +234,7 @@ const manualModalHTML = `
                                 </li>
                                 <li class="flex items-start gap-2">
                                     <i class="fas fa-layer-group text-green-600 mt-0.5"></i>
-                                    <span><strong>Choix des boutons :</strong> Choisissez parmi Modifier, Supprimer, PDF, Site web, GPX, Drive, Résultats ou Export (téléchargement JSON d'une course individuelle). Par défaut, les boutons activés sont <strong>Modifier, Supprimer et PDF</strong>. Vous pouvez afficher jusqu'à 3 boutons par carte.</span>
+                                    <span><strong>Choix des boutons :</strong> Choisissez parmi Modifier, Supprimer, Favori, PDF, Site web, GPX, Drive, Résultats ou Export (téléchargement JSON d'une course individuelle). Par défaut, les boutons activés sont <strong>Modifier, Supprimer et PDF</strong>. Vous pouvez afficher jusqu'à 3 boutons par carte.</span>
                                 </li>
                                 <li class="flex items-start gap-2">
                                     <i class="fas fa-eye text-green-600 mt-0.5"></i>

@@ -317,44 +317,14 @@ window.loginWithGoogle = async function () {
     provider.addScope('https://www.googleapis.com/auth/drive.readonly');
     try {
         const result = await auth.signInWithPopup(provider);
-        const user = result.user;
         
         // Capturer le token de connexion Google pour Drive
         if (result.credential && result.credential.accessToken) {
-            localStorage.setItem('googleDriveToken', result.credential.accessToken);
-        }
-
-        // Ensure user document exists in Firestore
-        const userDocRef = db.collection('users').doc(user.uid);
-        const doc = await userDocRef.get();
-        if (!doc.exists) {
-            const initialPseudo = user.displayName || user.email.split('@')[0];
-            await userDocRef.set({
-                email: user.email,
-                pseudo: initialPseudo,
-                photoURL: user.photoURL,
-                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                lastLogin: firebase.firestore.FieldValue.serverTimestamp(),
-                role: 'user'
-            });
-            window.currentUserPseudo = initialPseudo;
-            localStorage.setItem('userPseudo', initialPseudo);
-        } else {
-            // Respecter le pseudo personnalisé existant dans Firestore
-            const existingPseudo = doc.data().pseudo || user.displayName || user.email.split('@')[0];
-            window.currentUserPseudo = existingPseudo;
-            localStorage.setItem('userPseudo', existingPseudo);
-
-            // Synchroniser le profil Auth pour que displayName reflète le pseudo choisi
-            if (user && typeof user.updateProfile === 'function') {
-                await user.updateProfile({ displayName: existingPseudo }).catch(() => {});
+            try {
+                localStorage.setItem('googleDriveToken', result.credential.accessToken);
+            } catch (error) {
+                console.warn("Impossible de mémoriser le token Google Drive:", error);
             }
-
-            // Update last login
-            await userDocRef.update({
-                lastLogin: firebase.firestore.FieldValue.serverTimestamp(),
-                photoURL: doc.data().photoURL || user.photoURL
-            });
         }
 
         window.location.href = 'dashboard.html';
@@ -426,21 +396,7 @@ function initAuthLogic() {
             setLoading('loginSubmitBtn', 'login-loading', true);
 
             try {
-                const userCredential = await auth.signInWithEmailAndPassword(email, password);
-
-                // Auto-repair check
-                const userDocRef = db.collection('users').doc(userCredential.user.uid);
-                const doc = await userDocRef.get();
-                if (!doc.exists) {
-                    await userDocRef.set({
-                        email: email,
-                        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                        role: 'user'
-                    });
-                } else if (!doc.data().email) {
-                    await userDocRef.update({ email: email });
-                }
-
+                await auth.signInWithEmailAndPassword(email, password);
                 window.location.href = 'dashboard.html';
             } catch (error) {
                 console.error("Login error:", error);
