@@ -4358,7 +4358,7 @@
             const statsBtn = document.getElementById('statsBtn');
             const badgesBtn = document.getElementById('badgesBtn');
             if (window.isFriendView) {
-                if (statsBtn) statsBtn.classList.toggle('hidden', window.friendViewPermissions?.stats !== true || window.friendViewPrivacy?.hideStats === true);
+                if (statsBtn) statsBtn.classList.toggle('hidden', window.friendViewPermissions?.stats !== true);
                 if (badgesBtn) badgesBtn.classList.toggle('hidden', window.friendViewPermissions?.badges !== true);
                 return;
             }
@@ -5232,20 +5232,18 @@
                     const allTags = [];
                     const cardTags = window.customCardTags || ['distance', 'elevation', 'location', 'terrain'];
                     const privacy = window.isFriendView ? window.friendViewPrivacy || {} : {};
+                    const canViewStats = !window.isFriendView || window.friendViewPermissions?.stats === true;
+                    const showCalculatedStats = window.isFriendView || privacy.hideStats !== true;
                     const showDistance = cardTags.includes('distance');
                     const showElevation = cardTags.includes('elevation');
                     const showLocation = cardTags.includes('location') && privacy.hideCity !== true;
                     const showTerrain = cardTags.includes('terrain');
-                    const showTime = cardTags.includes('time') && privacy.hideStats !== true
-                        && (!window.isFriendView || window.friendViewPermissions?.stats === true);
-                    const showPace = cardTags.includes('pace') && privacy.hideStats !== true
-                        && (!window.isFriendView || window.friendViewPermissions?.stats === true);
+                    const showTime = cardTags.includes('time') && canViewStats && showCalculatedStats;
+                    const showPace = cardTags.includes('pace') && canViewStats && showCalculatedStats;
                     const showPrice = cardTags.includes('price') && privacy.hidePrice !== true
-                        && privacy.hideStats !== true
-                        && (!window.isFriendView || window.friendViewPermissions?.stats === true);
+                        && canViewStats && showCalculatedStats;
                     const showRank = cardTags.includes('rank') && privacy.hideRanking !== true
-                        && privacy.hideStats !== true
-                        && (!window.isFriendView || window.friendViewPermissions?.stats === true);
+                        && canViewStats && showCalculatedStats;
 
                     const distVal = formatDist(race.distance);
                     const elevVal = race.elevation || '0';
@@ -10825,7 +10823,7 @@
 
                     // Stats button
                     const hideStats = isFriendView
-                        ? (!window.friendViewPermissions?.stats || window.friendViewPrivacy?.hideStats === true)
+                        ? !window.friendViewPermissions?.stats
                         : ((uiPrefs.hideStatsBtn === true) || (uiPrefs.showStatsBtn === false));
                     if (statsBtn) {
                         if (hideStats) statsBtn.classList.add('hidden');

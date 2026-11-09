@@ -3068,7 +3068,7 @@
                     rankingContainer.classList.remove('flex');
                 }
             }
-            if (effectivePrivacy.hideStats) {
+            if (effectivePrivacy.hideStats && !(window.isFriendView && window.friendViewPermissions?.stats === true)) {
                 const speedInfo = document.getElementById('averageSpeedInfo');
                 if (speedInfo) speedInfo.innerHTML = '';
             }
