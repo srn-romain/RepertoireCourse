@@ -115,3 +115,7 @@ function getRunnerLoaderHTML(colSpan = 'col-span-full') {
 
 // Expose globally
 window.getRunnerLoaderHTML = getRunnerLoaderHTML;
+
+document.querySelectorAll('[data-runner-loader]').forEach((loader) => {
+    loader.outerHTML = getRunnerLoaderHTML(loader.dataset.runnerLoader);
+});
