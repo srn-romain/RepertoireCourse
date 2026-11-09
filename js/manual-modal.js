@@ -126,6 +126,7 @@ const manualModalHTML = `
                                     <div>• Image automatique (Web/Nom)</div>
                                     <div>• Fichier GPX</div>
                                     <div>• Notes personnelles avec éditeur</div>
+                                    <div>• Achat photo et prix</div>
                                     <div>• Statut favori</div>
                                     <div>• Partage public</div>
                                     <div>• Accompagnants avec type coureur ou spectateur</div>

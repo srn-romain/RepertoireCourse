@@ -922,6 +922,19 @@
                                 oninput="this.value = this.value.replace(/\D/g, '').slice(0, 6);">
                         </div>
                     </div>
+                    <div class="mb-4">
+                        <label class="inline-flex items-center gap-2 text-sm text-green-700 cursor-pointer">
+                            <input type="checkbox" id="racePhotoPurchase"
+                                class="w-4 h-4 text-green-600 border-green-300 rounded focus:ring-green-500">
+                            <span>Achat photo de course</span>
+                        </label>
+                        <div id="racePhotoPurchasePriceContainer" class="mt-2 hidden">
+                            <label for="racePhotoPurchasePrice" class="block text-green-700 mb-2">Prix de la photo (€)</label>
+                            <input type="number" id="racePhotoPurchasePrice" min="0" step="1" inputmode="numeric"
+                                class="w-full px-3 py-2 border border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                                placeholder="Prix en euros">
+                        </div>
+                    </div>
                     <!-- Section Liens (Repliable) -->
                     <div class="mb-4 bg-green-50/60 rounded-lg border border-green-100 overflow-hidden"
                         id="raceLinksSection">
@@ -2697,6 +2710,11 @@
                     <input type="text" id="detailRaceSearchInput" placeholder="Filtrer par nom de course..."
                         class="w-full pl-8 pr-3 py-1 text-xs bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-green-500">
                 </div>
+                <label id="detailPhotoPriceToggleContainer" class="hidden inline-flex items-center gap-1.5 text-[11px] text-gray-600 whitespace-nowrap cursor-pointer">
+                    <input type="checkbox" id="detailPhotoPriceToggle" checked
+                        class="w-3.5 h-3.5 text-green-600 border-gray-300 rounded focus:ring-green-500">
+                    Inclure les photos
+                </label>
                 <span class="text-xs text-gray-500 font-medium whitespace-nowrap" id="detailListCountText">
                     0 course
                 </span>
@@ -3789,6 +3807,12 @@
             return raceDate < today || hasValidTime;
         }
 
+        function getRaceTotalPrice(race, includePhotoPrice = true) {
+            const racePrice = parseFloat(race.price) || 0;
+            const photoPrice = race.photoPurchase === true ? (parseFloat(race.photoPurchasePrice) || 0) : 0;
+            return racePrice + (includePhotoPrice ? photoPrice : 0);
+        }
+
         // Fonction pour calculer et afficher les statistiques du bandeau
         window.compactDashboardStats = false;
         let lastStatsDataForDisplay = [];
@@ -3816,10 +3840,7 @@
                 totalElevation += getRaceUserElevation(race);
                 totalSeconds += getRaceUserSeconds(race);
 
-                // Additionner le prix si renseigné
-                if (race.price !== undefined && race.price !== null && race.price !== '') {
-                    totalPrice += parseFloat(race.price) || 0;
-                }
+                totalPrice += getRaceTotalPrice(race);
             });
 
             // Formater le temps total en heures, minutes et secondes
@@ -3878,12 +3899,18 @@
         // --- Modale Détail du calcul des statistiques ---
         let currentDetailRaces = [];
         let currentDetailStatType = 'distance';
+        let includePhotoPriceInDetails = true;
 
         function openStatDetailsModal(statType = 'distance') {
             const modal = document.getElementById('distanceDetailsModal');
             if (!modal) return;
 
             currentDetailStatType = statType;
+            includePhotoPriceInDetails = true;
+            const photoPriceToggle = document.getElementById('detailPhotoPriceToggle');
+            const photoPriceToggleContainer = document.getElementById('detailPhotoPriceToggleContainer');
+            if (photoPriceToggle) photoPriceToggle.checked = true;
+            if (photoPriceToggleContainer) photoPriceToggleContainer.classList.toggle('hidden', statType !== 'price');
 
             const allRaces = (typeof races !== 'undefined' && Array.isArray(races)) ? races : [];
             // Filtrer selon l'année en cours si un filtre est actif
@@ -3912,9 +3939,7 @@
                 totalDist += getRaceUserDistance(r);
                 totalElev += getRaceUserElevation(r);
                 totalSec += getRaceUserSeconds(r);
-                if (r.price !== undefined && r.price !== null && r.price !== '') {
-                    totalPrice += parseFloat(r.price) || 0;
-                }
+                totalPrice += getRaceTotalPrice(r, includePhotoPriceInDetails);
             });
             totalDist = Math.round(totalDist * 10) / 10;
             totalPrice = Math.round(totalPrice * 100) / 100;
@@ -4038,9 +4063,14 @@
                 } else if (currentDetailStatType === 'count') {
                     rightStatHtml = `<span class="text-xs sm:text-sm font-bold text-green-700">${roundedDist} km</span>`;
                 } else if (currentDetailStatType === 'price') {
-                    const p = (race.price !== undefined && race.price !== null && race.price !== '') ? parseFloat(race.price) : 0;
-                    const pFormatted = p > 0 ? p.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €' : '-';
-                    rightStatHtml = `<span class="text-xs sm:text-sm font-bold ${p > 0 ? 'text-green-700' : 'text-gray-400'}">${p > 0 ? '+ ' + pFormatted : '0,00 €'}</span>`;
+                    const racePrice = parseFloat(race.price) || 0;
+                    const photoPrice = race.photoPurchase === true ? (parseFloat(race.photoPurchasePrice) || 0) : 0;
+                    const totalRacePrice = getRaceTotalPrice(race, includePhotoPriceInDetails);
+                    const formatPrice = value => value.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                    rightStatHtml = `
+                        <div class="text-[10px] sm:text-xs text-gray-500">Inscription : ${formatPrice(racePrice)} €</div>
+                        ${race.photoPurchase === true ? `<div class="text-[10px] sm:text-xs ${includePhotoPriceInDetails ? 'text-amber-700' : 'text-gray-400 line-through'}">Photo : ${photoPrice > 0 ? formatPrice(photoPrice) + ' €' : 'prix non renseigné'}</div>` : ''}
+                        <div class="text-xs sm:text-sm font-bold ${totalRacePrice > 0 ? 'text-green-700' : 'text-gray-400'}">${formatPrice(totalRacePrice)} €</div>`;
                 } else {
                     rightStatHtml = `<span class="text-xs sm:text-sm font-bold text-green-700">+ ${roundedDist} km</span>`;
                 }
@@ -4076,20 +4106,33 @@
         // Listeners pour la recherche interne et la fermeture
         document.addEventListener('DOMContentLoaded', () => {
             const searchInput = document.getElementById('detailRaceSearchInput');
+            const photoPriceToggle = document.getElementById('detailPhotoPriceToggle');
+            const renderFilteredList = () => {
+                const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
+                const filtered = query
+                    ? currentDetailRaces.filter(race =>
+                        (race.name || '').toLowerCase().includes(query) ||
+                        (race.location || '').toLowerCase().includes(query) ||
+                        (race.terrain || '').toLowerCase().includes(query))
+                    : currentDetailRaces;
+                renderDistanceDetailsList(filtered);
+            };
             if (searchInput) {
-                searchInput.addEventListener('input', (e) => {
-                    const query = e.target.value.toLowerCase().trim();
-                    if (!query) {
-                        renderDistanceDetailsList(currentDetailRaces);
-                        return;
-                    }
-                    const filtered = currentDetailRaces.filter(r => {
-                        const name = (r.name || '').toLowerCase();
-                        const location = (r.location || '').toLowerCase();
-                        const terrain = (r.terrain || '').toLowerCase();
-                        return name.includes(query) || location.includes(query) || terrain.includes(query);
-                    });
-                    renderDistanceDetailsList(filtered);
+                searchInput.addEventListener('input', renderFilteredList);
+            }
+            if (photoPriceToggle) {
+                photoPriceToggle.addEventListener('change', () => {
+                    includePhotoPriceInDetails = photoPriceToggle.checked;
+                    const total = currentDetailRaces.reduce((sum, race) => sum + getRaceTotalPrice(race, includePhotoPriceInDetails), 0);
+                    const formattedTotal = total.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                    const yearPrefix = typeof currentYearFilter !== 'undefined' && currentYearFilter !== 'all' && currentYearFilter !== null
+                        ? `année ${currentYearFilter}`
+                        : 'carnet';
+                    const subtitleEl = document.getElementById('distanceDetailsModalSubtitle');
+                    const totalEl = document.getElementById('detailTotalDistance');
+                    if (subtitleEl) subtitleEl.textContent = `Total ${yearPrefix} : ${formattedTotal} € (${currentDetailRaces.length} course${currentDetailRaces.length > 1 ? 's' : ''})`;
+                    if (totalEl) totalEl.textContent = `${formattedTotal} €`;
+                    renderFilteredList();
                 });
             }
 
@@ -4281,6 +4324,20 @@
         const modalTitle = document.getElementById('modalTitle');
         const cancelBtn = document.getElementById('cancelBtn');
         const closeDetailsBtn = document.getElementById('closeDetailsBtn');
+        const racePhotoPurchaseCheckbox = document.getElementById('racePhotoPurchase');
+        const racePhotoPurchasePriceContainer = document.getElementById('racePhotoPurchasePriceContainer');
+        const racePhotoPurchasePriceInput = document.getElementById('racePhotoPurchasePrice');
+        function updateRacePhotoPurchaseFields() {
+            if (!racePhotoPurchaseCheckbox || !racePhotoPurchasePriceContainer) return;
+            racePhotoPurchasePriceContainer.classList.toggle('hidden', !racePhotoPurchaseCheckbox.checked);
+            if (!racePhotoPurchaseCheckbox.checked && racePhotoPurchasePriceInput) {
+                racePhotoPurchasePriceInput.value = '';
+            }
+        }
+        if (racePhotoPurchaseCheckbox && racePhotoPurchasePriceContainer) {
+            racePhotoPurchaseCheckbox.addEventListener('change', updateRacePhotoPurchaseFields);
+            updateRacePhotoPurchaseFields();
+        }
         const prevRaceBtn = document.getElementById('prevRaceBtn');
         const nextRaceBtn = document.getElementById('nextRaceBtn');
         const editFromDetailsBtn = document.getElementById('editFromDetailsBtn');
@@ -4528,6 +4585,7 @@
         function openAddRaceModal(prefillData = null) {
             modalTitle.textContent = 'Ajouter une course';
             raceForm.reset();
+            updateRacePhotoPurchaseFields();
             const rNE = document.getElementById('raceNotesEditor');
             if (rNE) rNE.innerHTML = '';
             if (typeof toggleBtnActive === 'function') {
@@ -5894,6 +5952,7 @@
                 if (isAdmin()) {
                     modalTitle.textContent = 'Ajouter une course';
                     raceForm.reset();
+                    updateRacePhotoPurchaseFields();
                     const rNE = document.getElementById('raceNotesEditor');
                     if (rNE) rNE.innerHTML = '';
                     if (typeof toggleBtnActive === 'function') {
@@ -6557,6 +6616,7 @@
             }
             modalTitle.textContent = 'Ajouter une course';
             raceForm.reset();
+            updateRacePhotoPurchaseFields();
             const rNE = document.getElementById('raceNotesEditor');
             if (rNE) {
                 rNE.innerHTML = '';
@@ -6717,6 +6777,9 @@
                 updateNotesFormatState();
             }
             document.getElementById('racePrice').value = (race.price !== undefined && race.price !== null) ? race.price : '';
+            document.getElementById('racePhotoPurchase').checked = race.photoPurchase === true || (race.photoPurchasePrice !== undefined && race.photoPurchasePrice !== null);
+            document.getElementById('racePhotoPurchasePrice').value = race.photoPurchasePrice !== undefined && race.photoPurchasePrice !== null ? race.photoPurchasePrice : '';
+            updateRacePhotoPurchaseFields();
             document.getElementById('raceBibNumber').value = race.bibNumber || '';
             document.getElementById('raceWebsite').value = race.website || '';
             document.getElementById('raceResultUrl').value = race.resultUrl || '';
@@ -6965,6 +7028,8 @@
             if (editor) document.getElementById('raceNotes').value = editor.innerHTML;
             const notes = document.getElementById('raceNotes').value;
             const price = document.getElementById('racePrice').value;
+            const photoPurchase = document.getElementById('racePhotoPurchase').checked;
+            const photoPurchasePrice = document.getElementById('racePhotoPurchasePrice').value;
             const bibNumber = document.getElementById('raceBibNumber') ? document.getElementById('raceBibNumber').value.replace(/\D/g, '').slice(0, 6) : '';
             const website = document.getElementById('raceWebsite').value.trim();
             const resultUrl = document.getElementById('raceResultUrl').value.trim();
@@ -7224,6 +7289,8 @@
                 terrain: terrain || 'route',
                 notes: notes ? notes : null,
                 price: (price !== '' && !isNaN(parseFloat(price))) ? parseFloat(price) : null,
+                photoPurchase: photoPurchase,
+                photoPurchasePrice: photoPurchase && photoPurchasePrice !== '' && !isNaN(parseInt(photoPurchasePrice, 10)) ? parseInt(photoPurchasePrice, 10) : null,
                 bibNumber: bibNumber ? bibNumber.trim() : null,
                 website: website ? website.trim() : null,
                 resultUrl: resultUrl ? resultUrl.trim() : null,
@@ -7276,7 +7343,7 @@
             const allPossibleFields = [
                 'name', 'date', 'hour', 'distance', 'elevation', 'elevationNeg', 'time',
                 'rankPos', 'rankTotal', 'rankCategoryPos', 'rankCategoryTotal', 'rankCategoryCode', 'rankCategoryName', 'rankGenderPos', 'rankGenderTotal', 'rankingFieldsVersion', 'location',
-                'terrain', 'notes', 'price', 'bibNumber', 'website', 'resultUrl', 'gpxUrl',
+                'terrain', 'notes', 'price', 'photoPurchase', 'photoPurchasePrice', 'bibNumber', 'website', 'resultUrl', 'gpxUrl',
                 'driveId', 'companions', 'favorite', 'public', 'raceFormat', 'raceRelaySport',
                 'swimDistance', 'bikeDistance', 'swimTime', 'bikeTime', 'runTime',
                 'bikeElevation', 'bikeElevationNeg', 'runElevation', 'runElevationNeg',
@@ -7443,6 +7510,7 @@
 
                     // Réinitialiser le formulaire et les champs Hyrox
                     raceForm.reset();
+                    updateRacePhotoPurchaseFields();
                     const rNE = document.getElementById('raceNotesEditor');
                     if (rNE) rNE.innerHTML = '';
                     if (typeof toggleBtnActive === 'function') {
@@ -8043,6 +8111,7 @@
         function closeAndResetRaceModal() {
             raceModal.classList.add('hidden');
             raceForm.reset();
+            updateRacePhotoPurchaseFields();
             const rNE = document.getElementById('raceNotesEditor');
             if (rNE) rNE.innerHTML = '';
             if (typeof toggleBtnActive === 'function') {

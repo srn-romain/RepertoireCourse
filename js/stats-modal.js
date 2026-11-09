@@ -96,6 +96,12 @@
             return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
         }
 
+        function getRaceTotalPrice(race) {
+            const racePrice = parseFloat(race.price) || 0;
+            const photoPrice = race.photoPurchase === true ? (parseFloat(race.photoPurchasePrice) || 0) : 0;
+            return racePrice + photoPrice;
+        }
+
         // Fonction pour calculer les statistiques des courses
         function calculateRaceStats(includeFuture = false) {
             const racesData = getAllUserRaces();
@@ -122,7 +128,7 @@
 
             // Extraire les valeurs valides pour chaque métrique
             const prices = pastRaces
-                .map(r => parseFloat(r.price))
+                .map(getRaceTotalPrice)
                 .filter(p => !isNaN(p) && p > 0);
 
             // Helper : vérifie si un tour de relais appartient à l'utilisateur
@@ -219,7 +225,7 @@
             let highestPriceRace = null;
             if (prices.length > 0) {
                 const maxPrice = Math.max(...prices);
-                highestPriceRace = pastRaces.find(r => parseFloat(r.price) === maxPrice);
+                highestPriceRace = pastRaces.find(r => getRaceTotalPrice(r) === maxPrice);
             }
 
             // Courses avec le dénivelé le plus élevé
@@ -398,7 +404,7 @@
             const racesWithPrice = pastRaces
                 .map(race => ({
                     race: race,
-                    value: parseFloat(race.price) || 0
+                    value: getRaceTotalPrice(race)
                 }))
                 .filter(r => r.value > 0)
                 .sort((a, b) => b.value - a.value);
@@ -449,7 +455,7 @@
             // Préparer les données pour le graphique Prix au Km
             const racesWithPricePerKm = pastRaces
                 .map(race => {
-                    const price = parseFloat(race.price) || 0;
+                    const price = getRaceTotalPrice(race);
                     let distance = parseFloat(race.distance) || 0;
 
                     if (race.terrain === 'triathlon') {
@@ -472,7 +478,7 @@
                     if (race.elevation === undefined || race.elevation === null || race.elevation === '') {
                         return { race: race, value: 0 };
                     }
-                    const price = parseFloat(race.price) || 0;
+                    const price = getRaceTotalPrice(race);
                     let distance = parseFloat(race.distance) || 0;
 
                     if (race.terrain === 'triathlon') {
@@ -1063,7 +1069,7 @@
                 }
 
                 if (stats.highestPriceRace) {
-                    html += `<li><strong>Prix le plus haut :</strong> ${getUniqueRaceName(stats.highestPriceRace, stats.validRaces)} (${stats.highestPriceRace.price} €)</li>`;
+                    html += `<li><strong>Prix le plus haut :</strong> ${getUniqueRaceName(stats.highestPriceRace, stats.validRaces)} (${getRaceTotalPrice(stats.highestPriceRace)} €)</li>`;
                 }
 
                 if (stats.highestElevationRace) {

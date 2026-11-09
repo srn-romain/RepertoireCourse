@@ -162,6 +162,15 @@
                         <img id="detailsParcours" class="w-full h-auto rounded-lg shadow-md"
                             alt="Parcours de la course">
                     </div>
+                    <div id="detailsPhotoPurchaseContainer" class="mb-4 hidden rounded-lg border border-amber-100 bg-amber-50/70 px-3 py-2.5">
+                        <div class="flex items-center justify-between gap-3">
+                            <p class="text-xs sm:text-sm text-amber-800 flex items-center gap-2">
+                                <i class="fas fa-camera text-amber-600"></i>
+                                <span>Achat photo de course</span>
+                            </p>
+                            <span id="detailsPhotoPurchasePrice" class="text-sm font-semibold text-amber-900"></span>
+                        </div>
+                    </div>
                     <div class="grid grid-cols-2 gap-4 mb-4">
                         <div class="bg-green-50 p-3 rounded-lg flex flex-col justify-between h-full" id="ImageButton" onclick="event.stopPropagation();">
                             <p id="DetailImageTitle" class="text-sm text-green-600 flex items-center gap-2 shrink-0 mb-1"></p>
@@ -1175,6 +1184,9 @@
             : '';
 
         if (titleElement) {
+            const isFavorite = race.favorite === true || race.favorite === 'true';
+            titleElement.classList.toggle('text-yellow-500', isFavorite);
+            titleElement.classList.toggle('text-green-800', !isFavorite);
             if (fieldMatchesSearch(race.name, searchQuery)) {
                 titleElement.innerHTML = lockIcon + highlightSearchMatch(race.name, searchQuery);
             } else {
@@ -2330,6 +2342,21 @@
             }
         }
 
+        const photoPurchaseContainer = document.getElementById('detailsPhotoPurchaseContainer');
+        const photoPurchasePriceElement = document.getElementById('detailsPhotoPurchasePrice');
+        if (photoPurchaseContainer && photoPurchasePriceElement) {
+            if (race.photoPurchase === true) {
+                const photoPrice = parseFloat(race.photoPurchasePrice);
+                photoPurchasePriceElement.textContent = Number.isFinite(photoPrice)
+                    ? `${photoPrice.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €`
+                    : 'Oui';
+                photoPurchaseContainer.classList.remove('hidden');
+            } else {
+                photoPurchasePriceElement.textContent = '';
+                photoPurchaseContainer.classList.add('hidden');
+            }
+        }
+
         // Classement
         const rankingContainer = document.getElementById('detailsRankingContainer');
         const rankingElement = document.getElementById('detailsRanking');
@@ -3090,6 +3117,10 @@
                 }
                 if (priceElement) {
                     priceElement.innerHTML = `<span class="inline-block filter blur-[4px] select-none text-green-800 font-semibold opacity-70 cursor-not-allowed" title="Prix confidentiel">25.00 €</span>`;
+                }
+                const photoPurchasePriceElement = document.getElementById('detailsPhotoPurchasePrice');
+                if (photoPurchasePriceElement && Number.isFinite(parseFloat(race.photoPurchasePrice))) {
+                    photoPurchasePriceElement.innerHTML = `<span class="inline-block filter blur-[4px] select-none text-amber-900 opacity-70 cursor-not-allowed" title="Prix confidentiel">${parseFloat(race.photoPurchasePrice).toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €</span>`;
                 }
             }
             if (effectivePrivacy.hideBib) {
