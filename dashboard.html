@@ -4064,12 +4064,16 @@
                     rightStatHtml = `<span class="text-xs sm:text-sm font-bold text-green-700">${roundedDist} km</span>`;
                 } else if (currentDetailStatType === 'price') {
                     const racePrice = parseFloat(race.price) || 0;
-                    const photoPrice = race.photoPurchase === true ? (parseFloat(race.photoPurchasePrice) || 0) : 0;
+                    const parsedPhotoPrice = parseFloat(race.photoPurchasePrice);
+                    const hasPhotoPrice = race.photoPurchasePrice !== undefined
+                        && race.photoPurchasePrice !== null
+                        && race.photoPurchasePrice !== ''
+                        && Number.isFinite(parsedPhotoPrice);
                     const totalRacePrice = getRaceTotalPrice(race, includePhotoPriceInDetails);
                     const formatPrice = value => value.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
                     rightStatHtml = `
                         <div class="text-[10px] sm:text-xs text-gray-500">Inscription : ${formatPrice(racePrice)} €</div>
-                        ${race.photoPurchase === true ? `<div class="text-[10px] sm:text-xs ${includePhotoPriceInDetails ? 'text-amber-700' : 'text-gray-400 line-through'}">Photo : ${photoPrice > 0 ? formatPrice(photoPrice) + ' €' : 'prix non renseigné'}</div>` : ''}
+                        ${race.photoPurchase === true ? `<div class="text-[10px] sm:text-xs ${includePhotoPriceInDetails ? 'text-amber-700' : 'text-gray-400 line-through'}">Photo : ${hasPhotoPrice ? formatPrice(parsedPhotoPrice) + ' €' : 'prix non renseigné'}</div>` : ''}
                         <div class="text-xs sm:text-sm font-bold ${totalRacePrice > 0 ? 'text-green-700' : 'text-gray-400'}">${formatPrice(totalRacePrice)} €</div>`;
                 } else {
                     rightStatHtml = `<span class="text-xs sm:text-sm font-bold text-green-700">+ ${roundedDist} km</span>`;
