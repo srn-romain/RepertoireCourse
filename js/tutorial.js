@@ -33,6 +33,12 @@
             position: 'bottom'
         },
         {
+            target: '#friendsBtn',
+            title: 'Amis 👥',
+            content: 'Retrouvez ici les fonctionnalités pour suivre le carnet d’autres utilisateurs et gérer les accès à votre propre carnet.',
+            position: 'bottom'
+        },
+        {
             target: '#addRaceBtn',
             title: 'Ajouter une course ➕',
             content: 'Ajoutez une nouvelle course à votre carnet. Astuce : si vous ne mettez pas de photo, l\'application cherchera automatiquement une image pertinente pour vous via le site web de la course ou son nom !',
