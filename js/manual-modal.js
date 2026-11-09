@@ -28,10 +28,8 @@ const manualModalHTML = `
                     </h4>
                     <div class="bg-green-50 border-l-4 border-green-500 p-4 rounded-r-lg mb-4">
                         <p class="text-gray-700 leading-relaxed">
-                            <strong class="text-green-800">Carnet de Courses</strong> est votre compagnon idéal pour
-                            centraliser, analyser et partager vos performances sportives.
-                            Que vous soyez coureur débutant ou confirmé, cette application vous aide à suivre votre
-                            progression et à atteindre vos objectifs.
+                            <strong class="text-green-800">Carnet de Courses</strong> centralise vos courses, vos
+                            statistiques et leur partage. Consultez les sections ci-dessous selon vos besoins.
                         </p>
                     </div>
                 </section>
@@ -46,9 +44,7 @@ const manualModalHTML = `
                             <h5 class="font-bold text-green-800 mb-2 flex items-center gap-2">
                                 <i class="fas fa-user-plus text-green-600"></i> Compte Personnel
                             </h5>
-                            <p class="text-sm text-gray-600 mb-2">Créez votre compte avec email et mot de passe pour
-                                des
-                                fonctionnalités complètes :</p>
+                            <p class="text-sm text-gray-600 mb-2">Créez un compte avec votre e-mail et un mot de passe :</p>
                             <ul class="text-sm text-gray-600 space-y-1 ml-4">
                                 <li>✓ Sauvegarde cloud sécurisée</li>
                                 <li>✓ Synchronisation multi-appareils</li>
@@ -65,14 +61,12 @@ const manualModalHTML = `
                         <i class="fas fa-user-group text-green-600"></i> Amis
                     </h4>
                     <div class="bg-white border border-green-100 rounded-lg p-4 shadow-sm">
-                        <p class="text-sm text-gray-700 mb-3">
-                            Depuis le bouton <strong>Amis</strong> du tableau de bord, recherchez un coureur par son pseudo et envoyez-lui une demande pour suivre son carnet.
-                        </p>
+                        <p class="text-sm text-gray-700 mb-3">Dans <strong>Amis</strong>, recherchez un pseudo et envoyez une demande pour suivre son carnet.</p>
                         <ul class="text-sm text-gray-600 space-y-1.5 ml-4">
-                            <li>• Le coureur choisit les accès qu’il vous accorde : son carnet, sa wishlist, ses statistiques, ses badges et les détails de ses courses.</li>
-                            <li>• Dans l’onglet <strong>Notifications</strong>, acceptez ou refusez les demandes reçues et gérez vos abonnés.</li>
-                            <li>• Une fois votre demande acceptée et l’accès au carnet autorisé, sélectionnez <strong>Voir le carnet</strong> dans vos abonnements.</li>
-                            <li>• Vous pouvez arrêter de suivre un coureur à tout moment ; vous pouvez aussi révoquer l’accès d’un abonné.</li>
+                            <li>• Le coureur choisit les accès accordés : carnet, wishlist, statistiques, badges et détails des courses.</li>
+                            <li>• Dans <strong>Notifications</strong>, acceptez ou refusez les demandes et gérez vos abonnés.</li>
+                            <li>• Après acceptation et autorisation d’accès au carnet, cliquez sur <strong>Voir le carnet</strong> dans vos abonnements.</li>
+                            <li>• Désabonnez-vous ou révoquez l’accès d’un abonné à tout moment.</li>
                         </ul>
                     </div>
                 </section>
@@ -85,12 +79,10 @@ const manualModalHTML = `
                     <div class="bg-white border border-green-100 rounded-lg overflow-hidden shadow-sm">
                         <img src="img/app_generale.png" alt="Interface générale" class="w-full h-auto">
                         <div class="p-4 bg-gray-50 space-y-2">
-                            <p class="text-sm text-gray-600">
-                                <strong>Vue d'ensemble :</strong> L'interface principale affiche votre tableau de bord avec statistiques récapitulatives, graphiques et liste de courses.
-                            </p>
+                            <p class="text-sm text-gray-600"><strong>Vue d'ensemble :</strong> statistiques, graphiques et liste de vos courses.</p>
                             <p class="text-xs text-green-800 bg-green-50 p-2.5 rounded-lg border border-green-200">
                                 <i class="fas fa-calculator text-green-600 mr-1.5"></i>
-                                <strong>Détail des calculs interactifs :</strong> Cliquez directement sur n'importe quelle statistique du bandeau (nombre de courses, kilomètres, D+, chrono) pour ouvrir une modale détaillée affichant l'addition exacte de chaque course avec vos parts de relais et triathlons.
+                                <strong>Détail des calculs :</strong> cliquez sur le nombre de courses, les kilomètres, le D+ ou le chrono pour voir le détail par course, y compris vos parts de relais et de triathlon.
                             </p>
                         </div>
                     </div>
@@ -108,7 +100,7 @@ const manualModalHTML = `
                             <h5 class="font-bold text-green-800 mb-2 flex items-center gap-2">
                                 <i class="fas fa-plus-circle text-green-600"></i> Ajouter une Course
                             </h5>
-                            <p class="text-sm text-gray-600 mb-2">Cliquez sur le bouton <span
+                            <p class="text-sm text-gray-600 mb-2">Cliquez sur <span
                                     class="px-2 py-1 bg-green-600 text-white text-xs rounded-full">+ Nouvelle
                                     Course</span> en haut du tableau de bord.</p>
                             <div class="bg-gray-50 rounded p-3 mt-2">
@@ -126,7 +118,7 @@ const manualModalHTML = `
                                     <div>• Image automatique (Web/Nom)</div>
                                     <div>• Fichier GPX</div>
                                     <div>• Notes personnelles avec éditeur</div>
-                                    <div>• Achat photo et prix</div>
+                                    <div>• Achat photo (prix inclus dans les dépenses)</div>
                                     <div>• Statut favori</div>
                                     <div>• Partage public</div>
                                     <div>• Accompagnants avec type coureur ou spectateur</div>
@@ -135,9 +127,9 @@ const manualModalHTML = `
                                     <div>• Lien Google Drive en ligne</div>
                                 </div>
                                 <p class="text-xs text-gray-600 mt-3">
-                                    <strong>Classements :</strong> renseignez votre position et le nombre de participants pour le général, le genre et la catégorie. Pour le classement par catégorie, sélectionnez votre catégorie d’âge FFA dans la liste.
+                                    <strong>Classements :</strong> saisissez votre position et le nombre de participants (général, genre, catégorie). Pour la catégorie, sélectionnez votre catégorie d’âge FFA.
                                 </p>
-                                <p class="text-xs text-gray-600 mt-3">Pour un accompagnant coureur, le bouton « + » permet d’ajouter son temps et son classement. Indiquez s’il a couru la même course ; sinon, précisez sa distance et son dénivelé. Son palmarès est consultable dans le détail de la course.</p>
+                                <p class="text-xs text-gray-600 mt-3">Pour ajouter le temps et le classement d’un accompagnant coureur, cliquez sur « + ». Précisez s’il a couru la même course ; sinon, indiquez distance et dénivelé. Son palmarès figure dans le détail de la course.</p>
                             </div>
                         </div>
 
@@ -147,18 +139,13 @@ const manualModalHTML = `
                                 <h5 class="font-bold text-blue-800 mb-2 flex items-center gap-2">
                                     <i class="fas fa-edit text-blue-600"></i> Modifier
                                 </h5>
-                                <p class="text-sm text-gray-600">Cliquez sur l'icône <i
-                                        class="fas fa-pencil-alt text-blue-600"></i> dans une carte de course pour
-                                    modifier ses informations.</p>
+                                <p class="text-sm text-gray-600">Cliquez sur <i class="fas fa-pencil-alt text-blue-600"></i> sur une carte pour modifier la course.</p>
                             </div>
                             <div class="bg-white border border-red-100 rounded-lg p-4 shadow-sm">
                                 <h5 class="font-bold text-red-800 mb-2 flex items-center gap-2">
                                     <i class="fas fa-trash text-red-600"></i> Supprimer
                                 </h5>
-                                <p class="text-sm text-gray-600">Cliquez sur l'icône <i
-                                        class="fas fa-trash text-red-600"></i> et confirmez la suppression
-                                    définitive.
-                                </p>
+                                <p class="text-sm text-gray-600">Cliquez sur <i class="fas fa-trash text-red-600"></i>, puis confirmez la suppression définitive.</p>
                             </div>
                         </div>
 
@@ -167,13 +154,11 @@ const manualModalHTML = `
                             <h5 class="font-bold text-purple-900 mb-2 flex items-center gap-2">
                                 <i class="fas fa-robot text-purple-600"></i> Prédiction IA personnalisée (Courses à venir)
                             </h5>
-                            <p class="text-sm text-gray-700 mb-2 leading-relaxed">
-                                Pour toute course <strong>à venir</strong>, une estimation de votre performance s'affiche dans la fiche détaillée de la course.
-                            </p>
+                            <p class="text-sm text-gray-700 mb-2 leading-relaxed">Pour une course <strong>à venir</strong>, la fiche détaillée peut estimer votre performance :</p>
                             <ul class="text-xs text-gray-600 space-y-1.5 ml-4">
-                                <li>• <strong>Prise en compte du terrain :</strong> L'algorithme adapte sa projection selon la discipline de la course (Route, Trail avec calcul du dénivelé D+, Relai...).</li>
-                                <li>• <strong>Calcul sur la distance réelle :</strong> Modélisation fine s'appuyant sur la formule athlétique de Peter Riegel et vos vitesses d'effort passées.</li>
-                                <li>• <strong>Condition d'activation :</strong> La prédiction s'affiche automatiquement dès que vous comptabilisez au moins <strong>5 courses complètes</strong> dans votre historique (avec distance et chrono). Si vous avez moins de 5 courses, rien de particulier ne s'affiche (affichage classique du statut).</li>
+                                <li>• <strong>Terrain :</strong> projection adaptée à la route, au trail (D+) et au relais.</li>
+                                <li>• <strong>Calcul :</strong> formule de Peter Riegel et vos performances d’effort passées.</li>
+                                <li>• <strong>Activation :</strong> nécessite au moins <strong>5 courses complètes</strong> avec distance et chrono ; sinon, le statut habituel reste affiché.</li>
                             </ul>
                         </div>
                     </div>
@@ -185,9 +170,7 @@ const manualModalHTML = `
                         <i class="fas fa-tasks text-emerald-600"></i> Sélection Multiple & Actions en masse
                     </h4>
                     <div class="bg-white border border-emerald-100 rounded-lg p-5 shadow-sm space-y-4">
-                        <p class="text-sm text-gray-700 leading-relaxed">
-                            Vous pouvez sélectionner plusieurs courses simultanément sur le tableau de bord pour effectuer des actions groupées rapidement et en toute sécurité.
-                        </p>
+                        <p class="text-sm text-gray-700 leading-relaxed">Sélectionnez plusieurs courses pour leur appliquer une action groupée.</p>
 
                         <div class="grid md:grid-cols-2 gap-4">
                             <div class="bg-emerald-50/60 border border-emerald-200 rounded-xl p-3.5">
@@ -195,9 +178,8 @@ const manualModalHTML = `
                                     <i class="fas fa-hand-pointer text-emerald-600"></i> Activation & Sélection
                                 </h5>
                                 <ul class="text-xs text-gray-600 space-y-1.5">
-                                    <li>• <strong>Clic prolongé :</strong> Maintenez le clic ou le doigt pendant ~500ms sur une carte pour la sélectionner et basculer en mode sélection.</li>
-                                    <li>• <strong>Bouton "Sélectionner" :</strong> Cliquez sur le bouton d'outils dans la barre de filtres pour activer ou désactiver manuellement le mode.</li>
-                                    <li>• <strong>Désélection automatique :</strong> Si vous décochez la dernière course sélectionnée (ou via "Tout désélec."), le mode se ferme automatiquement.</li>
+                                    <li>• <strong>Activer :</strong> clic ou appui long (~500 ms) sur une carte, ou bouton « Sélectionner » dans la barre de filtres.</li>
+                                    <li>• <strong>Quitter :</strong> recliquez sur le bouton ou désélectionnez la dernière course (« Tout désélec. »).</li>
                                 </ul>
                             </div>
 
@@ -206,10 +188,10 @@ const manualModalHTML = `
                                     <i class="fas fa-tools text-slate-600"></i> Actions en masse disponibles
                                 </h5>
                                 <ul class="text-xs text-gray-600 space-y-1.5">
-                                    <li>• <strong>Exporter :</strong> Téléchargez un fichier JSON unique contenant les courses sélectionnées.</li>
-                                    <li>• <strong>Note commune :</strong> Ajoutez une note concaténée à la fin des notes existantes de chaque course sélectionnée (avec un retour à la ligne automatique).</li>
-                                    <li>• <strong>Favoris :</strong> Marquez ou démarquez en lot les courses sélectionnées comme favorites.</li>
-                                    <li>• <strong>Suppression sécurisée :</strong> Supprimez les courses sélectionnées grâce à une modale de confirmation en 2 étapes.</li>
+                                    <li>• <strong>Exporter :</strong> téléchargez un seul fichier JSON des courses sélectionnées.</li>
+                                    <li>• <strong>Note commune :</strong> ajoutez une note à la fin de chaque note existante (avec retour à la ligne).</li>
+                                    <li>• <strong>Favoris :</strong> ajoutez ou retirez le statut favori en lot.</li>
+                                    <li>• <strong>Supprimer :</strong> confirmation en deux étapes.</li>
                                 </ul>
                             </div>
                         </div>
@@ -227,23 +209,23 @@ const manualModalHTML = `
                             <h5 class="font-bold text-green-800 mb-2 flex items-center gap-2">
                                 <i class="fas fa-hand-pointer text-green-600"></i> Boutons d'actions rapides
                             </h5>
-                            <p class="text-sm text-gray-600 mb-3">Personnalisez les raccourcis affichés en bas à gauche de chaque carte de course :</p>
+                            <p class="text-sm text-gray-600 mb-3">Personnalisez les raccourcis en bas à gauche des cartes :</p>
                             <ul class="space-y-2 text-sm text-gray-600">
                                 <li class="flex items-start gap-2">
                                     <i class="fas fa-arrows-alt text-green-600 mt-0.5"></i>
-                                    <span><strong>Interface intuitive :</strong> Utilisez le glisser-déposer (sur ordinateur) ou de simples clics (sur mobile) pour réorganiser vos boutons.</span>
+                                    <span><strong>Réorganiser :</strong> glisser-déposer sur ordinateur, clics sur mobile.</span>
                                 </li>
                                 <li class="flex items-start gap-2">
                                     <i class="fas fa-layer-group text-green-600 mt-0.5"></i>
-                                    <span><strong>Choix des boutons :</strong> Choisissez parmi Modifier, Supprimer, Favori, PDF, Site web, GPX, Drive, Résultats ou Export (téléchargement JSON d'une course individuelle). Par défaut, les boutons activés sont <strong>Modifier, Supprimer et PDF</strong>. Vous pouvez afficher jusqu'à 3 boutons par carte.</span>
+                                    <span><strong>Choix :</strong> Modifier, Supprimer, Favori, PDF, Site, GPX, Drive, Résultats ou Export JSON d’une course. Par défaut : <strong>Modifier, Supprimer et PDF</strong> ; jusqu’à 3 boutons par carte.</span>
                                 </li>
                                 <li class="flex items-start gap-2">
                                     <i class="fas fa-eye text-green-600 mt-0.5"></i>
-                                    <span><strong>Aperçu en temps réel :</strong> Visualisez immédiatement le résultat sur une carte d'exemple.</span>
+                                    <span><strong>Aperçu :</strong> visualisez le résultat sur une carte d’exemple.</span>
                                 </li>
                                 <li class="flex items-start gap-2">
                                     <i class="fas fa-image text-green-600 mt-0.5"></i>
-                                    <span><strong>Image par défaut :</strong> Choisissez d'afficher la photo de la course ou le tracé GPX. Un repli intelligent s'applique si l'image choisie est absente.</span>
+                                    <span><strong>Image :</strong> choisissez la photo ou le tracé GPX ; si l’image manque, l’autre s’affiche.</span>
                                 </li>
                             </ul>
                         </div>
@@ -253,7 +235,7 @@ const manualModalHTML = `
                             <h5 class="font-bold text-purple-800 mb-2 flex items-center gap-2">
                                 <i class="fas fa-tags text-purple-600"></i> Tags affichés sur les cartes
                             </h5>
-                            <p class="text-xs text-gray-500 mb-2">Badges affichables sur chaque carte :</p>
+                            <p class="text-xs text-gray-500 mb-2">Tags disponibles :</p>
                             <div class="flex flex-wrap gap-1.5 mb-3">
                                 <span class="inline-flex items-center gap-1 bg-green-50 border border-green-200 text-green-800 text-[10px] font-medium px-1.5 py-0.5 rounded"><i class="fas fa-ruler-horizontal text-green-500"></i> Distance</span>
                                 <span class="inline-flex items-center gap-1 bg-orange-50 border border-orange-200 text-orange-800 text-[10px] font-medium px-1.5 py-0.5 rounded"><i class="fas fa-mountain text-orange-500"></i> Dénivelé</span>
@@ -264,12 +246,12 @@ const manualModalHTML = `
                                 <span class="inline-flex items-center gap-1 bg-red-50 border border-red-200 text-red-800 text-[10px] font-medium px-1.5 py-0.5 rounded"><i class="fas fa-euro-sign text-red-500"></i> Prix</span>
                                 <span class="inline-flex items-center gap-1 bg-yellow-50 border border-yellow-200 text-yellow-800 text-[10px] font-medium px-1.5 py-0.5 rounded"><i class="fas fa-trophy text-yellow-500"></i> Classement</span>
                             </div>
-                            <p class="text-[11px] text-gray-500 italic">Cochez ou décochez chaque tag dans la section <strong>Tags affichés</strong> du panneau de configuration pour personnaliser l'affichage de toutes vos cartes en un clic.</p>
+                            <p class="text-[11px] text-gray-500 italic">Activez en un clic les tags souhaités dans <strong>Configurer la carte → Tags affichés</strong> pour toutes les cartes.</p>
                         </div>
                     </div>
                     <p class="text-[11px] text-blue-600 italic mt-3 flex items-center gap-2">
                         <i class="fas fa-lightbulb text-yellow-500"></i>
-                        <span>Cliquez sur le bouton <strong><i class="fas fa-cog mr-1"></i> Configurer la carte</strong> en haut du tableau de bord pour accéder à toutes ces options.</span>
+                        <span>Ouvrez <strong><i class="fas fa-cog mr-1"></i> Configurer la carte</strong> en haut du tableau de bord.</span>
                     </p>
                 </section>
 
@@ -279,19 +261,19 @@ const manualModalHTML = `
                         <i class="fab fa-google-drive text-green-600"></i> Dossier Google Drive
                     </h4>
                     <div class="bg-white border border-green-100 rounded-lg p-4 shadow-sm">
-                        <p class="text-sm text-gray-600 mb-3">Associez un dossier Google Drive à votre course pour centraliser vos documents (photos, certificats, factures) :</p>
+                        <p class="text-sm text-gray-600 mb-3">Associez un dossier Drive pour retrouver les documents de la course (photos, certificats, factures).</p>
                         <ul class="space-y-2 text-sm text-gray-600">
                             <li class="flex items-start gap-2">
                                 <i class="fas fa-link text-green-600 mt-0.5"></i>
-                                <span><strong>Configuration :</strong> Renseignez l'ID du dossier Drive dans le champ "ID Dossier Google Drive" lors de l'ajout ou la modification.</span>
+                                <span><strong>Associer :</strong> saisissez l’ID du dossier dans « ID Dossier Google Drive » à l’ajout ou à la modification.</span>
                             </li>
                             <li class="flex items-start gap-2">
                                 <i class="fas fa-folder-open text-green-600 mt-0.5"></i>
-                                <span><strong>Explorateur intégré :</strong> Un bouton <span class="px-2 py-1 bg-green-50 text-green-700 border border-green-200 rounded text-xs leading-none"><i class="fab fa-google-drive mr-1"></i>Dossier Drive</span> apparaît sur la fiche détail. Il ouvre un explorateur intégré pour naviguer dans vos fichiers.</span>
+                                <span><strong>Ouvrir :</strong> le bouton <span class="px-2 py-1 bg-green-50 text-green-700 border border-green-200 rounded text-xs leading-none"><i class="fab fa-google-drive mr-1"></i>Dossier Drive</span> de la fiche détail lance l’explorateur intégré.</span>
                             </li>
                             <li class="flex items-start gap-2">
                                 <i class="fas fa-th-large text-green-600 mt-0.5"></i>
-                                <span><strong>Vues :</strong> Basculez entre la vue "Miniature" (par défaut) et la vue "Liste" via le bouton dédié dans l'explorateur.</span>
+                                <span><strong>Affichage :</strong> alternez entre les vues « Miniature » (par défaut) et « Liste ».</span>
                             </li>
                         </ul>
                     </div>
@@ -303,15 +285,15 @@ const manualModalHTML = `
                         <i class="fas fa-link text-green-600"></i> Liens & Boutons d'accès rapide
                     </h4>
                     <div class="bg-white border border-orange-100 rounded-lg p-4 shadow-sm">
-                        <p class="text-sm text-gray-600 mb-3">Dans la fiche détail d'une course, plusieurs boutons peuvent apparaître si les informations sont renseignées :</p>
+                        <p class="text-sm text-gray-600 mb-3">La fiche détail affiche les boutons correspondant aux informations renseignées :</p>
                         <ul class="space-y-3 text-sm text-gray-600">
                             <li class="flex items-center gap-3">
                                 <span class="inline-flex items-center justify-center w-24 py-1 bg-blue-600 text-white rounded text-xs font-semibold shrink-0"><i class="fas fa-external-link-alt mr-1.5"></i>Site</span>
-                                <span><strong class="text-gray-800">Voir le site</strong> — lien officiel de l'événement.</span>
+                                <span><strong class="text-gray-800">Voir le site</strong> — site officiel.</span>
                             </li>
                             <li class="flex items-center gap-3">
                                 <span class="inline-flex items-center justify-center w-24 py-1 bg-orange-500 text-white rounded text-xs font-semibold shrink-0"><i class="fas fa-trophy mr-1.5"></i>Résultats</span>
-                                <span><strong class="text-gray-800">Voir les résultats</strong> — accès direct au classement en ligne.</span>
+                                <span><strong class="text-gray-800">Voir les résultats</strong> — classement en ligne.</span>
                             </li>
                             <li class="flex items-center gap-3">
                                 <span class="inline-flex items-center justify-center w-24 py-1 bg-green-600 text-white rounded text-xs font-semibold shrink-0"><i class="fas fa-route mr-1.5"></i>GPX</span>
@@ -319,18 +301,18 @@ const manualModalHTML = `
                             </li>
                              <li class="flex items-center gap-3">
                                 <span class="inline-flex items-center justify-center w-24 py-1 bg-green-50 text-green-700 border border-green-200 rounded text-xs font-semibold shrink-0"><i class="fab fa-google-drive mr-1.5"></i>Drive</span>
-                                <span><strong class="text-gray-800">Dossier Drive</strong> — accès à l'explorateur de fichiers intégré.</span>
+                                <span><strong class="text-gray-800">Dossier Drive</strong> — explorateur de fichiers intégré.</span>
                             </li>
                             <li class="flex items-center gap-3">
                                 <span class="inline-flex items-center justify-center w-24 py-1 bg-red-600 text-white rounded text-xs font-semibold shrink-0"><i class="fas fa-file-pdf mr-1.5"></i>PDF</span>
-                                <span><strong class="text-gray-800">Export PDF</strong> — générez un rapport esthétique de vos performances (avec nom de fichier unique et horodaté).</span>
+                                <span><strong class="text-gray-800">Export PDF</strong> — rapport de course avec nom de fichier horodaté et unique.</span>
                             </li>
                             <li class="flex items-center gap-3">
                                 <span class="inline-flex items-center justify-center w-24 py-1 bg-pink-100 border border-pink-200 text-pink-800 rounded text-xs font-semibold shrink-0"><i class="fas fa-file-export mr-1.5"></i>Export</span>
-                                <span><strong class="text-gray-800">Exporter la course</strong> — téléchargez la sauvegarde JSON de cette course spécifique.</span>
+                                <span><strong class="text-gray-800">Exporter la course</strong> — téléchargez sa sauvegarde JSON.</span>
                             </li>
                         </ul>
-                        <p class="text-xs text-gray-400 italic mt-3">💡 Ces boutons sont visibles uniquement dans la modale de détail d'une course.</p>
+                        <p class="text-xs text-gray-400 italic mt-3">Ces boutons apparaissent dans la modale de détail.</p>
                     </div>
                 </section>
 
@@ -357,14 +339,12 @@ const manualModalHTML = `
                             <h5 class="font-bold text-blue-800 mb-2 flex items-center gap-2">
                                 🏊‍♂️🚴‍♂️🏃‍♂️ Triathlon
                             </h5>
-                            <p class="text-sm text-gray-600 mb-2">En sélectionnant le type "Triathlon", détaillez
-                                chaque
-                                épreuve :</p>
+                            <p class="text-sm text-gray-600 mb-2">Pour un triathlon, renseignez :</p>
                             <ul class="text-xs text-gray-600 ml-4 space-y-1">
                                 <li>• <strong>Natation :</strong> Distance (m) et Temps</li>
                                 <li>• <strong>Vélo :</strong> Distance (km), D+ (m), D- (m) et Temps</li>
                                 <li>• <strong>Course à pied :</strong> Distance (km), D+ (m), D- (m) et Temps</li>
-                                <li class="text-xs text-blue-400 italic">💡 Les totaux D+ et D- sont calculés automatiquement à partir des segments vélo et CAP.</li>
+                                <li class="text-xs text-blue-400 italic">Les totaux D+ et D- sont calculés à partir du vélo et de la course à pied.</li>
                             </ul>
                         </div>
 
@@ -375,21 +355,18 @@ const manualModalHTML = `
                             <h5 class="font-bold text-blue-800 mb-2 flex items-center gap-2">
                                 <i class="fas fa-users"></i> Courses en Relais
                             </h5>
-                            <p class="text-sm text-gray-600 mb-2">Gérez les courses d'équipe avec précision :</p>
+                            <p class="text-sm text-gray-600 mb-2">Dans le tableau de relais :</p>
                             <ul class="text-xs text-gray-600 ml-4 space-y-1">
-                                <li>• <strong>Relais Classique :</strong> Utilisez le "Tableau de Relais" pour
-                                    ajouter chaque segment avec son <strong>coureur</strong> (nom personnalisé ou option <strong>"Personne"</strong> pour ne pas comptabiliser les stats), sa <strong>distance</strong>, son <strong>D+</strong>, son <strong>D-</strong> et son <strong>temps</strong>.</li>
-                                <li>• <strong>Attribution "Personne" :</strong> Permet de ne lier un relais à aucun participant. Ce relais s'affiche sous la mention <code>"-"</code> et ses données (km, dénivelé, temps) ne sont imputées à personne.</li>
-                                <li>• <strong>Calculs Automatiques :</strong> Les totaux de distance et de dénivelé sont recalculés en temps réel selon les segments saisis.</li>
-                                <li>• <strong>Commentaires de relais :</strong> Saisissez des remarques/commentaires pour chaque segment du relais. Dans les PDF, ils s'affichent sous forme de blocs dédiés, centrés et bien alignés.</li>
-                                <li>• <strong>Export PDF ciblé & unique :</strong> Téléchargez uniquement le tableau détaillé de vos relais grâce à un bouton d'export dédié. Le PDF généré possède un nom de fichier unique à la seconde près et centre le dernier coéquipier si le nombre de participants est impair.</li>
-                                <li>• <strong>Horaires ergonomiques :</strong> Si l'heure de départ de la course est renseignée et que tous les segments ont un temps valide, cliquez sur n'importe quelle ligne de segment pour déplier les horaires associés (Départ / Arrivée) de façon centrée sans défilement horizontal.</li>
-                                <li>• <strong>Dénivelé unifié & compact :</strong> Les dénivelés D+ et D- sont combinés sur une seule ligne (ex: '↑500m ↓200m' ou seulement '↑500m' si D- est nul) pour éviter les retours à la ligne disgracieux. Les PDF utilisent le format simplifié '+' / '-'.</li>
-                                <li>• <strong>Détail des relais effectués :</strong> Le numéro des relais courus par chaque coéquipier est affiché à côté de son total de relais, par exemple : <code>2 relais effectués (1, 3)</code>.</li>
-                                <li>• <strong>Pseudo connecté :</strong> Vos propres relais affichent automatiquement votre pseudo dynamique d'utilisateur (ou du propriétaire du carnet) au lieu de la mention standard « Moi ».</li>
-                                <li>• <strong>Triathlon en Relais :</strong> Sélectionnez "En équipe (Relais)" puis
-                                    choisissez votre discipline (Nageur, Cycliste ou Coureur) pour n'enregistrer que
-                                    votre partie.</li>
+                                <li>• <strong>Saisie :</strong> pour chaque segment, indiquez le coureur (nom personnalisé ou « Personne »), la distance, les D+ / D- et le temps.</li>
+                                <li>• <strong>« Personne » :</strong> le segment s’affiche « - » et ses kilomètres, dénivelés et temps ne sont attribués à personne.</li>
+                                <li>• <strong>Totaux :</strong> distances et dénivelés se recalculent en temps réel.</li>
+                                <li>• <strong>Commentaires :</strong> ajoutez une remarque par segment ; le PDF l’affiche dans un bloc dédié, centré et aligné.</li>
+                                <li>• <strong>PDF relais :</strong> exportez uniquement le tableau. Le nom du fichier est unique à la seconde ; le dernier coéquipier est centré si l’équipe est impaire.</li>
+                                <li>• <strong>Horaires :</strong> avec l’heure de départ et un temps valide pour chaque segment, cliquez sur une ligne pour voir ses heures de départ et d’arrivée, de façon centrée et sans défilement horizontal.</li>
+                                <li>• <strong>Dénivelés :</strong> D+ et D- tiennent sur une ligne (ex. « ↑500m ↓200m » ; si D- est nul, seul D+ apparaît). Le PDF utilise les signes + / -.</li>
+                                <li>• <strong>Relais effectués :</strong> le numéro des segments de chaque coéquipier accompagne son total (ex. « 2 relais effectués (1, 3) »).</li>
+                                <li>• <strong>Votre pseudo :</strong> remplace automatiquement « Moi » sur vos relais (ou ceux du propriétaire du carnet).</li>
+                                <li>• <strong>Triathlon en relais :</strong> choisissez « En équipe (Relais) », puis votre discipline (nage, vélo ou course à pied) ; seule votre partie est enregistrée.</li>
                             </ul>
                         </div>
                     </div>
@@ -403,9 +380,7 @@ const manualModalHTML = `
                     <div class="bg-white border border-green-100 rounded-lg overflow-hidden shadow-sm space-y-4">
                         <img src="img/stat.png" alt="Statistiques" class="w-full h-auto">
                         <div class="p-4 bg-gray-50">
-                            <p class="text-sm text-gray-600 mb-3">
-                                <strong>Graphiques interactifs :</strong> Visualisez votre progression avec plusieurs types de graphiques.
-                            </p>
+                            <p class="text-sm text-gray-600 mb-3"><strong>Graphiques interactifs :</strong> suivez votre progression avec :</p>
                             <div class="grid md:grid-cols-2 gap-2 text-xs text-gray-600">
                                 <div>📊 Distance par mois/année</div>
                                 <div>⛰️ Dénivelé D+ cumulé</div>
@@ -422,21 +397,19 @@ const manualModalHTML = `
                             <h5 class="font-bold text-emerald-900 text-sm mb-2 flex items-center gap-2">
                                 <i class="fas fa-tachometer-alt text-emerald-600"></i> Allures de référence, RP & Indice de fatigue
                             </h5>
-                            <p class="text-xs text-gray-700 mb-3 leading-relaxed">
-                                Dans la modale de statistiques, un encart dédié analyse vos données de courses pour vous fournir des repères athlétiques précis :
-                            </p>
+                            <p class="text-xs text-gray-700 mb-3 leading-relaxed">La modale de statistiques fournit ces repères à partir de vos courses :</p>
                             <div class="grid md:grid-cols-3 gap-3 text-xs text-gray-700">
                                 <div class="bg-white p-3 rounded-lg border border-emerald-200 shadow-2xs">
                                     <p class="font-bold text-emerald-800 mb-1">⏱️ Allures moyennes</p>
-                                    <p class="text-gray-600">Estimation de vos temps et allures pour <strong>1 km</strong>, <strong>10 km</strong> et le <strong>semi-marathon</strong>, ajustée à votre dénivelé réel.</p>
+                                    <p class="text-gray-600">Temps et allures estimés sur <strong>1 km</strong>, <strong>10 km</strong> et <strong>semi-marathon</strong>, ajustés au dénivelé.</p>
                                 </div>
                                 <div class="bg-white p-3 rounded-lg border border-emerald-200 shadow-2xs">
                                     <p class="font-bold text-emerald-800 mb-1">🥇 Records Personnels (RP)</p>
-                                    <p class="text-gray-600">Mise en avant immédiate de votre meilleur chrono historique pour chaque distance de référence.</p>
+                                    <p class="text-gray-600">Votre meilleur chrono historique pour chaque distance de référence.</p>
                                 </div>
                                 <div class="bg-white p-3 rounded-lg border border-emerald-200 shadow-2xs">
                                     <p class="font-bold text-emerald-800 mb-1">❤️ Indice de fatigue</p>
-                                    <p class="text-gray-600">Calcul basé sur la formule athlétique de Peter Riegel. Cliquez sur le badge pour ouvrir la mini-modale explicative interactive.</p>
+                                    <p class="text-gray-600">Calculé avec la formule de Peter Riegel. Cliquez sur le badge pour l’explication interactive.</p>
                                 </div>
                             </div>
                         </div>
@@ -446,12 +419,10 @@ const manualModalHTML = `
                             <h5 class="font-bold text-blue-900 text-sm mb-2 flex items-center gap-2">
                                 <i class="fas fa-chart-line text-blue-600"></i> Courbe d'évolution des performances & Allure d'effort
                             </h5>
-                            <p class="text-xs text-gray-700 mb-2 leading-relaxed">
-                                Suivez vos progrès chronologiques grâce à une analyse physiologique équitable :
-                            </p>
+                            <p class="text-xs text-gray-700 mb-2 leading-relaxed">Suivez l’évolution de vos performances avec quatre métriques :</p>
                             <ul class="text-xs text-gray-600 space-y-1.5 ml-4">
-                                <li>• <strong>4 métriques au choix :</strong> Vitesse réelle (km/h), Vitesse d'effort avec D+ (Effort-km/h), Allure réelle (min/km) et Allure d'effort ajustée (min/km).</li>
-                                <li>• <strong>Repères vert et rouge équitables :</strong> La « Meilleure » et « Moins bonne » performance ne sont pas basées sur la vitesse brute, mais calculées selon l'effort réel (kilomètre-effort officiel D + D+/100, formule de Riegel et terrain). Un trail avec fort dénivelé est ainsi reconnu à sa juste valeur athlétique.</li>
+                                <li>• Vitesse (km/h), vitesse d’effort avec D+ (Effort-km/h), allure (min/km) et allure d’effort ajustée (min/km).</li>
+                                <li>• Les repères « Meilleure » et « Moins bonne » reposent sur l’effort réel : kilomètre-effort (distance + D+/100), formule de Riegel et terrain. Le dénivelé d’un trail est ainsi pris en compte.</li>
                             </ul>
                         </div>
                     </div>
@@ -463,9 +434,7 @@ const manualModalHTML = `
                         <i class="fas fa-trophy text-yellow-500"></i> Gamification, Missions & Records
                     </h4>
                     <div class="bg-white border border-yellow-200 rounded-lg p-5 shadow-sm space-y-4">
-                        <p class="text-sm text-gray-700 leading-relaxed">
-                            Progressez au fil de vos courses, débloquez des points d'expérience (XP) et mesurez-vous à la communauté grâce à notre univers gamifié complet.
-                        </p>
+                        <p class="text-sm text-gray-700 leading-relaxed">Gagnez des XP, débloquez des records et comparez-vous à la communauté.</p>
 
                         <div class="grid md:grid-cols-3 gap-3">
                             <div class="bg-amber-50/70 border border-amber-200 rounded-xl p-3.5">
@@ -473,9 +442,9 @@ const manualModalHTML = `
                                     <i class="fas fa-gamepad text-amber-600"></i> 120 Missions & 10 Niveaux
                                 </h5>
                                 <ul class="text-xs text-gray-600 space-y-1">
-                                    <li>• <strong>10 Paliers :</strong> De Tong jusqu'à Crampons d'Or.</li>
-                                    <li>• <strong>12 Missions par niveau :</strong> 10 000 XP à accumuler au total.</li>
-                                    <li>• <strong>Défis variés :</strong> Distances, régularité, dénivelés, tracés GPX, photos, météo et complétude des fiches.</li>
+                                    <li>• <strong>10 niveaux :</strong> de Tong à Crampons d’Or.</li>
+                                    <li>• <strong>12 missions par niveau :</strong> 10 000 XP au total.</li>
+                                    <li>• <strong>Défis :</strong> distance, régularité, dénivelé, GPX, photos, météo et complétude des fiches.</li>
                                 </ul>
                             </div>
 
@@ -484,8 +453,8 @@ const manualModalHTML = `
                                     <i class="fas fa-medal text-blue-600"></i> Cocardes Records
                                 </h5>
                                 <ul class="text-xs text-gray-600 space-y-1">
-                                    <li>• <strong>Vos 3 records suprêmes :</strong> Allure record (RP), D+ Max et Plus longue distance.</li>
-                                    <li>• <strong>Section repliable :</strong> Dépliez ou repliez l'écrin de records en un clic pour gagner de l'espace.</li>
+                                    <li>• <strong>3 records :</strong> allure (RP), D+ maximal et plus longue distance.</li>
+                                    <li>• <strong>Section repliable :</strong> ouvrez-la ou repliez-la en un clic.</li>
                                 </ul>
                             </div>
 
@@ -494,16 +463,16 @@ const manualModalHTML = `
                                     <i class="fas fa-users text-emerald-600"></i> Classement Live
                                 </h5>
                                 <ul class="text-xs text-gray-600 space-y-1">
-                                    <li>• <strong>Top 5 en direct :</strong> Basé sur les vrais scores XP enregistrés des coureurs.</li>
-                                    <li>• <strong>Votre rang personnel :</strong> Suivez votre position exacte en temps réel.</li>
-                                    <li>• <strong>Confidentialité :</strong> Affichez ou masquez votre pseudo du classement en 1 clic.</li>
+                                    <li>• <strong>Top 5 en direct :</strong> classé selon les XP enregistrés.</li>
+                                    <li>• <strong>Votre rang :</strong> position exacte mise à jour en temps réel.</li>
+                                    <li>• <strong>Confidentialité :</strong> masquez ou affichez votre pseudo en un clic.</li>
                                 </ul>
                             </div>
                         </div>
 
                         <p class="text-[11px] text-emerald-700 italic flex items-center gap-2 bg-emerald-50 p-2.5 rounded-lg border border-emerald-100">
                             <i class="fas fa-shield-alt text-emerald-600"></i>
-                            <span><strong>Calculs 100% fiables :</strong> Les jauges d'expérience, badges et statistiques prennent toujours en compte la totalité de vos courses enregistrées, même lorsqu'une recherche par filtre est active sur votre tableau de bord.</span>
+                            <span>Les jauges d’XP, badges et statistiques incluent toutes vos courses, même si le tableau de bord est filtré.</span>
                         </p>
                     </div>
                 </section>
@@ -514,9 +483,7 @@ const manualModalHTML = `
                         <i class="fas fa-search text-green-600"></i> Recherche Avancée
                     </h4>
                     <div class="bg-white border border-green-100 rounded-lg p-4 shadow-sm">
-                        <p class="text-sm text-gray-600 mb-3">Filtrez vos courses selon plusieurs critères
-                            simultanés :
-                        </p>
+                        <p class="text-sm text-gray-600 mb-3">Combinez plusieurs critères pour filtrer vos courses :</p>
                         <div class="grid md:grid-cols-3 gap-3">
                             <div class="bg-green-50 p-3 rounded">
                                 <p class="font-semibold text-green-800 text-sm mb-1">📅 Par Date</p>
@@ -533,9 +500,7 @@ const manualModalHTML = `
                         </div>
                         <p class="text-[11px] text-blue-600 italic mt-3 flex items-center gap-2">
                             <i class="fas fa-lightbulb text-yellow-500"></i>
-                             <span><strong>Recherche Intelligente :</strong> La barre de recherche principale ne se
-                              limite pas aux noms. Elle scanne instantanément toutes les données de vos courses
-                               (lieux, notes, numéro de dossard, accompagnants, etc.) pour vous offrir un résultat immédiat.</span>
+                             <span><strong>Recherche :</strong> la barre principale cherche dans tous les champs (lieu, notes, dossard, accompagnants, etc.), pas seulement dans les noms.</span>
                         </p>
                     </div>
                 </section>
@@ -546,44 +511,43 @@ const manualModalHTML = `
                         <i class="fas fa-heart text-green-600"></i> Wishlist & Courses Futures
                     </h4>
                     <div class="bg-white border border-blue-100 rounded-lg p-4 shadow-sm">
-                        <p class="text-sm text-gray-600 mb-3">Planifiez vos projets de course et enregistrez toutes leurs informations utiles :
-                        </p>
+                        <p class="text-sm text-gray-600 mb-3">Planifiez vos courses à venir dans la wishlist :</p>
                         <ul class="space-y-2 text-sm text-gray-600">
                             <li class="flex items-start gap-2">
                                 <i class="fas fa-check-circle text-green-600 mt-0.5"></i>
-                                <span><strong>Date & Lien du site :</strong> Lors de l'édition de la wishlist, vous pouvez saisir la date prévue de la course ainsi que l'URL de son site officiel.</span>
+                                <span><strong>Date et site :</strong> renseignez la date prévue et l’URL officielle.</span>
                             </li>
                             <li class="flex items-start gap-2">
                                 <i class="fas fa-check-circle text-green-600 mt-0.5"></i>
-                                <span><strong>Tri par date ou par nom :</strong> Triez vos courses en un clic par date ou par nom au sein de chaque discipline (Route, Trail, Triathlon, Relai), en consultation comme en édition. Cliquez à nouveau sur le bouton actif pour inverser l'ordre.</span>
+                                <span><strong>Tri :</strong> triez par date ou nom, par discipline (Route, Trail, Triathlon, Relai), en consultation ou édition. Recliquez pour inverser l’ordre.</span>
                             </li>
                             <li class="flex items-start gap-2">
                                 <i class="fas fa-check-circle text-green-600 mt-0.5"></i>
-                                <span><strong>Lien cliquable direct :</strong> Cliquez sur le nom de la course dans votre wishlist pour être redirigé vers son site officiel.</span>
+                                <span><strong>Accès au site :</strong> cliquez sur le nom de la course.</span>
                             </li>
                             <li class="flex items-start gap-2">
                                 <i class="fas fa-check-circle text-green-600 mt-0.5"></i>
-                                <span><strong>Date d'ajout (Tooltip & Clic prolongé) :</strong> Survolez la course (ou faites un clic prolongé sur mobile) pour afficher la date exacte à laquelle vous l'avez ajoutée à votre wishlist.</span>
+                                <span><strong>Date d’ajout :</strong> survolez la course ou faites un appui long sur mobile pour voir la date exacte.</span>
                             </li>
                             <li class="flex items-start gap-2">
                                 <i class="fas fa-check-circle text-green-600 mt-0.5"></i>
-                                <span><strong>Reprise automatique :</strong> Lorsque vous ajoutez une course depuis la wishlist, son nom, sa catégorie, sa date et le lien du site sont automatiquement injectés dans le formulaire d'ajout.</span>
+                                <span><strong>Ajout au carnet :</strong> le nom, la catégorie, la date et le lien sont repris automatiquement dans le formulaire.</span>
                             </li>
                             <li class="flex items-start gap-2">
                                 <i class="fas fa-check-circle text-green-600 mt-0.5"></i>
-                                <span><strong>Copie rapide & Liste à puces :</strong> Copiez instantanément le nom de vos courses grâce au bouton discret situé à côté de chaque titre de catégorie, ou copiez toute votre wishlist organisée par type de course via le bouton dédié en bas de la modale.</span>
+                                <span><strong>Copier :</strong> copiez un nom près du titre de sa catégorie, ou toute la wishlist organisée par type via le bouton en bas de la modale.</span>
                             </li>
                             <li class="flex items-start gap-2">
                                 <i class="fas fa-check-circle text-green-600 mt-0.5"></i>
-                                <span><strong>Onglets par discipline & Thèmes colorés :</strong> En mode édition, des onglets avec compteurs et codes couleur dédiés (Route, Trail, Triathlon, Relai) permettent de filtrer instantanément vos courses. Chaque course se présente sous forme de carte repliable/dépliable aux couleurs de sa discipline.</span>
+                                <span><strong>Disciplines :</strong> en édition, filtrez via des onglets colorés et comptés (Route, Trail, Triathlon, Relai). Chaque course est une carte repliable aux couleurs de sa discipline.</span>
                             </li>
                             <li class="flex items-start gap-2">
                                 <i class="fas fa-check-circle text-green-600 mt-0.5"></i>
-                                <span><strong>Étoiles de favori au choix :</strong> Lors de l'ajout d'une course depuis la wishlist, vos courses favorites sont immédiatement repérables grâce à une étoile (★) affichée dans la liste déroulante de sélection.</span>
+                                <span><strong>Favoris :</strong> une étoile (★) distingue les favoris dans la liste de sélection.</span>
                             </li>
                             <li class="flex items-start gap-2">
                                 <i class="fas fa-check-circle text-green-600 mt-0.5"></i>
-                                <span><strong>Ajout depuis les courses publiques :</strong> Sur la page d'accueil, cliquez sur le bouton « + Wishlist » présent sur les courses des autres coureurs pour importer directement leur nom, discipline, date et site web dans votre wishlist.</span>
+                                <span><strong>Depuis les courses publiques :</strong> « + Wishlist » importe le nom, la discipline, la date et le site dans votre wishlist.</span>
                             </li>
                         </ul>
                     </div>
@@ -596,36 +560,30 @@ const manualModalHTML = `
                     </h4>
                     <div class="bg-white border border-red-100 rounded-lg p-4 shadow-sm space-y-4">
                         <div>
-                            <p class="text-sm text-gray-600 mb-3">Encouragez les autres coureurs et créez du lien !</p>
                             <ul class="space-y-2 text-sm text-gray-600">
                                 <li class="flex items-start gap-2">
                                     <i class="fas fa-check-circle text-green-600 mt-0.5"></i>
-                                    <span><strong>Aimer :</strong> Cliquez sur le cœur <i
-                                            class="fas fa-heart text-red-500"></i> pour féliciter une
-                                        performance.</span>
+                                    <span><strong>Aimer :</strong> cliquez sur le cœur <i class="fas fa-heart text-red-500"></i> pour saluer une performance.</span>
                                 </li>
                                 <li class="flex items-start gap-2">
                                     <i class="fas fa-check-circle text-green-600 mt-0.5"></i>
-                                    <span><strong>Voir les "J'aime" :</strong> Cliquez sur le compteur de "J'aime" pour
-                                        voir
-                                        la liste des personnes qui ont aimé la course.</span>
+                                    <span><strong>Voir les « J’aime » :</strong> cliquez sur le compteur pour voir qui a aimé la course.</span>
                                 </li>
                                 <li class="flex items-start gap-2">
                                     <i class="fas fa-info-circle text-blue-600 mt-0.5"></i>
-                                    <span><strong>Confidentialité :</strong> Vous pouvez <strong>masquer le nombre de
-                                            J'aime</strong> sur VOS courses dans les paramètres de compte.</span>
+                                    <span><strong>Confidentialité :</strong> masquez le nombre de « J’aime » de vos courses dans les paramètres.</span>
                                 </li>
                                 <li class="flex items-start gap-2">
                                     <i class="fas fa-globe text-green-600 mt-0.5"></i>
-                                    <span><strong>Partage public :</strong> Activez le partage pour chaque course individuellement pour qu'elle soit visible par la communauté.</span>
+                                    <span><strong>Partage public :</strong> rendez chaque course visible par la communauté individuellement.</span>
                                 </li>
                                 <li class="flex items-start gap-2">
                                     <i class="fas fa-eye text-blue-600 mt-0.5"></i>
-                                    <span><strong>Découvrir :</strong> Consultez les performances des autres coureurs sur la page d'accueil de l'application.</span>
+                                    <span><strong>Découvrir :</strong> consultez les performances des autres coureurs sur la page d’accueil.</span>
                                 </li>
                                 <li class="flex items-start gap-2">
                                     <i class="fas fa-layer-group text-green-600 mt-0.5"></i>
-                                    <span><strong>Courses identiques en pile :</strong> Si plusieurs membres participent à la même épreuve, les cartes se superposent en pile interactive. Feuilletez-les avec le bouton ‹ › ou la molette.</span>
+                                    <span><strong>Courses identiques :</strong> les courses de plusieurs membres sur la même épreuve sont regroupées en pile. Parcourez-les avec ‹ › ou la molette.</span>
                                 </li>
                             </ul>
                         </div>
@@ -637,11 +595,10 @@ const manualModalHTML = `
                             <h5 class="font-bold text-green-900 mb-2 flex items-center gap-2">
                                 <i class="fas fa-globe-europe text-green-600"></i> Compteur Kilométrique Collectif
                             </h5>
-                            <p class="text-sm text-gray-600 mb-2">Un suivi en direct des efforts de toute la communauté :</p>
                             <ul class="text-xs text-gray-600 ml-4 space-y-1.5">
-                                <li>• <strong>Cumul global :</strong> La page d'accueil affiche le cumul total des kilomètres parcourus par l'ensemble des membres de la communauté.</li>
-                                <li>• <strong>Contribution personnelle :</strong> Lorsque vous êtes connecté, l'application calcule automatiquement votre pourcentage de contribution au total collectif ainsi que votre kilométrage personnel cumulé.</li>
-                                <li>• <strong>Optimisation & Vitesse :</strong> Chargement instantané grâce à un cache local intelligent sans surcoût de chargement.</li>
+                                <li>• <strong>Cumul global :</strong> total des kilomètres de la communauté, affiché sur la page d’accueil.</li>
+                                <li>• <strong>Votre contribution :</strong> connecté, consultez votre part du total et vos kilomètres cumulés.</li>
+                                <li>• <strong>Chargement :</strong> cache local pour un affichage instantané sans chargement supplémentaire.</li>
                             </ul>
                         </div>
 
@@ -652,11 +609,10 @@ const manualModalHTML = `
                             <h5 class="font-bold text-gray-800 mb-2 flex items-center gap-2">
                                 <i class="fas fa-star text-yellow-400"></i> Avis Communautaires
                             </h5>
-                            <p class="text-sm text-gray-600 mb-2">Partagez votre expérience sur l'application :</p>
                             <ul class="text-xs text-gray-600 ml-4 space-y-1.5">
-                                <li>• <strong>Comment faire :</strong> Allez dans vos <i class="fas fa-cog"></i> <strong>Paramètres</strong> pour laisser une note (1 à 5 étoiles) et un message.</li>
-                                <li>• <strong>Visibilité :</strong> Votre avis s'affiche dans le carrousel sur la page d'accueil avec votre photo de profil.</li>
-                                <li>• <strong>Gestion :</strong> Vous pouvez modifier, mettre en brouillon ou supprimer votre avis à tout moment depuis vos paramètres.</li>
+                                <li>• <strong>Déposer :</strong> dans <i class="fas fa-cog"></i> <strong>Paramètres</strong>, donnez 1 à 5 étoiles et rédigez un message.</li>
+                                <li>• <strong>Affichage :</strong> votre avis et votre photo de profil apparaissent dans le carrousel d’accueil.</li>
+                                <li>• <strong>Gérer :</strong> modifiez, mettez en brouillon ou supprimez votre avis depuis les paramètres.</li>
                             </ul>
                         </div>
                     </div>
@@ -668,20 +624,17 @@ const manualModalHTML = `
                         <i class="fas fa-cog text-green-600"></i> Paramètres du Compte
                     </h4>
                     <div class="bg-white border border-green-100 rounded-lg p-4 shadow-sm">
-                        <p class="text-sm text-gray-600 mb-3">Accédez aux paramètres via l'icône <i
-                                class="fas fa-cog text-gray-600"></i> dans le bandeau de connexion (ou "Compte" sur
-                            mobile). Vous y trouverez :</p>
+                        <p class="text-sm text-gray-600 mb-3">Ouvrez les paramètres avec <i class="fas fa-cog text-gray-600"></i> dans le bandeau de connexion, ou « Compte » sur mobile.</p>
 
                         <div class="space-y-3">
                             <!-- Profil -->
                             <div class="bg-gray-50 p-3 rounded border border-gray-100">
                                 <p class="font-semibold text-gray-800 text-sm mb-1 flex items-center gap-2"><i
                                         class="fas fa-user-edit text-green-600"></i> Profil & Photo</p>
-                                <p class="text-xs text-gray-600 mb-2">Personnalisez votre identité sur la plateforme.</p>
                                 <ul class="text-[10px] text-gray-500 list-disc ml-4 space-y-1">
-                                    <li><strong>Pseudo :</strong> Changez votre nom d'affichage public.</li>
-                                    <li><strong>Photo de profil :</strong> Importez une image (max 600 Ko) pour personnaliser votre compte. La photo est stockée de manière sécurisée et s'affiche sur vos courses publiques.</li>
-                                    <li><strong>Avatar par défaut :</strong> Si vous n'avez pas de photo, un avatar coloré est généré automatiquement à partir de votre pseudo.</li>
+                                    <li><strong>Pseudo :</strong> modifiez votre nom public.</li>
+                                    <li><strong>Photo de profil :</strong> importez une image (600 Ko max), stockée de façon sécurisée et affichée sur vos courses publiques.</li>
+                                    <li><strong>Avatar :</strong> un avatar coloré basé sur votre pseudo est créé si vous n’ajoutez pas de photo.</li>
                                 </ul>
                             </div>
 
@@ -689,11 +642,10 @@ const manualModalHTML = `
                             <div class="bg-gray-50 p-3 rounded border border-gray-100">
                                 <p class="font-semibold text-gray-800 text-sm mb-1 flex items-center gap-2"><i
                                         class="fas fa-palette text-green-600"></i> Couleur de fond & Thème</p>
-                                <p class="text-xs text-gray-600 mb-2">Personnalisez l'ambiance visuelle de l'application selon vos goûts.</p>
                                 <ul class="text-[10px] text-gray-500 list-disc ml-4 space-y-1">
-                                    <li><strong>8 teintes sobres et modernes :</strong> Vert Émeraude (défaut), Bleu Océan, Indigo Nuit, Sarcelle Lagon, Ambre Chaud, Rose Boisé, Pourpre Royal et Ardoise Zinc.</li>
-                                    <li><strong>Harmonisation instantanée :</strong> La couleur s'applique en temps réel au fond du site, aux boutons, aux bordures, aux badges et aux confettis de célébration.</li>
-                                    <li><strong>Sauvegarde automatique :</strong> Votre thème est synchronisé avec votre profil et conservé sur tous vos appareils.</li>
+                                    <li><strong>8 thèmes :</strong> Vert Émeraude (défaut), Bleu Océan, Indigo Nuit, Sarcelle Lagon, Ambre Chaud, Rose Boisé, Pourpre Royal et Ardoise Zinc.</li>
+                                    <li><strong>Application immédiate :</strong> fond, boutons, bordures, badges et confettis adoptent la couleur choisie.</li>
+                                    <li><strong>Synchronisation :</strong> thème sauvegardé automatiquement sur votre profil et repris sur vos appareils.</li>
                                 </ul>
                             </div>
 
@@ -701,14 +653,12 @@ const manualModalHTML = `
                             <div class="bg-gray-50 p-3 rounded border border-gray-100">
                                 <p class="font-semibold text-gray-800 text-sm mb-1 flex items-center gap-2"><i
                                         class="fas fa-user-secret text-green-600"></i> Confidentialité</p>
-                                <p class="text-xs text-gray-600 mb-1">Contrôlez ce que les autres voient sur vos
-                                    courses
-                                    publiques :</p>
+                                <p class="text-xs text-gray-600 mb-1">Choisissez les informations masquées sur vos courses publiques :</p>
                                 <ul class="text-xs text-gray-600 list-disc ml-4 space-y-0.5">
-                                    <li>Masquer votre pseudo dans vos courses publiques</li>
-                                    <li>Masquer la ville de la course</li>
-                                    <li>Masquer le statut "Favori"</li>
-                                    <li>Masquer le nombre de "J'aime"</li>
+                                    <li>Pseudo</li>
+                                    <li>Ville de la course</li>
+                                    <li>Statut favori</li>
+                                    <li>Nombre de « J’aime »</li>
                                 </ul>
                             </div>
 
@@ -716,23 +666,23 @@ const manualModalHTML = `
                             <div class="bg-gray-50 p-3 rounded border border-gray-100">
                                 <p class="font-semibold text-gray-800 text-sm mb-1 flex items-center gap-2"><i
                                         class="fas fa-sliders-h text-green-600"></i> Préférences d'interface</p>
-                                <p class="text-xs text-gray-600 mb-1">Simplifiez votre tableau de bord en masquant les boutons non utilisés :</p>
+                                <p class="text-xs text-gray-600 mb-1">Masquez les boutons inutilisés :</p>
                                 <ul class="text-xs text-gray-600 list-disc ml-4 space-y-0.5">
                                     <li>Masquer le bouton "Wishlist"</li>
                                     <li>Masquer le bouton "Statistiques"</li>
                                     <li>Masquer le bouton "Badges"</li>
                                 </ul>
-                                <p class="text-[10px] text-gray-400 italic mt-1">Par défaut, aucune information ni bouton n'est masqué.</p>
+                                <p class="text-[10px] text-gray-400 italic mt-1">Rien n’est masqué par défaut.</p>
                             </div>
 
                             <!-- Gestion des données -->
                             <div class="bg-gray-50 p-3 rounded border border-gray-100">
                                 <p class="font-semibold text-gray-800 text-sm mb-1 flex items-center gap-2"><i
                                         class="fas fa-database text-green-600"></i> Gestion des données</p>
-                                <p class="text-xs text-gray-600 mb-1">Importez ou exportez vos courses et votre wishlist directement depuis vos paramètres :</p>
+                                <p class="text-xs text-gray-600 mb-1">Importez ou exportez vos courses et votre wishlist :</p>
                                 <ul class="text-xs text-gray-600 list-disc ml-4 space-y-0.5">
-                                    <li><strong>Importer :</strong> Restaurez vos données depuis un fichier JSON de sauvegarde.</li>
-                                    <li><strong>Exporter :</strong> Téléchargez une copie complète de vos données (courses + wishlist).</li>
+                                    <li><strong>Importer :</strong> restaurez une sauvegarde JSON.</li>
+                                    <li><strong>Exporter :</strong> téléchargez une copie complète de vos courses et de votre wishlist.</li>
                                 </ul>
                             </div>
 
@@ -741,16 +691,9 @@ const manualModalHTML = `
                                 <p class="font-semibold text-gray-800 text-sm mb-1 flex items-center gap-2"><i
                                         class="fas fa-tools text-green-600"></i> Actions & Aide</p>
                                 <ul class="text-xs text-gray-600 space-y-1">
-                                    <li class="flex items-center gap-2"><i
-                                            class="fas fa-graduation-cap text-blue-500"></i> <strong>Tutoriel
-                                            :</strong>
-                                        Relancez le guide interactif (depuis le tableau de bord uniquement).</li>
-                                    <li class="flex items-center gap-2"><i class="fas fa-key text-red-500"></i>
-                                        <strong>Sécurité :</strong> Réinitialisez votre mot de passe.
-                                    </li>
-                                    <li class="flex items-center gap-2"><i class="fas fa-user-times text-red-500"></i>
-                                        <strong>Suppression du compte :</strong> Supprimez définitivement votre compte et vos données.
-                                    </li>
+                                    <li class="flex items-center gap-2"><i class="fas fa-graduation-cap text-blue-500"></i> <strong>Tutoriel :</strong> relancez-le depuis le tableau de bord.</li>
+                                    <li class="flex items-center gap-2"><i class="fas fa-key text-red-500"></i> <strong>Sécurité :</strong> réinitialisez votre mot de passe.</li>
+                                    <li class="flex items-center gap-2"><i class="fas fa-user-times text-red-500"></i> <strong>Suppression du compte :</strong> effacez définitivement votre compte et vos données.</li>
                                 </ul>
                             </div>
                         </div>
