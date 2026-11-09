@@ -3072,7 +3072,7 @@
                 const speedInfo = document.getElementById('averageSpeedInfo');
                 if (speedInfo) speedInfo.innerHTML = '';
             }
-            if (effectivePrivacy.hidePhotos) {
+            if (effectivePrivacy.hidePhotos && !window.isFriendView) {
                 const photoContainer = document.getElementById('detailsPhotoContainer');
                 const parcoursContainer = document.getElementById('detailsParcoursContainer');
                 const imageButton = document.getElementById('ImageButton');

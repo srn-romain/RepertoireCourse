@@ -5153,10 +5153,6 @@
                         displayedImageAlt = "Parcours course";
                     }
                 }
-                if (window.isFriendView && window.friendViewPrivacy?.hidePhotos === true) {
-                    displayedImage = null;
-                }
-
                 const raceDate = new Date(race.date);
                 const year = raceDate.getFullYear();
                 let locationDisplay = race.location || '';
@@ -5201,7 +5197,7 @@
                 // Vérifier si cette course possède l'une des 3 cocardes records
                 const raceCocardesInfo = (window.recordCocardes && window.recordCocardes.byRaceId && window.recordCocardes.byRaceId[race.id]) ? window.recordCocardes.byRaceId[race.id] : null;
                 const hasRecordCocarde = !!raceCocardesInfo
-                    && (!window.isFriendView || (window.friendViewPermissions?.badges === true && window.friendViewPrivacy?.hideStats !== true));
+                    && (!window.isFriendView || window.friendViewPermissions?.badges === true);
                 let cocardeRecordTitle = '';
                 let cocardeRecordEmoji = '🏅';
                 if (raceCocardesInfo) {
@@ -5236,8 +5232,8 @@
                     const allTags = [];
                     const cardTags = window.customCardTags || ['distance', 'elevation', 'location', 'terrain'];
                     const privacy = window.isFriendView ? window.friendViewPrivacy || {} : {};
-                    const showDistance = cardTags.includes('distance') && privacy.hideStats !== true;
-                    const showElevation = cardTags.includes('elevation') && privacy.hideStats !== true;
+                    const showDistance = cardTags.includes('distance');
+                    const showElevation = cardTags.includes('elevation');
                     const showLocation = cardTags.includes('location') && privacy.hideCity !== true;
                     const showTerrain = cardTags.includes('terrain');
                     const showTime = cardTags.includes('time') && privacy.hideStats !== true
