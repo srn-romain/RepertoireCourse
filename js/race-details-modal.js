@@ -143,6 +143,14 @@
                             </div>
                         </div>
 
+                        <div class="bg-amber-50 p-3 rounded-lg hidden col-span-2" id="detailsPassageContainer">
+                            <div class="flex items-center justify-center gap-2 mb-2">
+                                <i class="fas fa-flag-checkered text-amber-600"></i>
+                                <p class="text-[11px] text-amber-700 font-semibold uppercase tracking-wider">Point de passage</p>
+                            </div>
+                            <div id="detailsPassageList" class="overflow-x-auto"></div>
+                        </div>
+
                     </div>
 
                     <div id="detailsYearComparisonContainer" class="hidden mb-4"></div>
@@ -986,6 +994,17 @@
             subRow.classList.toggle('hidden');
             if (rowEl) {
                 const chevron = rowEl.querySelector('.relay-chevron');
+                if (chevron) chevron.classList.toggle('rotate-180');
+            }
+        }
+    };
+
+    window.togglePassageRow = function (subRowId, rowEl) {
+        const subRow = document.getElementById(subRowId);
+        if (subRow) {
+            subRow.classList.toggle('hidden');
+            if (rowEl) {
+                const chevron = rowEl.querySelector('.passage-chevron');
                 if (chevron) chevron.classList.toggle('rotate-180');
             }
         }
@@ -2426,6 +2445,83 @@
                             : `${genderRankPos}e`;
                     }
                 }
+            }
+        }
+
+        const passageContainer = document.getElementById('detailsPassageContainer');
+        const passageList = document.getElementById('detailsPassageList');
+        if (passageContainer && passageList) {
+            const passagePoints = Array.isArray(race.passagePoints) ? race.passagePoints : [];
+            const validPassagePoints = passagePoints.filter(point => point && (
+                point.km !== undefined && point.km !== null && point.km !== '' ||
+                point.rank !== undefined && point.rank !== null && point.rank !== '' ||
+                point.time !== undefined && point.time !== null && point.time !== ''
+            ));
+
+            if (validPassagePoints.length > 0) {
+                passageContainer.classList.remove('hidden');
+                const finalRank = Number.parseInt(race.rankPos, 10);
+                const passageRows = validPassagePoints.map((point, index) => {
+                    const kmRaw = point.km !== undefined && point.km !== null && point.km !== '' ? String(point.km).replace(',', '.') : '';
+                    const kmValue = kmRaw ? Number.parseFloat(kmRaw) : null;
+                    const kmText = Number.isFinite(kmValue)
+                        ? `${kmValue.toFixed(kmValue % 1 === 0 ? 0 : 2).replace(/\.0+$/, '').replace(/(\.\d*?)0+$/, '$1')} km`
+                        : 'km ?';
+                    const rankText = point.rank !== undefined && point.rank !== null && point.rank !== '' ? `${point.rank}e` : '-';
+                    const passageRank = Number.parseInt(point.rank, 10);
+                    const canCompareRank = Number.isFinite(passageRank) && passageRank > 0 && Number.isFinite(finalRank) && finalRank > 0;
+                    const placeDifference = canCompareRank ? passageRank - finalRank : 0;
+                    const subRowId = `passage-sub-${index}`;
+                    const rankChangeColor = placeDifference > 0
+                        ? 'text-green-700'
+                        : placeDifference < 0
+                            ? 'text-red-700'
+                            : 'text-gray-700';
+                    const rankChangeText = placeDifference > 0
+                        ? `Vous avez gagné ${placeDifference} place${placeDifference > 1 ? 's' : ''} jusqu’à l’arrivée`
+                        : placeDifference < 0
+                            ? `Vous avez perdu ${Math.abs(placeDifference)} place${Math.abs(placeDifference) > 1 ? 's' : ''} jusqu’à l’arrivée`
+                            : 'Classement inchangé jusqu’à l’arrivée';
+                    const rankDisplay = hasRankingValue(race.rankTotal)
+                        ? `<span class="font-bold text-amber-800">${rankText} / ${escapeHtml(race.rankTotal)}</span>`
+                        : `Classement : <span class="font-bold text-amber-800">${rankText}</span>`;
+                    const timeText = point.time && String(point.time).trim() ? String(point.time).trim() : '-';
+                    return `
+                        <tr class="${canCompareRank ? 'cursor-pointer select-none hover:bg-amber-50' : ''}" ${canCompareRank ? `onclick="window.togglePassageRow('${subRowId}', this)"` : ''}>
+                            <td class="px-2 py-1 font-semibold whitespace-nowrap">${kmText}</td>
+                            <td class="px-2 py-1">${rankDisplay}</td>
+                            <td class="px-2 py-1 font-mono text-[11px] whitespace-nowrap">${timeText}</td>
+                            <td class="px-2 py-1 text-center text-amber-500">${canCompareRank ? '<i class="fas fa-chevron-down passage-chevron text-[9px] transition-transform duration-200"></i>' : ''}</td>
+                        </tr>
+                        ${canCompareRank ? `
+                            <tr id="${subRowId}" class="hidden">
+                                <td colspan="4" class="px-3 py-2">
+                                    <div class="px-2 py-1.5 text-center text-[11px] font-semibold ${rankChangeColor}">
+                                        ${rankChangeText}
+                                    </div>
+                                </td>
+                            </tr>
+                        ` : ''}
+                    `;
+                }).join('');
+                passageList.innerHTML = `
+                    <table class="w-full text-xs text-left text-amber-800">
+                        <thead class="bg-amber-100 text-amber-900 uppercase font-semibold">
+                            <tr>
+                                <th class="px-2 py-1">Km</th>
+                                <th class="px-2 py-1">Classement</th>
+                                <th class="px-2 py-1">Temps</th>
+                                <th class="w-6 px-1 py-1" aria-label="Afficher l’évolution du classement"></th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-amber-200 bg-white">
+                            ${passageRows}
+                        </tbody>
+                    </table>
+                `;
+            } else {
+                passageContainer.classList.add('hidden');
+                passageList.innerHTML = '';
             }
         }
 
