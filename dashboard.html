@@ -5869,21 +5869,31 @@
                     const hiddenTags = originalTags.slice(visibleCount);
 
                     const moreBadgeHtml = `
-                        <div class="relative inline-block more-tags-trigger group/tag-more z-20 hover:z-50 focus:z-50" tabindex="0" onclick="event.stopPropagation(); if(event.target.closest('.more-tags-toggle')) { const tt = this.querySelector('.tag-tooltip'); if(tt) tt.classList.toggle('!flex'); }">
-                            <span class="more-tags-toggle flex items-center gap-1 px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs rounded-full font-bold border border-emerald-200/80 transition-all shadow-sm cursor-pointer select-none">
-                                +${hiddenTags.length}
-                            </span>
-                            <div class="tag-tooltip absolute top-full left-0 mt-2 hidden group-hover/tag-more:flex group-focus/tag-more:flex flex-col gap-1.5 p-3 bg-white/95 text-slate-800 text-xs rounded-xl shadow-xl shadow-emerald-900/10 z-50 w-max max-w-[270px] backdrop-blur-md border border-emerald-100/90 pointer-events-auto transition-all duration-200">
-                                <div class="absolute -top-1.5 left-4 border-4 border-transparent border-b-white"></div>
-                                <div class="text-[10px] font-bold text-emerald-800 uppercase tracking-wider border-b border-emerald-100 pb-1.5 flex justify-between items-center gap-3">
-                                    <span class="flex items-center gap-1.5"><i class="fas fa-tags text-emerald-500 text-[10px]"></i> Autres tags</span>
-                                    <span class="px-1.5 py-0.5 bg-emerald-100 text-emerald-800 rounded-full text-[9px] font-semibold">${hiddenTags.length}</span>
-                                </div>
-                                <div class="flex flex-wrap gap-1.5 pt-1">
-                                    ${hiddenTags.join('')}
-                                </div>
-                            </div>
-                        </div>
+                        <div class="relative inline-block more-tags-trigger group/tag-more z-20 hover:z-50"
+         onclick="event.stopPropagation();
+                  if (event.target.closest('.more-tags-toggle')) {
+                      const tt = this.querySelector('.tag-tooltip');
+                      if (tt) {
+                          const open = tt.classList.toggle('!flex');
+                          tt.classList.toggle('is-pinned', open);
+                          this.classList.toggle('z-50', open);
+                          this.classList.toggle('z-20', !open);
+                      }
+                  }">
+        <span class="more-tags-toggle flex items-center gap-1 px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs rounded-full font-bold border border-emerald-200/80 transition-all shadow-sm cursor-pointer select-none">
+            +${hiddenTags.length}
+        </span>
+        <div class="tag-tooltip absolute top-full left-0 mt-2 hidden group-hover/tag-more:flex flex-col gap-1.5 p-3 bg-white/95 text-slate-800 text-xs rounded-xl shadow-xl shadow-emerald-900/10 z-50 w-max max-w-[270px] backdrop-blur-md border border-emerald-100/90 pointer-events-auto transition-all duration-200">
+            <div class="absolute -top-1.5 left-4 border-4 border-transparent border-b-white"></div>
+            <div class="text-[10px] font-bold text-emerald-800 uppercase tracking-wider border-b border-emerald-100 pb-1.5 flex justify-between items-center gap-3">
+                <span class="flex items-center gap-1.5"><i class="fas fa-tags text-emerald-500 text-[10px]"></i> Autres tags</span>
+                <span class="px-1.5 py-0.5 bg-emerald-100 text-emerald-800 rounded-full text-[9px] font-semibold">${hiddenTags.length}</span>
+            </div>
+            <div class="flex flex-wrap gap-1.5 pt-1">
+                ${hiddenTags.join('')}
+            </div>
+        </div>
+    </div>
                     `;
 
                     container.innerHTML = visibleHtml + moreBadgeHtml;
@@ -5902,7 +5912,11 @@
             document.querySelectorAll('.more-tags-trigger').forEach(trigger => {
                 if (trigger === clickedTrigger) return;
                 const tooltip = trigger.querySelector('.tag-tooltip');
-                if (tooltip) tooltip.classList.remove('!flex');
+                if (tooltip) {
+                    tooltip.classList.remove('!flex', 'is-pinned');
+                    trigger.classList.remove('z-50');
+                    trigger.classList.add('z-20');
+                }
             });
         }, true);
 
