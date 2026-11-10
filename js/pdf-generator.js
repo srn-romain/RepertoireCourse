@@ -84,17 +84,77 @@ async function generateRacePdf(raceId) {
     yPos += 8;
 
     const tableData = [];
-    tableData.push(['Distance', `${race.distance} km`]);
+    if (race.terrain === 'triathlon' && race.raceFormat === 'team') {
+        const relaySport = race.raceRelaySport || 'run';
+        let userDistStr = `${race.distance} km`;
+        let userElevPlus = (race.elevation !== undefined && race.elevation !== null && race.elevation !== '') ? `${race.elevation} m D+` : null;
+        let userElevNeg = (race.elevationNeg !== undefined && race.elevationNeg !== null && race.elevationNeg !== '') ? `${race.elevationNeg} m D-` : null;
 
-    if (race.elevation !== undefined && race.elevation !== null && race.elevation !== '') {
-        tableData.push(['Dénivelé +', `${race.elevation} m D+`]);
+        if (relaySport === 'swim') {
+            const sM = parseFloat(race.swimDistance);
+            userDistStr = !isNaN(sM) && sM > 0 ? (sM > 999 ? `${(sM / 1000).toFixed(2)} km` : `${sM} m`) : `${race.distance} km`;
+            userElevPlus = null;
+            userElevNeg = null;
+        } else if (relaySport === 'bike') {
+            const bKm = parseFloat(race.bikeDistance);
+            userDistStr = !isNaN(bKm) && bKm > 0 ? `${bKm} km` : `${race.distance} km`;
+            userElevPlus = (race.bikeElevation !== undefined && race.bikeElevation !== null && race.bikeElevation !== '') ? `${race.bikeElevation} m D+` : null;
+            userElevNeg = (race.bikeElevationNeg !== undefined && race.bikeElevationNeg !== null && race.bikeElevationNeg !== '') ? `${race.bikeElevationNeg} m D-` : null;
+        } else if (relaySport === 'run') {
+            userElevPlus = (race.runElevation !== undefined && race.runElevation !== null && race.runElevation !== '')
+                ? `${race.runElevation} m D+`
+                : ((race.elevation !== undefined && race.elevation !== null && race.elevation !== '') ? `${race.elevation} m D+` : null);
+            userElevNeg = (race.runElevationNeg !== undefined && race.runElevationNeg !== null && race.runElevationNeg !== '')
+                ? `${race.runElevationNeg} m D-`
+                : ((race.elevationNeg !== undefined && race.elevationNeg !== null && race.elevationNeg !== '') ? `${race.elevationNeg} m D-` : null);
+        }
+
+        tableData.push(['Distance (Moi)', userDistStr]);
+        if (userElevPlus) tableData.push(['Dénivelé + (Moi)', userElevPlus]);
+        if (userElevNeg) tableData.push(['Dénivelé - (Moi)', userElevNeg]);
+
+        const sKm = (parseFloat(race.swimDistance) || 0) / 1000;
+        const bKm = parseFloat(race.bikeDistance) || 0;
+        const rKm = parseFloat(race.distance) || 0;
+        const totalTeamKm = sKm + bKm + rKm;
+        if (totalTeamKm > 0) {
+            tableData.push(['Distance (Équipe)', `${totalTeamKm.toFixed(2)} km`]);
+        }
+        const bDPlus = parseInt(race.bikeElevation) || 0;
+        const rDPlus = parseInt(race.runElevation) || (relaySport === 'run' ? (parseInt(race.elevation) || 0) : 0);
+        const totalDPlus = bDPlus + rDPlus;
+        if (totalDPlus > 0) {
+            tableData.push(['Dénivelé + (Équipe)', `${totalDPlus} m D+`]);
+        }
+        const bDNeg = parseInt(race.bikeElevationNeg) || 0;
+        const rDNeg = parseInt(race.runElevationNeg) || (relaySport === 'run' ? (parseInt(race.elevationNeg) || 0) : 0);
+        const totalDNeg = bDNeg + rDNeg;
+        if (totalDNeg > 0) {
+            tableData.push(['Dénivelé - (Équipe)', `${totalDNeg} m D-`]);
+        }
+
+        const userTime = relaySport === 'swim' ? race.swimTime : (relaySport === 'bike' ? race.bikeTime : (race.runTime || race.time));
+        if (userTime && userTime !== '00:00:00') {
+            tableData.push(['Temps (Moi)', userTime]);
+            if (race.time && race.time !== '00:00:00' && race.time !== userTime) {
+                tableData.push(['Temps (Équipe)', race.time]);
+            }
+        } else {
+            tableData.push(['Temps', race.time || 'Non renseigné']);
+        }
+    } else {
+        tableData.push(['Distance', `${race.distance} km`]);
+
+        if (race.elevation !== undefined && race.elevation !== null && race.elevation !== '') {
+            tableData.push(['Dénivelé +', `${race.elevation} m D+`]);
+        }
+
+        if (race.elevationNeg !== undefined && race.elevationNeg !== null && race.elevationNeg !== '') {
+            tableData.push(['Dénivelé -', `${race.elevationNeg} m D-`]);
+        }
+
+        tableData.push(['Temps', race.time || 'Non renseigné']);
     }
-
-    if (race.elevationNeg !== undefined && race.elevationNeg !== null && race.elevationNeg !== '') {
-        tableData.push(['Dénivelé -', `${race.elevationNeg} m D-`]);
-    }
-
-    tableData.push(['Temps', race.time || 'Non renseigné']);
 
     if (race.terrain) {
         const terrainFormatted = race.terrain.charAt(0).toUpperCase() + race.terrain.slice(1);
@@ -103,6 +163,16 @@ async function generateRacePdf(raceId) {
 
     if (race.price !== undefined && race.price !== null && race.price !== '') {
         tableData.push(['Prix', `${parseFloat(race.price).toFixed(2)} €`]);
+    }
+
+    // Prix de l'achat photo (juste en dessous de la ligne prix course)
+    const hasPhotoPurchasePrice = race.photoPurchasePrice !== undefined && race.photoPurchasePrice !== null && race.photoPurchasePrice !== '' && !isNaN(parseFloat(race.photoPurchasePrice));
+    if (race.photoPurchase === true || hasPhotoPurchasePrice) {
+        if (hasPhotoPurchasePrice) {
+            tableData.push(['Achat photo', `${parseFloat(race.photoPurchasePrice).toFixed(2)} €`]);
+        } else if (race.photoPurchase === true) {
+            tableData.push(['Achat photo', 'Oui']);
+        }
     }
 
     if (race.bibNumber) {
@@ -229,7 +299,7 @@ async function generateRacePdf(raceId) {
                 statsElevation = parseFloat(race.bikeElevation) || 0;
             } else if (race.raceRelaySport === 'run') {
                 statsDistance = parseFloat(race.distance) || 0;
-                statsElevation = parseFloat(race.runElevation) || 0;
+                statsElevation = parseFloat(race.runElevation || race.elevation) || 0;
             }
         } else {
             const swimKm = (parseFloat(race.swimDistance) || 0) / 1000;
@@ -254,8 +324,12 @@ async function generateRacePdf(raceId) {
     }
 
     // 3. Calcul de la vitesse et de la moyenne au km
-    if (race.time && !isNaN(statsDistance) && statsDistance > 0) {
-        const timeStr = race.time;
+    const timeForStats = (race.terrain === 'triathlon' && race.raceFormat === 'team')
+        ? (race.raceRelaySport === 'swim' ? race.swimTime : (race.raceRelaySport === 'bike' ? race.bikeTime : (race.runTime || race.time)))
+        : race.time;
+
+    if (timeForStats && !isNaN(statsDistance) && statsDistance > 0) {
+        const timeStr = timeForStats;
         const parts = timeStr.split(':');
         let hours = 0;
         if (parts.length === 3) {
@@ -375,26 +449,34 @@ async function generateRacePdf(raceId) {
         yPos += 10;
     }
 
-    // ─── SECTION TRIATHLON (solo uniquement) ──────────────────────────────────
+    // ─── SECTION TRIATHLON ────────────────────────────────────────────────────
     if (race.terrain === 'triathlon') {
         const isTeam = race.raceFormat === 'team';
         const relaySport = race.raceRelaySport; // 'swim', 'bike', or 'run'
 
-        // Determine which cards to show
-        const showSwim = !isTeam || relaySport === 'swim';
-        const showBike = !isTeam || relaySport === 'bike';
-        const showRun = !isTeam || relaySport === 'run';
-
-        const hasSwim = showSwim && (race.swimTime || race.swimDistance);
-        const hasBike = showBike && (race.bikeTime || race.bikeDistance);
-        const hasRun = showRun && (race.runTime || race.distance);
+        // En relai, afficher toutes les disciplines qui ont des données (les nôtres et celles des coéquipiers)
+        const hasSwim = (race.swimTime && race.swimTime !== '00:00:00' && race.swimTime !== '—') || (race.swimDistance && parseFloat(race.swimDistance) > 0);
+        const hasBike = (race.bikeTime && race.bikeTime !== '00:00:00' && race.bikeTime !== '—') || (race.bikeDistance && parseFloat(race.bikeDistance) > 0) || (race.bikeElevation && !isNaN(parseInt(race.bikeElevation)));
+        const hasRun = (race.runTime && race.runTime !== '00:00:00' && race.runTime !== '—') || (race.distance && parseFloat(race.distance) > 0) || (race.runElevation && !isNaN(parseInt(race.runElevation))) || (!isTeam && race.elevation && !isNaN(parseInt(race.elevation)));
 
         if (hasSwim || hasBike || hasRun) {
-            // Helper to parse HH:MM:SS to seconds
+            // Helper to parse HH:MM:SS or MM:SS to seconds
             function parseTimeToSeconds(timeStr) {
-                if (!timeStr || !/^\d{2}:\d{2}:\d{2}$/.test(timeStr)) return 0;
-                const [h, m, s] = timeStr.split(':').map(Number);
-                return h * 3600 + m * 60 + s;
+                if (!timeStr) return 0;
+                const parts = timeStr.trim().split(':').map(Number);
+                if (parts.some(isNaN)) return 0;
+                if (parts.length === 3) return parts[0] * 3600 + parts[1] * 60 + parts[2];
+                if (parts.length === 2) return parts[0] * 60 + parts[1];
+                if (parts.length === 1) return parts[0];
+                return 0;
+            }
+
+            // Helper to format seconds to HH:MM:SS
+            function formatSecondsToTime(totalSeconds) {
+                const h = Math.floor(totalSeconds / 3600);
+                const m = Math.floor((totalSeconds % 3600) / 60);
+                const s = totalSeconds % 60;
+                return [h, m, s].map(v => v.toString().padStart(2, '0')).join(':');
             }
 
             // Helpers for swim pace, bike speed, run pace
@@ -524,68 +606,231 @@ async function generateRacePdf(raceId) {
             doc.text(sectionTitle, margin, yPos);
             yPos += 8;
 
+            const swimDistVal = parseFloat(race.swimDistance);
+            const swimDistStr = race.swimDistance ? (swimDistVal > 999
+                ? `${(swimDistVal / 1000).toFixed(2)} km`
+                : `${race.swimDistance} m`) : '—';
+            const swimTimeStr = race.swimTime || '—';
+            const swimSec = parseTimeToSeconds(race.swimTime);
+            const swimPace = calculateSwimPace(swimDistVal, swimSec);
+
+            const bikeDistVal = parseFloat(race.bikeDistance);
+            const bikeDistStr = race.bikeDistance ? `${race.bikeDistance} km` : '—';
+            const bikeTimeStr = race.bikeTime || '—';
+            const bikeSec = parseTimeToSeconds(race.bikeTime);
+            const bikeSpeed = calculateBikeSpeed(bikeDistVal, bikeSec);
+            const bikeElevStr = (() => {
+                const p = race.bikeElevation ? `D+ ${race.bikeElevation}m` : '';
+                const n = race.bikeElevationNeg ? `D- ${race.bikeElevationNeg}m` : '';
+                return [p, n].filter(Boolean).join(' / ') || '—';
+            })();
+
+            const runDistVal = parseFloat(race.distance);
+            const runDistStr = race.distance ? `${race.distance} km` : '—';
+            const runTimeStr = race.runTime || (isTeam && relaySport === 'run' ? race.time : null) || race.time || '—';
+            const runSec = parseTimeToSeconds(runTimeStr);
+            const runPace = calculateRunPace(runDistVal, runSec);
+            const runElevStr = (() => {
+                const p = isTeam ? (race.runElevation || (relaySport === 'run' ? race.elevation : null)) : race.elevation;
+                const n = isTeam ? (race.runElevationNeg || (relaySport === 'run' ? race.elevationNeg : null)) : race.elevationNeg;
+                const pStr = p ? `D+ ${p}m` : '';
+                const nStr = n ? `D- ${n}m` : '';
+                return [pStr, nStr].filter(Boolean).join(' / ') || '—';
+            })();
+
+            // ── Tableau Épreuves de l'équipe (Relais) pour le triathlon en relai
+            if (isTeam) {
+                if (yPos > doc.internal.pageSize.getHeight() - 55) {
+                    doc.addPage();
+                    yPos = margin;
+                }
+
+                doc.setFontSize(12);
+                doc.setTextColor(...primaryColor);
+                doc.setFont(undefined, 'bold');
+                doc.text("Épreuves de l'équipe (Relais)", margin, yPos);
+                yPos += 7;
+
+                const teamHeaders = ['Épreuve', 'Participant', 'Distance', 'Dénivelé', 'Temps'];
+                const teamColWidths = [35, 30, 35, 35, 35];
+
+                function drawTriathlonTeamTableHeader() {
+                    doc.setFontSize(9.5);
+                    doc.setFont(undefined, 'bold');
+                    doc.setDrawColor(75, 85, 99);
+                    doc.setLineWidth(0.4);
+
+                    let curX = margin;
+                    teamHeaders.forEach((th, cIdx) => {
+                        doc.setFillColor(...primaryColor);
+                        doc.rect(curX, yPos, teamColWidths[cIdx], 8, 'FD');
+                        doc.setTextColor(255, 255, 255);
+                        const tw = doc.getTextWidth(th);
+                        const tx = curX + (teamColWidths[cIdx] - tw) / 2;
+                        doc.text(th, tx, yPos + 5.5);
+                        curX += teamColWidths[cIdx];
+                    });
+                    yPos += 8;
+                }
+
+                drawTriathlonTeamTableHeader();
+
+                const teamRows = [
+                    {
+                        sport: 'Natation',
+                        participant: relaySport === 'swim' ? 'Moi' : 'Coéquipier',
+                        dist: swimDistStr,
+                        elev: '—',
+                        time: race.swimTime || '—'
+                    },
+                    {
+                        sport: 'Cyclisme',
+                        participant: relaySport === 'bike' ? 'Moi' : 'Coéquipier',
+                        dist: bikeDistStr,
+                        elev: bikeElevStr,
+                        time: race.bikeTime || '—'
+                    },
+                    {
+                        sport: 'Course à pied',
+                        participant: relaySport === 'run' ? 'Moi' : 'Coéquipier',
+                        dist: runDistStr,
+                        elev: runElevStr,
+                        time: runTimeStr
+                    }
+                ];
+
+                teamRows.forEach((r, rIdx) => {
+                    const rowHeight = 8;
+                    if (yPos + rowHeight > doc.internal.pageSize.getHeight() - margin) {
+                        doc.addPage();
+                        yPos = margin;
+                        drawTriathlonTeamTableHeader();
+                    }
+
+                    const bg = rIdx % 2 === 0 ? [240, 253, 244] : [255, 255, 255];
+                    let curX = margin;
+                    const cellVals = [r.sport, r.participant, r.dist, r.elev, r.time];
+
+                    cellVals.forEach((val, cIdx) => {
+                        doc.setFillColor(...bg);
+                        doc.setDrawColor(75, 85, 99);
+                        doc.setLineWidth(0.4);
+                        doc.rect(curX, yPos, teamColWidths[cIdx], rowHeight, 'FD');
+
+                        doc.setTextColor(...textColor);
+                        doc.setFont(undefined, cIdx === 0 || cIdx === 1 ? 'bold' : 'normal');
+                        doc.setFontSize(9);
+                        const tw = doc.getTextWidth(val);
+                        const tx = curX + (teamColWidths[cIdx] - tw) / 2;
+                        doc.text(val, tx, yPos + 5.5);
+                        curX += teamColWidths[cIdx];
+                    });
+                    yPos += rowHeight;
+                });
+
+                // Ligne total équipe
+                const totalRowHeight = 8;
+                if (yPos + totalRowHeight > doc.internal.pageSize.getHeight() - margin) {
+                    doc.addPage();
+                    yPos = margin;
+                    drawTriathlonTeamTableHeader();
+                }
+
+                const totalSwimKm = !isNaN(swimDistVal) ? swimDistVal / 1000 : 0;
+                const totalBikeKm = !isNaN(bikeDistVal) ? bikeDistVal : 0;
+                const totalRunKm = !isNaN(runDistVal) ? runDistVal : 0;
+                const totalTeamDist = totalSwimKm + totalBikeKm + totalRunKm;
+                const totalTeamDistText = totalTeamDist > 0 ? `${totalTeamDist.toFixed(2)} km` : '—';
+
+                const bDPlus = parseInt(race.bikeElevation) || 0;
+                const rDPlus = parseInt(race.runElevation) || (relaySport === 'run' ? (parseInt(race.elevation) || 0) : 0);
+                const totalTeamDPlus = bDPlus + rDPlus;
+
+                const bDMinus = parseInt(race.bikeElevationNeg) || 0;
+                const rDMinus = parseInt(race.runElevationNeg) || (relaySport === 'run' ? (parseInt(race.elevationNeg) || 0) : 0);
+                const totalTeamDMinus = bDMinus + rDMinus;
+
+                let totalTeamElevText = '—';
+                if (totalTeamDPlus > 0 || totalTeamDMinus > 0) {
+                    const parts = [];
+                    if (totalTeamDPlus > 0) parts.push(`+${totalTeamDPlus}m`);
+                    if (totalTeamDMinus > 0) parts.push(`-${totalTeamDMinus}m`);
+                    totalTeamElevText = parts.join(' ');
+                }
+
+                let totalTeamSeconds = 0;
+                if (race.swimTime && race.swimTime !== '—') totalTeamSeconds += parseTimeToSeconds(race.swimTime);
+                if (race.bikeTime && race.bikeTime !== '—') totalTeamSeconds += parseTimeToSeconds(race.bikeTime);
+                if (runTimeStr && runTimeStr !== '—') totalTeamSeconds += parseTimeToSeconds(runTimeStr);
+                const totalTeamTimeText = totalTeamSeconds > 0 ? formatSecondsToTime(totalTeamSeconds) : (race.time && race.time !== '00:00:00' ? race.time : '—');
+
+                let curX = margin;
+                const spanColWidth = teamColWidths[0] + teamColWidths[1]; // 65mm
+                doc.setFillColor(220, 252, 231);
+                doc.setDrawColor(75, 85, 99);
+                doc.setLineWidth(0.4);
+                doc.rect(curX, yPos, spanColWidth, totalRowHeight, 'FD');
+
+                doc.setTextColor(...primaryColor);
+                doc.setFont(undefined, 'bold');
+                doc.setFontSize(9);
+                const tw0 = doc.getTextWidth('Total Équipe');
+                doc.text('Total Équipe', curX + (spanColWidth - tw0) / 2, yPos + 5.5);
+                curX += spanColWidth;
+
+                [totalTeamDistText, totalTeamElevText, totalTeamTimeText].forEach((tVal, tIdx) => {
+                    const cW = teamColWidths[tIdx + 2];
+                    doc.setFillColor(220, 252, 231);
+                    doc.setDrawColor(75, 85, 99);
+                    doc.setLineWidth(0.4);
+                    doc.rect(curX, yPos, cW, totalRowHeight, 'FD');
+
+                    doc.setTextColor(...primaryColor);
+                    doc.setFont(undefined, 'bold');
+                    doc.setFontSize(9);
+                    const tw = doc.getTextWidth(tVal);
+                    doc.text(tVal, curX + (cW - tw) / 2, yPos + 5.5);
+                    curX += cW;
+                });
+                yPos += totalRowHeight + 8;
+            }
+
             // 1. Swim Card
             if (hasSwim) {
-                const swimDistVal = parseFloat(race.swimDistance);
-                const swimDistStr = race.swimDistance ? (swimDistVal > 999
-                    ? `${(swimDistVal / 1000).toFixed(2)} km`
-                    : `${race.swimDistance} m`) : '—';
-                const swimTimeStr = race.swimTime || '—';
-                const swimSec = parseTimeToSeconds(race.swimTime);
-                const swimPace = calculateSwimPace(swimDistVal, swimSec);
-
                 const swimStats = [
                     { label: 'DISTANCE', value: swimDistStr },
                     { label: 'TEMPS', value: swimTimeStr },
                     { label: 'ALLURE', value: swimPace }
                 ];
-                drawSportCard(isTeam ? 'Natation (Relai)' : 'Natation', isTeam ? 'RELAI' : 'SPORT 1', swimStats, swimColors);
+                const swimTitle = isTeam ? (relaySport === 'swim' ? 'Natation (Moi)' : 'Natation (Coéquipier)') : 'Natation';
+                const swimBadge = isTeam ? (relaySport === 'swim' ? 'MOI' : 'COÉQUIPIER') : 'SPORT 1';
+                drawSportCard(swimTitle, swimBadge, swimStats, swimColors);
             }
 
             // 2. Bike Card
             if (hasBike) {
-                const bikeDistVal = parseFloat(race.bikeDistance);
-                const bikeDistStr = race.bikeDistance ? `${race.bikeDistance} km` : '—';
-                const bikeTimeStr = race.bikeTime || '—';
-                const bikeSec = parseTimeToSeconds(race.bikeTime);
-                const bikeSpeed = calculateBikeSpeed(bikeDistVal, bikeSec);
-                const bikeElevStr = (() => {
-                    const p = race.bikeElevation ? `D+ ${race.bikeElevation}m` : '';
-                    const n = race.bikeElevationNeg ? `D- ${race.bikeElevationNeg}m` : '';
-                    return [p, n].filter(Boolean).join(' / ') || '—';
-                })();
-
                 const bikeStats = [
                     { label: 'DISTANCE', value: bikeDistStr },
                     { label: 'TEMPS', value: bikeTimeStr },
                     { label: 'DÉNIVELÉ', value: bikeElevStr },
                     { label: 'VITESSE', value: bikeSpeed }
                 ];
-                drawSportCard(isTeam ? 'Cyclisme (Relai)' : 'Cyclisme', isTeam ? 'RELAI' : 'SPORT 2', bikeStats, bikeColors);
+                const bikeTitle = isTeam ? (relaySport === 'bike' ? 'Cyclisme (Moi)' : 'Cyclisme (Coéquipier)') : 'Cyclisme';
+                const bikeBadge = isTeam ? (relaySport === 'bike' ? 'MOI' : 'COÉQUIPIER') : 'SPORT 2';
+                drawSportCard(bikeTitle, bikeBadge, bikeStats, bikeColors);
             }
 
             // 3. Run Card
             if (hasRun) {
-                const runDistVal = parseFloat(race.distance);
-                const runDistStr = race.distance ? `${race.distance} km` : '—';
-                const runTimeStr = race.runTime || race.time || '—';
-                const runSec = parseTimeToSeconds(runTimeStr);
-                const runPace = calculateRunPace(runDistVal, runSec);
-                const runElevStr = (() => {
-                    const p = isTeam ? race.runElevation : race.elevation;
-                    const n = isTeam ? race.runElevationNeg : race.elevationNeg;
-                    const pStr = p ? `D+ ${p}m` : '';
-                    const nStr = n ? `D- ${n}m` : '';
-                    return [pStr, nStr].filter(Boolean).join(' / ') || '—';
-                })();
-
                 const runStats = [
                     { label: 'DISTANCE', value: runDistStr },
                     { label: 'TEMPS', value: runTimeStr },
                     { label: 'DÉNIVELÉ', value: runElevStr },
                     { label: 'ALLURE', value: runPace }
                 ];
-                drawSportCard(isTeam ? 'Course à pied (Relai)' : 'Course à pied', isTeam ? 'RELAI' : 'SPORT 3', runStats, runColors);
+                const runTitle = isTeam ? (relaySport === 'run' ? 'Course à pied (Moi)' : 'Course à pied (Coéquipier)') : 'Course à pied';
+                const runBadge = isTeam ? (relaySport === 'run' ? 'MOI' : 'COÉQUIPIER') : 'SPORT 3';
+                drawSportCard(runTitle, runBadge, runStats, runColors);
             }
 
             // Temps total triathlon
@@ -1193,6 +1438,167 @@ async function generateRacePdf(raceId) {
         yPos += 3;
     }
     // ─────────────────────────────────────────────────────────────────────────
+
+    // ─── SECTION POINTS DE PASSAGE ───────────────────────────────────────────
+    const passagePoints = Array.isArray(race.passagePoints) ? race.passagePoints : [];
+    const validPassagePoints = passagePoints.filter(point => point && (
+        (point.stage !== undefined && point.stage !== null && String(point.stage).trim() !== '') ||
+        (point.km !== undefined && point.km !== null && String(point.km).trim() !== '') ||
+        (point.rank !== undefined && point.rank !== null && String(point.rank).trim() !== '') ||
+        (point.time !== undefined && point.time !== null && String(point.time).trim() !== '')
+    ));
+
+    if (validPassagePoints.length > 0) {
+        if (yPos > doc.internal.pageSize.getHeight() - 40) {
+            doc.addPage();
+            yPos = margin;
+        }
+
+        doc.setFontSize(14);
+        doc.setTextColor(...primaryColor);
+        doc.setFont(undefined, 'bold');
+        doc.text('Points de passage', margin, yPos);
+        yPos += 8;
+
+        const finalRank = Number.parseInt(race.rankPos, 10);
+        const hasRankComparison = Number.isFinite(finalRank) && finalRank > 0 && validPassagePoints.some(p => Number.parseInt(p.rank, 10) > 0);
+
+        const pHeaders = hasRankComparison
+            ? ['Point de passage', 'Temps', 'Classement', 'Évolution (vs arrivée)']
+            : ['Point de passage', 'Temps', 'Classement'];
+        const pColWidths = hasRankComparison
+            ? [55, 35, 40, 40]
+            : [70, 50, 50];
+
+        function drawPassageTableHeader() {
+            doc.setFontSize(10);
+            doc.setFont(undefined, 'bold');
+            doc.setDrawColor(75, 85, 99);
+            doc.setLineWidth(0.4);
+
+            let curX = margin;
+            pHeaders.forEach((h, colIdx) => {
+                doc.setFillColor(...primaryColor);
+                doc.rect(curX, yPos, pColWidths[colIdx], 9, 'FD');
+                doc.setTextColor(255, 255, 255);
+                const tw = doc.getTextWidth(h);
+                const tx = curX + (pColWidths[colIdx] - tw) / 2;
+                doc.text(h, tx, yPos + 6);
+                curX += pColWidths[colIdx];
+            });
+            yPos += 9;
+        }
+
+        drawPassageTableHeader();
+
+        validPassagePoints.forEach((point, index) => {
+            const kmRaw = point.km !== undefined && point.km !== null && String(point.km).trim() !== ''
+                ? String(point.km).replace(',', '.').trim()
+                : '';
+            const kmVal = kmRaw ? parseFloat(kmRaw) : null;
+            const kmText = Number.isFinite(kmVal) ? `${kmVal % 1 === 0 ? kmVal.toFixed(0) : kmVal.toFixed(2)} km` : '';
+            let passageLocation = '';
+            if (point.stage && kmText) {
+                passageLocation = `${point.stage} (${kmText})`;
+            } else if (point.stage) {
+                passageLocation = String(point.stage);
+            } else if (kmText) {
+                passageLocation = kmText;
+            } else {
+                passageLocation = `Point ${index + 1}`;
+            }
+
+            const timeText = point.time && String(point.time).trim() ? String(point.time).trim() : '—';
+
+            let rankText = '—';
+            if (point.rank !== undefined && point.rank !== null && String(point.rank).trim() !== '') {
+                const rVal = String(point.rank).trim();
+                if (race.rankTotal && String(race.rankTotal).trim() !== '') {
+                    rankText = `${rVal}e / ${String(race.rankTotal).trim()}`;
+                } else {
+                    rankText = `${rVal}e`;
+                }
+            }
+
+            const pRank = Number.parseInt(point.rank, 10);
+            let evolText = '—';
+            let evolColor = textColor;
+            if (hasRankComparison) {
+                if (Number.isFinite(pRank) && pRank > 0 && Number.isFinite(finalRank) && finalRank > 0) {
+                    const diff = pRank - finalRank;
+                    if (diff > 0) {
+                        evolText = `+${diff} pl. (gagnée${diff > 1 ? 's' : ''})`;
+                        evolColor = [22, 101, 52];
+                    } else if (diff < 0) {
+                        evolText = `-${Math.abs(diff)} pl. (perdue${Math.abs(diff) > 1 ? 's' : ''})`;
+                        evolColor = [185, 28, 28];
+                    } else {
+                        evolText = '= (inchangé)';
+                        evolColor = textColor;
+                    }
+                }
+            }
+
+            const cellTexts = hasRankComparison
+                ? [passageLocation, timeText, rankText, evolText]
+                : [passageLocation, timeText, rankText];
+
+            const cellLines = [];
+            const cellLinesCount = [];
+            pColWidths.forEach((w, cIdx) => {
+                doc.setFont(undefined, 'normal');
+                doc.setFontSize(9.5);
+                const lines = doc.splitTextToSize(cellTexts[cIdx], w - 4);
+                cellLines.push(lines);
+                cellLinesCount.push(lines.length);
+            });
+
+            const maxLines = Math.max(...cellLinesCount);
+            const rowHeight = Math.max(8, maxLines * 4.5 + 4);
+
+            if (yPos + rowHeight > doc.internal.pageSize.getHeight() - margin) {
+                doc.addPage();
+                yPos = margin;
+                drawPassageTableHeader();
+            }
+
+            const bg = index % 2 === 0 ? [240, 253, 244] : [255, 255, 255];
+            let curX = margin;
+            pColWidths.forEach((w, cIdx) => {
+                doc.setFillColor(...bg);
+                doc.setDrawColor(75, 85, 99);
+                doc.setLineWidth(0.4);
+                doc.rect(curX, yPos, w, rowHeight, 'FD');
+
+                if (hasRankComparison && cIdx === 3) {
+                    doc.setTextColor(...evolColor);
+                    doc.setFont(undefined, 'bold');
+                } else if (cIdx === 0) {
+                    doc.setTextColor(...textColor);
+                    doc.setFont(undefined, 'bold');
+                } else {
+                    doc.setTextColor(...textColor);
+                    doc.setFont(undefined, 'normal');
+                }
+                doc.setFontSize(9.5);
+
+                const lines = cellLines[cIdx];
+                let textY = yPos + (rowHeight - (lines.length - 1) * 4.5) / 2 + 1.0;
+                lines.forEach(line => {
+                    const tw = doc.getTextWidth(line);
+                    const tx = curX + (w - tw) / 2;
+                    doc.text(line, tx, textY);
+                    textY += 4.5;
+                });
+
+                curX += w;
+            });
+
+            yPos += rowHeight;
+        });
+
+        yPos += 10;
+    }
 
     // Badges (si authentifié et présents)
 
