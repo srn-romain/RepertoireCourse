@@ -245,7 +245,11 @@ const manualModalHTML = `
                                 <span class="inline-flex items-center gap-1 bg-cyan-50 border border-cyan-200 text-cyan-800 text-[10px] font-medium px-1.5 py-0.5 rounded"><i class="fas fa-clock text-cyan-500"></i> Temps</span>
                                 <span class="inline-flex items-center gap-1 bg-violet-50 border border-violet-200 text-violet-800 text-[10px] font-medium px-1.5 py-0.5 rounded"><i class="fas fa-tachometer-alt text-violet-500"></i> Allure</span>
                                 <span class="inline-flex items-center gap-1 bg-red-50 border border-red-200 text-red-800 text-[10px] font-medium px-1.5 py-0.5 rounded"><i class="fas fa-euro-sign text-red-500"></i> Prix</span>
-                                <span class="inline-flex items-center gap-1 bg-yellow-50 border border-yellow-200 text-yellow-800 text-[10px] font-medium px-1.5 py-0.5 rounded"><i class="fas fa-trophy text-yellow-500"></i> Classement</span>
+                                <span class="inline-flex items-center gap-1 bg-rose-50 border border-rose-200 text-rose-800 text-[10px] font-medium px-1.5 py-0.5 rounded"><i class="fas fa-camera text-rose-500"></i> Prix photos</span>
+                                <span class="inline-flex items-center gap-1 bg-yellow-50 border border-yellow-200 text-yellow-800 text-[10px] font-medium px-1.5 py-0.5 rounded"><i class="fas fa-medal text-yellow-500"></i> Classement général</span>
+                                <span class="inline-flex items-center gap-1 bg-amber-50 border border-amber-200 text-amber-800 text-[10px] font-medium px-1.5 py-0.5 rounded"><i class="fas fa-layer-group text-amber-500"></i> Classement catégorie</span>
+                                <span class="inline-flex items-center gap-1 bg-pink-50 border border-pink-200 text-pink-800 text-[10px] font-medium px-1.5 py-0.5 rounded"><i class="fas fa-venus-mars text-pink-500"></i> Classement par genre</span>
+                                <span class="inline-flex items-center gap-1 bg-violet-50 border border-violet-200 text-violet-800 text-[10px] font-medium px-1.5 py-0.5 rounded"><i class="fas fa-percent text-violet-500"></i> Pourcentage au général</span>
                             </div>
                             <p class="text-[11px] text-gray-500 italic">Activez en un clic les tags souhaités dans <strong>Configurer la carte → Tags affichés</strong> pour toutes les cartes.</p>
                         </div>

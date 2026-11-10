@@ -2221,13 +2221,47 @@
                             </span>
                         </label>
 
-                        <!-- Option Classement -->
+                        <!-- Option Prix des photos -->
+                        <label
+                            class="relative flex items-center gap-2.5 p-2.5 bg-white border border-gray-200 rounded-xl cursor-pointer hover:bg-rose-50/50 hover:border-rose-300 transition-all shadow-sm group">
+                            <input type="checkbox" name="cardTagOption" value="photo_price"
+                                class="w-4 h-4 text-rose-600 focus:ring-rose-500 border-gray-300 rounded">
+                            <span class="text-xs font-semibold text-gray-800 flex items-center gap-1">
+                                <i class="fas fa-camera text-rose-600"></i> Prix des photos
+                            </span>
+                        </label>
+
+                        <!-- Options Classement -->
                         <label
                             class="relative flex items-center gap-2.5 p-2.5 bg-white border border-gray-200 rounded-xl cursor-pointer hover:bg-yellow-50/50 hover:border-yellow-300 transition-all shadow-sm group">
-                            <input type="checkbox" name="cardTagOption" value="rank"
+                            <input type="checkbox" name="cardTagOption" value="rank_general"
                                 class="w-4 h-4 text-yellow-600 focus:ring-yellow-500 border-gray-300 rounded" checked>
                             <span class="text-xs font-semibold text-gray-800 flex items-center gap-1">
-                                <i class="fas fa-medal text-yellow-600"></i> Classement
+                                <i class="fas fa-medal text-yellow-600"></i> Classement général
+                            </span>
+                        </label>
+                        <label
+                            class="relative flex items-center gap-2.5 p-2.5 bg-white border border-gray-200 rounded-xl cursor-pointer hover:bg-amber-50/50 hover:border-amber-300 transition-all shadow-sm group">
+                            <input type="checkbox" name="cardTagOption" value="rank_category"
+                                class="w-4 h-4 text-amber-600 focus:ring-amber-500 border-gray-300 rounded" checked>
+                            <span class="text-xs font-semibold text-gray-800 flex items-center gap-1">
+                                <i class="fas fa-layer-group text-amber-600"></i> Classement catégorie
+                            </span>
+                        </label>
+                        <label
+                            class="relative flex items-center gap-2.5 p-2.5 bg-white border border-gray-200 rounded-xl cursor-pointer hover:bg-pink-50/50 hover:border-pink-300 transition-all shadow-sm group">
+                            <input type="checkbox" name="cardTagOption" value="rank_gender"
+                                class="w-4 h-4 text-pink-600 focus:ring-pink-500 border-gray-300 rounded" checked>
+                            <span class="text-xs font-semibold text-gray-800 flex items-center gap-1">
+                                <i class="fas fa-venus-mars text-pink-600"></i> Classement par genre
+                            </span>
+                        </label>
+                        <label
+                            class="relative flex items-center gap-2.5 p-2.5 bg-white border border-gray-200 rounded-xl cursor-pointer hover:bg-violet-50/50 hover:border-violet-300 transition-all shadow-sm group">
+                            <input type="checkbox" name="cardTagOption" value="rank_percentage"
+                                class="w-4 h-4 text-violet-600 focus:ring-violet-500 border-gray-300 rounded">
+                            <span class="text-xs font-semibold text-gray-800 flex items-center gap-1">
+                                <i class="fas fa-percent text-violet-600"></i> Pourcentage au général
                             </span>
                         </label>
                     </div>
@@ -5227,7 +5261,16 @@
                     const showPace = cardTags.includes('pace') && canViewStats && showCalculatedStats;
                     const showPrice = cardTags.includes('price') && privacy.hidePrice !== true
                         && canViewStats && showCalculatedStats;
-                    const showRank = cardTags.includes('rank') && privacy.hideRanking !== true
+                    const showPhotoPrice = cardTags.includes('photo_price') && privacy.hidePrice !== true
+                        && canViewStats && showCalculatedStats;
+                    const hasLegacyRankTag = cardTags.includes('rank');
+                    const showGeneralRank = (cardTags.includes('rank_general') || hasLegacyRankTag) && privacy.hideRanking !== true
+                        && canViewStats && showCalculatedStats;
+                    const showCategoryRank = (cardTags.includes('rank_category') || hasLegacyRankTag) && privacy.hideRanking !== true
+                        && canViewStats && showCalculatedStats;
+                    const showGenderRank = (cardTags.includes('rank_gender') || hasLegacyRankTag) && privacy.hideRanking !== true
+                        && canViewStats && showCalculatedStats;
+                    const showRankPercentage = cardTags.includes('rank_percentage') && privacy.hideRanking !== true
                         && canViewStats && showCalculatedStats;
 
                     const distVal = formatDist(race.distance);
@@ -5368,20 +5411,53 @@
                         allTags.push(`<span class="tag-item flex items-center gap-1 px-2 py-1 bg-red-50 text-red-800 text-xs rounded-full"><i class="fas fa-euro-sign text-red-500"></i> ${parsedPrice.toFixed(2)} €</span>`);
                     }
 
-                    if (showRank) {
-                        const rankings = getRaceRankingValues(race);
-                        if (hasRankingValue(race.rankPos)) {
-                            const totalStr = hasRankingValue(race.rankTotal) ? `/${race.rankTotal}` : '';
-                            allTags.push(`<span class="tag-item flex items-center gap-1 px-2 py-1 bg-yellow-50 text-yellow-800 text-xs rounded-full"><i class="fas fa-medal text-yellow-500"></i> ${race.rankPos}${totalStr} (gén.)</span>`);
+                    const parsedPhotoPrice = parseFloat(race.photoPurchasePrice);
+                    const hasPhotoPrice = race.photoPurchasePrice !== undefined && race.photoPurchasePrice !== null && race.photoPurchasePrice !== '' && Number.isFinite(parsedPhotoPrice);
+                    const isPhotoPurchased = race.photoPurchase === true || (race.photoPurchase !== false && hasPhotoPrice);
+                    if (showPhotoPrice && isPhotoPurchased) {
+                        const photoPriceText = hasPhotoPrice ? `${parsedPhotoPrice.toFixed(2)} €` : 'Photos';
+                        allTags.push(`<span class="tag-item flex items-center gap-1 px-2 py-1 bg-rose-50 text-rose-800 text-xs rounded-full" title="Prix des photos"><i class="fas fa-camera text-rose-500"></i> ${photoPriceText}</span>`);
+                    }
+
+                    const rankings = getRaceRankingValues(race);
+                    if (showGeneralRank && hasRankingValue(race.rankPos)) {
+                        const totalStr = hasRankingValue(race.rankTotal) ? `/${race.rankTotal}` : '';
+                        allTags.push(`<span class="tag-item flex items-center gap-1 px-2 py-1 bg-yellow-50 text-yellow-800 text-xs rounded-full"><i class="fas fa-medal text-yellow-500"></i> ${race.rankPos}${totalStr} (gén.)</span>`);
+                    }
+                    if (showCategoryRank && hasRankingValue(rankings.categoryPos)) {
+                        const totalStr = hasRankingValue(rankings.categoryTotal) ? `/${rankings.categoryTotal}` : '';
+                        const categoryLabel = [rankings.categoryName, rankings.categoryCode].filter(Boolean).join(' ');
+                        allTags.push(`<span class="tag-item flex items-center gap-1 px-2 py-1 bg-amber-50 text-amber-800 text-xs rounded-full" title="${categoryLabel || 'Catégorie'}"><i class="fas fa-layer-group text-amber-500"></i> ${rankings.categoryPos}${totalStr} (${categoryLabel || 'cat.'})</span>`);
+                    }
+                    if (showGenderRank && hasRankingValue(rankings.genderPos)) {
+                        const totalStr = hasRankingValue(rankings.genderTotal) ? `/${rankings.genderTotal}` : '';
+                        allTags.push(`<span class="tag-item flex items-center gap-1 px-2 py-1 bg-pink-50 text-pink-800 text-xs rounded-full"><i class="fas fa-venus-mars text-pink-500"></i> ${rankings.genderPos}${totalStr} (genre)</span>`);
+                    }
+
+                    if (showRankPercentage) {
+                        const genPos = parseFloat(race.rankPos);
+                        const genTotal = parseFloat(race.rankTotal);
+                        let rankPercent = null;
+                        let rankPercentTitle = "Pourcentage au général";
+                        if (Number.isFinite(genPos) && Number.isFinite(genTotal) && genTotal > 0 && genPos > 0) {
+                            rankPercent = ((genPos / genTotal) * 100).toFixed(1);
+                        } else {
+                            const catPos = parseFloat(rankings.categoryPos);
+                            const catTotal = parseFloat(rankings.categoryTotal);
+                            if (Number.isFinite(catPos) && Number.isFinite(catTotal) && catTotal > 0 && catPos > 0) {
+                                rankPercent = ((catPos / catTotal) * 100).toFixed(1);
+                                rankPercentTitle = "Pourcentage en catégorie";
+                            } else {
+                                const genGenderPos = parseFloat(rankings.genderPos);
+                                const genGenderTotal = parseFloat(rankings.genderTotal);
+                                if (Number.isFinite(genGenderPos) && Number.isFinite(genGenderTotal) && genGenderTotal > 0 && genGenderPos > 0) {
+                                    rankPercent = ((genGenderPos / genGenderTotal) * 100).toFixed(1);
+                                    rankPercentTitle = "Pourcentage par genre";
+                                }
+                            }
                         }
-                        if (hasRankingValue(rankings.categoryPos)) {
-                            const totalStr = hasRankingValue(rankings.categoryTotal) ? `/${rankings.categoryTotal}` : '';
-                            const categoryLabel = [rankings.categoryName, rankings.categoryCode].filter(Boolean).join(' ');
-                            allTags.push(`<span class="tag-item flex items-center gap-1 px-2 py-1 bg-amber-50 text-amber-800 text-xs rounded-full" title="${categoryLabel || 'Catégorie'}"><i class="fas fa-layer-group text-amber-500"></i> ${rankings.categoryPos}${totalStr} (${categoryLabel || 'cat.'})</span>`);
-                        }
-                        if (hasRankingValue(rankings.genderPos)) {
-                            const totalStr = hasRankingValue(rankings.genderTotal) ? `/${rankings.genderTotal}` : '';
-                            allTags.push(`<span class="tag-item flex items-center gap-1 px-2 py-1 bg-pink-50 text-pink-800 text-xs rounded-full"><i class="fas fa-venus-mars text-pink-500"></i> ${rankings.genderPos}${totalStr} (genre)</span>`);
+                        if (rankPercent !== null) {
+                            allTags.push(`<span class="tag-item flex items-center gap-1 px-2 py-1 bg-violet-50 text-violet-800 text-xs rounded-full" title="${rankPercentTitle}"><i class="fas fa-percent text-violet-500"></i> Top ${rankPercent}%</span>`);
                         }
                     }
 
@@ -5793,8 +5869,8 @@
                     const hiddenTags = originalTags.slice(visibleCount);
 
                     const moreBadgeHtml = `
-                        <div class="relative inline-block more-tags-trigger group/tag-more z-20 hover:z-50 focus:z-50" tabindex="0" onclick="event.stopPropagation(); const tt = this.querySelector('.tag-tooltip'); if(tt) tt.classList.toggle('!flex');">
-                            <span class="flex items-center gap-1 px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs rounded-full font-bold border border-emerald-200/80 transition-all shadow-sm cursor-pointer select-none">
+                        <div class="relative inline-block more-tags-trigger group/tag-more z-20 hover:z-50 focus:z-50" tabindex="0" onclick="event.stopPropagation(); if(event.target.closest('.more-tags-toggle')) { const tt = this.querySelector('.tag-tooltip'); if(tt) tt.classList.toggle('!flex'); }">
+                            <span class="more-tags-toggle flex items-center gap-1 px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs rounded-full font-bold border border-emerald-200/80 transition-all shadow-sm cursor-pointer select-none">
                                 +${hiddenTags.length}
                             </span>
                             <div class="tag-tooltip absolute top-full left-0 mt-2 hidden group-hover/tag-more:flex group-focus/tag-more:flex flex-col gap-1.5 p-3 bg-white/95 text-slate-800 text-xs rounded-xl shadow-xl shadow-emerald-900/10 z-50 w-max max-w-[270px] backdrop-blur-md border border-emerald-100/90 pointer-events-auto transition-all duration-200">
@@ -5819,6 +5895,16 @@
                 }
             });
         }
+
+        document.addEventListener('click', event => {
+            const clickedElement = event.target instanceof Element ? event.target : null;
+            const clickedTrigger = clickedElement ? clickedElement.closest('.more-tags-trigger') : null;
+            document.querySelectorAll('.more-tags-trigger').forEach(trigger => {
+                if (trigger === clickedTrigger) return;
+                const tooltip = trigger.querySelector('.tag-tooltip');
+                if (tooltip) tooltip.classList.remove('!flex');
+            });
+        }, true);
 
         let tagResizeDebounce = null;
         window.addEventListener('resize', () => {
@@ -11501,8 +11587,18 @@
 
             let tempConfigButtons = [];
             let tempDefaultCardImage = 'photo';
-            let tempConfigTags = ['distance', 'elevation', 'location', 'terrain', 'time', 'pace', 'price', 'rank'];
+            let tempConfigTags = ['distance', 'elevation', 'location', 'terrain', 'time', 'pace', 'price', 'photo_price', 'rank_general', 'rank_category', 'rank_gender', 'rank_percentage'];
             let selectedAvailableButtonId = null;
+
+            function normalizeCardTags(tags) {
+                const normalizedTags = tags.filter(tag => tag !== 'rank');
+                if (tags.includes('rank')) {
+                    ['rank_general', 'rank_category', 'rank_gender'].forEach(tag => {
+                        if (!normalizedTags.includes(tag)) normalizedTags.push(tag);
+                    });
+                }
+                return normalizedTags;
+            }
 
             // Listen for defaultCardImage radio changes and tag checkboxes changes
             setTimeout(() => {
@@ -11562,13 +11658,31 @@
                         } else if (checkbox.value === 'location') {
                             activeBorder = 'border-green-500';
                             activeBg = 'bg-blue-50/30';
+                        } else if (checkbox.value === 'price') {
+                            activeBorder = 'border-red-500';
+                            activeBg = 'bg-red-50/30';
+                        } else if (checkbox.value === 'photo_price') {
+                            activeBorder = 'border-rose-500';
+                            activeBg = 'bg-rose-50/30';
+                        } else if (checkbox.value === 'rank_general') {
+                            activeBorder = 'border-yellow-500';
+                            activeBg = 'bg-yellow-50/30';
+                        } else if (checkbox.value === 'rank_category') {
+                            activeBorder = 'border-amber-500';
+                            activeBg = 'bg-amber-50/30';
+                        } else if (checkbox.value === 'rank_gender') {
+                            activeBorder = 'border-pink-500';
+                            activeBg = 'bg-pink-50/30';
+                        } else if (checkbox.value === 'rank_percentage') {
+                            activeBorder = 'border-violet-500';
+                            activeBg = 'bg-violet-50/30';
                         }
 
                         if (isChecked) {
                             label.classList.add(activeBorder, activeBg);
                             label.classList.remove('border-gray-200', 'bg-white');
                         } else {
-                            label.classList.remove('border-green-500', 'bg-green-50/30', 'border-orange-500', 'bg-orange-50/30', 'border-blue-500', 'bg-blue-50/30');
+                            label.classList.remove('border-green-500', 'bg-green-50/30', 'border-orange-500', 'bg-orange-50/30', 'border-blue-500', 'bg-blue-50/30', 'border-red-500', 'bg-red-50/30', 'border-rose-500', 'bg-rose-50/30', 'border-yellow-500', 'bg-yellow-50/30', 'border-amber-500', 'bg-amber-50/30', 'border-pink-500', 'bg-pink-50/30', 'border-violet-500', 'bg-violet-50/30');
                             label.classList.add('border-gray-200', 'bg-white');
                         }
                     }
@@ -11638,10 +11752,34 @@
                                 <i class="fas fa-euro-sign text-red-500"></i> 15.00 €
                             </span>`;
                     }
-                    if (tempConfigTags.includes('rank')) {
+                    if (tempConfigTags.includes('photo_price')) {
+                        html += `
+                            <span class="flex items-center gap-1 px-2 py-0.5 bg-rose-50 text-rose-800 text-[10px] rounded-full font-medium">
+                                <i class="fas fa-camera text-rose-500"></i> 12.00 €
+                            </span>`;
+                    }
+                    if (tempConfigTags.includes('rank_general')) {
                         html += `
                             <span class="flex items-center gap-1 px-2 py-0.5 bg-yellow-50 text-yellow-800 text-[10px] rounded-full font-medium">
                                 <i class="fas fa-medal text-yellow-500"></i> 45/1000
+                            </span>`;
+                    }
+                    if (tempConfigTags.includes('rank_category')) {
+                        html += `
+                            <span class="flex items-center gap-1 px-2 py-0.5 bg-amber-50 text-amber-800 text-[10px] rounded-full font-medium">
+                                <i class="fas fa-layer-group text-amber-500"></i> 2/50 (cat.)
+                            </span>`;
+                    }
+                    if (tempConfigTags.includes('rank_gender')) {
+                        html += `
+                            <span class="flex items-center gap-1 px-2 py-0.5 bg-pink-50 text-pink-800 text-[10px] rounded-full font-medium">
+                                <i class="fas fa-venus-mars text-pink-500"></i> 20/500 (genre)
+                            </span>`;
+                    }
+                    if (tempConfigTags.includes('rank_percentage')) {
+                        html += `
+                            <span class="flex items-center gap-1 px-2 py-0.5 bg-violet-50 text-violet-800 text-[10px] rounded-full font-medium">
+                                <i class="fas fa-percent text-violet-500"></i> Top 4.5%
                             </span>`;
                     }
                     previewTagsContainer.innerHTML = html;
@@ -11655,7 +11793,10 @@
                 // Copy the current configuration
                 tempConfigButtons = [...window.customCardButtons];
                 tempDefaultCardImage = window.defaultCardImage || 'photo';
-                tempConfigTags = [...(window.customCardTags || ['distance', 'elevation', 'location', 'terrain'])];
+                const savedCardTags = Array.isArray(window.customCardTags)
+                    ? window.customCardTags
+                    : ['distance', 'elevation', 'location', 'terrain'];
+                tempConfigTags = normalizeCardTags(savedCardTags);
                 selectedAvailableButtonId = null;
                 renderModalState();
                 cardConfigModal.classList.remove('hidden');
