@@ -1890,11 +1890,11 @@
                     <tr
                         class="${isMoi ? 'bg-blue-50/50 hover:bg-blue-100' : isTousEnsemble ? 'bg-purple-50/60 hover:bg-purple-100' : 'hover:bg-green-100'} transition-colors ${showRowDetails ? 'cursor-pointer select-none' : ''}"
                         ${showRowDetails ? `onclick="window.toggleRelayRow('${subRowId}', this)"` : ''}>
-                        <td class="pl-1.5 pr-1 py-1 font-medium text-green-700 text-center">${idx + 1}</td>
-                        <td class="pl-1 pr-2 py-1 ${isMoi ? 'font-bold text-blue-700' : isTousEnsemble ? 'font-bold text-purple-700' : ''}">${runnerDisplay}</td>
-                        <td class="px-1.5 py-1">${formatDist(lap.dist)}</td>
-                        <td class="px-1.5 py-1 whitespace-nowrap">${lapElevStr}</td>
-                        <td class="px-1.5 py-1 font-mono text-xs">${lap.time || '-'}</td>
+                        <td class="px-1 py-1 font-medium text-green-700 text-center">${idx + 1}</td>
+                        <td class="px-1 py-1 ${isMoi ? 'font-bold text-blue-700' : isTousEnsemble ? 'font-bold text-purple-700' : ''}">${runnerDisplay}</td>
+                        <td class="px-1 py-1">${formatDist(lap.dist)}</td>
+                        <td class="px-1 py-1 whitespace-nowrap">${lapElevStr}</td>
+                        <td class="px-1 py-1 font-mono text-xs">${lap.time || '-'}</td>
                         ${showSubRowColumn ? `<td class="px-1 py-1 text-center text-indigo-400">${showRowDetails ? '<i class="fas fa-chevron-down relay-chevron text-[9px] transition-transform duration-200"></i>' : ''}</td>` : ''}
                     </tr>
                     ${showRowDetails ? `
@@ -1948,11 +1948,11 @@
                         <table class="w-full text-xs text-left text-green-800">
                             <thead class="bg-green-100 text-green-900 uppercase font-semibold">
                                 <tr>
-                                    <th class="pl-1.5 pr-1 py-1 w-6 text-center">#</th>
-                                    <th class="pl-1 pr-2 py-1">Coureur</th>
-                                    <th class="px-1.5 py-1">Km</th>
-                                    <th class="px-1.5 py-1">Dénivelé</th>
-                                    <th class="px-1.5 py-1">Temps</th>
+                                    <th class="px-1 py-1 w-6 text-center">#</th>
+                                    <th class="px-1 py-1">Coureur</th>
+                                    <th class="px-1 py-1">Km</th>
+                                    <th class="px-1 py-1">Dénivelé</th>
+                                    <th class="px-1 py-1">Temps</th>
                                     ${showSubRowColumn ? '<th class="px-1 py-1 text-indigo-600 text-center" title="Cliquez sur une ligne pour voir les détails"><i class="fas fa-clock"></i></th>' : ''}
                                 </tr>
                             </thead>
@@ -1961,10 +1961,10 @@
                             </tbody>
                             <tfoot class="bg-green-100 font-bold">
                                 <tr>
-                                    <td colspan="2" class="pl-1.5 pr-2 py-1">Total Grp</td>
-                                    <td class="px-1.5 py-1 whitespace-nowrap">${totalRelayDist.toFixed(2)}&nbsp;km</td>
-                                    <td class="px-1.5 py-1 whitespace-nowrap">${totalRelayElevStr}</td>
-                                    <td class="px-1.5 py-1 font-mono text-xs">${secondsToTime(totalRelayTimeS)}</td>
+                                    <td colspan="2" class="px-1 py-1">Total Grp</td>
+                                    <td class="px-1 py-1 whitespace-nowrap">${totalRelayDist.toFixed(2)}&nbsp;km</td>
+                                    <td class="px-1 py-1 whitespace-nowrap">${totalRelayElevStr}</td>
+                                    <td class="px-1 py-1 font-mono text-xs">${secondsToTime(totalRelayTimeS)}</td>
                                     ${showSubRowColumn ? '<td class="px-1 py-1"></td>' : ''}
                                 </tr>
                             </tfoot>
