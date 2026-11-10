@@ -113,6 +113,7 @@ const manualModalHTML = `
                                     <div>• Dénivelé D+ et D- (m)</div>
                                     <div>• Temps de course</div>
                                     <div>• Classements général, par genre et par catégorie FFA</div>
+                                    <div>• Points de passage (km, classement et temps)</div>
                                     <div>• Lieu / Ville</div>
                                     <div>• Photo (JPG, PNG)</div>
                                     <div>• Image automatique (Web/Nom)</div>
@@ -324,6 +325,7 @@ const manualModalHTML = `
                     <ul class="text-sm text-gray-600 space-y-1">
                         <li>• Comparez vos performances avec les éditions précédentes.</li>
                         <li>• Consultez votre position en pourcentage du classement (ex. : Top 11.0%).</li>
+                        <li>• Consultez vos points de passage et dépliez la comparaison au classement final : places gagnées en vert, perdues en rouge.</li>
                     </ul>
                 </section>
 
