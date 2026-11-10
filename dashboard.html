@@ -650,6 +650,24 @@
                         </div>
                     </div>
 
+                    <!-- Section Épreuves Coéquipiers (Triathlon Relais) -->
+                    <div id="triathlonTeammateSection" class="mb-4 hidden">
+                        <button type="button" id="toggleTeammateFieldsBtn"
+                            onclick="const c = document.getElementById('triathlonTeammateContent'); const ch = this.querySelector('.teammate-chevron'); c.classList.toggle('hidden'); if(ch) ch.classList.toggle('rotate-180');"
+                            class="w-full flex items-center justify-between p-3 bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded-xl text-xs font-semibold text-purple-900 transition-colors select-none">
+                            <span class="flex items-center gap-2">
+                                <i class="fas fa-users text-purple-600"></i>
+                                <span>Épreuves de vos coéquipiers (optionnel)</span>
+                            </span>
+                            <span class="flex items-center gap-1.5 text-purple-700 text-[11px] font-medium">
+                                <span id="triathlonTeammateSummaryBadge" class="hidden text-[10px] bg-purple-200 text-purple-800 px-1.5 py-0.5 rounded-full font-bold">Renseigné</span>
+                                <i class="fas fa-chevron-down teammate-chevron text-[10px] text-purple-500 transition-transform duration-200"></i>
+                            </span>
+                        </button>
+                        <div id="triathlonTeammateContent" class="hidden mt-3 space-y-3">
+                        </div>
+                    </div>
+
                     <div class="mb-4" id="raceElevationContainer">
                         <div class="grid grid-cols-2 gap-3">
                             <div>
@@ -2090,7 +2108,7 @@
                             <i class="fas fa-exclamation-triangle text-xs"></i>
                         </div>
                         <div class="flex-1">
-                            <span class="font-bold text-amber-900">Attention :</span> en ne sélectionnant pas l'action <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-red-100 text-red-700 border border-red-200 font-semibold text-[11px] align-baseline"><i class="fas fa-trash-alt text-[10px] text-red-600"></i> Supprimer</span>, vous n'aurez aucune action permettant de supprimer une course directement depuis vos cartes <span class="text-amber-800 font-medium">(ce qui est pratique si vous souhaitez éviter les fausses manipulations).</span>
+                            <span class="font-bold text-amber-900">Attention :</span> en ne sélectionnant pas l'action <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-red-100 text-red-700 border border-red-200 font-semibold text-[11px] align-baseline"><i class="fas fa-trash-alt text-[10px] text-red-600"></i> Supprimer</span>, vous n'aurez aucune action permettant de supprimer une course.</span>
                         </div>
                     </div>
                 </div>
@@ -3721,7 +3739,12 @@
                     return sum;
                 }, 0);
             }
-            if (race.terrain === 'triathlon' && race.raceFormat !== 'team') {
+            if (race.terrain === 'triathlon') {
+                if (race.raceFormat === 'team') {
+                    if (race.raceRelaySport === 'swim') return 0;
+                    if (race.raceRelaySport === 'bike') return parseInt(race.bikeElevation) || 0;
+                    return parseInt(race.runElevation) || parseInt(race.elevation) || 0;
+                }
                 return (parseInt(race.bikeElevation) || 0) + (parseInt(race.elevation) || 0);
             }
             return parseInt(race.elevation) || 0;
@@ -3740,6 +3763,16 @@
                     }
                     return sum;
                 }, 0);
+            }
+            if (race.terrain === 'triathlon' && race.raceFormat === 'team') {
+                const userTimeStr = race.raceRelaySport === 'swim' ? race.swimTime : (race.raceRelaySport === 'bike' ? race.bikeTime : (race.runTime || race.time));
+                if (userTimeStr) {
+                    const parts = String(userTimeStr).split(':');
+                    if (parts.length === 3) {
+                        return (parseInt(parts[0]) || 0) * 3600 + (parseInt(parts[1]) || 0) * 60 + (parseInt(parts[2]) || 0);
+                    }
+                }
+                return 0;
             }
             if (race.time) {
                 const parts = String(race.time).split(':');
@@ -4576,6 +4609,10 @@
                 if (typeof updateRelayFieldsVisibility === 'function') updateRelayFieldsVisibility();
                 if (typeof updateTriathlonFieldsVisibility === 'function') updateTriathlonFieldsVisibility();
             }
+            const tC = document.getElementById('triathlonTeammateContent');
+            if (tC) tC.classList.add('hidden');
+            const tCh = document.querySelector('#toggleTeammateFieldsBtn .teammate-chevron');
+            if (tCh) tCh.classList.remove('rotate-180');
 
             // Réinitialiser l'état de la photo
             photoData = null;
@@ -5377,13 +5414,21 @@
                         }
                     }
 
-                    if (race.time && race.time !== '00:00:00' && showTime) {
-                        allTags.push(`<span class="tag-item flex items-center gap-1 px-2 py-1 bg-cyan-50 text-cyan-800 text-xs rounded-full"><i class="fas fa-stopwatch text-cyan-500"></i> ${race.time}</span>`);
+                    const userTimeForCard = (race.terrain === 'triathlon' && race.raceFormat === 'team')
+                        ? (race.raceRelaySport === 'swim' ? race.swimTime : (race.raceRelaySport === 'bike' ? race.bikeTime : (race.runTime || race.time)))
+                        : race.time;
+
+                    if (userTimeForCard && userTimeForCard !== '00:00:00' && showTime) {
+                        allTags.push(`<span class="tag-item flex items-center gap-1 px-2 py-1 bg-cyan-50 text-cyan-800 text-xs rounded-full"><i class="fas fa-stopwatch text-cyan-500"></i> ${userTimeForCard}</span>`);
                     }
 
-                    if (showPace && race.time && race.time !== '00:00:00') {
-                        const raceDist = parseFloat(race.distance) || 0;
-                        const parts = race.time.split(':');
+                    if (showPace && userTimeForCard && userTimeForCard !== '00:00:00') {
+                        let raceDist = parseFloat(race.distance) || 0;
+                        if (race.terrain === 'triathlon' && race.raceFormat === 'team') {
+                            if (race.raceRelaySport === 'swim') raceDist = (parseFloat(race.swimDistance) || 0) / 1000;
+                            else if (race.raceRelaySport === 'bike') raceDist = parseFloat(race.bikeDistance) || 0;
+                        }
+                        const parts = userTimeForCard.split(':');
                         let hours = 0;
                         if (parts.length === 3) {
                             hours = parseInt(parts[0]) + parseInt(parts[1]) / 60 + parseInt(parts[2]) / 3600;
@@ -5869,31 +5914,31 @@
                     const hiddenTags = originalTags.slice(visibleCount);
 
                     const moreBadgeHtml = `
-                        <div class="relative inline-block more-tags-trigger group/tag-more z-20 hover:z-50"
-         onclick="event.stopPropagation();
-                  if (event.target.closest('.more-tags-toggle')) {
-                      const tt = this.querySelector('.tag-tooltip');
-                      if (tt) {
-                          const open = tt.classList.toggle('!flex');
-                          tt.classList.toggle('is-pinned', open);
-                          this.classList.toggle('z-50', open);
-                          this.classList.toggle('z-20', !open);
-                      }
-                  }">
-        <span class="more-tags-toggle flex items-center gap-1 px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs rounded-full font-bold border border-emerald-200/80 transition-all shadow-sm cursor-pointer select-none">
-            +${hiddenTags.length}
-        </span>
-        <div class="tag-tooltip absolute top-full left-0 mt-2 hidden group-hover/tag-more:flex flex-col gap-1.5 p-3 bg-white/95 text-slate-800 text-xs rounded-xl shadow-xl shadow-emerald-900/10 z-50 w-max max-w-[270px] backdrop-blur-md border border-emerald-100/90 pointer-events-auto transition-all duration-200">
-            <div class="absolute -top-1.5 left-4 border-4 border-transparent border-b-white"></div>
-            <div class="text-[10px] font-bold text-emerald-800 uppercase tracking-wider border-b border-emerald-100 pb-1.5 flex justify-between items-center gap-3">
-                <span class="flex items-center gap-1.5"><i class="fas fa-tags text-emerald-500 text-[10px]"></i> Autres tags</span>
-                <span class="px-1.5 py-0.5 bg-emerald-100 text-emerald-800 rounded-full text-[9px] font-semibold">${hiddenTags.length}</span>
-            </div>
-            <div class="flex flex-wrap gap-1.5 pt-1">
-                ${hiddenTags.join('')}
-            </div>
-        </div>
-    </div>
+                    <div class="relative inline-block more-tags-trigger group/tag-more z-20 hover:z-50"
+                    onclick="event.stopPropagation();
+                    if (event.target.closest('.more-tags-toggle')) {
+                        const tt = this.querySelector('.tag-tooltip');
+                        if (tt) {
+                            const open = tt.classList.toggle('!flex');
+                            tt.classList.toggle('is-pinned', open);
+                            this.classList.toggle('z-50', open);
+                            this.classList.toggle('z-20', !open);
+                        }
+                    }">
+                    <span class="more-tags-toggle flex items-center gap-1 px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs rounded-full font-bold border border-emerald-200/80 transition-all shadow-sm cursor-pointer select-none">
+                        +${hiddenTags.length}
+                    </span>
+                    <div class="tag-tooltip absolute top-full left-0 mt-2 hidden group-hover/tag-more:flex flex-col gap-1.5 p-3 bg-white/95 text-slate-800 text-xs rounded-xl shadow-xl shadow-emerald-900/10 z-50 w-max max-w-[270px] backdrop-blur-md border border-emerald-100/90 pointer-events-auto transition-all duration-200">
+                        <div class="absolute -top-1.5 left-4 border-4 border-transparent border-b-white"></div>
+                            <div class="text-[10px] font-bold text-emerald-800 uppercase tracking-wider border-b border-emerald-100 pb-1.5 flex justify-between items-center gap-3">
+                                <span class="flex items-center gap-1.5"><i class="fas fa-tags text-emerald-500 text-[10px]"></i> Autres tags</span>
+                                <span class="px-1.5 py-0.5 bg-emerald-100 text-emerald-800 rounded-full text-[9px] font-semibold">${hiddenTags.length}</span>
+                            </div>
+                            <div class="flex flex-wrap gap-1.5 pt-1">
+                               ${hiddenTags.join('')}
+                            </div>
+                        </div>
+                    </div>
                     `;
 
                     container.innerHTML = visibleHtml + moreBadgeHtml;
@@ -6091,10 +6136,21 @@
 
             // New wrapper for Run fields
             const raceRunFieldsWrapper = document.getElementById('raceRunFieldsWrapper');
+            const teammateSection = document.getElementById('triathlonTeammateSection');
+            const teammateContent = document.getElementById('triathlonTeammateContent');
+            const teammateBadge = document.getElementById('triathlonTeammateSummaryBadge');
 
             // Reset all first
             swimContainer.classList.add('hidden');
             bikeContainer.classList.add('hidden');
+            if (teammateSection) {
+                teammateSection.classList.add('hidden');
+                if (teammateSection.parentNode) {
+                    if (swimContainer) teammateSection.parentNode.insertBefore(swimContainer, teammateSection);
+                    if (bikeContainer) teammateSection.parentNode.insertBefore(bikeContainer, teammateSection);
+                    if (raceRunFieldsWrapper) teammateSection.parentNode.insertBefore(raceRunFieldsWrapper, teammateSection);
+                }
+            }
             if (raceRunFieldsWrapper) {
                 raceRunFieldsWrapper.classList.remove('bg-green-50', 'p-4', 'rounded-lg');
                 raceRunFieldsWrapper.classList.remove('hidden'); // Ensure visible by default
@@ -6115,16 +6171,70 @@
 
                 if (isRelay) {
                     if (relaySportContainer) relaySportContainer.classList.remove('hidden');
+                    if (teammateSection) teammateSection.classList.remove('hidden');
 
-                    // Show only selected sport
                     if (relaySport === 'swim') {
+                        if (teammateSection && teammateSection.parentNode && swimContainer) {
+                            teammateSection.parentNode.insertBefore(swimContainer, teammateSection);
+                        }
                         swimContainer.classList.remove('hidden');
-                        if (raceRunFieldsWrapper) raceRunFieldsWrapper.classList.add('hidden');
+
+                        if (teammateContent) {
+                            if (bikeContainer) {
+                                teammateContent.appendChild(bikeContainer);
+                                bikeContainer.classList.remove('hidden');
+                            }
+                            if (raceRunFieldsWrapper) {
+                                teammateContent.appendChild(raceRunFieldsWrapper);
+                                raceRunFieldsWrapper.classList.remove('hidden');
+                                setupRunSectionForTriathlon(raceDistanceRunGrid, raceRunTimeContainer, raceRunElevationContainer, raceRunFieldsWrapper, raceDistanceLabel);
+                            }
+                        }
                     } else if (relaySport === 'bike') {
+                        if (teammateSection && teammateSection.parentNode && bikeContainer) {
+                            teammateSection.parentNode.insertBefore(bikeContainer, teammateSection);
+                        }
                         bikeContainer.classList.remove('hidden');
-                        if (raceRunFieldsWrapper) raceRunFieldsWrapper.classList.add('hidden');
+
+                        if (teammateContent) {
+                            if (swimContainer) {
+                                teammateContent.appendChild(swimContainer);
+                                swimContainer.classList.remove('hidden');
+                            }
+                            if (raceRunFieldsWrapper) {
+                                teammateContent.appendChild(raceRunFieldsWrapper);
+                                raceRunFieldsWrapper.classList.remove('hidden');
+                                setupRunSectionForTriathlon(raceDistanceRunGrid, raceRunTimeContainer, raceRunElevationContainer, raceRunFieldsWrapper, raceDistanceLabel);
+                            }
+                        }
                     } else if (relaySport === 'run') {
+                        if (teammateSection && teammateSection.parentNode && raceRunFieldsWrapper) {
+                            teammateSection.parentNode.insertBefore(raceRunFieldsWrapper, teammateSection);
+                        }
                         setupRunSectionForTriathlon(raceDistanceRunGrid, raceRunTimeContainer, raceRunElevationContainer, raceRunFieldsWrapper, raceDistanceLabel);
+
+                        if (teammateContent) {
+                            if (swimContainer) {
+                                teammateContent.appendChild(swimContainer);
+                                swimContainer.classList.remove('hidden');
+                            }
+                            if (bikeContainer) {
+                                teammateContent.appendChild(bikeContainer);
+                                bikeContainer.classList.remove('hidden');
+                            }
+                        }
+                    }
+
+                    if (teammateBadge) {
+                        const hasSwimVal = !!(document.getElementById('raceSwimDistance')?.value || document.getElementById('raceSwimTime')?.value);
+                        const hasBikeVal = !!(document.getElementById('raceBikeDistance')?.value || document.getElementById('raceBikeTime')?.value || document.getElementById('raceBikeElevation')?.value);
+                        const hasRunVal = !!(document.getElementById('raceDistance')?.value || document.getElementById('raceRunTime')?.value || document.getElementById('raceRunElevation')?.value);
+                        const hasTeammateValues = (relaySport !== 'swim' && hasSwimVal) || (relaySport !== 'bike' && hasBikeVal) || (relaySport !== 'run' && hasRunVal);
+                        if (hasTeammateValues) {
+                            teammateBadge.classList.remove('hidden');
+                        } else {
+                            teammateBadge.classList.add('hidden');
+                        }
                     }
                 } else {
                     // Solo Mode: Show all
@@ -6272,6 +6382,22 @@
             if (bikeElevNeg > 0 || runElevNeg > 0) {
                 document.getElementById('raceElevationNeg').value = bikeElevNeg + runElevNeg;
             }
+
+            const teammateBadge = document.getElementById('triathlonTeammateSummaryBadge');
+            const relaySportInput = document.getElementById('raceRelaySport');
+            const isRelay = document.querySelector('input[name="raceFormat"]:checked')?.value === 'team';
+            if (teammateBadge && isRelay && relaySportInput) {
+                const relaySport = relaySportInput.value;
+                const hasSwimVal = !!(document.getElementById('raceSwimDistance')?.value || document.getElementById('raceSwimTime')?.value);
+                const hasBikeVal = !!(document.getElementById('raceBikeDistance')?.value || document.getElementById('raceBikeTime')?.value || document.getElementById('raceBikeElevation')?.value);
+                const hasRunVal = !!(document.getElementById('raceDistance')?.value || document.getElementById('raceRunTime')?.value || document.getElementById('raceRunElevation')?.value);
+                const hasTeammateValues = (relaySport !== 'swim' && hasSwimVal) || (relaySport !== 'bike' && hasBikeVal) || (relaySport !== 'run' && hasRunVal);
+                if (hasTeammateValues) {
+                    teammateBadge.classList.remove('hidden');
+                } else {
+                    teammateBadge.classList.add('hidden');
+                }
+            }
         }
 
         // Listeners for Relay Configuration
@@ -6284,6 +6410,9 @@
         document.getElementById('raceSwimTime').addEventListener('input', calculateTriathlonTotals);
         document.getElementById('raceBikeTime').addEventListener('input', calculateTriathlonTotals);
         document.getElementById('raceRunTime').addEventListener('input', calculateTriathlonTotals);
+        document.getElementById('raceSwimDistance').addEventListener('input', calculateTriathlonTotals);
+        document.getElementById('raceBikeDistance').addEventListener('input', calculateTriathlonTotals);
+        document.getElementById('raceDistance').addEventListener('input', calculateTriathlonTotals);
         document.getElementById('raceBikeElevation').addEventListener('input', calculateTriathlonTotals);
         document.getElementById('raceBikeElevationNeg').addEventListener('input', calculateTriathlonTotals);
         document.getElementById('raceRunElevation').addEventListener('input', calculateTriathlonTotals);
@@ -6726,11 +6855,11 @@
                         <label class="min-w-0">
                             <span class="mb-1 block text-[11px] font-medium text-amber-700">${isTriathlon ? 'Étape' : 'Km'}</span>
                             ${isTriathlon
-                                ? `<select data-index="${index}" class="w-full px-2 py-1.5 border border-amber-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm bg-white" onchange="updatePassagePointData(${index}, 'stage', this.value)">
+                        ? `<select data-index="${index}" class="w-full px-2 py-1.5 border border-amber-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm bg-white" onchange="updatePassagePointData(${index}, 'stage', this.value)">
                                     <option value="">Choisir une étape</option>
                                     ${triathlonPassageStages.map(stage => `<option value="${escapeHtml(stage)}" ${point.stage === stage ? 'selected' : ''}>${escapeHtml(stage)}</option>`).join('')}
                                 </select>`
-                                : `<input type="text" inputmode="decimal" value="${normalizePassageDistanceValue(point.km)}" placeholder="km" data-index="${index}"
+                        : `<input type="text" inputmode="decimal" value="${normalizePassageDistanceValue(point.km)}" placeholder="km" data-index="${index}"
                                 class="w-full px-2 py-1.5 border border-amber-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm bg-white"
                                 oninput="handlePassageKmInput(this); updatePassagePointData(${index}, 'km', this.value)">`}
                         </label>
@@ -7560,30 +7689,16 @@
                 if (raceFormatVal === 'team') {
                     const relaySportVal = document.getElementById('raceRelaySport').value;
                     rawFields.raceRelaySport = relaySportVal;
-                    if (relaySportVal === 'swim') {
-                        rawFields.swimDistance = isNaN(swimDistance) ? null : swimDistance;
-                        rawFields.swimTime = (swimTime && swimTime.trim() !== '' && swimTime !== 'undefined' && swimTime !== '00:00:00') ? swimTime.trim() : null;
-                    } else if (relaySportVal === 'bike') {
-                        rawFields.bikeDistance = isNaN(bikeDistance) ? null : bikeDistance;
-                        rawFields.bikeTime = (bikeTime && bikeTime.trim() !== '' && bikeTime !== 'undefined' && bikeTime !== '00:00:00') ? bikeTime.trim() : null;
-                        rawFields.bikeElevation = isNaN(bikeElevation) ? null : bikeElevation;
-                        rawFields.bikeElevationNeg = isNaN(bikeElevationNeg) ? null : bikeElevationNeg;
-                    } else if (relaySportVal === 'run') {
-                        rawFields.runTime = (runTime && runTime.trim() !== '' && runTime !== 'undefined' && runTime !== '00:00:00') ? runTime.trim() : null;
-                        rawFields.runElevation = isNaN(runElevation) ? null : runElevation;
-                        rawFields.runElevationNeg = isNaN(runElevationNeg) ? null : runElevationNeg;
-                    }
-                } else {
-                    rawFields.swimDistance = isNaN(swimDistance) ? null : swimDistance;
-                    rawFields.swimTime = (swimTime && swimTime.trim() !== '' && swimTime !== 'undefined' && swimTime !== '00:00:00') ? swimTime.trim() : null;
-                    rawFields.bikeDistance = isNaN(bikeDistance) ? null : bikeDistance;
-                    rawFields.bikeTime = (bikeTime && bikeTime.trim() !== '' && bikeTime !== 'undefined' && bikeTime !== '00:00:00') ? bikeTime.trim() : null;
-                    rawFields.bikeElevation = isNaN(bikeElevation) ? null : bikeElevation;
-                    rawFields.bikeElevationNeg = isNaN(bikeElevationNeg) ? null : bikeElevationNeg;
-                    rawFields.runTime = (runTime && runTime.trim() !== '' && runTime !== 'undefined' && runTime !== '00:00:00') ? runTime.trim() : null;
-                    rawFields.runElevation = isNaN(runElevation) ? null : runElevation;
-                    rawFields.runElevationNeg = isNaN(runElevationNeg) ? null : runElevationNeg;
                 }
+                rawFields.swimDistance = isNaN(swimDistance) ? null : swimDistance;
+                rawFields.swimTime = (swimTime && swimTime.trim() !== '' && swimTime !== 'undefined' && swimTime !== '00:00:00') ? swimTime.trim() : null;
+                rawFields.bikeDistance = isNaN(bikeDistance) ? null : bikeDistance;
+                rawFields.bikeTime = (bikeTime && bikeTime.trim() !== '' && bikeTime !== 'undefined' && bikeTime !== '00:00:00') ? bikeTime.trim() : null;
+                rawFields.bikeElevation = isNaN(bikeElevation) ? null : bikeElevation;
+                rawFields.bikeElevationNeg = isNaN(bikeElevationNeg) ? null : bikeElevationNeg;
+                rawFields.runTime = (runTime && runTime.trim() !== '' && runTime !== 'undefined' && runTime !== '00:00:00') ? runTime.trim() : null;
+                rawFields.runElevation = isNaN(runElevation) ? null : runElevation;
+                rawFields.runElevationNeg = isNaN(runElevationNeg) ? null : runElevationNeg;
             } else if (terrain === 'relai') {
                 rawFields.relayLaps = (relayLapsData && relayLapsData.length > 0) ? relayLapsData : null;
             } else if (terrain === 'hyrox') {

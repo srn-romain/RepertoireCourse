@@ -2153,6 +2153,168 @@
             `;
             detailsRelayContainer.innerHTML = hyroxHtml;
             detailsRelayContainer.classList.remove('hidden');
+        } else if (race.terrain === 'triathlon' && race.raceFormat === 'team') {
+            const userSport = race.raceRelaySport || 'run';
+            const swimDistM = parseFloat(race.swimDistance);
+            const swimDistText = !isNaN(swimDistM) && swimDistM > 0 ? (swimDistM > 999 ? (swimDistM / 1000).toFixed(2) + ' km' : swimDistM + ' m') : '-';
+            const swimTime = (race.swimTime && race.swimTime !== '00:00:00' && race.swimTime !== 'undefined') ? race.swimTime : '-';
+
+            const bikeDistKm = parseFloat(race.bikeDistance);
+            const bikeDistText = !isNaN(bikeDistKm) && bikeDistKm > 0 ? formatDist(bikeDistKm) + ' km' : '-';
+            const bikeTime = (race.bikeTime && race.bikeTime !== '00:00:00' && race.bikeTime !== 'undefined') ? race.bikeTime : '-';
+            const hasBikeElev = race.bikeElevation !== null && race.bikeElevation !== undefined && !isNaN(parseInt(race.bikeElevation));
+            const hasBikeElevNeg = race.bikeElevationNeg !== null && race.bikeElevationNeg !== undefined && !isNaN(parseInt(race.bikeElevationNeg));
+            let bikeElevText = '-';
+            if (hasBikeElev || hasBikeElevNeg) {
+                const parts = [];
+                if (hasBikeElev) parts.push(`\u2191${race.bikeElevation}m`);
+                if (hasBikeElevNeg) parts.push(`\u2193${race.bikeElevationNeg}m`);
+                bikeElevText = parts.join(' ');
+            }
+
+            const runDistKm = parseFloat(race.distance);
+            const runDistText = !isNaN(runDistKm) && runDistKm > 0 ? formatDist(runDistKm) + ' km' : '-';
+            const runTimeVal = race.runTime || (userSport === 'run' ? race.time : null);
+            const runTime = (runTimeVal && runTimeVal !== '00:00:00' && runTimeVal !== 'undefined') ? runTimeVal : '-';
+            const hasRunElev = race.runElevation !== null && race.runElevation !== undefined && !isNaN(parseInt(race.runElevation));
+            const hasRunElevNeg = race.runElevationNeg !== null && race.runElevationNeg !== undefined && !isNaN(parseInt(race.runElevationNeg));
+            let runElevText = '-';
+            if (hasRunElev || hasRunElevNeg) {
+                const parts = [];
+                if (hasRunElev) parts.push(`\u2191${race.runElevation}m`);
+                if (hasRunElevNeg) parts.push(`\u2193${race.runElevationNeg}m`);
+                runElevText = parts.join(' ');
+            }
+
+            const hasTeammateData = (userSport !== 'swim' && (swimDistText !== '-' || swimTime !== '-')) ||
+                                    (userSport !== 'bike' && (bikeDistText !== '-' || bikeTime !== '-' || bikeElevText !== '-')) ||
+                                    (userSport !== 'run' && (runDistText !== '-' || runTime !== '-' || runElevText !== '-'));
+
+            if (hasTeammateData) {
+                const totalSwimKm = !isNaN(swimDistM) ? swimDistM / 1000 : 0;
+                const totalBikeKm = !isNaN(bikeDistKm) ? bikeDistKm : 0;
+                const totalRunKm = !isNaN(runDistKm) ? runDistKm : 0;
+                const totalTeamDist = totalSwimKm + totalBikeKm + totalRunKm;
+                const totalTeamDistText = totalTeamDist > 0 ? formatDist(totalTeamDist) + ' km' : '-';
+
+                const bikeDPlus = hasBikeElev ? parseInt(race.bikeElevation) : 0;
+                const runDPlus = hasRunElev ? parseInt(race.runElevation) : 0;
+                const totalTeamDPlus = bikeDPlus + runDPlus;
+
+                const bikeDMinus = hasBikeElevNeg ? parseInt(race.bikeElevationNeg) : 0;
+                const runDMinus = hasRunElevNeg ? parseInt(race.runElevationNeg) : 0;
+                const totalTeamDMinus = bikeDMinus + runDMinus;
+
+                let totalTeamElevText = '-';
+                if (totalTeamDPlus > 0 || totalTeamDMinus > 0) {
+                    const parts = [];
+                    if (totalTeamDPlus > 0) parts.push(`\u2191${totalTeamDPlus}m`);
+                    if (totalTeamDMinus > 0) parts.push(`\u2193${totalTeamDMinus}m`);
+                    totalTeamElevText = parts.join(' ');
+                }
+
+                let totalTeamSeconds = 0;
+                if (swimTime !== '-') totalTeamSeconds += timeToSeconds(swimTime);
+                if (bikeTime !== '-') totalTeamSeconds += timeToSeconds(bikeTime);
+                if (runTime !== '-') totalTeamSeconds += timeToSeconds(runTime);
+                const totalTeamTimeText = totalTeamSeconds > 0 ? secondsToTime(totalTeamSeconds) : (race.time && race.time !== '00:00:00' ? race.time : '-');
+
+                const stages = [
+                    {
+                        key: 'swim',
+                        name: 'Natation',
+                        icon: 'fa-swimmer text-blue-500',
+                        isUser: userSport === 'swim',
+                        dist: swimDistText,
+                        elev: '<span class="inline-flex items-center text-purple-400" title="Non applicable en natation"><i class="fas fa-times text-[10px]"></i></span>',
+                        time: swimTime
+                    },
+                    {
+                        key: 'bike',
+                        name: 'Vélo',
+                        icon: 'fa-biking text-orange-500',
+                        isUser: userSport === 'bike',
+                        dist: bikeDistText,
+                        elev: bikeElevText,
+                        time: bikeTime
+                    },
+                    {
+                        key: 'run',
+                        name: 'Course à pied',
+                        icon: 'fa-running text-green-500',
+                        isUser: userSport === 'run',
+                        dist: runDistText,
+                        elev: runElevText,
+                        time: runTime
+                    }
+                ];
+
+                const rowsHtml = stages.map(st => {
+                    const badge = st.isUser
+                        ? `<span class="text-[9px] bg-green-100 text-green-800 border border-green-200 px-1 py-0.5 rounded font-bold">Moi</span>`
+                        : `<span class="text-[9px] bg-purple-100 text-purple-800 border border-purple-200 px-1 py-0.5 rounded font-bold">Coéquipier</span>`;
+                    return `
+                        <tr class="hover:bg-purple-100/50 transition-colors">
+                            <td class="px-1 py-1 font-medium whitespace-nowrap">
+                                <i class="fas ${st.icon} w-3 text-center mr-1 text-[10px]"></i><span>${st.name}</span>
+                            </td>
+                            <td class="px-1 py-1 text-center whitespace-nowrap">${badge}</td>
+                            <td class="px-1 py-1 font-medium whitespace-nowrap">${st.dist}</td>
+                            <td class="px-1 py-1 whitespace-nowrap">${st.elev}</td>
+                            <td class="px-1 py-1 font-mono text-[11px] whitespace-nowrap">${st.time}</td>
+                        </tr>
+                    `;
+                }).join('');
+
+                const triathlonTeamHtml = `
+                    <div class="w-full mb-3">
+                        <button
+                            onclick="this.nextElementSibling.classList.toggle('hidden'); this.querySelector('i.toggle-chevron').classList.toggle('rotate-180')"
+                            class="w-full flex items-center justify-between py-1.5 px-2.5 text-xs font-semibold text-purple-900 bg-purple-50 border border-purple-200 rounded-lg hover:bg-purple-100 transition-colors">
+                            <span class="flex items-center gap-1.5">
+                                <i class="fas fa-users text-purple-600 text-[11px]"></i>
+                                <span>Épreuves de l'équipe (Relais)</span>
+                            </span>
+                            <span class="flex items-center gap-1 text-purple-700 text-[11px] font-medium">
+                                <i class="fas fa-chevron-down toggle-chevron text-[10px] text-purple-500 transition-transform duration-200"></i>
+                            </span>
+                        </button>
+                        <div class="hidden mt-2">
+                            <div class="bg-purple-50/60 p-1.5 sm:p-2 rounded-lg w-full border border-purple-200 shadow-sm">
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-[11px] text-left text-purple-900">
+                                        <thead class="bg-purple-100 text-purple-950 uppercase font-semibold text-[9px] tracking-wider">
+                                            <tr>
+                                                <th class="px-1 py-1">Épreuve</th>
+                                                <th class="px-1 py-1 text-center">Participant</th>
+                                                <th class="px-1 py-1">Distance</th>
+                                                <th class="px-1 py-1">Dénivelé</th>
+                                                <th class="px-1 py-1">Temps</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y divide-purple-200">
+                                            ${rowsHtml}
+                                        </tbody>
+                                        <tfoot class="bg-purple-100 font-bold border-t-2 border-purple-300 text-purple-950 text-[10px]">
+                                            <tr>
+                                                <td colspan="2" class="px-1 py-1">Total Équipe</td>
+                                                <td class="px-1 py-1 font-medium whitespace-nowrap">${totalTeamDistText}</td>
+                                                <td class="px-1 py-1 whitespace-nowrap">${totalTeamElevText}</td>
+                                                <td class="px-1 py-1 font-mono text-[11px] whitespace-nowrap">${totalTeamTimeText}</td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                detailsRelayContainer.innerHTML = triathlonTeamHtml;
+                detailsRelayContainer.classList.remove('hidden');
+            } else {
+                detailsRelayContainer.innerHTML = '';
+                detailsRelayContainer.classList.add('hidden');
+            }
         } else {
             detailsRelayContainer.innerHTML = '';
             detailsRelayContainer.classList.add('hidden');
@@ -2181,7 +2343,10 @@
             }
         }
 
-        const timeStr = race.time;
+        let timeStr = race.time;
+        if (race.terrain === 'triathlon' && race.raceFormat === 'team') {
+            timeStr = race.raceRelaySport === 'swim' ? race.swimTime : (race.raceRelaySport === 'bike' ? race.bikeTime : (race.runTime || race.time));
+        }
         const isTodayForSpeed = raceDateOnly.getTime() === todayForTime.getTime();
         const isUpcomingForSpeed = raceDateOnly > todayForTime;
         const hasCompletedTime = timeStr && timeStr !== '00:00:00' && timeStr.trim() !== '';
