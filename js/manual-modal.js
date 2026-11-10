@@ -113,7 +113,7 @@ const manualModalHTML = `
                                     <div>• Dénivelé D+ et D- (m)</div>
                                     <div>• Temps de course</div>
                                     <div>• Classements général, par genre et par catégorie FFA</div>
-                                    <div>• Points de passage (km, classement et temps)</div>
+                                    <div>• Points de passage (km ou étape de triathlon, classement et temps)</div>
                                     <div>• Lieu / Ville</div>
                                     <div>• Photo (JPG, PNG)</div>
                                     <div>• Image automatique (Web/Nom)</div>

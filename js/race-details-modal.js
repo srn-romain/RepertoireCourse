@@ -2453,6 +2453,7 @@
         if (passageContainer && passageList) {
             const passagePoints = Array.isArray(race.passagePoints) ? race.passagePoints : [];
             const validPassagePoints = passagePoints.filter(point => point && (
+                point.stage !== undefined && point.stage !== null && point.stage !== '' ||
                 point.km !== undefined && point.km !== null && point.km !== '' ||
                 point.rank !== undefined && point.rank !== null && point.rank !== '' ||
                 point.time !== undefined && point.time !== null && point.time !== ''
@@ -2460,6 +2461,7 @@
 
             if (validPassagePoints.length > 0) {
                 passageContainer.classList.remove('hidden');
+                const isTriathlon = race.terrain === 'triathlon';
                 const finalRank = Number.parseInt(race.rankPos, 10);
                 const passageRows = validPassagePoints.map((point, index) => {
                     const kmRaw = point.km !== undefined && point.km !== null && point.km !== '' ? String(point.km).replace(',', '.') : '';
@@ -2467,6 +2469,9 @@
                     const kmText = Number.isFinite(kmValue)
                         ? `${kmValue.toFixed(kmValue % 1 === 0 ? 0 : 2).replace(/\.0+$/, '').replace(/(\.\d*?)0+$/, '$1')} km`
                         : 'km ?';
+                    const passageLocation = isTriathlon && point.stage
+                        ? escapeHtml(point.stage)
+                        : kmText;
                     const rankText = point.rank !== undefined && point.rank !== null && point.rank !== '' ? `${point.rank}e` : '-';
                     const passageRank = Number.parseInt(point.rank, 10);
                     const canCompareRank = Number.isFinite(passageRank) && passageRank > 0 && Number.isFinite(finalRank) && finalRank > 0;
@@ -2488,7 +2493,7 @@
                     const timeText = point.time && String(point.time).trim() ? String(point.time).trim() : '-';
                     return `
                         <tr class="${canCompareRank ? 'cursor-pointer select-none hover:bg-amber-50' : ''}" ${canCompareRank ? `onclick="window.togglePassageRow('${subRowId}', this)"` : ''}>
-                            <td class="px-2 py-1 font-semibold whitespace-nowrap">${kmText}</td>
+                            <td class="px-2 py-1 font-semibold whitespace-nowrap">${passageLocation}</td>
                             <td class="px-2 py-1">${rankDisplay}</td>
                             <td class="px-2 py-1 font-mono text-[11px] whitespace-nowrap">${timeText}</td>
                             <td class="px-2 py-1 text-center text-amber-500">${canCompareRank ? '<i class="fas fa-chevron-down passage-chevron text-[9px] transition-transform duration-200"></i>' : ''}</td>
@@ -2508,7 +2513,7 @@
                     <table class="w-full text-xs text-left text-amber-800">
                         <thead class="bg-amber-100 text-amber-900 uppercase font-semibold">
                             <tr>
-                                <th class="px-2 py-1">Km</th>
+                                <th class="px-2 py-1">${isTriathlon ? 'Étape' : 'Km'}</th>
                                 <th class="px-2 py-1">Classement</th>
                                 <th class="px-2 py-1">Temps</th>
                                 <th class="w-6 px-1 py-1" aria-label="Afficher l’évolution du classement"></th>
