@@ -188,13 +188,29 @@
         }
         container.innerHTML = '<p class="text-sm text-gray-500">Recherche…</p>';
         const user = currentUser();
-        const snapshot = await db.collection('users').where('pseudo', '==', query).limit(10).get();
+        if (!user) {
+            container.innerHTML = '<p class="text-sm text-gray-500">Connectez-vous pour rechercher un ami.</p>';
+            return;
+        }
         const selfUid = user.uid;
-        const ownFollowing = await db.collection('users').doc(selfUid).collection('following').get();
-        const followingByUid = new Map(ownFollowing.docs.map(doc => [doc.id, doc.data()]));
-        const matchingUsers = snapshot.docs.filter(doc => doc.id !== selfUid && doc.data().role !== 'invite');
+        const queryLower = query.toLowerCase();
+
+        const [usersSnap, ownFollowingSnap] = await Promise.all([
+            db.collection('users').get(),
+            db.collection('users').doc(selfUid).collection('following').get()
+        ]);
+
+        const followingByUid = new Map(ownFollowingSnap.docs.map(doc => [doc.id, doc.data()]));
+        const matchingUsers = usersSnap.docs.filter(doc => {
+            if (doc.id === selfUid) return false;
+            const data = doc.data() || {};
+            if (data.role === 'invite') return false;
+            const userPseudo = typeof data.pseudo === 'string' ? data.pseudo.trim() : '';
+            return userPseudo.toLowerCase() === queryLower;
+        });
+
         if (!matchingUsers.length) {
-            container.innerHTML = '<p class="text-sm text-gray-500">Aucun utilisateur trouvé avec ce pseudo exact.</p>';
+            container.innerHTML = '<p class="text-sm text-gray-500">Aucun utilisateur trouvé avec ce pseudo.</p>';
             return;
         }
         const results = matchingUsers.filter(doc => {
