@@ -656,13 +656,24 @@ function initAuthLogic() {
     }
     window.checkPseudoAvailability = checkPseudoAvailability;
 
+    const signupPseudoInput = document.getElementById('signup-pseudo');
+    if (signupPseudoInput) {
+        signupPseudoInput.addEventListener('blur', () => {
+            signupPseudoInput.value = signupPseudoInput.value.trim();
+        });
+    }
+
     // SIGNUP SUBMIT
     const signupForm = document.getElementById('signupForm');
     if (signupForm) {
         signupForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = document.getElementById('signup-email').value;
-            const pseudo = document.getElementById('signup-pseudo').value;
+            const pseudoInput = document.getElementById('signup-pseudo');
+            const cleanPseudo = (pseudoInput ? pseudoInput.value : '').trim();
+            if (pseudoInput) {
+                pseudoInput.value = cleanPseudo;
+            }
             const password = document.getElementById('signup-password').value;
             const confirm = document.getElementById('signup-confirm-password').value;
             const errorEl = document.getElementById('signup-error');
@@ -682,7 +693,6 @@ function initAuthLogic() {
                 return;
             }
 
-            const cleanPseudo = pseudo.trim();
             if (cleanPseudo === "") {
                 showError('signup-error', "Le pseudo est obligatoire.");
                 return;

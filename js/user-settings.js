@@ -1324,9 +1324,21 @@ async function initSettingsLogic() {
 
     // Gestion pseudo
     if (pseudoForm) {
+        const settingsPseudoInput = document.getElementById('settingsNewPseudo');
+        if (settingsPseudoInput) {
+            settingsPseudoInput.addEventListener('blur', () => {
+                settingsPseudoInput.value = settingsPseudoInput.value.trim();
+            });
+        }
+
         pseudoForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const newPseudo = document.getElementById('settingsNewPseudo').value.trim();
+            const inputEl = document.getElementById('settingsNewPseudo');
+            // Trim les espaces au début et à la fin seulement (ex: "aurelien     " -> "aurelien")
+            const newPseudo = (inputEl ? inputEl.value : '').trim();
+            if (inputEl) {
+                inputEl.value = newPseudo;
+            }
             const user = firebase.auth().currentUser;
 
             if (!user) return;
@@ -1339,7 +1351,7 @@ async function initSettingsLogic() {
                 return;
             }
 
-            const currentPseudo = window.currentUserPseudo || localStorage.getItem('userPseudo') || user.displayName || '';
+            const currentPseudo = (window.currentUserPseudo || localStorage.getItem('userPseudo') || user.displayName || '').trim();
             if (newPseudo === currentPseudo) {
                 showMessage("Vous utilisez déjà ce pseudo.", "error", "pseudoMessageContainer");
                 return;
