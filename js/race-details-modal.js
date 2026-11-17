@@ -499,6 +499,12 @@
 
         const comparisonContent = document.getElementById('raceYearComparisonContent');
         if (!comparisonContent) return;
+
+        // Couleurs strictes pour les comparaisons : ne doivent jamais dépendre du thème utilisateur sélectionné
+        const COMP_COLOR_BETTER = 'comparison-better text-[#15803d]';
+        const COMP_COLOR_WORSE = 'comparison-worse text-[#dc2626]';
+        const COMP_COLOR_NEUTRAL = 'comparison-neutral text-black';
+
         comparisonContent.innerHTML = comparisons.map((comparison, index) => {
             const previousRace = comparison.race;
             const currentDate = new Date(currentRace.date);
@@ -515,7 +521,7 @@
             const laterRankTotal = isLaterEdition ? comparison.previousRankTotal : comparison.currentRankTotal;
             const earlierElevation = isLaterEdition ? comparison.currentElevation : comparison.previousElevation;
             const laterElevation = isLaterEdition ? comparison.previousElevation : comparison.currentElevation;
-            const comparisonRow = (label, value, valueClass = 'text-gray-800', isDate = false) => `
+            const comparisonRow = (label, value, valueClass = COMP_COLOR_NEUTRAL, isDate = false) => `
                 <div class="flex w-full items-start justify-between gap-3 text-xs">
                     <span class="shrink-0 ${isDate ? 'text-black' : 'text-gray-700'}">${label}</span>
                     <span class="min-w-0 text-right font-medium ${isDate ? 'text-black' : valueClass}">${value}</span>
@@ -534,15 +540,16 @@
             const earlierPace = earlierSpeed ? earlierSeconds / earlierDistance : null;
             const laterPace = laterSpeed ? laterSeconds / laterDistance : null;
 
-            addRow('Dates', `${formatComparisonDate(earlierDate)} → ${formatComparisonDate(laterDate)}`, 'text-black', false, true);
+            addRow('Dates', `${formatComparisonDate(earlierDate)} → ${formatComparisonDate(laterDate)}`, COMP_COLOR_NEUTRAL, false, true);
             let hasMetric = false;
             if (earlierDistance && laterDistance) {
                 hasMetric = true;
                 const distanceChange = laterDistance - earlierDistance;
-                const distanceText = comparison.sameDistance
+                const distanceUnchanged = comparison.sameDistance || Math.abs(distanceChange) < 0.01;
+                const distanceText = distanceUnchanged
                     ? 'Distances identiques'
                     : `Évolution : ${distanceChange > 0 ? '+' : '−'}${formatComparisonNumber(Math.abs(distanceChange), 2)} km`;
-                const distanceColor = distanceChange >= 0 ? 'text-green-700' : 'text-red-600';
+                const distanceColor = distanceUnchanged ? COMP_COLOR_NEUTRAL : distanceChange > 0 ? COMP_COLOR_BETTER : COMP_COLOR_WORSE;
                 addRow('Distance', `${formatDist(earlierDistance)} km → ${formatDist(laterDistance)} km<span class="block text-[10px] ${distanceColor}">${distanceText}</span>`, distanceColor, true);
             }
             const hasSpeedComparison = earlierSpeed && laterSpeed;
@@ -555,7 +562,7 @@
                     : 'Temps brut à interpréter selon la distance';
                 const earlierTime = isLaterEdition ? currentRace.time : previousRace.time;
                 const laterTime = isLaterEdition ? previousRace.time : currentRace.time;
-                const timeColor = !comparison.sameDistance || timeUnchanged ? 'text-gray-700' : timeDifference > 0 ? 'text-green-700' : 'text-red-600';
+                const timeColor = !comparison.sameDistance || timeUnchanged ? COMP_COLOR_NEUTRAL : timeDifference > 0 ? COMP_COLOR_BETTER : COMP_COLOR_WORSE;
                 const timeIsExtra = !comparison.sameDistance || timeUnchanged || hasSpeedComparison;
                 addRow('Temps', `${escapeHtml(earlierTime)} → ${escapeHtml(laterTime)}<span class="block text-[10px] ${timeColor}">${timeLabel}</span>`, timeColor, timeIsExtra);
             }
@@ -563,10 +570,10 @@
                 hasMetric = true;
                 const speedChange = (laterSpeed / earlierSpeed - 1) * 100;
                 const speedUnchanged = Math.abs(speedChange) < 0.05;
-                const speedColor = speedUnchanged ? 'text-gray-700' : speedChange > 0 ? 'text-green-700' : 'text-red-600';
+                const speedColor = speedUnchanged ? COMP_COLOR_NEUTRAL : speedChange > 0 ? COMP_COLOR_BETTER : COMP_COLOR_WORSE;
                 const paceDifference = earlierPace - laterPace;
                 const paceUnchanged = Math.abs(paceDifference) < 0.5;
-                const paceColor = paceUnchanged ? 'text-gray-700' : paceDifference > 0 ? 'text-green-700' : 'text-red-600';
+                const paceColor = paceUnchanged ? COMP_COLOR_NEUTRAL : paceDifference > 0 ? COMP_COLOR_BETTER : COMP_COLOR_WORSE;
                 addRow('Vitesse', `${formatComparisonNumber(earlierSpeed)} km/h → ${formatComparisonNumber(laterSpeed)} km/h<span class="block text-[10px] ${speedColor}">${speedUnchanged ? 'Vitesse identique' : `${speedChange > 0 ? '+' : ''}${formatComparisonNumber(speedChange)} %`}</span>`, speedColor, speedUnchanged);
                 addRow('Allure', `${calculatePace(earlierDistance, earlierSeconds)} → ${calculatePace(laterDistance, laterSeconds)}<span class="block text-[10px] ${paceColor}">${paceUnchanged ? 'Allure identique' : `${paceDifference >= 0 ? '+' : '−'}${formatComparisonNumber(Math.abs(paceDifference), 0)} s/km ${paceDifference > 0 ? 'plus rapide' : 'plus lente'}`}</span>`, paceColor, true);
             }
@@ -578,22 +585,24 @@
                     const laterPercent = laterRank / laterRankTotal * 100;
                     const percentileImprovement = earlierPercent - laterPercent;
                     const rankUnchanged = Math.abs(percentileImprovement) < 0.05;
-                    const rankColor = rankUnchanged ? 'text-gray-700' : percentileImprovement > 0 ? 'text-green-700' : 'text-red-600';
+                    const rankColor = rankUnchanged ? COMP_COLOR_NEUTRAL : percentileImprovement > 0 ? COMP_COLOR_BETTER : COMP_COLOR_WORSE;
                     addRow('Classement relatif', `Top ${formatComparisonNumber(earlierPercent)} % → top ${formatComparisonNumber(laterPercent)} %<span class="block text-[10px] ${rankColor}">${rankUnchanged ? 'Position identique' : `${percentileImprovement > 0 ? '+' : '−'}${formatComparisonNumber(Math.abs(percentileImprovement))} points au prorata des participants`}</span>`, rankColor, rankUnchanged);
                 } else if (comparison.sameDistance) {
                     hasMetric = true;
                     const rankImprovement = earlierRank - laterRank;
-                    const rankColor = rankImprovement === 0 ? 'text-gray-700' : rankImprovement > 0 ? 'text-green-700' : 'text-red-600';
-                    addRow('Classement', `${earlierRank}${earlierRankTotal ? ` / ${earlierRankTotal}` : ''} → ${laterRank}${laterRankTotal ? ` / ${laterRankTotal}` : ''}<span class="block text-[10px] ${rankColor}">${rankImprovement > 0 ? `${rankImprovement} place${rankImprovement > 1 ? 's' : ''} de mieux` : rankImprovement < 0 ? `${Math.abs(rankImprovement)} place${Math.abs(rankImprovement) > 1 ? 's' : ''} de moins` : 'Classement identique'}</span>`, rankColor, rankImprovement === 0);
+                    const rankUnchanged = rankImprovement === 0;
+                    const rankColor = rankUnchanged ? COMP_COLOR_NEUTRAL : rankImprovement > 0 ? COMP_COLOR_BETTER : COMP_COLOR_WORSE;
+                    addRow('Classement', `${earlierRank}${earlierRankTotal ? ` / ${earlierRankTotal}` : ''} → ${laterRank}${laterRankTotal ? ` / ${laterRankTotal}` : ''}<span class="block text-[10px] ${rankColor}">${rankImprovement > 0 ? `${rankImprovement} place${rankImprovement > 1 ? 's' : ''} de mieux` : rankImprovement < 0 ? `${Math.abs(rankImprovement)} place${Math.abs(rankImprovement) > 1 ? 's' : ''} de moins` : 'Classement identique'}</span>`, rankColor, rankUnchanged);
                 }
             }
             if (Number.isFinite(earlierElevation) && Number.isFinite(laterElevation)) {
                 hasMetric = true;
                 const elevationChange = laterElevation - earlierElevation;
-                const elevationColor = elevationChange === 0 ? 'text-gray-700' : elevationChange > 0 ? 'text-green-700' : 'text-red-600';
-                addRow('Dénivelé', `${formatDist(earlierElevation)} m → ${formatDist(laterElevation)} m<span class="block text-[10px] ${elevationColor}">${elevationChange === 0 ? 'Dénivelé identique' : `${elevationChange > 0 ? '+' : '−'}${formatDist(Math.abs(elevationChange))} m`}</span>`, elevationColor, true);
+                const elevationUnchanged = elevationChange === 0;
+                const elevationColor = elevationUnchanged ? COMP_COLOR_NEUTRAL : elevationChange > 0 ? COMP_COLOR_BETTER : COMP_COLOR_WORSE;
+                addRow('Dénivelé', `${formatDist(earlierElevation)} m → ${formatDist(laterElevation)} m<span class="block text-[10px] ${elevationColor}">${elevationUnchanged ? 'Dénivelé identique' : `${elevationChange > 0 ? '+' : '−'}${formatDist(Math.abs(elevationChange))} m`}</span>`, elevationColor, true);
             }
-            if (!hasMetric) addRow('Données', 'Aucune donnée exploitable pour comparer ces éditions.', 'text-gray-800', false);
+            if (!hasMetric) addRow('Données', 'Aucune donnée exploitable pour comparer ces éditions.', COMP_COLOR_NEUTRAL, false);
 
             return `
                 <div data-comparison-group="${index}" ${index > 0 ? 'data-comparison-secondary style="display:none" class="flex flex-col gap-1.5"' : 'class="flex flex-col gap-1.5"'}>
@@ -2643,10 +2652,10 @@
                     const placeDifference = canCompareRank ? passageRank - finalRank : 0;
                     const subRowId = `passage-sub-${index}`;
                     const rankChangeColor = placeDifference > 0
-                        ? 'text-green-700'
+                        ? 'comparison-better text-[#15803d]'
                         : placeDifference < 0
-                            ? 'text-red-700'
-                            : 'text-gray-700';
+                            ? 'comparison-worse text-[#dc2626]'
+                            : 'comparison-neutral text-black';
                     const rankChangeText = placeDifference > 0
                         ? `Vous avez gagné ${placeDifference} place${placeDifference > 1 ? 's' : ''} jusqu’à l’arrivée`
                         : placeDifference < 0

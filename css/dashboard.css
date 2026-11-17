@@ -510,3 +510,20 @@ input[type="search"]::-webkit-search-results-decoration {
     color: var(--color-emerald-700, #047857);
 }
 
+/* Couleurs fixes pour comparaisons d'éditions et points de passage */
+.comparison-better,
+.text-comp-better {
+    color: #15803d !important;
+}
+
+.comparison-worse,
+.text-comp-worse {
+    color: #dc2626 !important;
+}
+
+.comparison-neutral,
+.text-comp-neutral {
+    color: #000000 !important;
+}
+
+

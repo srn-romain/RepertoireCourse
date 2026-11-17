@@ -124,3 +124,24 @@ body {
     border-color: #fde68a;
 }
 
+/* ==========================================================================
+   COULEURS FIXES POUR COMPARAISONS (ÉDITIONS & POINTS DE PASSAGE)
+   Ces couleurs restent invariablement Vert (mieux), Rouge (moins bien)
+   et Noir (neutre/inchangé), quel que soit le thème actif sélectionné.
+   ========================================================================== */
+.comparison-better,
+.text-comp-better {
+    color: #15803d !important;
+}
+
+.comparison-worse,
+.text-comp-worse {
+    color: #dc2626 !important;
+}
+
+.comparison-neutral,
+.text-comp-neutral {
+    color: #000000 !important;
+}
+
+
