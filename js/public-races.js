@@ -529,6 +529,15 @@ function buildSingleRaceCardElement(item, stackInfo = null) {
     const counterClickAttr = showLikers ? `onclick="event.stopPropagation(); openLikersModal('${docPath}')"` : '';
     const counterHoverClass = showLikers ? 'hover:text-green-700 cursor-pointer hover:underline decoration-green-700 underline-offset-2' : '';
 
+    const isAnonymousOrUnknown = !ownerPseudoDisplay ||
+        ownerPseudoDisplay === 'Utilisateur Anonyme' ||
+        ownerPseudoDisplay === 'Coureur mystère' ||
+        ownerPseudoDisplay === 'Pseudo non disponible';
+
+    const pseudoHtml = !isAnonymousOrUnknown
+        ? `<button type="button" data-pseudo="${escapeHtml(ownerPseudoDisplay)}" onclick="event.stopPropagation(); if (typeof window.openFriendsModalWithPseudo === 'function') { window.openFriendsModalWithPseudo(this.dataset.pseudo); }" class="truncate max-w-[100px] font-semibold text-xs text-gray-700 hover:text-green-700 hover:underline shrink-0 text-left cursor-pointer transition focus:outline-none" title="Ajouter ${escapeHtml(ownerPseudoDisplay)} en ami">${escapeHtml(ownerPseudoDisplay)}</button>`
+        : `<span class="truncate max-w-[100px] font-semibold text-xs text-gray-700 shrink-0" title="${escapeHtml(ownerPseudoDisplay)}">${escapeHtml(ownerPseudoDisplay)}</span>`;
+
     const likeButtonTitle = isInvite ? "Fonctionnalité désactivée pour le compte invité" : (isLiked ? "Je n'aime plus" : "J'aime");
 
     const likeButtonHtml = `
@@ -773,7 +782,7 @@ function buildSingleRaceCardElement(item, stackInfo = null) {
             `<img src="${escapeHtml(userData.photoURL)}" onclick="event.stopPropagation(); zoomImage('${escapeHtml(userData.photoURL)}')" class="w-6 h-6 rounded-full object-cover border border-green-200 shadow-sm cursor-zoom-in hover:scale-110 transition-transform shrink-0">` :
             `<i class="fas fa-user-circle text-green-600 text-lg shrink-0"></i>`
         }
-                    <span class="truncate max-w-[100px] font-semibold text-xs text-gray-700 shrink-0" title="${escapeHtml(ownerPseudoDisplay)}">${escapeHtml(ownerPseudoDisplay)}</span>
+                    ${pseudoHtml}
                     ${badgeAvenir}
                 </div>
             </div>

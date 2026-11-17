@@ -44,6 +44,29 @@
                     </section>
                 </div>
             </div>
+        </div>
+        <div id="friendConfirmModal" class="modal hidden fixed inset-0 z-[90] flex items-center justify-center p-4">
+            <div class="friend-confirm-backdrop absolute inset-0 bg-black/60 backdrop-blur-xs"></div>
+            <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 border border-gray-100 transform scale-100 transition-all">
+                <div class="flex items-center gap-3 mb-3">
+                    <div id="friendConfirmIconBg" class="flex-shrink-0 w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
+                        <i id="friendConfirmIcon" class="fas fa-user-minus text-red-600 text-lg"></i>
+                    </div>
+                    <div>
+                        <h3 id="friendConfirmTitle" class="text-base font-bold text-gray-800">Confirmation</h3>
+                        <p id="friendConfirmSubtitle" class="text-xs text-gray-400">Action requise</p>
+                    </div>
+                </div>
+                <p id="friendConfirmMessage" class="text-gray-600 mb-6 text-sm leading-relaxed"></p>
+                <div class="flex gap-2.5">
+                    <button type="button" id="friendConfirmCancelBtn" class="flex-1 px-4 py-2.5 border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-xl font-semibold transition text-xs cursor-pointer">
+                        Annuler
+                    </button>
+                    <button type="button" id="friendConfirmSubmitBtn" class="flex-1 px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl font-semibold transition text-xs shadow-sm cursor-pointer">
+                        Confirmer
+                    </button>
+                </div>
+            </div>
         </div>`;
 
     const escapeHtml = value => String(value || '').replace(/[&<>"']/g, char => ({
@@ -114,7 +137,7 @@
                     <p class="text-xs text-gray-500">${friend.status === 'pending' ? 'Demande en attente' : friend.status === 'declined' ? 'Demande refusée' : friend.status === 'revoked' ? 'Accès révoqué' : 'Abonné'}</p></div>
                 <div class="flex gap-2 shrink-0">
                     ${isAccepted && hasDashboard ? `<button type="button" data-action="view" data-friend-uid="${escapeHtml(friend.uid)}" class="px-3 py-1.5 bg-green-600 text-white rounded text-xs font-semibold">Voir le carnet</button>` : ''}
-                    <button type="button" data-action="unfollow" data-friend-uid="${escapeHtml(friend.uid)}" class="px-3 py-1.5 bg-gray-100 text-gray-700 rounded text-xs">Ne plus suivre</button>
+                    <button type="button" data-action="unfollow" data-friend-uid="${escapeHtml(friend.uid)}" data-friend-pseudo="${escapeHtml(friend.targetPseudo || 'cet utilisateur')}" class="px-3 py-1.5 bg-gray-100 hover:bg-red-50 text-gray-700 hover:text-red-700 rounded text-xs transition">Ne plus suivre</button>
                 </div>
             </div>`;
         }).join('');
@@ -226,19 +249,45 @@
             container.innerHTML = '<p class="text-sm text-gray-500">Aucun utilisateur trouvé avec ce pseudo.</p>';
             return;
         }
-        const results = matchingUsers.filter(doc => {
+
+        container.innerHTML = matchingUsers.map(doc => {
+            const data = doc.data() || {};
+            const userPseudo = data.pseudo || 'Utilisateur';
             const existing = followingByUid.get(doc.id);
-            return !existing || !['pending', 'accepted'].includes(existing.status);
-        });
-        if (!results.length) {
-            container.innerHTML = '<p class="text-sm text-gray-500">Cet utilisateur figure déjà dans vos abonnements.</p>';
-            return;
-        }
-        container.innerHTML = results.map(doc => {
-            const data = doc.data();
+            const status = existing ? existing.status : null;
+
+            let buttonHtml = '';
+            if (status === 'pending') {
+                buttonHtml = `
+                    <button type="button" data-action="cancel-request" data-friend-uid="${escapeHtml(doc.id)}" data-friend-pseudo="${escapeHtml(userPseudo)}"
+                        class="px-3 py-1.5 bg-amber-50 hover:bg-red-50 text-amber-800 hover:text-red-700 border border-amber-200 hover:border-red-200 rounded text-xs font-semibold flex items-center gap-1.5 transition group"
+                        title="Cliquer pour annuler la demande">
+                        <i class="fas fa-clock text-amber-600 group-hover:hidden"></i>
+                        <i class="fas fa-times text-red-600 hidden group-hover:inline"></i>
+                        <span class="group-hover:hidden">Demande envoyée</span>
+                        <span class="hidden group-hover:inline">Annuler la demande</span>
+                    </button>`;
+            } else if (status === 'accepted') {
+                buttonHtml = `
+                    <button type="button" data-action="cancel-follow" data-friend-uid="${escapeHtml(doc.id)}" data-friend-pseudo="${escapeHtml(userPseudo)}"
+                        class="px-3 py-1.5 bg-green-50 hover:bg-red-50 text-green-800 hover:text-red-700 border border-green-200 hover:border-red-200 rounded text-xs font-semibold flex items-center gap-1.5 transition group"
+                        title="Cliquer pour ne plus suivre">
+                        <i class="fas fa-check text-green-600 group-hover:hidden"></i>
+                        <i class="fas fa-user-minus text-red-600 hidden group-hover:inline"></i>
+                        <span class="group-hover:hidden">Suivi</span>
+                        <span class="hidden group-hover:inline">Ne plus suivre</span>
+                    </button>`;
+            } else {
+                buttonHtml = `
+                    <button type="button" data-action="follow" data-friend-uid="${escapeHtml(doc.id)}" data-friend-pseudo="${escapeHtml(userPseudo)}"
+                        class="px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded text-xs font-semibold flex items-center gap-1.5 transition">
+                        <i class="fas fa-user-plus"></i> Ajouter
+                    </button>`;
+            }
+
             return `<div class="flex items-center justify-between gap-3 p-3 border border-gray-200 rounded-lg">
-                <div class="min-w-0"><p class="font-semibold text-gray-800 truncate">${escapeHtml(data.pseudo || 'Utilisateur')}</p></div>
-                <button type="button" data-action="follow" data-friend-uid="${escapeHtml(doc.id)}" data-friend-pseudo="${escapeHtml(data.pseudo || 'Utilisateur')}" class="px-3 py-1.5 bg-green-600 text-white rounded text-xs font-semibold">Ajouter</button>
+                <div class="min-w-0"><p class="font-semibold text-gray-800 truncate">${escapeHtml(userPseudo)}</p></div>
+                ${buttonHtml}
             </div>`;
         }).join('');
     }
@@ -363,42 +412,163 @@
         }
     }
 
+    async function openFriendsModal(targetPseudo = null) {
+        bindModal();
+        const modal = document.getElementById('friendsModal');
+        if (!modal) return;
+
+        const user = currentUser();
+        if (!user) {
+            if (typeof showToast === 'function') {
+                showToast("Connectez-vous pour ajouter un ami.", "info");
+            }
+            if (typeof window.openModal === 'function') {
+                window.openModal('loginModal');
+            }
+            return;
+        }
+
+        try {
+            const isInvite = typeof window.isInviteUser === 'function' ? await window.isInviteUser() : false;
+            if (isInvite || window.isFriendView) {
+                if (typeof showToast === 'function') {
+                    showToast("Cette fonctionnalité n'est pas disponible dans ce mode.", "warning");
+                }
+                return;
+            }
+        } catch (e) {
+            console.warn(e);
+        }
+
+        modal.classList.remove('hidden');
+        setMessage('', false);
+
+        const followingPanel = document.getElementById('friendsFollowingPanel');
+        const notifPanel = document.getElementById('friendsNotificationsPanel');
+        if (followingPanel) followingPanel.classList.remove('hidden');
+        if (notifPanel) notifPanel.classList.add('hidden');
+        modal.querySelectorAll('[data-friends-tab]').forEach(item => {
+            const isFollowing = item.dataset.friendsTab === 'following';
+            item.className = isFollowing
+                ? 'flex-1 px-4 py-3 text-sm font-semibold text-green-800 border-b-2 border-green-600'
+                : 'flex-1 px-4 py-3 text-sm font-semibold text-gray-500 border-b-2 border-transparent';
+        });
+
+        try {
+            await refresh();
+            await updateNotificationBadge();
+        } catch (error) {
+            console.error('Erreur de chargement des amis :', error);
+            setMessage('Impossible de charger vos amis. Réessayez.', true);
+        }
+
+        if (targetPseudo && typeof targetPseudo === 'string') {
+            const cleanTarget = targetPseudo.trim();
+            const searchInput = document.getElementById('friendSearchInput');
+            if (searchInput && cleanTarget) {
+                searchInput.value = cleanTarget;
+                const myPseudo = (window.currentUserPseudo || localStorage.getItem('userPseudo') || user.displayName || '').trim().toLowerCase();
+                if (cleanTarget.toLowerCase() === myPseudo) {
+                    setMessage("Il s'agit de votre propre compte.", false);
+                } else {
+                    try {
+                        await searchPseudo(cleanTarget);
+                        const resultsEl = document.getElementById('friendSearchResults');
+                        if (resultsEl) {
+                            resultsEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                        }
+                    } catch (err) {
+                        console.error('Erreur recherche pseudo ciblé :', err);
+                    }
+                }
+            }
+        }
+    }
+
+    function showFriendConfirm({ title, subtitle, message, confirmText = 'Confirmer', cancelText = 'Annuler', isDanger = true, icon = 'fa-user-minus' }) {
+        return new Promise(resolve => {
+            const confirmModal = document.getElementById('friendConfirmModal');
+            if (!confirmModal) {
+                resolve(confirm(message.replace(/<[^>]+>/g, '')));
+                return;
+            }
+
+            const titleEl = document.getElementById('friendConfirmTitle');
+            const subEl = document.getElementById('friendConfirmSubtitle');
+            const msgEl = document.getElementById('friendConfirmMessage');
+            const iconEl = document.getElementById('friendConfirmIcon');
+            const iconBgEl = document.getElementById('friendConfirmIconBg');
+            const cancelBtn = document.getElementById('friendConfirmCancelBtn');
+            const submitBtn = document.getElementById('friendConfirmSubmitBtn');
+
+            if (titleEl) titleEl.textContent = title || 'Confirmation';
+            if (subEl) subEl.textContent = subtitle || '';
+            if (msgEl) msgEl.innerHTML = message || 'Êtes-vous sûr ?';
+            if (iconEl) iconEl.className = `fas ${icon} ${isDanger ? 'text-red-600' : 'text-amber-600'} text-lg`;
+            if (iconBgEl) iconBgEl.className = `flex-shrink-0 w-10 h-10 rounded-full ${isDanger ? 'bg-red-100' : 'bg-amber-100'} flex items-center justify-center`;
+            if (cancelBtn) cancelBtn.textContent = cancelText;
+            if (submitBtn) {
+                submitBtn.textContent = confirmText;
+                submitBtn.className = `flex-1 px-4 py-2.5 ${isDanger ? 'bg-red-600 hover:bg-red-700' : 'bg-amber-600 hover:bg-amber-700'} text-white rounded-xl font-semibold transition text-xs shadow-sm cursor-pointer`;
+            }
+
+            confirmModal.classList.remove('hidden');
+
+            const cleanup = (result) => {
+                confirmModal.classList.add('hidden');
+                cancelBtn?.removeEventListener('click', onCancel);
+                submitBtn?.removeEventListener('click', onSubmit);
+                confirmModal?.removeEventListener('click', onBackdrop);
+                resolve(result);
+            };
+
+            const onCancel = () => cleanup(false);
+            const onSubmit = () => cleanup(true);
+            const onBackdrop = (e) => {
+                if (e.target === confirmModal || e.target.classList.contains('friend-confirm-backdrop')) {
+                    cleanup(false);
+                }
+            };
+
+            cancelBtn?.addEventListener('click', onCancel);
+            submitBtn?.addEventListener('click', onSubmit);
+            confirmModal?.addEventListener('click', onBackdrop);
+        });
+    }
+
     function bindModal() {
         if (!document.getElementById('friendsModal')) document.body.insertAdjacentHTML('beforeend', modalHtml);
         const modal = document.getElementById('friendsModal');
-        const button = document.getElementById('friendsBtn');
-        if (!modal || !button) return;
+        if (!modal || modal.dataset.bound === 'true') return;
+        modal.dataset.bound = 'true';
 
-        firebase.auth().onAuthStateChanged(async user => {
-            if (!user) {
-                button.classList.add('hidden');
-                return;
-            }
-            try {
-                const isInvite = await window.isInviteUser();
-                if (isInvite || window.isFriendView) {
+        const button = document.getElementById('friendsBtn');
+        if (button) {
+            firebase.auth().onAuthStateChanged(async user => {
+                if (!user) {
                     button.classList.add('hidden');
                     return;
                 }
-                await updateNotificationBadge();
-            } catch (error) {
-                console.error('Erreur de chargement des notifications ami :', error);
-            }
-        });
+                try {
+                    const isInvite = await window.isInviteUser();
+                    if (isInvite || window.isFriendView) {
+                        button.classList.add('hidden');
+                        return;
+                    }
+                    await updateNotificationBadge();
+                } catch (error) {
+                    console.error('Erreur de chargement des notifications ami :', error);
+                }
+            });
 
-        button.addEventListener('click', async () => {
-            if (!currentUser() || window.isFriendView) return;
-            modal.classList.remove('hidden');
-            setMessage('', false);
-            try {
-                await refresh();
-                await updateNotificationBadge();
-            } catch (error) {
-                console.error('Erreur de chargement des amis :', error);
-                setMessage('Impossible de charger vos amis. Réessayez.', true);
-            }
-        });
-        document.getElementById('closeFriendsModal').addEventListener('click', () => modal.classList.add('hidden'));
+            button.addEventListener('click', () => openFriendsModal());
+        }
+
+        const closeBtn = document.getElementById('closeFriendsModal');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => modal.classList.add('hidden'));
+        }
+
         modal.addEventListener('click', event => {
             if (event.target === modal) modal.classList.add('hidden');
             const tab = event.target.closest('[data-friends-tab]');
@@ -413,15 +583,20 @@
                 });
             }
         });
-        document.getElementById('friendSearchForm').addEventListener('submit', async event => {
-            event.preventDefault();
-            try {
-                await searchPseudo(document.getElementById('friendSearchInput').value);
-            } catch (error) {
-                console.error('Erreur de recherche d’amis :', error);
-                setMessage('Recherche impossible. Vérifiez votre connexion et réessayez.', true);
-            }
-        });
+
+        const searchForm = document.getElementById('friendSearchForm');
+        if (searchForm) {
+            searchForm.addEventListener('submit', async event => {
+                event.preventDefault();
+                try {
+                    await searchPseudo(document.getElementById('friendSearchInput').value);
+                } catch (error) {
+                    console.error('Erreur de recherche d’amis :', error);
+                    setMessage('Recherche impossible. Vérifiez votre connexion et réessayez.', true);
+                }
+            });
+        }
+
         modal.addEventListener('change', async event => {
             const input = event.target.closest('.friend-permission');
             if (!input) return;
@@ -445,17 +620,91 @@
                 setMessage('Impossible d’enregistrer cette autorisation.', true);
             }
         });
+
         modal.addEventListener('click', async event => {
             const actionButton = event.target.closest('[data-action]');
             if (!actionButton) return;
             const { action, friendUid } = actionButton.dataset;
             if (!friendUid) return;
+            const friendPseudo = actionButton.dataset.friendPseudo || 'cet utilisateur';
+            const originalHTML = actionButton.innerHTML;
+            const originalClass = actionButton.className;
+
+            if (action === 'cancel-request') {
+                const confirmed = await showFriendConfirm({
+                    title: 'Annuler la demande',
+                    subtitle: 'Demande en attente',
+                    message: `Souhaitez-vous annuler votre demande d’ami envoyée à <strong>${escapeHtml(friendPseudo)}</strong> ?`,
+                    confirmText: 'Annuler la demande',
+                    cancelText: 'Conserver',
+                    isDanger: true,
+                    icon: 'fa-times'
+                });
+                if (!confirmed) return;
+            }
+
+            if (action === 'cancel-follow' || action === 'unfollow') {
+                const confirmed = await showFriendConfirm({
+                    title: 'Ne plus suivre',
+                    subtitle: 'Abonnement',
+                    message: `Souhaitez-vous vraiment ne plus suivre <strong>${escapeHtml(friendPseudo)}</strong> ?`,
+                    confirmText: 'Ne plus suivre',
+                    cancelText: 'Annuler',
+                    isDanger: true,
+                    icon: 'fa-user-minus'
+                });
+                if (!confirmed) return;
+            }
+
             actionButton.disabled = true;
             try {
-                if (action === 'follow') await sendRequest(friendUid, actionButton.dataset.friendPseudo);
+                if (action === 'follow') {
+                    actionButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Envoi...';
+                    await sendRequest(friendUid, friendPseudo);
+                    actionButton.disabled = false;
+                    actionButton.dataset.action = 'cancel-request';
+                    actionButton.className = 'px-3 py-1.5 bg-amber-50 hover:bg-red-50 text-amber-800 hover:text-red-700 border border-amber-200 hover:border-red-200 rounded text-xs font-semibold flex items-center gap-1.5 transition group';
+                    actionButton.title = 'Cliquer pour annuler la demande';
+                    actionButton.innerHTML = `
+                        <i class="fas fa-clock text-amber-600 group-hover:hidden"></i>
+                        <i class="fas fa-times text-red-600 hidden group-hover:inline"></i>
+                        <span class="group-hover:hidden">Demande envoyée</span>
+                        <span class="hidden group-hover:inline">Annuler la demande</span>`;
+                    setMessage(`Demande envoyée à ${friendPseudo}.`, false);
+                    await refresh();
+                    return;
+                }
+
+                if (action === 'cancel-request') {
+                    actionButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Annulation...';
+                    await unfollow(friendUid);
+                    actionButton.disabled = false;
+                    actionButton.dataset.action = 'follow';
+                    actionButton.className = 'px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded text-xs font-semibold flex items-center gap-1.5 transition';
+                    actionButton.title = 'Ajouter en ami';
+                    actionButton.innerHTML = '<i class="fas fa-user-plus"></i> Ajouter';
+                    setMessage('Demande d’ami annulée.', false);
+                    await refresh();
+                    return;
+                }
+
+                if (action === 'cancel-follow' || action === 'unfollow') {
+                    actionButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Suppression...';
+                    await unfollow(friendUid);
+                    if (action === 'cancel-follow') {
+                        actionButton.disabled = false;
+                        actionButton.dataset.action = 'follow';
+                        actionButton.className = 'px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded text-xs font-semibold flex items-center gap-1.5 transition';
+                        actionButton.title = 'Ajouter en ami';
+                        actionButton.innerHTML = '<i class="fas fa-user-plus"></i> Ajouter';
+                    }
+                    setMessage(`Vous ne suivez plus ${friendPseudo}.`, false);
+                    await refresh();
+                    return;
+                }
+
                 if (action === 'accept') await acceptRequest(friendUid, actionButton.closest('[data-request-card]'));
                 if (action === 'decline') await declineRequest(friendUid);
-                if (action === 'unfollow') await unfollow(friendUid);
                 if (action === 'remove-follower') await removeFollower(friendUid);
                 if (action === 'view') {
                     window.location.href = `dashboard.html?friend=${encodeURIComponent(friendUid)}`;
@@ -469,9 +718,14 @@
                     ? 'Firestore refuse cette action. Vérifiez que les règles Firestore récentes ont été déployées.'
                     : 'Action impossible. Vérifiez votre connexion et réessayez.', true);
                 actionButton.disabled = false;
+                actionButton.innerHTML = originalHTML;
+                actionButton.className = originalClass;
             }
         });
     }
+
+    window.openFriendsModal = openFriendsModal;
+    window.openFriendsModalWithPseudo = openFriendsModal;
 
     document.addEventListener('DOMContentLoaded', bindModal);
 })();
