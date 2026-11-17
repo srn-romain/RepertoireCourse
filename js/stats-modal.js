@@ -2486,7 +2486,7 @@
             // Afficher le nombre de courses
             const chartRacesCount = document.getElementById('chartRacesCount');
             if (chartRacesCount) {
-                chartRacesCount.textContent = `${itemsToShow} course${itemsToShow > 1 ? 's' : ''} affichée${itemsToShow > 1 ? 's' : ''} (cliquez pour ouvrir)`;
+                chartRacesCount.textContent = `${itemsToShow} course${itemsToShow > 1 ? 's' : ''} affichée${itemsToShow > 1 ? 's' : ''}`;
             }
 
             // Calculer la valeur maximale pour l'échelle
