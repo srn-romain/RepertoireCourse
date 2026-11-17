@@ -636,14 +636,16 @@ function initAuthLogic() {
                 return { available: false, error: "Ce pseudo est déjà pris. Veuillez en choisir un autre." };
             }
 
-            // Requête 3 ciblée Capitalisée (si différente de la saisie)
-            const capitalized = cleanPseudo.charAt(0).toUpperCase() + cleanPseudo.slice(1).toLowerCase();
-            if (capitalized !== cleanPseudo) {
-                const snapCap = await db.collection('users').where('pseudo', '==', capitalized).limit(2).get();
-                const conflictCap = snapCap.docs.find(d => d.id !== excludeUid);
-                if (conflictCap) {
-                    return { available: false, error: "Ce pseudo est déjà pris. Veuillez en choisir un autre." };
-                }
+            // Requête 3 : Fallback rétrocompatible comptes anciens sans pseudoLower (casse atypique ex: UtILISateur X)
+            const allUsersSnap = await db.collection('users').get();
+            const cleanLower = lower.replace(/\s+/g, ' ');
+            const conflictAll = allUsersSnap.docs.find(d => {
+                if (d.id === excludeUid) return false;
+                const p = (d.data()?.pseudo || '').trim().toLowerCase().replace(/\s+/g, ' ');
+                return p === cleanLower;
+            });
+            if (conflictAll) {
+                return { available: false, error: "Ce pseudo est déjà pris. Veuillez en choisir un autre." };
             }
 
             return { available: true };

@@ -220,30 +220,33 @@
 
         const ownFollowingPromise = db.collection('users').doc(selfUid).collection('following').get();
 
-        // Requête ciblée sur pseudoLower (1 seule lecture au lieu de lire toute la collection)
-        let usersSnap = await db.collection('users').where('pseudoLower', '==', queryLower).limit(10).get();
-
-        // Fallback rétrocompatible pour les comptes anciens sans pseudoLower
-        if (usersSnap.empty) {
-            usersSnap = await db.collection('users').where('pseudo', '==', query).limit(10).get();
+        // 1. Requête ciblée sur pseudoLower (1 seule lecture si le compte dispose de pseudoLower)
+        let matchingUsers = [];
+        const usersSnap = await db.collection('users').where('pseudoLower', '==', queryLower).limit(10).get();
+        if (!usersSnap.empty) {
+            matchingUsers = usersSnap.docs.filter(doc => {
+                if (doc.id === selfUid) return false;
+                const data = doc.data() || {};
+                return data.role !== 'invite';
+            });
         }
-        if (usersSnap.empty) {
-            const capitalized = query.charAt(0).toUpperCase() + query.slice(1).toLowerCase();
-            if (capitalized !== query) {
-                usersSnap = await db.collection('users').where('pseudo', '==', capitalized).limit(10).get();
-            }
+
+        // 2. Fallback rétrocompatible pour les comptes anciens sans pseudoLower (ex: UtILISateur X)
+        if (!matchingUsers.length) {
+            const allUsersSnap = await db.collection('users').get();
+            const cleanQuery = queryLower.replace(/\s+/g, ' ');
+            matchingUsers = allUsersSnap.docs.filter(doc => {
+                if (doc.id === selfUid) return false;
+                const data = doc.data() || {};
+                if (data.role === 'invite') return false;
+                const userPseudo = typeof data.pseudo === 'string' ? data.pseudo.trim().toLowerCase().replace(/\s+/g, ' ') : '';
+                return userPseudo === cleanQuery;
+            });
         }
 
         const ownFollowingSnap = await ownFollowingPromise;
 
         const followingByUid = new Map(ownFollowingSnap.docs.map(doc => [doc.id, doc.data()]));
-        const matchingUsers = usersSnap.docs.filter(doc => {
-            if (doc.id === selfUid) return false;
-            const data = doc.data() || {};
-            if (data.role === 'invite') return false;
-            const userPseudo = typeof data.pseudo === 'string' ? data.pseudo.trim() : '';
-            return userPseudo.toLowerCase() === queryLower;
-        });
 
         if (!matchingUsers.length) {
             container.innerHTML = '<p class="text-sm text-gray-500">Aucun utilisateur trouvé avec ce pseudo.</p>';
