@@ -3300,6 +3300,12 @@
                                 const newPseudo = uData.pseudo || user.displayName || (user.email ? user.email.split('@')[0] : "Utilisateur");
                                 const newPhoto = uData.photoURL || null;
 
+                                if (uData.pseudo && !uData.pseudoLower) {
+                                    db.collection('users').doc(user.uid).set({
+                                        pseudoLower: uData.pseudo.trim().toLowerCase()
+                                    }, { merge: true }).catch(() => {});
+                                }
+
                                 window.currentUserPseudo = newPseudo;
                                 if (!window.isFriendView && !window.isInviteView) window.activeCarnetPseudo = newPseudo;
                                 localStorage.setItem('userPseudo', newPseudo);

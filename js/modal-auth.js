@@ -605,6 +605,55 @@ function initAuthLogic() {
         });
     }
 
+    // Vérification de la disponibilité et unicité d'un pseudo (1 seule lecture ciblée Firestore)
+    async function checkPseudoAvailability(pseudo, excludeUid = null) {
+        const cleanPseudo = (pseudo || '').trim();
+        if (!cleanPseudo) {
+            return { available: false, error: "Le pseudo est obligatoire." };
+        }
+        if (cleanPseudo.length < 2) {
+            return { available: false, error: "Le pseudo doit contenir au moins 2 caractères." };
+        }
+
+        const forbiddenPseudos = ['inconnu', 'unknown', 'anonyme', 'anonymous', 'deleted', 'supprimé', 'undefined', 'null', 'admin', 'invite', 'administrator', 'moderator'];
+        const lower = cleanPseudo.toLowerCase();
+        if (forbiddenPseudos.includes(lower)) {
+            return { available: false, error: "Ce pseudo n'est pas autorisé." };
+        }
+
+        try {
+            // Requête 1 ciblée par pseudoLower (limit(2) = au plus 1-2 lectures Firestore)
+            const snap = await db.collection('users').where('pseudoLower', '==', lower).limit(2).get();
+            const conflict = snap.docs.find(d => d.id !== excludeUid);
+            if (conflict) {
+                return { available: false, error: "Ce pseudo est déjà pris. Veuillez en choisir un autre." };
+            }
+
+            // Requête 2 ciblée exacte (rétrocompatibilité comptes anciens sans pseudoLower)
+            const snapExact = await db.collection('users').where('pseudo', '==', cleanPseudo).limit(2).get();
+            const conflictExact = snapExact.docs.find(d => d.id !== excludeUid);
+            if (conflictExact) {
+                return { available: false, error: "Ce pseudo est déjà pris. Veuillez en choisir un autre." };
+            }
+
+            // Requête 3 ciblée Capitalisée (si différente de la saisie)
+            const capitalized = cleanPseudo.charAt(0).toUpperCase() + cleanPseudo.slice(1).toLowerCase();
+            if (capitalized !== cleanPseudo) {
+                const snapCap = await db.collection('users').where('pseudo', '==', capitalized).limit(2).get();
+                const conflictCap = snapCap.docs.find(d => d.id !== excludeUid);
+                if (conflictCap) {
+                    return { available: false, error: "Ce pseudo est déjà pris. Veuillez en choisir un autre." };
+                }
+            }
+
+            return { available: true };
+        } catch (err) {
+            console.warn("Erreur vérification unicité pseudo dans Firestore :", err);
+            return { available: true, checkFailed: true };
+        }
+    }
+    window.checkPseudoAvailability = checkPseudoAvailability;
+
     // SIGNUP SUBMIT
     const signupForm = document.getElementById('signupForm');
     if (signupForm) {
@@ -631,27 +680,53 @@ function initAuthLogic() {
                 return;
             }
 
-            const forbiddenPseudos = ['inconnu', 'unknown', 'anonyme', 'anonymous', 'deleted', 'supprimé', 'undefined', 'null', 'admin', 'administrator', 'moderator'];
-            if (forbiddenPseudos.includes(pseudo.trim().toLowerCase())) {
-                showError('signup-error', "Ce pseudo n'est pas autorisé.");
+            const cleanPseudo = pseudo.trim();
+            if (cleanPseudo === "") {
+                showError('signup-error', "Le pseudo est obligatoire.");
+                return;
+            }
+            if (cleanPseudo.length < 2) {
+                showError('signup-error', "Le pseudo doit contenir au moins 2 caractères.");
                 return;
             }
 
-            if (pseudo.trim() === "") {
-                showError('signup-error', "Le pseudo est obligatoire.");
+            const forbiddenPseudos = ['inconnu', 'unknown', 'anonyme', 'anonymous', 'deleted', 'supprimé', 'undefined', 'null', 'admin', 'invite', 'administrator', 'moderator'];
+            if (forbiddenPseudos.includes(cleanPseudo.toLowerCase())) {
+                showError('signup-error', "Ce pseudo n'est pas autorisé.");
                 return;
             }
 
             if (errorEl) errorEl.classList.add('hidden');
             setLoading('signupSubmitBtn', 'signup-loading', true);
 
+            // Vérification unicité du pseudo AVANT la création du compte (1 seule lecture ciblée)
+            const availability = await checkPseudoAvailability(cleanPseudo);
+            if (!availability.available) {
+                showError('signup-error', availability.error || "Ce pseudo est déjà pris. Veuillez en choisir un autre.");
+                setLoading('signupSubmitBtn', 'signup-loading', false);
+                return;
+            }
+
             try {
                 const userCredential = await auth.createUserWithEmailAndPassword(email, password);
 
-                // Force user doc creation with pseudo
+                // Si la vérification pré-auth n'a pas pu s'exécuter faute de permissions,
+                // re-vérifier maintenant que l'utilisateur est authentifié
+                if (availability.checkFailed) {
+                    const postAuthCheck = await checkPseudoAvailability(cleanPseudo, userCredential.user.uid);
+                    if (!postAuthCheck.available) {
+                        await userCredential.user.delete().catch(() => {});
+                        showError('signup-error', postAuthCheck.error || "Ce pseudo est déjà pris. Veuillez en choisir un autre.");
+                        setLoading('signupSubmitBtn', 'signup-loading', false);
+                        return;
+                    }
+                }
+
+                // Force user doc creation with pseudo AND pseudoLower
                 await db.collection('users').doc(userCredential.user.uid).set({
                     email: email,
-                    pseudo: pseudo,
+                    pseudo: cleanPseudo,
+                    pseudoLower: cleanPseudo.toLowerCase(),
                     createdAt: firebase.firestore.FieldValue.serverTimestamp(),
                     lastLogin: firebase.firestore.FieldValue.serverTimestamp(),
                     role: 'user',

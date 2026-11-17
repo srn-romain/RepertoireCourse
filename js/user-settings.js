@@ -1271,6 +1271,54 @@ async function initSettingsLogic() {
         }, 5000);
     }
 
+    // Vérification de la disponibilité et unicité d'un pseudo (1 seule lecture ciblée Firestore)
+    async function checkPseudoAvailability(pseudo, excludeUid = null) {
+        if (typeof window.checkPseudoAvailability === 'function') {
+            return window.checkPseudoAvailability(pseudo, excludeUid);
+        }
+        const cleanPseudo = (pseudo || '').trim();
+        if (!cleanPseudo) {
+            return { available: false, error: "Le pseudo est obligatoire." };
+        }
+        if (cleanPseudo.length < 2) {
+            return { available: false, error: "Le pseudo doit contenir au moins 2 caractères." };
+        }
+
+        const forbiddenPseudos = ['inconnu', 'unknown', 'anonyme', 'anonymous', 'deleted', 'supprimé', 'undefined', 'null', 'admin', 'invite', 'administrator', 'moderator'];
+        const lower = cleanPseudo.toLowerCase();
+        if (forbiddenPseudos.includes(lower)) {
+            return { available: false, error: "Ce pseudo n'est pas autorisé." };
+        }
+
+        try {
+            const snap = await db.collection('users').where('pseudoLower', '==', lower).limit(2).get();
+            const conflict = snap.docs.find(d => d.id !== excludeUid);
+            if (conflict) {
+                return { available: false, error: "Ce pseudo est déjà pris. Veuillez en choisir un autre." };
+            }
+
+            const snapExact = await db.collection('users').where('pseudo', '==', cleanPseudo).limit(2).get();
+            const conflictExact = snapExact.docs.find(d => d.id !== excludeUid);
+            if (conflictExact) {
+                return { available: false, error: "Ce pseudo est déjà pris. Veuillez en choisir un autre." };
+            }
+
+            const capitalized = cleanPseudo.charAt(0).toUpperCase() + cleanPseudo.slice(1).toLowerCase();
+            if (capitalized !== cleanPseudo) {
+                const snapCap = await db.collection('users').where('pseudo', '==', capitalized).limit(2).get();
+                const conflictCap = snapCap.docs.find(d => d.id !== excludeUid);
+                if (conflictCap) {
+                    return { available: false, error: "Ce pseudo est déjà pris. Veuillez en choisir un autre." };
+                }
+            }
+
+            return { available: true };
+        } catch (err) {
+            console.warn("Erreur vérification pseudo dans Firestore :", err);
+            return { available: true };
+        }
+    }
+
     // Gestion pseudo
     if (pseudoForm) {
         pseudoForm.addEventListener('submit', async (e) => {
@@ -1279,7 +1327,20 @@ async function initSettingsLogic() {
             const user = firebase.auth().currentUser;
 
             if (!user) return;
-            if (!newPseudo) return;
+            if (!newPseudo) {
+                showMessage("Le pseudo ne peut pas être vide.", "error", "pseudoMessageContainer");
+                return;
+            }
+            if (newPseudo.length < 2) {
+                showMessage("Le pseudo doit contenir au moins 2 caractères.", "error", "pseudoMessageContainer");
+                return;
+            }
+
+            const currentPseudo = window.currentUserPseudo || localStorage.getItem('userPseudo') || user.displayName || '';
+            if (newPseudo === currentPseudo) {
+                showMessage("Vous utilisez déjà ce pseudo.", "error", "pseudoMessageContainer");
+                return;
+            }
 
             const forbiddenPseudos = ['inconnu', 'unknown', 'anonyme', 'anonymous', 'deleted', 'supprimé', 'undefined', 'null', 'admin', 'invite', 'administrator', 'moderator'];
             if (forbiddenPseudos.includes(newPseudo.toLowerCase())) {
@@ -1287,10 +1348,22 @@ async function initSettingsLogic() {
                 return;
             }
 
+            const submitBtn = pseudoForm.querySelector('button[type="submit"]');
+            if (submitBtn) submitBtn.disabled = true;
+
             try {
-                // Mise à jour Firestore
+                // Vérification de l'unicité du pseudo (requête ciblée limit(2) = 1 seule lecture)
+                const availability = await checkPseudoAvailability(newPseudo, user.uid);
+                if (!availability.available) {
+                    showMessage(availability.error || "Ce pseudo est déjà pris. Veuillez en choisir un autre.", "error", "pseudoMessageContainer");
+                    if (submitBtn) submitBtn.disabled = false;
+                    return;
+                }
+
+                // Mise à jour Firestore (pseudo et pseudoLower)
                 await db.collection('users').doc(user.uid).update({
-                    pseudo: newPseudo
+                    pseudo: newPseudo,
+                    pseudoLower: newPseudo.toLowerCase()
                 });
 
                 window.currentUserPseudo = newPseudo;
@@ -1328,6 +1401,8 @@ async function initSettingsLogic() {
             } catch (error) {
                 console.error("Erreur update pseudo:", error);
                 showMessage("Erreur lors de la mise à jour.", "error", "pseudoMessageContainer");
+            } finally {
+                if (submitBtn) submitBtn.disabled = false;
             }
         });
     }

@@ -195,10 +195,23 @@
         const selfUid = user.uid;
         const queryLower = query.toLowerCase();
 
-        const [usersSnap, ownFollowingSnap] = await Promise.all([
-            db.collection('users').get(),
-            db.collection('users').doc(selfUid).collection('following').get()
-        ]);
+        const ownFollowingPromise = db.collection('users').doc(selfUid).collection('following').get();
+
+        // Requête ciblée sur pseudoLower (1 seule lecture au lieu de lire toute la collection)
+        let usersSnap = await db.collection('users').where('pseudoLower', '==', queryLower).limit(10).get();
+
+        // Fallback rétrocompatible pour les comptes anciens sans pseudoLower
+        if (usersSnap.empty) {
+            usersSnap = await db.collection('users').where('pseudo', '==', query).limit(10).get();
+        }
+        if (usersSnap.empty) {
+            const capitalized = query.charAt(0).toUpperCase() + query.slice(1).toLowerCase();
+            if (capitalized !== query) {
+                usersSnap = await db.collection('users').where('pseudo', '==', capitalized).limit(10).get();
+            }
+        }
+
+        const ownFollowingSnap = await ownFollowingPromise;
 
         const followingByUid = new Map(ownFollowingSnap.docs.map(doc => [doc.id, doc.data()]));
         const matchingUsers = usersSnap.docs.filter(doc => {
