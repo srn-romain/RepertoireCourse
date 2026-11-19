@@ -90,6 +90,7 @@
                                 <span>Temps</span>
                             </p>
                             <p id="detailsTime" class="font-semibold text-green-800"></p>
+                            <div id="detailsChronoDnf" class="hidden mt-1.5 flex flex-wrap items-center gap-1.5"></div>
                         </div>
                         <div class="bg-green-50 p-3 rounded-lg">
                             <p class="text-sm text-green-600 flex items-center gap-2">
@@ -111,6 +112,12 @@
                                 <span>Type de Terrain</span>
                             </p>
                             <p id="DetailTerrainText" class="font-semibold text-green-800">/</p>
+                        </div>
+                        <div id="detailsDnfContainer" class="bg-red-50 border border-red-200 p-2.5 rounded-lg hidden col-span-2 flex items-center justify-center gap-2 text-red-700 text-sm">
+                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-red-100 text-red-800 text-xs font-bold border border-red-200">
+                                <i class="fas fa-ban text-[10px]"></i> DNF
+                            </span>
+                            <span id="detailsDnfText" class="font-medium text-xs"></span>
                         </div>
                         <div class="bg-yellow-50 p-2 rounded-lg hidden col-span-2 flex-col items-center justify-center gap-1"
                             id="detailsRankingContainer">
@@ -1281,6 +1288,22 @@
             aiPredictionContainer.innerHTML = '';
             aiPredictionContainer.classList.add('hidden');
         }
+        const detailsDnfContainer = document.getElementById('detailsDnfContainer');
+        if (detailsDnfContainer) {
+            detailsDnfContainer.classList.add('hidden');
+        }
+        const detailsDnfText = document.getElementById('detailsDnfText');
+        if (detailsDnfText) {
+            detailsDnfText.textContent = '';
+        }
+        const detailsChronoDnf = document.getElementById('detailsChronoDnf');
+        if (detailsChronoDnf) {
+            detailsChronoDnf.innerHTML = '';
+            detailsChronoDnf.classList.add('hidden');
+            if (timeContainer) {
+                timeContainer.appendChild(detailsChronoDnf);
+            }
+        }
 
         [distanceElement?.parentElement, elevationElement?.parentElement, timeElement?.parentElement, terrainContainer].forEach(el => {
             if (el) {
@@ -1647,6 +1670,38 @@
                         aiPredictionContainer.classList.add('hidden');
                     }
                 }
+            }
+        }
+
+        // Affichage DNF (proche du chrono pour tous les types de courses)
+        if (race.dnf === true) {
+            const hasDnfKm = race.dnfKm !== undefined && race.dnfKm !== null && race.dnfKm !== '' && !isNaN(parseFloat(race.dnfKm));
+            const dnfKmFormatted = hasDnfKm ? parseFloat(race.dnfKm) : null;
+            const isTriathlonSolo = race.terrain === 'triathlon' && race.raceFormat !== 'team';
+            const isTriathlonBikeRelay = race.terrain === 'triathlon' && race.raceFormat === 'team' && race.raceRelaySport === 'bike';
+
+            if (isTriathlonSolo) {
+                if (detailsDnfContainer && detailsDnfText) {
+                    detailsDnfText.textContent = hasDnfKm ? `S'est arrêté au km ${dnfKmFormatted}` : 'Abandon';
+                    detailsDnfContainer.classList.remove('hidden');
+                }
+            } else if (detailsChronoDnf) {
+                const targetChronoCard = isTriathlonBikeRelay
+                    ? (distanceElement ? distanceElement.parentElement : null)
+                    : timeContainer;
+                if (targetChronoCard && detailsChronoDnf.parentElement !== targetChronoCard) {
+                    targetChronoCard.appendChild(detailsChronoDnf);
+                }
+                const kmBadgeHtml = hasDnfKm
+                    ? `<span class="text-[11px] font-medium text-red-700">Arrêt au km ${escapeHtml(String(dnfKmFormatted))}</span>`
+                    : '';
+                detailsChronoDnf.innerHTML = `
+                    <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-red-100 text-red-700 text-[11px] font-bold border border-red-200">
+                        <i class="fas fa-ban text-[10px]"></i> DNF
+                    </span>
+                    ${kmBadgeHtml}
+                `;
+                detailsChronoDnf.classList.remove('hidden');
             }
         }
 

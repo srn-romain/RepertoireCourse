@@ -139,7 +139,8 @@
         <header class="flex flex-col min-[1650px]:flex-row justify-between items-center mb-8 gap-4">
             <div class="w-full min-[1650px]:w-auto text-center min-[1650px]:text-left">
                 <a href="index.html" class="inline-block hover:opacity-80 transition">
-                    <h1 id="dashboardTitle" class="text-3xl md:text-4xl font-bold text-green-800">📊 Carnet de courses</h1>
+                    <h1 id="dashboardTitle" class="text-3xl md:text-4xl font-bold text-green-800">📊 Carnet de courses
+                    </h1>
                 </a>
                 <div id="statsText"
                     class="text-green-600 text-sm flex items-center justify-center min-[1650px]:justify-start gap-2 py-1">
@@ -157,7 +158,8 @@
                     <button id="friendsBtn"
                         class="hidden h-10 px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white text-sm font-medium rounded-full transition shadow-sm hover:shadow flex items-center justify-center w-full sm:w-auto whitespace-nowrap shrink-0 relative">
                         <i class="fas fa-user-group mr-1.5"></i><span>Amis</span>
-                        <span id="friendsNotificationCount" class="hidden absolute -top-1 -right-1 min-w-5 h-5 px-1 bg-red-600 text-white text-[10px] rounded-full flex items-center justify-center"></span>
+                        <span id="friendsNotificationCount"
+                            class="hidden absolute -top-1 -right-1 min-w-5 h-5 px-1 bg-red-600 text-white text-[10px] rounded-full flex items-center justify-center"></span>
                     </button>
                     <button id="wishlistBtn"
                         class="h-10 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-full transition shadow-sm hover:shadow flex items-center justify-center w-full sm:w-auto whitespace-nowrap shrink-0">
@@ -645,7 +647,8 @@
                                 <input type="text" id="raceTime"
                                     class="w-full px-3 py-2 border border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
                                     placeholder="00:00:00">
-                                <p id="raceTimeError" class="text-red-500 text-sm mt-1 hidden">Format invalide (HH:MM:SS)</p>
+                                <p id="raceTimeError" class="text-red-500 text-sm mt-1 hidden">Format invalide
+                                    (HH:MM:SS)</p>
                             </div>
                         </div>
                     </div>
@@ -660,8 +663,10 @@
                                 <span>Épreuves de vos coéquipiers (optionnel)</span>
                             </span>
                             <span class="flex items-center gap-1.5 text-purple-700 text-[11px] font-medium">
-                                <span id="triathlonTeammateSummaryBadge" class="hidden text-[10px] bg-purple-200 text-purple-800 px-1.5 py-0.5 rounded-full font-bold">Renseigné</span>
-                                <i class="fas fa-chevron-down teammate-chevron text-[10px] text-purple-500 transition-transform duration-200"></i>
+                                <span id="triathlonTeammateSummaryBadge"
+                                    class="hidden text-[10px] bg-purple-200 text-purple-800 px-1.5 py-0.5 rounded-full font-bold">Renseigné</span>
+                                <i
+                                    class="fas fa-chevron-down teammate-chevron text-[10px] text-purple-500 transition-transform duration-200"></i>
                             </span>
                         </button>
                         <div id="triathlonTeammateContent" class="hidden mt-3 space-y-3">
@@ -684,6 +689,22 @@
                                     class="w-full px-3 py-2 border border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
                                     placeholder="000">
                             </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-4" id="raceDnfContainer">
+                        <label class="inline-flex items-center gap-2 text-sm text-green-700 cursor-pointer">
+                            <input type="checkbox" id="raceDnf"
+                                class="w-4 h-4 text-red-600 border-green-300 rounded focus:ring-red-500">
+                            <span class="font-medium">DNF <span
+                                    class="text-xs text-gray-500 font-normal">(Abandon)</span></span>
+                        </label>
+                        <div id="raceDnfKmContainer" class="mt-2 hidden">
+                            <label for="raceDnfKm" class="block text-green-700 mb-2">S'est arrêté au km</label>
+                            <input type="text" id="raceDnfKm" inputmode="decimal"
+                                class="w-full px-3 py-2 border border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                                placeholder="Ex: 24,5">
+                            <p id="raceDnfKmError" class="text-red-500 text-sm mt-1 hidden"></p>
                         </div>
                     </div>
 
@@ -725,7 +746,8 @@
                             <!-- Classement par catégorie -->
                             <div>
                                 <div class="mb-1">
-                                    <span class="block text-xs font-medium text-gray-500">Classement par catégorie</span>
+                                    <span class="block text-xs font-medium text-gray-500">Classement par
+                                        catégorie</span>
                                 </div>
                                 <div class="space-y-2">
                                     <div class="flex items-center gap-2 flex-wrap sm:flex-nowrap">
@@ -736,11 +758,14 @@
                                         <input type="number" id="raceRankCategoryTotal" min="1"
                                             class="w-20 px-2 py-1.5 border border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-sm shrink-0"
                                             placeholder="120">
-                                        <span class="text-green-700 font-medium text-xs whitespace-nowrap">participants</span>
+                                        <span
+                                            class="text-green-700 font-medium text-xs whitespace-nowrap">participants</span>
                                     </div>
                                     <div>
                                         <div class="flex items-center justify-between mb-1">
-                                            <label for="raceRankCategoryCode" class="block text-green-700 text-sm font-medium">Nom de la catégorie</label>
+                                            <label for="raceRankCategoryCode"
+                                                class="block text-green-700 text-sm font-medium">Nom de la
+                                                catégorie</label>
                                             <button type="button"
                                                 class="text-xs text-gray-400 underline hover:text-green-600 transition select-none"
                                                 aria-controls="categoryHelpBox" aria-expanded="false"
@@ -750,72 +775,140 @@
                                         </div>
                                         <div id="categoryHelpBox"
                                             class="hidden mb-3 max-h-80 overflow-y-auto bg-white border border-green-200 p-3 rounded-lg relative shadow-sm text-xs text-green-800">
-                                            <div class="absolute -top-1.5 right-12 w-3 h-3 bg-white border-t border-l border-green-200 transform rotate-45"></div>
-                                    <p class="font-semibold mb-2">Catégories d'âge officielles FFA</p>
-                                    <p>Voici les catégories d'âge officielles de la Fédération Française d'Athlétisme (FFA). Les âges sont indicatifs.</p>
-                                    <div class="overflow-x-auto mt-2">
-                                        <table class="w-full text-left text-[11px] border-collapse">
-                                            <thead>
-                                                <tr class="border-b border-green-100 text-green-900">
-                                                    <th class="py-1 pr-3">Catégorie</th>
-                                                    <th class="py-1 pr-3">Code</th>
-                                                    <th class="py-1">Âge</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody class="divide-y divide-green-50">
-                                                <tr><td class="py-1 pr-3">Baby Athlé</td><td class="py-1 pr-3">BB / U7</td><td class="py-1">Moins de 7 ans</td></tr>
-                                                <tr><td class="py-1 pr-3">Éveil athlétique</td><td class="py-1 pr-3">EA / U10</td><td class="py-1">7 à 9 ans</td></tr>
-                                                <tr><td class="py-1 pr-3">Poussins</td><td class="py-1 pr-3">PO / U12</td><td class="py-1">10 à 11 ans</td></tr>
-                                                <tr><td class="py-1 pr-3">Benjamins</td><td class="py-1 pr-3">BE / U14</td><td class="py-1">12 à 13 ans</td></tr>
-                                                <tr><td class="py-1 pr-3">Minimes</td><td class="py-1 pr-3">MI / U16</td><td class="py-1">14 à 15 ans</td></tr>
-                                                <tr><td class="py-1 pr-3">Cadets</td><td class="py-1 pr-3">CA / U18</td><td class="py-1">16 à 17 ans</td></tr>
-                                                <tr><td class="py-1 pr-3">Juniors</td><td class="py-1 pr-3">JU / U20</td><td class="py-1">18 à 19 ans</td></tr>
-                                                <tr><td class="py-1 pr-3">Espoirs</td><td class="py-1 pr-3">ES / U23</td><td class="py-1">20 à 22 ans</td></tr>
-                                                <tr><td class="py-1 pr-3">Seniors</td><td class="py-1 pr-3">SE</td><td class="py-1">23 à 34 ans</td></tr>
-                                                <tr><td class="py-1 pr-3">Masters</td><td class="py-1 pr-3">MA / M35+</td><td class="py-1">35 ans et plus</td></tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                    <p class="font-semibold mt-3 mb-1">Détail des catégories Masters</p>
-                                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-x-3 gap-y-1 text-[11px]">
-                                        <span>M0 : 35-39 ans</span><span>M1 : 40-44 ans</span>
-                                        <span>M2 : 45-49 ans</span><span>M3 : 50-54 ans</span>
-                                        <span>M4 : 55-59 ans</span><span>M5 : 60-64 ans</span>
-                                        <span>M6 : 65-69 ans</span><span>M7 : 70-74 ans</span>
-                                        <span>M8 : 75-79 ans</span><span>M9 : 80-84 ans</span>
-                                        <span>M10 : 85 ans et plus</span>
-                                    </div>
-                                    <p class="mt-3 border-t border-green-100 pt-2">
-                                        <i class="fas fa-lightbulb text-yellow-500 mr-1"></i>
-                                        <strong>Bon à savoir :</strong> la lettre H (Homme) ou F (Femme) est ajoutée au code (par exemple ESH ou U23H). En course à pied, le changement de catégorie dépend généralement de l'année civile de naissance, la saison sportive commençant le 1er septembre.
-                                    </p>
-                                </div>
-                                        <select id="raceRankCategoryCode" class="w-full px-2 py-1.5 border border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-sm">
+                                            <div
+                                                class="absolute -top-1.5 right-12 w-3 h-3 bg-white border-t border-l border-green-200 transform rotate-45">
+                                            </div>
+                                            <p class="font-semibold mb-2">Catégories d'âge officielles FFA</p>
+                                            <p>Voici les catégories d'âge officielles de la Fédération Française
+                                                d'Athlétisme (FFA). Les âges sont indicatifs.</p>
+                                            <div class="overflow-x-auto mt-2">
+                                                <table class="w-full text-left text-[11px] border-collapse">
+                                                    <thead>
+                                                        <tr class="border-b border-green-100 text-green-900">
+                                                            <th class="py-1 pr-3">Catégorie</th>
+                                                            <th class="py-1 pr-3">Code</th>
+                                                            <th class="py-1">Âge</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody class="divide-y divide-green-50">
+                                                        <tr>
+                                                            <td class="py-1 pr-3">Baby Athlé</td>
+                                                            <td class="py-1 pr-3">BB / U7</td>
+                                                            <td class="py-1">Moins de 7 ans</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="py-1 pr-3">Éveil athlétique</td>
+                                                            <td class="py-1 pr-3">EA / U10</td>
+                                                            <td class="py-1">7 à 9 ans</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="py-1 pr-3">Poussins</td>
+                                                            <td class="py-1 pr-3">PO / U12</td>
+                                                            <td class="py-1">10 à 11 ans</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="py-1 pr-3">Benjamins</td>
+                                                            <td class="py-1 pr-3">BE / U14</td>
+                                                            <td class="py-1">12 à 13 ans</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="py-1 pr-3">Minimes</td>
+                                                            <td class="py-1 pr-3">MI / U16</td>
+                                                            <td class="py-1">14 à 15 ans</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="py-1 pr-3">Cadets</td>
+                                                            <td class="py-1 pr-3">CA / U18</td>
+                                                            <td class="py-1">16 à 17 ans</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="py-1 pr-3">Juniors</td>
+                                                            <td class="py-1 pr-3">JU / U20</td>
+                                                            <td class="py-1">18 à 19 ans</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="py-1 pr-3">Espoirs</td>
+                                                            <td class="py-1 pr-3">ES / U23</td>
+                                                            <td class="py-1">20 à 22 ans</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="py-1 pr-3">Seniors</td>
+                                                            <td class="py-1 pr-3">SE</td>
+                                                            <td class="py-1">23 à 34 ans</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="py-1 pr-3">Masters</td>
+                                                            <td class="py-1 pr-3">MA / M35+</td>
+                                                            <td class="py-1">35 ans et plus</td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                            <p class="font-semibold mt-3 mb-1">Détail des catégories Masters</p>
+                                            <div class="grid grid-cols-2 sm:grid-cols-3 gap-x-3 gap-y-1 text-[11px]">
+                                                <span>M0 : 35-39 ans</span><span>M1 : 40-44 ans</span>
+                                                <span>M2 : 45-49 ans</span><span>M3 : 50-54 ans</span>
+                                                <span>M4 : 55-59 ans</span><span>M5 : 60-64 ans</span>
+                                                <span>M6 : 65-69 ans</span><span>M7 : 70-74 ans</span>
+                                                <span>M8 : 75-79 ans</span><span>M9 : 80-84 ans</span>
+                                                <span>M10 : 85 ans et plus</span>
+                                            </div>
+                                            <p class="mt-3 border-t border-green-100 pt-2">
+                                                <i class="fas fa-lightbulb text-yellow-500 mr-1"></i>
+                                                <strong>Bon à savoir :</strong> la lettre H (Homme) ou F (Femme) est
+                                                ajoutée au code (par exemple ESH ou U23H). En course à pied, le
+                                                changement de catégorie dépend généralement de l'année civile de
+                                                naissance, la saison sportive commençant le 1er septembre.
+                                            </p>
+                                        </div>
+                                        <select id="raceRankCategoryCode"
+                                            class="w-full px-2 py-1.5 border border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-sm">
                                             <option value="">Sélectionner une catégorie…</option>
                                             <optgroup label="Jeunes et adultes">
-                                                <option value="BB" data-name="Baby Athlé" data-code="BB / U7">Baby Athlé - BB / U7 - moins de 7 ans</option>
-                                                <option value="EA" data-name="Éveil athlétique" data-code="EA / U10">Éveil athlétique - EA / U10 - 7 à 9 ans</option>
-                                                <option value="PO" data-name="Poussins" data-code="PO / U12">Poussins - PO / U12 - 10 à 11 ans</option>
-                                                <option value="BE" data-name="Benjamins" data-code="BE / U14">Benjamins - BE / U14 - 12 à 13 ans</option>
-                                                <option value="MI" data-name="Minimes" data-code="MI / U16">Minimes - MI / U16 - 14 à 15 ans</option>
-                                                <option value="CA" data-name="Cadets" data-code="CA / U18">Cadets - CA / U18 - 16 à 17 ans</option>
-                                                <option value="JU" data-name="Juniors" data-code="JU / U20">Juniors - JU / U20 - 18 à 19 ans</option>
-                                                <option value="ES" data-name="Espoirs" data-code="ES / U23">Espoirs - ES / U23 - 20 à 22 ans</option>
-                                                <option value="SE" data-name="Seniors" data-code="SE">Seniors - SE - 23 à 34 ans</option>
+                                                <option value="BB" data-name="Baby Athlé" data-code="BB / U7">Baby Athlé
+                                                    - BB / U7 - moins de 7 ans</option>
+                                                <option value="EA" data-name="Éveil athlétique" data-code="EA / U10">
+                                                    Éveil athlétique - EA / U10 - 7 à 9 ans</option>
+                                                <option value="PO" data-name="Poussins" data-code="PO / U12">Poussins -
+                                                    PO / U12 - 10 à 11 ans</option>
+                                                <option value="BE" data-name="Benjamins" data-code="BE / U14">Benjamins
+                                                    - BE / U14 - 12 à 13 ans</option>
+                                                <option value="MI" data-name="Minimes" data-code="MI / U16">Minimes - MI
+                                                    / U16 - 14 à 15 ans</option>
+                                                <option value="CA" data-name="Cadets" data-code="CA / U18">Cadets - CA /
+                                                    U18 - 16 à 17 ans</option>
+                                                <option value="JU" data-name="Juniors" data-code="JU / U20">Juniors - JU
+                                                    / U20 - 18 à 19 ans</option>
+                                                <option value="ES" data-name="Espoirs" data-code="ES / U23">Espoirs - ES
+                                                    / U23 - 20 à 22 ans</option>
+                                                <option value="SE" data-name="Seniors" data-code="SE">Seniors - SE - 23
+                                                    à 34 ans</option>
                                             </optgroup>
                                             <optgroup label="Masters">
-                                                <option value="MA" data-name="Masters" data-code="MA / M35+">Masters - MA / M35+ - 35 ans et plus</option>
-                                                <option value="M0" data-name="Masters" data-code="M0">Masters M0 - 35 à 39 ans</option>
-                                                <option value="M1" data-name="Masters" data-code="M1">Masters M1 - 40 à 44 ans</option>
-                                                <option value="M2" data-name="Masters" data-code="M2">Masters M2 - 45 à 49 ans</option>
-                                                <option value="M3" data-name="Masters" data-code="M3">Masters M3 - 50 à 54 ans</option>
-                                                <option value="M4" data-name="Masters" data-code="M4">Masters M4 - 55 à 59 ans</option>
-                                                <option value="M5" data-name="Masters" data-code="M5">Masters M5 - 60 à 64 ans</option>
-                                                <option value="M6" data-name="Masters" data-code="M6">Masters M6 - 65 à 69 ans</option>
-                                                <option value="M7" data-name="Masters" data-code="M7">Masters M7 - 70 à 74 ans</option>
-                                                <option value="M8" data-name="Masters" data-code="M8">Masters M8 - 75 à 79 ans</option>
-                                                <option value="M9" data-name="Masters" data-code="M9">Masters M9 - 80 à 84 ans</option>
-                                                <option value="M10" data-name="Masters" data-code="M10">Masters M10 - 85 ans et plus</option>
+                                                <option value="MA" data-name="Masters" data-code="MA / M35+">Masters -
+                                                    MA / M35+ - 35 ans et plus</option>
+                                                <option value="M0" data-name="Masters" data-code="M0">Masters M0 - 35 à
+                                                    39 ans</option>
+                                                <option value="M1" data-name="Masters" data-code="M1">Masters M1 - 40 à
+                                                    44 ans</option>
+                                                <option value="M2" data-name="Masters" data-code="M2">Masters M2 - 45 à
+                                                    49 ans</option>
+                                                <option value="M3" data-name="Masters" data-code="M3">Masters M3 - 50 à
+                                                    54 ans</option>
+                                                <option value="M4" data-name="Masters" data-code="M4">Masters M4 - 55 à
+                                                    59 ans</option>
+                                                <option value="M5" data-name="Masters" data-code="M5">Masters M5 - 60 à
+                                                    64 ans</option>
+                                                <option value="M6" data-name="Masters" data-code="M6">Masters M6 - 65 à
+                                                    69 ans</option>
+                                                <option value="M7" data-name="Masters" data-code="M7">Masters M7 - 70 à
+                                                    74 ans</option>
+                                                <option value="M8" data-name="Masters" data-code="M8">Masters M8 - 75 à
+                                                    79 ans</option>
+                                                <option value="M9" data-name="Masters" data-code="M9">Masters M9 - 80 à
+                                                    84 ans</option>
+                                                <option value="M10" data-name="Masters" data-code="M10">Masters M10 - 85
+                                                    ans et plus</option>
                                             </optgroup>
                                         </select>
                                     </div>
@@ -855,7 +948,8 @@
                             <span>Achat photo de course</span>
                         </label>
                         <div id="racePhotoPurchasePriceContainer" class="mt-2 hidden">
-                            <label for="racePhotoPurchasePrice" class="block text-green-700 mb-2">Prix de la photo (€)</label>
+                            <label for="racePhotoPurchasePrice" class="block text-green-700 mb-2">Prix de la photo
+                                (€)</label>
                             <input type="number" id="racePhotoPurchasePrice" min="0" step="0.01" inputmode="decimal"
                                 class="w-full px-3 py-2 border border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
                                 placeholder="Prix en euros">
@@ -893,7 +987,9 @@
                                     <div
                                         class="absolute -top-1.5 right-12 w-3 h-3 bg-white border-t border-l border-green-200 transform rotate-45">
                                     </div>
-                                    Vous pouvez coller l'identifiant (ID) ou le lien complet de votre dossier Google Drive (ex: https://drive.google.com/drive/folders/...). L'identifiant sera extrait automatiquement.
+                                    Vous pouvez coller l'identifiant (ID) ou le lien complet de votre dossier Google
+                                    Drive (ex: https://drive.google.com/drive/folders/...). L'identifiant sera extrait
+                                    automatiquement.
                                 </div>
 
                                 <input type="text" id="raceDriveId" name="raceDriveId"
@@ -960,7 +1056,8 @@
                             </div>
                         </div>
                     </div>
-                    <div class="mb-4 hidden bg-amber-50/50 p-3 rounded-lg border border-amber-100" id="racePassagePointsContainer">
+                    <div class="mb-4 hidden bg-amber-50/50 p-3 rounded-lg border border-amber-100"
+                        id="racePassagePointsContainer">
                         <div class="flex items-center justify-between mb-2">
                             <label class="block text-amber-700 font-semibold flex items-center gap-2">
                                 <i class="fas fa-flag-checkered text-amber-600"></i>
@@ -1749,7 +1846,8 @@
                                     title="Trier par nom de course (intra catégorie)">
                                     <i class="fas fa-font text-[10px]"></i>
                                     <span>Nom</span>
-                                    <i id="wishlistEditSortNameIcon" class="fas fa-arrow-down-a-z text-[9px] ml-0.5"></i>
+                                    <i id="wishlistEditSortNameIcon"
+                                        class="fas fa-arrow-down-a-z text-[9px] ml-0.5"></i>
                                 </button>
                             </div>
                         </div>
@@ -2093,22 +2191,30 @@
                     <!-- Alerte : emplacements pleins / trop d'actions sélectionnées -->
                     <div id="cardConfigSlotsFullNotice"
                         class="hidden flex items-start sm:items-center gap-2.5 p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-800 leading-relaxed transition-all duration-300 shadow-2xs">
-                        <div class="w-6 h-6 rounded-full bg-red-100 text-red-600 flex items-center justify-center shrink-0 mt-0.5 sm:mt-0 shadow-2xs">
+                        <div
+                            class="w-6 h-6 rounded-full bg-red-100 text-red-600 flex items-center justify-center shrink-0 mt-0.5 sm:mt-0 shadow-2xs">
                             <i class="fas fa-exclamation-circle text-xs"></i>
                         </div>
                         <div class="flex-1" id="cardConfigSlotsFullNoticeText">
-                            Les 3 emplacements sont déjà occupés. Supprimez-en un d'abord en cliquant sur la croix rouge (<span class="inline-flex items-center justify-center w-4 h-4 rounded-full bg-red-500 text-white text-[10px] font-bold leading-none align-middle shadow-2xs select-none">&times;</span>).
+                            Les 3 emplacements sont déjà occupés. Supprimez-en un d'abord en cliquant sur la croix rouge
+                            (<span
+                                class="inline-flex items-center justify-center w-4 h-4 rounded-full bg-red-500 text-white text-[10px] font-bold leading-none align-middle shadow-2xs select-none">&times;</span>).
                         </div>
                     </div>
 
                     <!-- Alerte : action Supprimer absente -->
                     <div id="cardConfigNoDeleteNotice"
                         class="hidden flex items-start sm:items-center gap-2.5 p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-900 leading-relaxed transition-all duration-300 shadow-2xs">
-                        <div class="w-6 h-6 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center shrink-0 mt-0.5 sm:mt-0 shadow-2xs">
+                        <div
+                            class="w-6 h-6 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center shrink-0 mt-0.5 sm:mt-0 shadow-2xs">
                             <i class="fas fa-exclamation-triangle text-xs"></i>
                         </div>
                         <div class="flex-1">
-                            <span class="font-bold text-amber-900">Attention :</span> en ne sélectionnant pas l'action <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-red-100 text-red-700 border border-red-200 font-semibold text-[11px] align-baseline"><i class="fas fa-trash-alt text-[10px] text-red-600"></i> Supprimer</span>, vous n'aurez aucune action permettant de supprimer une course.</span>
+                            <span class="font-bold text-amber-900">Attention :</span> en ne sélectionnant pas l'action
+                            <span
+                                class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-red-100 text-red-700 border border-red-200 font-semibold text-[11px] align-baseline"><i
+                                    class="fas fa-trash-alt text-[10px] text-red-600"></i> Supprimer</span>, vous
+                            n'aurez aucune action permettant de supprimer une course.</span>
                         </div>
                     </div>
                 </div>
@@ -2406,10 +2512,12 @@
         <div role="dialog" aria-modal="true" aria-labelledby="companionRankTotalConfirmTitle"
             class="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
             <div class="mb-4 flex items-center gap-3">
-                <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-700">
+                <span
+                    class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-700">
                     <i class="fas fa-users"></i>
                 </span>
-                <h2 id="companionRankTotalConfirmTitle" class="text-lg font-bold text-gray-900">Compléter votre classement ?</h2>
+                <h2 id="companionRankTotalConfirmTitle" class="text-lg font-bold text-gray-900">Compléter votre
+                    classement ?</h2>
             </div>
             <p id="companionRankTotalConfirmMessage" class="mb-6 text-sm leading-relaxed text-gray-700"></p>
             <div class="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
@@ -2683,7 +2791,8 @@
                     <input type="text" id="detailRaceSearchInput" placeholder="Filtrer par nom de course..."
                         class="w-full pl-8 pr-3 py-1 text-xs bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-green-500">
                 </div>
-                <label id="detailPhotoPriceToggleContainer" class="hidden inline-flex items-center gap-1.5 text-[11px] text-gray-600 whitespace-nowrap cursor-pointer">
+                <label id="detailPhotoPriceToggleContainer"
+                    class="hidden inline-flex items-center gap-1.5 text-[11px] text-gray-600 whitespace-nowrap cursor-pointer">
                     <input type="checkbox" id="detailPhotoPriceToggle" checked
                         class="w-3.5 h-3.5 text-green-600 border-gray-300 rounded focus:ring-green-500">
                     Inclure les photos
@@ -2800,7 +2909,7 @@
             if (cachedTags) window.customCardTags = JSON.parse(cachedTags);
             const cachedImg = localStorage.getItem('defaultCardImage');
             if (cachedImg) window.defaultCardImage = cachedImg;
-        } catch(e) {}
+        } catch (e) { }
 
         const AVAILABLE_CARD_BUTTONS = {
             edit: {
@@ -3303,7 +3412,7 @@
                                 if (uData.pseudo && !uData.pseudoLower) {
                                     db.collection('users').doc(user.uid).set({
                                         pseudoLower: uData.pseudo.trim().toLowerCase()
-                                    }, { merge: true }).catch(() => {});
+                                    }, { merge: true }).catch(() => { });
                                 }
 
                                 window.currentUserPseudo = newPseudo;
@@ -4335,6 +4444,37 @@
             racePhotoPurchaseCheckbox.addEventListener('change', updateRacePhotoPurchaseFields);
             updateRacePhotoPurchaseFields();
         }
+        const raceDnfCheckbox = document.getElementById('raceDnf');
+        const raceDnfKmContainer = document.getElementById('raceDnfKmContainer');
+        const raceDnfKmInput = document.getElementById('raceDnfKm');
+        const raceDnfKmErrorEl = document.getElementById('raceDnfKmError');
+        function updateRaceDnfFields() {
+            if (!raceDnfCheckbox || !raceDnfKmContainer) return;
+            raceDnfKmContainer.classList.toggle('hidden', !raceDnfCheckbox.checked);
+            if (!raceDnfCheckbox.checked) {
+                if (raceDnfKmInput) raceDnfKmInput.value = '';
+                if (raceDnfKmErrorEl) raceDnfKmErrorEl.classList.add('hidden');
+            }
+        }
+        if (raceDnfKmInput) {
+            raceDnfKmInput.addEventListener('input', () => {
+                // Autoriser chiffres et un seul séparateur décimal (, ou .)
+                let cleaned = raceDnfKmInput.value.replace(/[^0-9.,]/g, '');
+                const sepMatch = cleaned.match(/[.,]/);
+                if (sepMatch) {
+                    const idx = sepMatch.index;
+                    cleaned = cleaned.slice(0, idx + 1) + cleaned.slice(idx + 1).replace(/[.,]/g, '');
+                }
+                if (raceDnfKmInput.value !== cleaned) {
+                    raceDnfKmInput.value = cleaned;
+                }
+                if (raceDnfKmErrorEl) raceDnfKmErrorEl.classList.add('hidden');
+            });
+        }
+        if (raceDnfCheckbox && raceDnfKmContainer) {
+            raceDnfCheckbox.addEventListener('change', updateRaceDnfFields);
+            updateRaceDnfFields();
+        }
         const prevRaceBtn = document.getElementById('prevRaceBtn');
         const nextRaceBtn = document.getElementById('nextRaceBtn');
         const editFromDetailsBtn = document.getElementById('editFromDetailsBtn');
@@ -4583,6 +4723,7 @@
             modalTitle.textContent = 'Ajouter une course';
             raceForm.reset();
             updateRacePhotoPurchaseFields();
+            updateRaceDnfFields();
             const rNE = document.getElementById('raceNotesEditor');
             if (rNE) rNE.innerHTML = '';
             if (typeof toggleBtnActive === 'function') {
@@ -5566,15 +5707,15 @@
                         </div>
                         ` : ''}
                         ${displayedImage ?
-                            `<img src="${displayedImage}" alt="${displayedImageAlt}" class="h-full w-full object-cover rounded-lg shadow-md border border-green-200" />`
-                            :
-                            `<div class="h-full w-full flex flex-col items-center justify-center bg-gray-100 rounded-lg border border-gray-300">
+                        `<img src="${displayedImage}" alt="${displayedImageAlt}" class="h-full w-full object-cover rounded-lg shadow-md border border-green-200" />`
+                        :
+                        `<div class="h-full w-full flex flex-col items-center justify-center bg-gray-100 rounded-lg border border-gray-300">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                                 </svg>
                                 <p class="mt-1 text-xs text-gray-400">Aucune image</p>
                             </div>`
-                        }
+                    }
                     </div>
                 </div>
             </div>
@@ -6035,6 +6176,7 @@
                     modalTitle.textContent = 'Ajouter une course';
                     raceForm.reset();
                     updateRacePhotoPurchaseFields();
+                    updateRaceDnfFields();
                     const rNE = document.getElementById('raceNotesEditor');
                     if (rNE) rNE.innerHTML = '';
                     if (typeof toggleBtnActive === 'function') {
@@ -6918,6 +7060,7 @@
             modalTitle.textContent = 'Ajouter une course';
             raceForm.reset();
             updateRacePhotoPurchaseFields();
+            updateRaceDnfFields();
             const rNE = document.getElementById('raceNotesEditor');
             if (rNE) {
                 rNE.innerHTML = '';
@@ -6960,7 +7103,7 @@
             if (relayHelp) relayHelp.classList.remove('hidden'); // Affiché par défaut
 
             // Réinitialiser les messages d'erreur
-            ['raceNameError', 'raceDateError', 'raceTimeError', 'formGlobalError', 'companionError'].forEach(id => {
+            ['raceNameError', 'raceDateError', 'raceTimeError', 'raceDnfKmError', 'formGlobalError', 'companionError'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) {
                     el.classList.add('hidden');
@@ -6994,7 +7137,7 @@
             const raceRankings = getRaceRankingValues(race);
 
             // Réinitialiser les messages d'erreur
-            ['raceNameError', 'raceDateError', 'raceTimeError', 'formGlobalError', 'companionError'].forEach(id => {
+            ['raceNameError', 'raceDateError', 'raceTimeError', 'raceDnfKmError', 'formGlobalError', 'companionError'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) {
                     el.classList.add('hidden');
@@ -7099,6 +7242,12 @@
             document.getElementById('racePhotoPurchase').checked = race.photoPurchase === true || (race.photoPurchasePrice !== undefined && race.photoPurchasePrice !== null);
             document.getElementById('racePhotoPurchasePrice').value = race.photoPurchasePrice !== undefined && race.photoPurchasePrice !== null ? race.photoPurchasePrice : '';
             updateRacePhotoPurchaseFields();
+            const raceDnfEl = document.getElementById('raceDnf');
+            const raceDnfKmEl = document.getElementById('raceDnfKm');
+            const isRaceDnf = race.dnf === true;
+            if (raceDnfEl) raceDnfEl.checked = isRaceDnf;
+            if (raceDnfKmEl) raceDnfKmEl.value = (isRaceDnf && race.dnfKm !== undefined && race.dnfKm !== null) ? race.dnfKm : '';
+            updateRaceDnfFields();
             document.getElementById('raceBibNumber').value = race.bibNumber || '';
             document.getElementById('raceWebsite').value = race.website || '';
             document.getElementById('raceResultUrl').value = race.resultUrl || '';
@@ -7349,6 +7498,11 @@
             const price = document.getElementById('racePrice').value;
             const photoPurchase = document.getElementById('racePhotoPurchase').checked;
             const photoPurchasePrice = document.getElementById('racePhotoPurchasePrice').value;
+            const dnf = document.getElementById('raceDnf') ? document.getElementById('raceDnf').checked : false;
+            const dnfKmRaw = document.getElementById('raceDnfKm') ? document.getElementById('raceDnfKm').value.trim() : '';
+            const dnfKmNormalized = dnfKmRaw.replace(',', '.');
+            const isDnfKmFormatValid = dnfKmRaw !== '' && /^(\d+(\.\d*)?|\.\d+)$/.test(dnfKmNormalized);
+            const dnfKmParsed = isDnfKmFormatValid ? parseFloat(dnfKmNormalized) : NaN;
             const bibNumber = document.getElementById('raceBibNumber') ? document.getElementById('raceBibNumber').value.replace(/\D/g, '').slice(0, 6) : '';
             const website = document.getElementById('raceWebsite').value.trim();
             const resultUrl = document.getElementById('raceResultUrl').value.trim();
@@ -7374,8 +7528,66 @@
             // Vérifier le format du temps si rempli
             const timeError = document.getElementById('raceTimeError');
             const globalError = document.getElementById('formGlobalError');
+            const dnfKmError = document.getElementById('raceDnfKmError');
             if (timeError) timeError.classList.add('hidden');
             if (globalError) globalError.classList.add('hidden');
+            if (dnfKmError) dnfKmError.classList.add('hidden');
+
+            // Vérifier le km DNF (format décimal avec , ou . et strictement inférieur à la distance de la course)
+            if (dnf && dnfKmRaw !== '') {
+                if (isNaN(dnfKmParsed) || dnfKmParsed < 0) {
+                    if (dnfKmError) {
+                        dnfKmError.textContent = 'Veuillez saisir un kilométrage valide (ex: 24,5).';
+                        dnfKmError.classList.remove('hidden');
+                    }
+                    if (globalError) {
+                        globalError.textContent = 'Le kilométrage DNF saisi est invalide.';
+                        globalError.classList.remove('hidden');
+                    }
+                    hasErrors = true;
+                } else {
+                    const getRaceDistanceKmForDnf = () => {
+                        if (terrain === 'hyrox') return 8;
+                        if (terrain === 'triathlon') {
+                            const raceFormatVal = document.querySelector('input[name="raceFormat"]:checked')?.value || 'solo';
+                            if (raceFormatVal === 'team') {
+                                const relaySportVal = document.getElementById('raceRelaySport')?.value || '';
+                                if (relaySportVal === 'swim') return (!isNaN(swimDistance) && swimDistance > 0) ? swimDistance / 1000 : null;
+                                if (relaySportVal === 'bike') return (!isNaN(bikeDistance) && bikeDistance > 0) ? bikeDistance : null;
+                                return (!isNaN(distance) && distance > 0) ? distance : null;
+                            }
+                            const swimKm = (!isNaN(swimDistance) && swimDistance > 0) ? swimDistance / 1000 : 0;
+                            const bikeKm = (!isNaN(bikeDistance) && bikeDistance > 0) ? bikeDistance : 0;
+                            const runKm = (!isNaN(distance) && distance > 0) ? distance : 0;
+                            const totalTriKm = swimKm + bikeKm + runKm;
+                            return totalTriKm > 0 ? totalTriKm : null;
+                        }
+                        if (terrain === 'relai') {
+                            const userRelayDist = (!isNaN(distance) && distance > 0) ? distance : 0;
+                            const groupRelayDist = Array.isArray(relayLapsData)
+                                ? relayLapsData.reduce((sum, lap) => sum + (parseFloat(lap?.dist) || 0), 0)
+                                : 0;
+                            const maxRelayDist = Math.max(userRelayDist, groupRelayDist);
+                            return maxRelayDist > 0 ? maxRelayDist : null;
+                        }
+                        return (!isNaN(distance) && distance > 0) ? distance : null;
+                    };
+
+                    const maxRaceKm = getRaceDistanceKmForDnf();
+                    if (maxRaceKm !== null && dnfKmParsed >= maxRaceKm) {
+                        const maxKmFormatted = Number(maxRaceKm.toFixed(3));
+                        if (dnfKmError) {
+                            dnfKmError.textContent = `Le km d'arrêt doit être strictement inférieur à la distance de la course (${maxKmFormatted} km).`;
+                            dnfKmError.classList.remove('hidden');
+                        }
+                        if (globalError) {
+                            globalError.textContent = `Le km d'arrêt DNF doit être strictement inférieur à ${maxKmFormatted} km.`;
+                            globalError.classList.remove('hidden');
+                        }
+                        hasErrors = true;
+                    }
+                }
+            }
 
             const timeRegex = /^\d{2}:\d{2}:\d{2}$/;
             let timeFormatError = false;
@@ -7681,6 +7893,8 @@
                 price: (price !== '' && !isNaN(parseFloat(price))) ? parseFloat(price) : null,
                 photoPurchase: photoPurchase,
                 photoPurchasePrice: photoPurchase && photoPurchasePrice !== '' && !isNaN(parseFloat(photoPurchasePrice)) ? parseFloat(photoPurchasePrice) : null,
+                dnf: dnf ? true : null,
+                dnfKm: (dnf && !isNaN(dnfKmParsed) && dnfKmParsed >= 0) ? dnfKmParsed : null,
                 bibNumber: bibNumber ? bibNumber.trim() : null,
                 website: website ? website.trim() : null,
                 resultUrl: resultUrl ? resultUrl.trim() : null,
@@ -7720,7 +7934,7 @@
             const allPossibleFields = [
                 'name', 'date', 'hour', 'distance', 'elevation', 'elevationNeg', 'time',
                 'rankPos', 'rankTotal', 'rankCategoryPos', 'rankCategoryTotal', 'rankCategoryCode', 'rankCategoryName', 'rankGenderPos', 'rankGenderTotal', 'rankingFieldsVersion', 'location',
-                'terrain', 'notes', 'price', 'photoPurchase', 'photoPurchasePrice', 'bibNumber', 'website', 'resultUrl', 'gpxUrl',
+                'terrain', 'notes', 'price', 'photoPurchase', 'photoPurchasePrice', 'dnf', 'dnfKm', 'bibNumber', 'website', 'resultUrl', 'gpxUrl',
                 'driveId', 'companions', 'passagePoints', 'favorite', 'public', 'raceFormat', 'raceRelaySport',
                 'swimDistance', 'bikeDistance', 'swimTime', 'bikeTime', 'runTime',
                 'bikeElevation', 'bikeElevationNeg', 'runElevation', 'runElevationNeg',
@@ -7888,6 +8102,7 @@
                     // Réinitialiser le formulaire et les champs Hyrox
                     raceForm.reset();
                     updateRacePhotoPurchaseFields();
+                    updateRaceDnfFields();
                     const rNE = document.getElementById('raceNotesEditor');
                     if (rNE) rNE.innerHTML = '';
                     if (typeof toggleBtnActive === 'function') {
@@ -8489,6 +8704,7 @@
             raceModal.classList.add('hidden');
             raceForm.reset();
             updateRacePhotoPurchaseFields();
+            updateRaceDnfFields();
             const rNE = document.getElementById('raceNotesEditor');
             if (rNE) rNE.innerHTML = '';
             if (typeof toggleBtnActive === 'function') {
