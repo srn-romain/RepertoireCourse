@@ -88,9 +88,10 @@
                             <p class="text-sm text-green-600 flex items-center gap-2">
                                 <i class="fas fa-stopwatch text-green-500"></i>
                                 <span>Temps</span>
+                                <span id="detailsChronoDnfTag" class="hidden ml-auto inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-red-100 text-red-700 text-[10px] font-bold border border-red-200">DNF</span>
                             </p>
                             <p id="detailsTime" class="font-semibold text-green-800"></p>
-                            <div id="detailsChronoDnf" class="hidden mt-1.5 flex flex-wrap items-center gap-1.5"></div>
+                            <div id="detailsChronoDnf" class="hidden mt-1 text-[11px] font-medium text-red-700"></div>
                         </div>
                         <div class="bg-green-50 p-3 rounded-lg">
                             <p class="text-sm text-green-600 flex items-center gap-2">
@@ -1304,6 +1305,13 @@
                 timeContainer.appendChild(detailsChronoDnf);
             }
         }
+        const detailsChronoDnfTag = document.getElementById('detailsChronoDnfTag');
+        if (detailsChronoDnfTag) {
+            detailsChronoDnfTag.classList.add('hidden');
+            if (timeTitle) {
+                timeTitle.appendChild(detailsChronoDnfTag);
+            }
+        }
 
         [distanceElement?.parentElement, elevationElement?.parentElement, timeElement?.parentElement, terrainContainer].forEach(el => {
             if (el) {
@@ -1685,23 +1693,27 @@
                     detailsDnfText.textContent = hasDnfKm ? `S'est arrêté au km ${dnfKmFormatted}` : 'Abandon';
                     detailsDnfContainer.classList.remove('hidden');
                 }
-            } else if (detailsChronoDnf) {
+            } else {
                 const targetChronoCard = isTriathlonBikeRelay
                     ? (distanceElement ? distanceElement.parentElement : null)
                     : timeContainer;
-                if (targetChronoCard && detailsChronoDnf.parentElement !== targetChronoCard) {
-                    targetChronoCard.appendChild(detailsChronoDnf);
+                const targetTitleRow = targetChronoCard ? targetChronoCard.querySelector('p') : null;
+                if (detailsChronoDnfTag && targetTitleRow) {
+                    targetTitleRow.appendChild(detailsChronoDnfTag);
+                    detailsChronoDnfTag.classList.remove('hidden');
                 }
-                const kmBadgeHtml = hasDnfKm
-                    ? `<span class="text-[11px] font-medium text-red-700">Arrêt au km ${escapeHtml(String(dnfKmFormatted))}</span>`
-                    : '';
-                detailsChronoDnf.innerHTML = `
-                    <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-red-100 text-red-700 text-[11px] font-bold border border-red-200">
-                        <i class="fas fa-ban text-[10px]"></i> DNF
-                    </span>
-                    ${kmBadgeHtml}
-                `;
-                detailsChronoDnf.classList.remove('hidden');
+                if (detailsChronoDnf) {
+                    if (targetChronoCard && detailsChronoDnf.parentElement !== targetChronoCard) {
+                        targetChronoCard.appendChild(detailsChronoDnf);
+                    }
+                    if (hasDnfKm) {
+                        detailsChronoDnf.textContent = `Arrêt au km ${dnfKmFormatted}`;
+                        detailsChronoDnf.classList.remove('hidden');
+                    } else {
+                        detailsChronoDnf.textContent = '';
+                        detailsChronoDnf.classList.add('hidden');
+                    }
+                }
             }
         }
 

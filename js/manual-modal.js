@@ -112,6 +112,7 @@ const manualModalHTML = `
                                     <div>• Numéro de dossard</div>
                                     <div>• Dénivelé D+ et D- (m)</div>
                                     <div>• Temps de course</div>
+                                    <div>• DNF (abandon avec km d'arrêt optionnel)</div>
                                     <div>• Classements général, par genre et par catégorie FFA</div>
                                     <div>• Points de passage (km ou étape de triathlon, classement et temps)</div>
                                     <div>• Lieu / Ville</div>
