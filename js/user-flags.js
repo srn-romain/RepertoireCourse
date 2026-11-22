@@ -76,7 +76,10 @@ window.loadUserFlagsFromFirestore = async function() {
         if (!fbUser || !fbUser.uid || typeof db === 'undefined') return;
 
         const snap = await db.collection('users').doc(fbUser.uid).get();
-        if (!snap.exists) return;
+        if (!snap.exists) {
+            window.__userFlagsLoadedUid = fbUser.uid;
+            return;
+        }
 
         const data = snap.data();
         const flags = data.flags || {};
@@ -113,6 +116,15 @@ window.loadUserFlagsFromFirestore = async function() {
             try {
                 localStorage.setItem('unlockedBadgesMetadata_' + fbUser.uid, JSON.stringify(window.unlockedBadgesMetadata));
             } catch(e) {}
+        }
+
+        window.__userFlagsLoadedUid = fbUser.uid;
+
+        // Si les courses sont déjà chargées, relancer la vérification des missions maintenant que la BDD est chargée
+        const hasLoadedRaces = (Array.isArray(window.allUserRaces) && window.allUserRaces.length > 0) ||
+            (Array.isArray(window.races) && window.races.length > 0);
+        if (hasLoadedRaces && typeof window.checkBadgesForNewUnlocks === 'function') {
+            window.checkBadgesForNewUnlocks();
         }
     } catch(e) {
         console.warn('[UserFlags] loadUserFlagsFromFirestore error:', e);
