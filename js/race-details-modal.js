@@ -622,15 +622,52 @@
     }
 
     /**
+    /**
+     * Calcule la distance d'effort équivalente (Effort-km) en tenant compte du D+, du D- et du terrain.
+     * - D+ : 100m D+ = +1.0 km plat
+     * - D- :
+     *   - Sur route / terrain roulant : descente modérée (<= 35m/km) aide légèrement (-0.30 km / 100m D-),
+     *     au-delà le freinage excentrique annule le gain (+0.15 km / 100m D- excédentaire).
+     *   - Sur trail : descente douce (<= 20m/km) aide très peu (-0.10 km / 100m D-),
+     *     descente raide/technique (> 20m/km) coûte de la fatigue musculaire (+0.25 km / 100m D- excédentaire).
+     */
+    function computeEffortDistance(dist, elevPos, elevNeg, terrain) {
+        const d = parseFloat(dist) || 0;
+        if (d <= 0) return 0;
+        const dPlus = Math.max(0, parseFloat(elevPos) || 0);
+        const dMinus = Math.max(0, parseFloat(elevNeg) || 0);
+        const t = (terrain || 'route').toLowerCase();
+
+        let effortDist = d + (dPlus / 100);
+
+        if (dMinus > 0) {
+            if (t === 'trail') {
+                const gentleThreshold = 20 * d; // 20m D- par km
+                const gentleDMinus = Math.min(dMinus, gentleThreshold);
+                const steepDMinus = Math.max(0, dMinus - gentleThreshold);
+                effortDist += -(gentleDMinus / 100) * 0.10 + (steepDMinus / 100) * 0.25;
+            } else {
+                const gentleThreshold = 35 * d; // 35m D- par km
+                const gentleDMinus = Math.min(dMinus, gentleThreshold);
+                const steepDMinus = Math.max(0, dMinus - gentleThreshold);
+                effortDist += -(gentleDMinus / 100) * 0.30 + (steepDMinus / 100) * 0.15;
+            }
+        }
+
+        // Plancher de sécurité : la descente ne peut pas réduire l'effort sous 75% de la distance réelle
+        return Math.max(d * 0.75, effortDist);
+    }
+
+    /**
      * Calcule la prédiction IA personnalisée pour une course à venir en fonction de l'historique du coureur.
      * Prend en compte :
      * - Le type de terrain (Route, Trail, Relai, etc.)
      * - La distance exacte de l'épreuve
-     * - Le dénivelé D+ (équivalent Effort-km : 100m D+ = 1 km plat)
-     * - L'endurance personnalisée (indice de Peter Riegel)
+     * - Le dénivelé D+ et D- (Effort-km modulé selon pente et technicité du terrain)
+     * - L'endurance personnalisée (indice de Peter Riegel + fatigue longue distance > 25km + fatigue résiduelle récente)
      * - La dynamique / tendance de progression récente
      * 
-     * Règle stricte : Au moins 5 courses complètes passées requises (avec chrono et distance valides).
+     * Règle stricte : Au moins 5 courses complètes passées requises (avec chrono et distance valides, hors DNF).
      * Si moins de 5 courses complètes : retourne null (rien ne s'affiche).
      */
     function predictRacePerformance(targetRace, allRaces) {
@@ -639,50 +676,54 @@
         // Déterminer la distance et le dénivelé de la course cible
         let targetDist = parseFloat(targetRace.distance) || 0;
         let targetElev = parseFloat(targetRace.elevation) || 0;
+        let targetElevNeg = parseFloat(targetRace.elevationNeg) || 0;
         let targetTerrain = (targetRace.terrain || 'route').toLowerCase();
 
         // Spécificité Relais : si l'utilisateur a des segments assignés
         if (targetTerrain === 'relai' && Array.isArray(targetRace.relayLaps) && targetRace.relayLaps.length > 0) {
             const currentUserPseudo = window.activeCarnetPseudo || window.currentUserPseudo || 'Moi';
-            let uDist = 0, uElev = 0;
+            let uDist = 0, uElev = 0, uElevNeg = 0;
             targetRace.relayLaps.forEach(lap => {
                 const runnerLower = String(lap.runner || '').trim().toLowerCase();
                 const isUser = !runnerLower || runnerLower === 'moi' || runnerLower === 'tous ensemble' || runnerLower === 'all' || (currentUserPseudo && runnerLower === currentUserPseudo.toLowerCase());
                 if (isUser) {
                     uDist += parseFloat(lap.dist) || 0;
                     uElev += parseInt(lap.elev) || 0;
+                    uElevNeg += parseInt(lap.elevNeg) || 0;
                 }
             });
             if (uDist > 0) {
                 targetDist = uDist;
                 if (uElev > 0) targetElev = uElev;
+                if (uElevNeg > 0) targetElevNeg = uElevNeg;
             }
         }
 
         // Si pas de distance valide pour la course cible, impossible d'estimer un temps
         if (targetDist <= 0 || isNaN(targetDist)) return null;
 
-        // Récupérer toutes les courses complétées passées
+        // Récupérer toutes les courses complétées passées (hors abandons DNF)
         const completedRuns = [];
 
         allRaces.forEach(r => {
-            if (!r || r.id === targetRace.id) return;
+            if (!r || r.id === targetRace.id || r.dnf === true) return;
 
             // Cas relais : vérifier les segments de l'utilisateur
             if (r.terrain === 'relai' && Array.isArray(r.relayLaps) && r.relayLaps.length > 0) {
                 const currentUserPseudo = window.activeCarnetPseudo || window.currentUserPseudo || 'Moi';
-                let uDist = 0, uElev = 0, uTimeS = 0;
+                let uDist = 0, uElev = 0, uElevNeg = 0, uTimeS = 0;
                 r.relayLaps.forEach(lap => {
                     const runnerLower = String(lap.runner || '').trim().toLowerCase();
                     const isUser = !runnerLower || runnerLower === 'moi' || runnerLower === 'tous ensemble' || runnerLower === 'all' || (currentUserPseudo && runnerLower === currentUserPseudo.toLowerCase());
                     if (isUser) {
                         uDist += parseFloat(lap.dist) || 0;
                         uElev += parseInt(lap.elev) || 0;
+                        uElevNeg += parseInt(lap.elevNeg) || 0;
                         uTimeS += timeToSeconds(lap.time) || 0;
                     }
                 });
                 if (uDist > 0 && uTimeS > 0) {
-                    const flatDist = uDist + (uElev > 0 ? uElev / 100 : 0);
+                    const flatDist = computeEffortDistance(uDist, uElev, uElevNeg, 'relai');
                     const speed = (uDist / uTimeS) * 3600;
                     const pace = uTimeS / uDist;
                     if (speed >= 4 && speed <= 30) {
@@ -691,6 +732,7 @@
                             date: r.date ? new Date(r.date) : new Date(0),
                             dist: uDist,
                             elev: uElev,
+                            elevNeg: uElevNeg,
                             flatDist,
                             timeSec: uTimeS,
                             speedKmH: speed,
@@ -706,22 +748,25 @@
             if (r.terrain !== 'triathlon') {
                 const dist = parseFloat(r.distance) || 0;
                 const elev = parseFloat(r.elevation) || 0;
+                const elevNeg = parseFloat(r.elevationNeg) || 0;
                 const tSec = timeToSeconds(r.time);
                 if (dist > 0 && tSec && tSec > 0) {
                     const speed = (dist / tSec) * 3600;
                     const pace = tSec / dist;
                     if (speed >= 4 && speed <= 30) {
-                        const flatDist = dist + (elev > 0 ? elev / 100 : 0);
+                        const rTerrain = (r.terrain || 'route').toLowerCase();
+                        const flatDist = computeEffortDistance(dist, elev, elevNeg, rTerrain);
                         completedRuns.push({
                             id: r.id,
                             date: r.date ? new Date(r.date) : new Date(0),
                             dist,
                             elev,
+                            elevNeg,
                             flatDist,
                             timeSec: tSec,
                             speedKmH: speed,
                             paceSecKm: pace,
-                            terrain: (r.terrain || 'route').toLowerCase()
+                            terrain: rTerrain
                         });
                     }
                 }
@@ -740,6 +785,7 @@
         let fatigueExponent = 1.07;
         const shortRuns = completedRuns.filter(r => r.flatDist >= 3.0 && r.flatDist <= 12.0);
         const longRuns = completedRuns.filter(r => r.flatDist >= 15.0);
+        const maxDist = Math.max(...completedRuns.map(r => r.flatDist));
 
         if (shortRuns.length > 0 && longRuns.length > 0) {
             const avgShortDist = shortRuns.reduce((s, r) => s + r.flatDist, 0) / shortRuns.length;
@@ -754,7 +800,6 @@
                 }
             }
         } else {
-            const maxDist = Math.max(...completedRuns.map(r => r.flatDist));
             if (maxDist < 10) fatigueExponent = 1.085;
             else if (maxDist >= 21) fatigueExponent = 1.06;
         }
@@ -775,8 +820,8 @@
             }
         }
 
-        // 3. Distance d'effort cible (Effort-km : 100m D+ = 1 km plat)
-        const targetEffortDist = targetDist + (targetElev > 0 ? targetElev / 100 : 0);
+        // 3. Distance d'effort cible (Effort-km intégrant D+ et D-)
+        const targetEffortDist = computeEffortDistance(targetDist, targetElev, targetElevNeg, targetTerrain);
 
         // 4. Projection pour chaque course passée avec pondération multi-critères
         let totalWeight = 0;
@@ -832,7 +877,50 @@
 
         let finalTimeSec = weightedProjectedTime / totalWeight;
 
-        // 5. Ajustement de tendance récente (momentum de forme sur les 5 dernières courses)
+        // 5. Fatigue spécifique longue distance (> 25 km d'effort, ex: marathon/ultra) si peu d'expérience sur cette distance
+        let longDistFatiguePct = 0;
+        if (targetEffortDist > 25 && maxDist < targetEffortDist * 0.85) {
+            const unchartedKm = targetEffortDist - Math.max(25, maxDist);
+            if (unchartedKm > 0) {
+                const penalty = Math.min(0.08, unchartedKm * 0.002);
+                longDistFatiguePct = penalty * 100;
+                finalTimeSec *= (1 + penalty);
+            }
+        }
+
+        // 6. Fatigue résiduelle si une course exigeante (>= 15 km d'effort) a eu lieu dans les 14 jours précédant la course cible
+        let residualFatiguePct = 0;
+        let residualFatigueDays = null;
+        if (targetRace.date) {
+            const targetDateMs = new Date(targetRace.date).getTime();
+            if (!isNaN(targetDateMs)) {
+                let maxResidualFatigue = 0;
+                let closestDays = null;
+                completedRuns.forEach(r => {
+                    const rMs = r.date.getTime();
+                    if (!isNaN(rMs) && rMs > 0) {
+                        const daysBefore = (targetDateMs - rMs) / (1000 * 60 * 60 * 24);
+                        if (daysBefore > 0 && daysBefore <= 14 && r.flatDist >= 15) {
+                            const intensity = Math.min(1, r.flatDist / 42.2);
+                            const recoveryFactor = (15 - daysBefore) / 14;
+                            const penalty = 0.03 * intensity * recoveryFactor;
+                            if (penalty > maxResidualFatigue) {
+                                maxResidualFatigue = penalty;
+                                closestDays = Math.round(daysBefore);
+                            }
+                        }
+                    }
+                });
+                if (maxResidualFatigue > 0) {
+                    residualFatiguePct = maxResidualFatigue * 100;
+                    residualFatigueDays = closestDays;
+                    finalTimeSec *= (1 + maxResidualFatigue);
+                }
+            }
+        }
+
+        // 7. Ajustement de tendance récente (momentum de forme sur les 5 dernières courses)
+        let trendPct = 0;
         if (completedRuns.length >= 5) {
             const recentRuns = completedRuns.slice(-5);
             let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
@@ -849,6 +937,7 @@
                 const avgRecentSpeed = sumY / count;
                 if (avgRecentSpeed > 0) {
                     const trendFactor = 1 - Math.max(-0.03, Math.min(0.03, (slope * 2) / avgRecentSpeed));
+                    trendPct = (trendFactor - 1) * 100;
                     finalTimeSec *= trendFactor;
                 }
             }
@@ -884,8 +973,18 @@
             speed: predSpeedKmH.toFixed(1),
             targetDist,
             targetElev,
+            targetElevNeg,
             targetTerrain,
-            basedOnRacesCount: completedRuns.length
+            basedOnRacesCount: completedRuns.length,
+            breakdown: {
+                targetEffortDist,
+                fatigueExponent,
+                trailSlowdownFactor,
+                longDistFatiguePct,
+                residualFatiguePct,
+                residualFatigueDays,
+                trendPct
+            }
         };
     }
 
@@ -1626,28 +1725,11 @@
                         if (prediction) {
                             const themeColors = getPredictionThemeColors();
 
-                            let terrainBadgeName = 'Route';
-                            let elevText = '';
-                            if (prediction.targetTerrain === 'trail') {
-                                terrainBadgeName = 'Trail';
-                                if (prediction.targetElev > 0) {
-                                    elevText = `• D+ ${prediction.targetElev}m`;
-                                    terrainBadgeName = `Trail (+${prediction.targetElev}m)`;
-                                }
-                            } else if (prediction.targetTerrain === 'relai') {
-                                terrainBadgeName = 'Relai';
-                            } else if (prediction.targetTerrain) {
-                                terrainBadgeName = prediction.targetTerrain.charAt(0).toUpperCase() + prediction.targetTerrain.slice(1);
-                            }
-
                             aiPredictionContainer.innerHTML = `
                                 <div class="${themeColors.bgClass} p-3 rounded-lg w-full border ${themeColors.borderClass} mb-4 shadow-sm transition-all duration-200">
                                     <h4 class="font-bold ${themeColors.headerTextClass} text-center mb-3 text-sm border-b ${themeColors.headerBorderClass} pb-2 flex items-center justify-center gap-2">
                                         <i class="fas fa-robot ${themeColors.iconColorClass}"></i>
                                         <span>Prédiction IA de la course</span>
-                                        <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full border ${themeColors.badgeClass} ml-1">
-                                            ${terrainBadgeName}
-                                        </span>
                                     </h4>
                                     <div class="flex flex-col gap-2 text-sm items-center">
                                         <div class="flex items-center justify-between w-full max-w-sm px-4">
@@ -1664,7 +1746,7 @@
                                         </div>
                                     </div>
                                     <p class="text-[10.5px] ${themeColors.labelClass} opacity-80 italic text-center mt-2.5 pt-2 border-t ${themeColors.headerBorderClass}">
-                                        Basé sur vos ${prediction.basedOnRacesCount} courses passées • Distance : ${formatDist(prediction.targetDist)} km ${elevText}
+                                        Basé sur vos ${prediction.basedOnRacesCount} courses passées
                                     </p>
                                 </div>
                             `;

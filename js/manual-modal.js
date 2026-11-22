@@ -156,11 +156,15 @@ const manualModalHTML = `
                             <h5 class="font-bold text-purple-900 mb-2 flex items-center gap-2">
                                 <i class="fas fa-robot text-purple-600"></i> Prédiction IA personnalisée (Courses à venir)
                             </h5>
-                            <p class="text-sm text-gray-700 mb-2 leading-relaxed">Pour une course <strong>à venir</strong>, la fiche détaillée peut estimer votre performance :</p>
+                            <p class="text-sm text-gray-700 mb-2 leading-relaxed">Estime chrono, allure et vitesse sur les courses <strong>à venir</strong> :</p>
                             <ul class="text-xs text-gray-600 space-y-1.5 ml-4">
-                                <li>• <strong>Terrain :</strong> projection adaptée à la route, au trail (D+) et au relais.</li>
-                                <li>• <strong>Calcul :</strong> formule de Peter Riegel et vos performances d’effort passées.</li>
-                                <li>• <strong>Activation :</strong> nécessite au moins <strong>5 courses complètes</strong> avec distance et chrono ; sinon, le statut habituel reste affiché.</li>
+                                <li>• <strong>Distance &amp; dénivelés :</strong> km-effort (<code>100 m D+ = +1 km</code>) ; <code>D-</code> selon pente et terrain (aide sur route ≤ 35 m/km, freinage/fatigue en trail &gt; 20 m/km).</li>
+                                <li>• <strong>Endurance (Peter Riegel) :</strong> exposant de fatigue personnalisé (courses courtes vs longues ; marathon &gt; 2× semi).</li>
+                                <li>• <strong>Longue distance (&gt; 25 km) :</strong> pénalité progressive si distance peu expérimentée.</li>
+                                <li>• <strong>Récupération (&lt; 14 j) :</strong> fatigue résiduelle après une course ≥ 15 km d’effort.</li>
+                                <li>• <strong>Terrain &amp; pondération :</strong> technicité route/trail/relais ; priorité aux courses de terrain similaire, distance proche et récentes.</li>
+                                <li>• <strong>Forme &amp; fiabilité :</strong> tendance des 5 dernières courses ; abandons (<strong>DNF</strong>) exclus.</li>
+                                <li>• <strong>Activation :</strong> min. <strong>5 courses complètes</strong> (distance + chrono valides).</li>
                             </ul>
                         </div>
                     </div>
