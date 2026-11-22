@@ -2689,6 +2689,8 @@
         class="fixed bottom-6 left-6 bg-purple-600 hover:bg-purple-700 text-white rounded-full p-3 shadow-lg transition-all duration-300 z-40 focus:outline-none"
         title="Voir mon souvenir le plus proche">
         <i class="fas fa-history text-xl"></i>
+        <span id="anniversaryNotificationBadge"
+            class="hidden absolute -top-1 -right-1 min-w-5 h-5 px-1 bg-red-600 text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow">1</span>
     </button>
 
     <!-- Tutorial Prompt Modal -->
@@ -3788,6 +3790,9 @@
                 if (anniversaryBtn) {
                     if (races.length > 0) anniversaryBtn.classList.remove('hidden');
                     else anniversaryBtn.classList.add('hidden');
+                }
+                if (typeof updateAnniversaryNotificationBadge === 'function') {
+                    updateAnniversaryNotificationBadge();
                 }
             }).catch((error) => {
                 console.error("Erreur lors du chargement des courses:", error);
@@ -11285,20 +11290,27 @@
         });
 
         // Logique Anniversaire
-        anniversaryBtn.addEventListener('click', () => {
-            const now = new Date();
+        const ANNIVERSARY_SEEN_STORAGE_KEY = 'anniversaryNotificationSeenDate';
+
+        function getLocalDateOnly(dateString) {
+            const parts = dateString.split('-');
+            return new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+        }
+
+        function getTodayLocalKey(now = new Date()) {
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        function getAnniversarySummary(racesList = [], now = new Date()) {
             const todayLocal = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-
-            const getLocalDateOnly = (dateString) => {
-                const parts = dateString.split('-');
-                return new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
-            };
-
             let minDiffDays = Infinity;
             let candidates = [];
 
             // Trouver les courses avec l'anniversaire ou la date la plus proche
-            races.forEach(race => {
+            racesList.forEach(race => {
                 if (!race.date) return;
                 const raceDate = getLocalDateOnly(race.date);
 
@@ -11337,6 +11349,64 @@
                 }
             });
 
+            const hasEventToday = (minDiffDays === 0);
+            const hasPastAnniversaryToday = hasEventToday && candidates.some(c => {
+                const rDate = getLocalDateOnly(c.race.date);
+                return rDate < todayLocal && c.diffDays === 0;
+            });
+            const hasActualRaceToday = hasEventToday && candidates.some(c => {
+                const rDate = getLocalDateOnly(c.race.date);
+                return rDate.getTime() === todayLocal.getTime();
+            });
+
+            return {
+                now,
+                todayLocal,
+                minDiffDays,
+                candidates,
+                hasEventToday,
+                hasPastAnniversaryToday,
+                hasActualRaceToday
+            };
+        }
+
+        function updateAnniversaryNotificationBadge() {
+            const badge = document.getElementById('anniversaryNotificationBadge');
+            if (!badge) return;
+
+            const racesList = Array.isArray(races) ? races : [];
+            if (racesList.length === 0) {
+                badge.classList.add('hidden');
+                return;
+            }
+
+            const now = new Date();
+            const { hasPastAnniversaryToday } = getAnniversarySummary(racesList, now);
+            const alreadySeenToday = localStorage.getItem(ANNIVERSARY_SEEN_STORAGE_KEY) === getTodayLocalKey(now);
+
+            if (hasPastAnniversaryToday && !alreadySeenToday) {
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+        }
+
+        anniversaryBtn.addEventListener('click', () => {
+            const {
+                now,
+                todayLocal,
+                candidates,
+                hasEventToday,
+                hasPastAnniversaryToday,
+                hasActualRaceToday
+            } = getAnniversarySummary(races);
+
+            if (hasPastAnniversaryToday) {
+                localStorage.setItem(ANNIVERSARY_SEEN_STORAGE_KEY, getTodayLocalKey(now));
+                const badge = document.getElementById('anniversaryNotificationBadge');
+                if (badge) badge.classList.add('hidden');
+            }
+
             // Afficher les résultats
             const contentDiv = document.getElementById('anniversaryContent');
             contentDiv.innerHTML = '';
@@ -11344,9 +11414,6 @@
             if (candidates.length > 0) {
                 // Trier par date d'origine (du plus vieux au plus récent)
                 candidates.sort((a, b) => new Date(b.race.date) - new Date(a.race.date));
-
-                // Est-ce qu'il y a un événement aujourd'hui ?
-                const hasEventToday = (minDiffDays === 0);
 
                 // Définition dynamique du titre de la modale
                 const hasFuture = candidates.some(c => getLocalDateOnly(c.race.date) >= todayLocal);
@@ -11358,16 +11425,6 @@
                 }
 
                 if (hasEventToday) {
-                    const hasPastAnniversaryToday = candidates.some(c => {
-                        const rDate = getLocalDateOnly(c.race.date);
-                        return rDate < todayLocal && c.diffDays === 0;
-                    });
-
-                    const hasActualRaceToday = candidates.some(c => {
-                        const rDate = getLocalDateOnly(c.race.date);
-                        return rDate.getTime() === todayLocal.getTime();
-                    });
-
                     if (hasPastAnniversaryToday) {
                         const msg = document.createElement('p');
                         msg.className = "text-center text-purple-600 font-bold mb-4 animate-bounce text-lg";
