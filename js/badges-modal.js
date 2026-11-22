@@ -4355,10 +4355,9 @@
 
         if (newBadges.length === 0) return;
 
-        // 1. Jet de confettis qui traverse l'écran (au moins 3s, max 10s au total)
-        const confettiDuration = Math.min(10, Math.max(3, 3 + (newBadges.length - 1) * 2));
+        // 1. Jet de confettis qui traverse l'écran (durée fixe de 3s, quel que soit le nombre de missions)
         if (typeof window.launchMissionConfetti === 'function') {
-            window.launchMissionConfetti(confettiDuration);
+            window.launchMissionConfetti(3);
         }
 
         // 2. Afficher un toaster pour chaque mission validée
