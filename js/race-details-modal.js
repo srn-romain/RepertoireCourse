@@ -345,12 +345,12 @@
         return `${remainingSeconds} s`;
     }
 
-    // Helper: Formater la distance
+    // Helper: Formater la distance (jusqu'à 4 décimales)
     function formatDist(d) {
         if (d === undefined || d === null || d === '') return '/';
-        const num = parseFloat(d);
+        const num = parseFloat(String(d).replace(',', '.'));
         if (isNaN(num)) return String(d);
-        return num.toFixed(2).replace(/\.00$/, '').replace(/(\.\d)0$/, '$1');
+        return String(parseFloat(num.toFixed(4)));
     }
 
     // Helper: Convertir "HH:MM:SS" en secondes
@@ -1360,7 +1360,7 @@
                         let swimText = '? m';
                         const swimDist = parseFloat(race.swimDistance);
                         if (!isNaN(swimDist)) {
-                            swimText = swimDist > 999 ? parseFloat((swimDist / 1000).toFixed(2)) + ' km' : swimDist + ' m';
+                            swimText = swimDist > 999 ? formatDist(swimDist / 1000) + ' km' : swimDist + ' m';
                         }
                         if (detailsSwim) detailsSwim.textContent = swimText;
                     }
@@ -1482,7 +1482,7 @@
                 if (detailsSwim) {
                     let swimText = '';
                     const swimDist = parseFloat(race.swimDistance);
-                    swimText = !isNaN(swimDist) ? (swimDist > 999 ? parseFloat((swimDist / 1000).toFixed(2)) + ' km' : swimDist + ' m') : '? m';
+                    swimText = !isNaN(swimDist) ? (swimDist > 999 ? formatDist(swimDist / 1000) + ' km' : swimDist + ' m') : '? m';
                     if (race.swimTime) swimText += ' | ' + race.swimTime;
                     detailsSwim.textContent = swimText;
                 }
@@ -2038,7 +2038,7 @@
                             <tfoot class="bg-green-100 font-bold">
                                 <tr>
                                     <td colspan="2" class="px-1 py-1">Total Grp</td>
-                                    <td class="px-1 py-1 whitespace-nowrap">${totalRelayDist.toFixed(2)}&nbsp;km</td>
+                                    <td class="px-1 py-1 whitespace-nowrap">${formatDist(totalRelayDist)}&nbsp;km</td>
                                     <td class="px-1 py-1 whitespace-nowrap">${totalRelayElevStr}</td>
                                     <td class="px-1 py-1 font-mono text-xs">${secondsToTime(totalRelayTimeS)}</td>
                                     ${showSubRowColumn ? '<td class="px-1 py-1"></td>' : ''}
@@ -2232,7 +2232,7 @@
         } else if (race.terrain === 'triathlon' && race.raceFormat === 'team') {
             const userSport = race.raceRelaySport || 'run';
             const swimDistM = parseFloat(race.swimDistance);
-            const swimDistText = !isNaN(swimDistM) && swimDistM > 0 ? (swimDistM > 999 ? (swimDistM / 1000).toFixed(2) + ' km' : swimDistM + ' m') : '-';
+            const swimDistText = !isNaN(swimDistM) && swimDistM > 0 ? (swimDistM > 999 ? formatDist(swimDistM / 1000) + ' km' : swimDistM + ' m') : '-';
             const swimTime = (race.swimTime && race.swimTime !== '00:00:00' && race.swimTime !== 'undefined') ? race.swimTime : '-';
 
             const bikeDistKm = parseFloat(race.bikeDistance);
@@ -2708,7 +2708,7 @@
                     const kmRaw = point.km !== undefined && point.km !== null && point.km !== '' ? String(point.km).replace(',', '.') : '';
                     const kmValue = kmRaw ? Number.parseFloat(kmRaw) : null;
                     const kmText = Number.isFinite(kmValue)
-                        ? `${kmValue.toFixed(kmValue % 1 === 0 ? 0 : 2).replace(/\.0+$/, '').replace(/(\.\d*?)0+$/, '$1')} km`
+                        ? `${formatDist(kmValue)} km`
                         : 'km ?';
                     const passageLocation = isTriathlon && point.stage
                         ? escapeHtml(point.stage)
