@@ -13,20 +13,26 @@
         <div id="friendsModal" class="modal hidden fixed inset-0 z-[80] flex items-center justify-center bg-black/50 p-3">
             <div class="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden">
                 <header class="flex items-center justify-between p-4 border-b border-gray-100">
-                    <h2 class="text-xl font-bold text-green-800"><i class="fas fa-user-group mr-2"></i>Amis</h2>
+                    <div>
+                        <h2 class="text-xl font-bold text-green-800"><i class="fas fa-user-group mr-2"></i>Amis</h2>
+                        <p id="friendsCounts" class="text-xs text-gray-500 mt-0.5"></p>
+                    </div>
                     <button type="button" id="closeFriendsModal" class="text-gray-500 hover:text-gray-800 text-xl" aria-label="Fermer"><i class="fas fa-times"></i></button>
                 </header>
-                <nav class="flex border-b border-gray-200">
-                    <button type="button" data-friends-tab="following" class="flex-1 px-4 py-3 text-sm font-semibold text-green-800 border-b-2 border-green-600">Mes amis</button>
-                    <button type="button" data-friends-tab="notifications" class="flex-1 px-4 py-3 text-sm font-semibold text-gray-500 border-b-2 border-transparent inline-flex items-center justify-center gap-2">
-                        Notifications
+                <nav class="flex border-b border-gray-200 bg-gray-50/50">
+                    <button type="button" data-friends-tab="following" class="flex-1 min-w-0 px-2 sm:px-3 py-3 text-xs sm:text-sm font-semibold text-green-800 border-b-2 border-green-600 inline-flex items-center justify-center gap-1.5 whitespace-nowrap">
+                        <i class="fas fa-user-check text-xs"></i>
+                        <span>Abonnements &amp; Recherche</span>
+                    </button>
+                    <button type="button" data-friends-tab="followers" class="flex-1 min-w-0 px-2 sm:px-3 py-3 text-xs sm:text-sm font-semibold text-gray-500 border-b-2 border-transparent inline-flex items-center justify-center gap-1.5 whitespace-nowrap">
+                        <i class="fas fa-users text-xs"></i>
+                        <span>Abonnés &amp; Demandes</span>
                         <span id="friendsTabNotificationCount" class="hidden min-w-5 h-5 px-1 rounded-full bg-red-600 text-white text-[10px] inline-flex items-center justify-center" aria-label="Demandes en attente">0</span>
                     </button>
                 </nav>
                 <p id="friendsMessage" class="hidden mx-4 mt-3 p-2 rounded text-sm" role="status"></p>
                 <div class="p-4 overflow-y-auto flex-1">
                     <section id="friendsFollowingPanel">
-                        <p id="friendsCounts" class="text-xs text-gray-500 mb-3"></p>
                         <form id="friendSearchForm" class="flex gap-2 mb-4">
                             <input id="friendSearchInput" type="text" maxlength="60" autocomplete="off" placeholder="Rechercher un pseudo"
                                 class="flex-1 min-w-0 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
@@ -34,9 +40,10 @@
                         </form>
                         <div id="friendSearchResults" class="space-y-2 mb-5"></div>
                         <h3 class="font-semibold text-gray-800 mb-2">Mes abonnements</h3>
+                        <p class="text-xs text-gray-500 mb-3">Les coureurs que vous suivez. Cliquez sur « Voir le carnet » pour consulter leur profil.</p>
                         <div id="followingList" class="space-y-2"></div>
                     </section>
-                    <section id="friendsNotificationsPanel" class="hidden">
+                    <section id="friendsFollowersPanel" class="hidden">
                         <h3 class="font-semibold text-gray-800 mb-2">Demandes reçues</h3>
                         <div id="friendRequestsList" class="space-y-3 mb-5"></div>
                         <h3 class="font-semibold text-gray-800 mb-2">Mes abonnés</h3>
@@ -162,7 +169,7 @@
             <div class="flex flex-wrap gap-x-4 gap-y-2 mb-3">${permissionInputs(request.uid, DEFAULT_PERMISSIONS, true)}</div>
             <div class="flex gap-2">
                 <button type="button" data-action="accept" data-friend-uid="${escapeHtml(request.uid)}" class="px-3 py-1.5 bg-green-600 text-white rounded text-xs font-semibold">Autoriser</button>
-                <button type="button" data-action="decline" data-friend-uid="${escapeHtml(request.uid)}" class="px-3 py-1.5 bg-white border border-gray-300 text-gray-700 rounded text-xs">Refuser</button>
+                <button type="button" data-action="decline" data-friend-uid="${escapeHtml(request.uid)}" data-friend-pseudo="${escapeHtml(request.requesterPseudo || 'cet utilisateur')}" class="px-3 py-1.5 bg-white border border-gray-300 text-gray-700 rounded text-xs">Refuser</button>
             </div>
         </div>`).join('');
     }
@@ -185,7 +192,7 @@
                         ? `<span class="text-[11px] text-gray-500 shrink-0">${followingByUid.get(follower.uid).status === 'accepted' ? 'Déjà suivi' : 'Demande envoyée'}</span>`
                         : `<button type="button" data-action="follow" data-friend-uid="${escapeHtml(follower.uid)}" data-friend-pseudo="${escapeHtml(follower.followerPseudo || 'Utilisateur')}" class="px-2.5 py-1 bg-green-600 text-white rounded text-[11px] font-semibold shrink-0">Suivre en retour</button>`}
                 </div>
-                <button type="button" data-action="remove-follower" data-friend-uid="${escapeHtml(follower.uid)}" class="text-xs text-red-600 hover:text-red-800">Révoquer</button>
+                <button type="button" data-action="remove-follower" data-friend-uid="${escapeHtml(follower.uid)}" data-friend-pseudo="${escapeHtml(follower.followerPseudo || 'cet utilisateur')}" class="text-xs text-red-600 hover:text-red-800">Révoquer</button>
             </div>
             <div class="flex flex-wrap gap-x-4 gap-y-2">${permissionInputs(follower.uid, follower.permissions || {}, false)}</div>
         </div>`).join('');
@@ -424,7 +431,27 @@
         }
     }
 
+    function switchFriendsTab(tabName) {
+        const modal = document.getElementById('friendsModal');
+        if (!modal) return;
+        const panels = {
+            following: document.getElementById('friendsFollowingPanel'),
+            followers: document.getElementById('friendsFollowersPanel')
+        };
+        const activeTab = panels[tabName] ? tabName : 'following';
+        Object.entries(panels).forEach(([key, panel]) => {
+            if (panel) panel.classList.toggle('hidden', key !== activeTab);
+        });
+        modal.querySelectorAll('[data-friends-tab]').forEach(item => {
+            const isActive = item.dataset.friendsTab === activeTab;
+            item.className = isActive
+                ? 'flex-1 min-w-0 px-2 sm:px-3 py-3 text-xs sm:text-sm font-semibold text-green-800 border-b-2 border-green-600 inline-flex items-center justify-center gap-1.5 whitespace-nowrap'
+                : 'flex-1 min-w-0 px-2 sm:px-3 py-3 text-xs sm:text-sm font-semibold text-gray-500 border-b-2 border-transparent inline-flex items-center justify-center gap-1.5 whitespace-nowrap';
+        });
+    }
+
     async function openFriendsModal(targetPseudo = null) {
+        if (window.isSelectionMode) return;
         bindModal();
         const modal = document.getElementById('friendsModal');
         if (!modal) return;
@@ -455,16 +482,7 @@
         modal.classList.remove('hidden');
         setMessage('', false);
 
-        const followingPanel = document.getElementById('friendsFollowingPanel');
-        const notifPanel = document.getElementById('friendsNotificationsPanel');
-        if (followingPanel) followingPanel.classList.remove('hidden');
-        if (notifPanel) notifPanel.classList.add('hidden');
-        modal.querySelectorAll('[data-friends-tab]').forEach(item => {
-            const isFollowing = item.dataset.friendsTab === 'following';
-            item.className = isFollowing
-                ? 'flex-1 px-4 py-3 text-sm font-semibold text-green-800 border-b-2 border-green-600'
-                : 'flex-1 px-4 py-3 text-sm font-semibold text-gray-500 border-b-2 border-transparent';
-        });
+        switchFriendsTab('following');
 
         try {
             await refresh();
@@ -585,14 +603,7 @@
             if (event.target === modal) modal.classList.add('hidden');
             const tab = event.target.closest('[data-friends-tab]');
             if (tab) {
-                const isFollowing = tab.dataset.friendsTab === 'following';
-                document.getElementById('friendsFollowingPanel').classList.toggle('hidden', !isFollowing);
-                document.getElementById('friendsNotificationsPanel').classList.toggle('hidden', isFollowing);
-                modal.querySelectorAll('[data-friends-tab]').forEach(item => {
-                    item.className = item === tab
-                        ? 'flex-1 px-4 py-3 text-sm font-semibold text-green-800 border-b-2 border-green-600'
-                        : 'flex-1 px-4 py-3 text-sm font-semibold text-gray-500 border-b-2 border-transparent';
-                });
+                switchFriendsTab(tab.dataset.friendsTab);
             }
         });
 
@@ -664,6 +675,32 @@
                     cancelText: 'Annuler',
                     isDanger: true,
                     icon: 'fa-user-minus'
+                });
+                if (!confirmed) return;
+            }
+
+            if (action === 'remove-follower') {
+                const confirmed = await showFriendConfirm({
+                    title: 'Révoquer cet abonné',
+                    subtitle: 'Accès au carnet',
+                    message: `Souhaitez-vous vraiment révoquer l'accès de <strong>${escapeHtml(friendPseudo)}</strong> ? Il ne pourra plus consulter votre carnet.`,
+                    confirmText: 'Révoquer',
+                    cancelText: 'Annuler',
+                    isDanger: true,
+                    icon: 'fa-user-slash'
+                });
+                if (!confirmed) return;
+            }
+
+            if (action === 'decline') {
+                const confirmed = await showFriendConfirm({
+                    title: 'Refuser la demande',
+                    subtitle: 'Demande d’ami',
+                    message: `Souhaitez-vous refuser la demande de <strong>${escapeHtml(friendPseudo)}</strong> ?`,
+                    confirmText: 'Refuser',
+                    cancelText: 'Annuler',
+                    isDanger: true,
+                    icon: 'fa-times'
                 });
                 if (!confirmed) return;
             }

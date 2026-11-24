@@ -4993,10 +4993,12 @@
                 document.getElementById('statsBtn'),
                 document.getElementById('badgesBtn'),
                 document.getElementById('wishlistBtn'),
+                document.getElementById('friendsBtn'),
                 document.getElementById('openCardConfigBtn'),
                 document.getElementById('changeUserBtn'),
                 document.getElementById('adminPortalBtn'),
-                document.getElementById('userSettingsBtn')
+                document.getElementById('userSettingsBtn'),
+                document.getElementById('anniversaryBtn')
             ].filter(Boolean);
 
             modalTriggers.forEach(btn => {
@@ -8448,7 +8450,6 @@
             companionsList.innerHTML = '';
             currentCompanions.forEach((comp, index) => {
                 const name = typeof comp === 'object' ? comp.name : comp;
-                const type = typeof comp === 'object' ? comp.type : 'runner';
                 const iconClass = type === 'spectator' ? 'fa-eye' : 'fa-running';
                 const hasPalmares = type === 'runner' && comp && typeof comp === 'object' &&
                     (comp.raceTime || (comp.rankPos != null && comp.rankPos !== '') ||
@@ -11410,6 +11411,7 @@
         }
 
         anniversaryBtn.addEventListener('click', () => {
+            if (isSelectionMode || window.isSelectionMode) return;
             const {
                 now,
                 todayLocal,
