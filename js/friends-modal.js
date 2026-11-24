@@ -37,13 +37,13 @@
                         <div id="followingList" class="space-y-2"></div>
                     </section>
                     <section id="friendsNotificationsPanel" class="hidden">
-                        <div class="mb-4 p-2.5 bg-gray-50 border border-gray-200 rounded-lg text-xs text-gray-600 space-y-1">
-                            <p><strong class="text-green-700">Case cochée :</strong> votre ami a le droit d'accéder à l'élément.</p>
-                            <p><strong class="text-gray-700">Case décochée :</strong> votre ami n'a pas accès à l'élément.</p>
-                        </div>
                         <h3 class="font-semibold text-gray-800 mb-2">Demandes reçues</h3>
                         <div id="friendRequestsList" class="space-y-3 mb-5"></div>
                         <h3 class="font-semibold text-gray-800 mb-2">Mes abonnés</h3>
+                        <div id="followersPermissionsHint" class="hidden mb-3 p-2.5 bg-gray-50 border border-gray-200 rounded-lg text-xs text-gray-600 space-y-1">
+                            <p><strong class="text-green-700">Case cochée :</strong> votre ami a le droit d'accéder à l'élément.</p>
+                            <p><strong class="text-gray-700">Case décochée :</strong> votre ami n'a pas accès à l'élément.</p>
+                        </div>
                         <div id="followersList" class="space-y-3"></div>
                         <p class="mt-4 pt-3 border-t border-gray-100 text-xs text-gray-500 leading-relaxed">
                             * L'accès aux détails des courses n'inclut pas : vos notes personnelles (qui restent strictement privées), les détails de course de vos accompagnants et les dates de création/modification.
@@ -169,6 +169,8 @@
 
     function renderFollowers(list, following) {
         const container = document.getElementById('followersList');
+        const hint = document.getElementById('followersPermissionsHint');
+        if (hint) hint.classList.toggle('hidden', !list.length);
         if (!container) return;
         if (!list.length) {
             container.innerHTML = '<p class="text-sm text-gray-500">Personne ne suit encore votre carnet.</p>';
