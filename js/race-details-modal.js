@@ -1249,8 +1249,9 @@
 
         if (!race) return;
 
-        const effectivePrivacy = authorPrivacy || race._authorPrivacy ||
-            (window.isFriendView ? window.friendViewPrivacy : null) || race.privacy || null;
+        const effectivePrivacy = window.isFriendView
+            ? null
+            : (authorPrivacy || race._authorPrivacy || race.privacy || null);
         const currentUid = (typeof firebase !== 'undefined' && firebase.auth && firebase.auth().currentUser) ? firebase.auth().currentUser.uid : null;
         const isOwner = (race._uid && currentUid && race._uid === currentUid) || (!race._uid && (typeof window.location !== 'undefined' && window.location.pathname.includes('dashboard')));
 
@@ -1824,10 +1825,10 @@
             }
         }
 
-        // Accompagnants
+        // Accompagnants (strictement privés pour les amis)
         const detailsCompanions = document.getElementById('detailsCompanions');
         if (detailsCompanions) {
-            if (race.companions && race.companions.length > 0) {
+            if (!window.isFriendView && race.companions && race.companions.length > 0) {
                 detailsCompanions.className = 'bg-green-50 rounded-lg p-4 mb-4 text-center block';
                 const sortedCompanions = [...race.companions].sort((a, b) => {
                     const aType = typeof a === 'object' ? a.type : 'runner';
@@ -2976,7 +2977,7 @@
         // Timestamps création / modification (Métadonnées strictement privées pour le tableau de bord)
         const timestampsElement = document.getElementById('detailsTimestamps');
         if (timestampsElement) {
-            if (isOnPublicPage || effectivePrivacy) {
+            if (isOnPublicPage || effectivePrivacy || window.isFriendView) {
                 timestampsElement.textContent = '';
                 timestampsElement.classList.add('hidden');
             } else {

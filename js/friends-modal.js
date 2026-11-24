@@ -6,7 +6,7 @@
         ['wishlist', 'Wishlist'],
         ['stats', 'Statistiques'],
         ['badges', 'Badges'],
-        ['details', 'Détails des courses (sauf notes)']
+        ['details', 'Détails des courses*']
     ];
     const DEFAULT_PERMISSIONS = { dashboard: true, wishlist: false, stats: false, badges: false, details: false };
     const modalHtml = `
@@ -41,6 +41,9 @@
                         <div id="friendRequestsList" class="space-y-3 mb-5"></div>
                         <h3 class="font-semibold text-gray-800 mb-2">Mes abonnés</h3>
                         <div id="followersList" class="space-y-3"></div>
+                        <p class="mt-4 pt-3 border-t border-gray-100 text-xs text-gray-500 leading-relaxed">
+                            * L'accès aux détails des courses n'inclut pas : vos notes personnelles (qui restent strictement privées), vos accompagnants et les dates de création/modification.
+                        </p>
                     </section>
                 </div>
             </div>
