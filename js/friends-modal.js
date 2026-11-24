@@ -12,12 +12,12 @@
     const modalHtml = `
         <div id="friendsModal" class="modal hidden fixed inset-0 z-[80] flex items-center justify-center bg-black/50 p-3">
             <div class="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden">
-                <header class="flex items-center justify-between p-4 border-b border-gray-100">
-                    <div>
+                <header class="flex items-center justify-between gap-3 p-4 border-b border-gray-100">
+                    <div class="flex items-center gap-2.5 flex-wrap min-w-0">
                         <h2 class="text-xl font-bold text-green-800"><i class="fas fa-user-group mr-2"></i>Amis</h2>
-                        <p id="friendsCounts" class="text-xs text-gray-500 mt-0.5"></p>
+                        <span id="friendsCounts" class="hidden inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-800 border border-green-200"></span>
                     </div>
-                    <button type="button" id="closeFriendsModal" class="text-gray-500 hover:text-gray-800 text-xl" aria-label="Fermer"><i class="fas fa-times"></i></button>
+                    <button type="button" id="closeFriendsModal" class="text-gray-500 hover:text-gray-800 text-xl shrink-0" aria-label="Fermer"><i class="fas fa-times"></i></button>
                 </header>
                 <nav class="flex border-b border-gray-200 bg-gray-50/50">
                     <button type="button" data-friends-tab="following" class="flex-1 min-w-0 px-2 sm:px-3 py-3 text-xs sm:text-sm font-semibold text-green-800 border-b-2 border-green-600 inline-flex items-center justify-center gap-1.5 whitespace-nowrap">
@@ -202,7 +202,10 @@
         const data = await readRelations();
         const activeFollowing = data.following.filter(friend => ['pending', 'accepted'].includes(friend.status));
         const counts = document.getElementById('friendsCounts');
-        if (counts) counts.textContent = `${activeFollowing.length} suivi${activeFollowing.length > 1 ? 's' : ''} · ${data.followers.length} abonné${data.followers.length > 1 ? 's' : ''}`;
+        if (counts) {
+            counts.textContent = `${activeFollowing.length} abonnement${activeFollowing.length > 1 ? 's' : ''} · ${data.followers.length} abonné${data.followers.length > 1 ? 's' : ''}`;
+            counts.classList.remove('hidden');
+        }
         renderFollowing(activeFollowing);
         renderRequests(data.requests);
         renderFollowers(data.followers, data.following);
