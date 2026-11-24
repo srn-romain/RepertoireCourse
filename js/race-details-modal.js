@@ -1825,10 +1825,10 @@
             }
         }
 
-        // Accompagnants (strictement privés pour les amis)
+        // Accompagnants (liste visible, mais détails de course des accompagnants strictement privés)
         const detailsCompanions = document.getElementById('detailsCompanions');
         if (detailsCompanions) {
-            if (!window.isFriendView && race.companions && race.companions.length > 0) {
+            if (race.companions && race.companions.length > 0) {
                 detailsCompanions.className = 'bg-green-50 rounded-lg p-4 mb-4 text-center block';
                 const sortedCompanions = [...race.companions].sort((a, b) => {
                     const aType = typeof a === 'object' ? a.type : 'runner';
@@ -1845,7 +1845,7 @@
                     const type = typeof comp === 'object' ? comp.type : 'runner';
                     const iconClass = type === 'spectator' ? 'fa-eye' : 'fa-running';
                     let palmares = '';
-                    if (type === 'runner' && comp && typeof comp === 'object') {
+                    if (type === 'runner' && comp && typeof comp === 'object' && !isOnPublicPage && !window.isFriendView) {
                         const details = [];
                         if (comp.sameRaceDistance === false) {
                             if (comp.distance != null && comp.distance !== '') details.push(`Distance : ${escapeHtml(comp.distance)} km`);
@@ -2626,17 +2626,17 @@
             }
         }
 
-        // Notes
+        // Notes (strictement privées : jamais visibles en vue publique ou ami)
         const notesElement = document.getElementById('detailsNotes');
         const notesLabel = document.getElementById('detailsNotesLabel');
         const notesSection = document.getElementById('detailsNotesContainer') || (notesElement ? notesElement.parentElement : null);
-        const friendCanViewDetailsOnly = window.isFriendView && window.friendViewPermissions?.details === true;
+        const notesRestricted = isOnPublicPage || window.isFriendView;
 
         if (notesSection) {
-            notesSection.classList.toggle('hidden', friendCanViewDetailsOnly || !!(effectivePrivacy && effectivePrivacy.hideNotes));
+            notesSection.classList.toggle('hidden', notesRestricted);
         }
 
-        if (notesElement && race.notes && race.notes.replace(/<[^>]*>/g, '').trim() !== '' && !friendCanViewDetailsOnly && !(effectivePrivacy && effectivePrivacy.hideNotes)) {
+        if (notesElement && race.notes && race.notes.replace(/<[^>]*>/g, '').trim() !== '' && !notesRestricted) {
             if (notesSection) notesSection.classList.remove('hidden');
             if (notesLabel) notesLabel.textContent = 'Note';
 
@@ -3543,6 +3543,8 @@
                 if (priceElement) {
                     priceElement.innerHTML = `<span class="inline-block filter blur-[4px] select-none text-green-800 font-semibold opacity-70 cursor-not-allowed" title="Prix confidentiel">25.00 €</span>`;
                 }
+            }
+            if (effectivePrivacy.hidePhotoPrice) {
                 const photoPurchasePriceElement = document.getElementById('detailsPhotoPurchasePrice');
                 if (photoPurchasePriceElement && Number.isFinite(parseFloat(race.photoPurchasePrice))) {
                     photoPurchasePriceElement.innerHTML = `<span class="inline-block filter blur-[4px] select-none text-amber-900 opacity-70 cursor-not-allowed" title="Prix confidentiel">${parseFloat(race.photoPurchasePrice).toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €</span>`;
@@ -3551,6 +3553,10 @@
             if (effectivePrivacy.hideBib) {
                 const bibContainer = document.getElementById('detailsBibContainer');
                 if (bibContainer) bibContainer.classList.add('hidden');
+            }
+            if (effectivePrivacy.hideCheckpoints) {
+                const passageContainer = document.getElementById('detailsPassageContainer');
+                if (passageContainer) passageContainer.classList.add('hidden');
             }
             if (effectivePrivacy.hideCompanions) {
                 const detailsCompanions = document.getElementById('detailsCompanions');

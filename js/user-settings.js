@@ -231,10 +231,6 @@ const userSettingsModalHTML = `
                     <div id="privacyDetailOptions" class="pt-3 border-t border-gray-200 space-y-3">
                         <p class="text-xs font-semibold text-gray-600 uppercase tracking-wider">Masquage dans la fiche détaillée :</p>
                         <label class="flex items-center cursor-pointer">
-                            <input type="checkbox" id="prefHideNotes" class="w-4 h-4 text-green-600 rounded focus:ring-green-500">
-                            <span class="ml-2 text-sm text-gray-700">Masquer mes notes personnelles</span>
-                        </label>
-                        <label class="flex items-center cursor-pointer">
                             <input type="checkbox" id="prefHideRanking" class="w-4 h-4 text-green-600 rounded focus:ring-green-500">
                             <span class="ml-2 text-sm text-gray-700">Masquer mes classements</span>
                         </label>
@@ -251,13 +247,24 @@ const userSettingsModalHTML = `
                             <span class="ml-2 text-sm text-gray-700">Masquer le prix d'inscription</span>
                         </label>
                         <label class="flex items-center cursor-pointer">
+                            <input type="checkbox" id="prefHidePhotoPrice" class="w-4 h-4 text-green-600 rounded focus:ring-green-500">
+                            <span class="ml-2 text-sm text-gray-700">Masquer le prix de la photo</span>
+                        </label>
+                        <label class="flex items-center cursor-pointer">
                             <input type="checkbox" id="prefHideBib" class="w-4 h-4 text-green-600 rounded focus:ring-green-500">
                             <span class="ml-2 text-sm text-gray-700">Masquer le numéro de dossard</span>
+                        </label>
+                        <label class="flex items-center cursor-pointer">
+                            <input type="checkbox" id="prefHideCheckpoints" class="w-4 h-4 text-green-600 rounded focus:ring-green-500">
+                            <span class="ml-2 text-sm text-gray-700">Masquer les points de passage</span>
                         </label>
                         <label class="flex items-center cursor-pointer">
                             <input type="checkbox" id="prefHideCompanions" class="w-4 h-4 text-green-600 rounded focus:ring-green-500">
                             <span class="ml-2 text-sm text-gray-700">Masquer mes accompagnants</span>
                         </label>
+                        <p class="text-xs text-gray-500 italic pt-1 leading-relaxed">
+                            Les métadonnées (dates de création/modification), les détails de course des accompagnants et les notes personnelles sont strictement privés et ne peuvent pas être rendus publics.
+                        </p>
 
                         <!-- Libellé de recommandation si tout est masqué -->
                         <div id="privacyAllHiddenHint" class="hidden mt-2 p-3 bg-blue-50/90 border border-blue-200 rounded-lg text-xs text-blue-900 leading-relaxed flex items-start gap-2.5 transition-all shadow-xs">
@@ -529,12 +536,13 @@ async function initSettingsLogic() {
     const prefShowPseudoInLeaderboard = document.getElementById('prefShowPseudoInLeaderboard');
 
     // Nouveaux masquages spécifiques Fiche détaillée (Niveau 2)
-    const prefHideNotes = document.getElementById('prefHideNotes');
     const prefHideRanking = document.getElementById('prefHideRanking');
     const prefHideStats = document.getElementById('prefHideStats');
     const prefHidePhotos = document.getElementById('prefHidePhotos');
     const prefHidePrice = document.getElementById('prefHidePrice');
+    const prefHidePhotoPrice = document.getElementById('prefHidePhotoPrice');
     const prefHideBib = document.getElementById('prefHideBib');
+    const prefHideCheckpoints = document.getElementById('prefHideCheckpoints');
     const prefHideCompanions = document.getElementById('prefHideCompanions');
 
     // Checkboxes UI preferences
@@ -660,7 +668,7 @@ async function initSettingsLogic() {
         }
 
         const detailCheckboxes = [
-            prefHideNotes, prefHideRanking, prefHideStats, prefHidePhotos, prefHidePrice, prefHideBib, prefHideCompanions
+            prefHideRanking, prefHideStats, prefHidePhotos, prefHidePrice, prefHidePhotoPrice, prefHideBib, prefHideCheckpoints, prefHideCompanions
         ];
 
         const allChecked = detailCheckboxes.length > 0 && detailCheckboxes.every(cb => cb && cb.checked);
@@ -711,7 +719,7 @@ async function initSettingsLogic() {
 
         [
             prefHidePseudo, prefHideCity, prefHideFavorite, prefHideLikeCount, prefShowPseudoInLeaderboard,
-            prefHideNotes, prefHideRanking, prefHideStats, prefHidePhotos, prefHidePrice, prefHideBib, prefHideCompanions
+            prefHideRanking, prefHideStats, prefHidePhotos, prefHidePrice, prefHidePhotoPrice, prefHideBib, prefHideCheckpoints, prefHideCompanions
         ].forEach(cb => {
             if (cb) {
                 cb.disabled = true;
@@ -950,12 +958,13 @@ async function initSettingsLogic() {
             hideLikeCount: prefHideLikeCount ? prefHideLikeCount.checked : false,
             showPseudoInLeaderboard: isLeaderboardPseudoShown,
             // Masquages fiche détaillée
-            hideNotes: prefHideNotes ? prefHideNotes.checked : false,
             hideRanking: prefHideRanking ? prefHideRanking.checked : false,
             hideStats: prefHideStats ? prefHideStats.checked : false,
             hidePhotos: prefHidePhotos ? prefHidePhotos.checked : false,
             hidePrice: prefHidePrice ? prefHidePrice.checked : false,
+            hidePhotoPrice: prefHidePhotoPrice ? prefHidePhotoPrice.checked : false,
             hideBib: prefHideBib ? prefHideBib.checked : false,
+            hideCheckpoints: prefHideCheckpoints ? prefHideCheckpoints.checked : false,
             hideCompanions: prefHideCompanions ? prefHideCompanions.checked : false,
             // Rétrocompatibilité
             showPseudo: prefHidePseudo ? !prefHidePseudo.checked : true,
@@ -1046,7 +1055,7 @@ async function initSettingsLogic() {
     if (!isInvite) {
         [
             prefHidePseudo, prefHideCity, prefHideFavorite, prefHideLikeCount,
-            prefHideNotes, prefHideRanking, prefHideStats, prefHidePhotos, prefHidePrice, prefHideBib, prefHideCompanions
+            prefHideRanking, prefHideStats, prefHidePhotos, prefHidePrice, prefHidePhotoPrice, prefHideBib, prefHideCheckpoints, prefHideCompanions
         ].forEach(cb => {
             if (cb) cb.addEventListener('change', savePrivacySettings);
         });
@@ -1173,12 +1182,13 @@ async function initSettingsLogic() {
                         window.prefShowPseudoInLeaderboard = isChecked;
                     }
                     // Masquages fiche détaillée
-                    if (prefHideNotes) prefHideNotes.checked = data.privacy.hideNotes === true;
                     if (prefHideRanking) prefHideRanking.checked = data.privacy.hideRanking === true;
                     if (prefHideStats) prefHideStats.checked = data.privacy.hideStats === true;
                     if (prefHidePhotos) prefHidePhotos.checked = data.privacy.hidePhotos === true;
                     if (prefHidePrice) prefHidePrice.checked = data.privacy.hidePrice === true;
+                    if (prefHidePhotoPrice) prefHidePhotoPrice.checked = data.privacy.hidePhotoPrice === true;
                     if (prefHideBib) prefHideBib.checked = data.privacy.hideBib === true;
+                    if (prefHideCheckpoints) prefHideCheckpoints.checked = data.privacy.hideCheckpoints === true;
                     if (prefHideCompanions) prefHideCompanions.checked = data.privacy.hideCompanions === true;
                 } else {
                     // Par défaut, aucune case n'est cochée (rien n'est masqué)
@@ -1186,12 +1196,13 @@ async function initSettingsLogic() {
                     if (prefHideCity) prefHideCity.checked = false;
                     if (prefHideFavorite) prefHideFavorite.checked = false;
                     if (prefHideLikeCount) prefHideLikeCount.checked = false;
-                    if (prefHideNotes) prefHideNotes.checked = false;
                     if (prefHideRanking) prefHideRanking.checked = false;
                     if (prefHideStats) prefHideStats.checked = false;
                     if (prefHidePhotos) prefHidePhotos.checked = false;
                     if (prefHidePrice) prefHidePrice.checked = false;
+                    if (prefHidePhotoPrice) prefHidePhotoPrice.checked = false;
                     if (prefHideBib) prefHideBib.checked = false;
+                    if (prefHideCheckpoints) prefHideCheckpoints.checked = false;
                     if (prefHideCompanions) prefHideCompanions.checked = false;
                 }
 
@@ -1659,20 +1670,22 @@ window.openUserSettings = async function () {
             if (prefShowPseudoInLeaderboard) prefShowPseudoInLeaderboard.checked = (p.showPseudoInLeaderboard !== undefined) ? p.showPseudoInLeaderboard : true;
 
             // Masquages fiche détaillée
-            const prefHideNotes = document.getElementById('prefHideNotes');
             const prefHideRanking = document.getElementById('prefHideRanking');
             const prefHideStats = document.getElementById('prefHideStats');
             const prefHidePhotos = document.getElementById('prefHidePhotos');
             const prefHidePrice = document.getElementById('prefHidePrice');
+            const prefHidePhotoPrice = document.getElementById('prefHidePhotoPrice');
             const prefHideBib = document.getElementById('prefHideBib');
+            const prefHideCheckpoints = document.getElementById('prefHideCheckpoints');
             const prefHideCompanions = document.getElementById('prefHideCompanions');
 
-            if (prefHideNotes) prefHideNotes.checked = p.hideNotes === true;
             if (prefHideRanking) prefHideRanking.checked = p.hideRanking === true;
             if (prefHideStats) prefHideStats.checked = p.hideStats === true;
             if (prefHidePhotos) prefHidePhotos.checked = p.hidePhotos === true;
             if (prefHidePrice) prefHidePrice.checked = p.hidePrice === true;
+            if (prefHidePhotoPrice) prefHidePhotoPrice.checked = p.hidePhotoPrice === true;
             if (prefHideBib) prefHideBib.checked = p.hideBib === true;
+            if (prefHideCheckpoints) prefHideCheckpoints.checked = p.hideCheckpoints === true;
             if (prefHideCompanions) prefHideCompanions.checked = p.hideCompanions === true;
 
             // Charger les préférences UI

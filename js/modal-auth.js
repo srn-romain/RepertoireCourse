@@ -747,12 +747,13 @@ function initAuthLogic() {
                         hideCity: false,
                         hideFavorite: false,
                         hideLikeCount: false,
-                        hideNotes: false,
                         hideRanking: false,
                         hideStats: false,
                         hidePhotos: false,
                         hidePrice: false,
+                        hidePhotoPrice: false,
                         hideBib: false,
+                        hideCheckpoints: false,
                         hideCompanions: false
                     },
                     uiPreferences: {
