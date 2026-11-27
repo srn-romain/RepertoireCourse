@@ -918,15 +918,29 @@ Idée brute de l'administrateur : "${rawPrompt}"`;
      * Configuration du glisser-déposer (Drag & Drop) pour une ligne
      */
     function setupDragAndDropForRow(row) {
-        row.setAttribute('draggable', 'true');
+        row.setAttribute('draggable', 'false');
+
+        row.addEventListener('mousedown', (e) => {
+            const isInteractive = Boolean(e.target.closest('input, textarea, select, button, a, label'));
+            row.setAttribute('draggable', isInteractive ? 'false' : 'true');
+        });
+
+        row.addEventListener('mouseup', () => {
+            row.setAttribute('draggable', 'false');
+        });
 
         row.addEventListener('dragstart', (e) => {
+            if (row.getAttribute('draggable') !== 'true') {
+                e.preventDefault();
+                return;
+            }
             e.dataTransfer.effectAllowed = 'move';
             e.dataTransfer.setData('text/plain', row.id);
             row.classList.add('opacity-40', 'border-green-500', 'scale-[0.99]');
         });
 
         row.addEventListener('dragend', () => {
+            row.setAttribute('draggable', 'false');
             row.classList.remove('opacity-40', 'border-green-500', 'scale-[0.99]');
             updateUpcomingRowOrderButtons();
         });
