@@ -8449,7 +8449,8 @@
         function renderCompanionsList() {
             companionsList.innerHTML = '';
             currentCompanions.forEach((comp, index) => {
-                const name = typeof comp === 'object' ? comp.name : comp;
+                const name = comp && typeof comp === 'object' ? comp.name : comp;
+                const type = comp && typeof comp === 'object' ? (comp.type || 'runner') : 'runner';
                 const iconClass = type === 'spectator' ? 'fa-eye' : 'fa-running';
                 const hasPalmares = type === 'runner' && comp && typeof comp === 'object' &&
                     (comp.raceTime || (comp.rankPos != null && comp.rankPos !== '') ||
